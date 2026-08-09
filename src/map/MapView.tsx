@@ -43,6 +43,10 @@ export function MapView({
   const onReadyRef = useRef(onReady);
   onReadyRef.current = onReady;
 
+  // 地圖目前實際套用的底圖。在建立地圖時就記下當下用的那一份樣式，
+  // 下面的切換 effect 才能單純比對 id，不必猜「這次是不是初次渲染」。
+  const appliedBasemap = useRef<BasemapId | null>(null);
+
   // 建立地圖（整個生命週期只做一次）
   useEffect(() => {
     if (!containerRef.current) return;
@@ -68,6 +72,9 @@ export function MapView({
         canvasContextAttributes: { preserveDrawingBuffer: import.meta.env.DEV },
       });
       mapRef.current = map;
+      // 記下這張地圖是用哪個底圖建立的。若使用者在樣式抓取／首次載入期間就換了底圖，
+      // 下面的 effect 會在 ready 之後比對出差異並補上 setStyle。
+      appliedBasemap.current = basemap;
       map.addControl(new maplibregl.NavigationControl({ visualizePitch: true }), "top-right");
       map.addControl(new maplibregl.ScaleControl({ unit: "metric" }), "bottom-left");
 
@@ -96,17 +103,16 @@ export function MapView({
   }, []);
 
   // 切換底圖。setStyle 會清空所有自訂來源與圖層，必須在新樣式就緒後重新加回。
-  // 記住目前已套用的底圖。用「比對 id」而不是「第一次就跳過」的旗標，
-  // 否則 StrictMode 重跑 effect 時會誤判成換底圖，白白多抓一次樣式。
-  const appliedBasemap = useRef<BasemapId | null>(null);
+  //
+  // 只比對「地圖實際套用的底圖 id」與目前選擇，不能用「第一次就跳過」的旗標：
+  // 底圖選單在 header 裡、從第一次繪製就能點，使用者很可能在地圖還沒 load 完
+  // （ready 還是 false）就換底圖。那次 effect 會在上面提早 return，等 ready 變 true
+  // 再跑一次時，若把它當成初次渲染跳過，地圖就會一直停在建立時的舊底圖，
+  // 而選單顯示的是新的——要再切換兩次才會恢復同步。
   useEffect(() => {
     const map = mapRef.current;
     if (!map || !ready) return;
     if (appliedBasemap.current === basemap) return;
-    if (appliedBasemap.current === null) {
-      appliedBasemap.current = basemap; // 初始底圖已在建立地圖時套用
-      return;
-    }
     appliedBasemap.current = basemap;
     let cancelled = false;
     void (async () => {

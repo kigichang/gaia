@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
+  <!--
+    等高線示意：三圈閉合曲線加上填滿的山頂，呼應站上的等高線地形圖。
+    顏色取自 styles.css 的 accent 藍。SVG favicon 支援 prefers-color-scheme，
+    深色分頁列改用亮一階的藍，維持辨識度。
+    注意：XML 註解裡不能出現連續兩個減號，寫 CSS 變數名時要避開。
+  -->
+  <style>
+    .contour { fill: none; stroke: #2a78d6; stroke-width: 2.8; stroke-linejoin: round; }
+    .peak { fill: #2a78d6; }
+    @media (prefers-color-scheme: dark) {
+      .contour { stroke: #5c9dee; }
+      .peak { fill: #5c9dee; }
+    }
+  </style>
+  <path class="contour" d="M2.6 17.8C2.6 11.8 8.8 8 16 8C23.6 8 29.4 12.2 29.4 18.2C29.4 23 24.2 26.8 16.6 26.8C8.4 26.8 2.6 23.6 2.6 17.8Z" />
+  <path class="contour" d="M9 18C9 14.8 12.2 12.8 16.2 12.8C20.3 12.8 23.6 15 23.6 18.1C23.6 20.9 20.4 22.8 16.4 22.8C12.4 22.8 9 21.2 9 18Z" />
+  <path class="peak" d="M13.4 18C13.4 16.8 14.7 16 16.3 16C17.9 16 19.3 16.9 19.3 18C19.3 19.2 18 20 16.4 20C14.8 20 13.4 19.3 13.4 18Z" />
+</svg>

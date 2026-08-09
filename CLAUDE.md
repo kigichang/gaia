@@ -310,6 +310,14 @@ npm run build:species -- --force   # 全部重抓
 
 ## 驗證方式
 
+### ⚠️ 用瀏覽器自動化驗證時，分頁一定要在前景
+
+maplibre 的 `Style.loadJSON()` 會先 `await` 一個 `requestAnimationFrame` 才真正套用樣式。**背景分頁不會觸發 rAF**，所以在沒有被選取的分頁裡開站，會停在：`map.style.stylesheet` 是 undefined、`load` 事件永遠不觸發（`window.__gaiaMaps` 因此是空的）、一張圖磚都不抓、畫面全白，而且**完全沒有任何 console 錯誤或失敗的網路請求**——症狀跟「worker 檔案沒被複製」幾乎一模一樣，很容易誤判成程式壞了。
+
+先確認 `document.visibilityState === 'visible'`（背景分頁下所有地圖驗證都不算數），需要時用
+`osascript -e 'tell application "Google Chrome" to set active tab index of window 1 to N'` 把分頁切到前景再等幾秒。
+同理，在背景載入、之後才切到前景的分頁，相機狀態可能跟網址參數對不上（`_constrain` 會在尺寸還沒定案時調整 zoom／緯度），要重新整理後再驗一次比較頁的 URL 還原。
+
 ### 開發模式的地圖除錯掛勾
 
 `import.meta.env.DEV` 為真時，`MapView` 會把地圖實例掛到 `window.__gaiaMaps`，並透過 `canvasContextAttributes.preserveDrawingBuffer` 保留繪圖緩衝區。
