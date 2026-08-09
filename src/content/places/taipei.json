@@ -1,0 +1,19 @@
+{
+  "id": "taipei",
+  "name": { "zh": "臺北", "en": "Taipei" },
+  "coord": { "lat": 25.033, "lng": 121.565 },
+  "elevation_m": 18,
+  "region": "taiwan",
+  "topics": ["landform", "climate", "human"],
+  "koppen": "Cfa",
+  "landform": "盆地",
+  "defaultZoom": 11,
+  "facts": [
+    { "label": "地形", "value": "臺北盆地，四周由大屯火山群與丘陵環繞" },
+    { "label": "主要河川", "value": "淡水河、基隆河、新店溪" },
+    { "label": "氣候型", "value": "副熱帶濕潤氣候（Cfa），冬季受東北季風影響多雨" },
+    { "label": "人文", "value": "臺灣人口最密集的都會區核心" }
+  ],
+  "curriculum": { "level": "junior", "unit": "臺灣的地形與都市" },
+  "sources": ["交通部中央氣象署", "內政部國土測繪中心"]
+}

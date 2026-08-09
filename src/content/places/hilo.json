@@ -1,0 +1,19 @@
+{
+  "id": "hilo",
+  "name": { "zh": "希洛（夏威夷）", "en": "Hilo, Hawaii" },
+  "coord": { "lat": 19.707, "lng": -155.089 },
+  "elevation_m": 12,
+  "region": "world",
+  "topics": ["landform", "climate"],
+  "koppen": "Af",
+  "landform": "火山島",
+  "defaultZoom": 10,
+  "facts": [
+    { "label": "位置", "value": "太平洋夏威夷大島東側，位於熱點形成的火山島鏈上" },
+    { "label": "地形", "value": "毛納羅亞與毛納基亞兩座盾狀火山構成島嶼主體" },
+    { "label": "氣候型", "value": "熱帶雨林氣候（Af），為全美降水最多的城市之一" },
+    { "label": "對照重點", "value": "與撒哈拉緯度相近，卻因位於海洋上、迎信風坡而多雨" }
+  ],
+  "curriculum": { "level": "senior", "unit": "世界氣候與地形雨" },
+  "sources": ["Open-Meteo ERA5 再分析資料", "USGS"]
+}

@@ -1,0 +1,19 @@
+{
+  "id": "tamanrasset",
+  "name": { "zh": "塔曼拉塞特", "en": "Tamanrasset" },
+  "coord": { "lat": 22.785, "lng": 5.523 },
+  "elevation_m": 1377,
+  "region": "world",
+  "topics": ["landform", "climate"],
+  "koppen": "BWh",
+  "landform": "沙漠高原",
+  "defaultZoom": 10,
+  "facts": [
+    { "label": "位置", "value": "阿爾及利亞南部，撒哈拉沙漠中央，接近北回歸線" },
+    { "label": "地形", "value": "阿哈加爾高原（Ahaggar），火山岩構成的乾燥高地" },
+    { "label": "氣候型", "value": "熱帶沙漠氣候（BWh），年雨量不足 50 公釐" },
+    { "label": "對照重點", "value": "與臺灣同緯度，卻因位於副熱帶高壓帶且遠離海洋而極度乾燥" }
+  ],
+  "curriculum": { "level": "senior", "unit": "世界氣候與乾燥地區" },
+  "sources": ["Open-Meteo ERA5 再分析資料", "Natural Earth"]
+}

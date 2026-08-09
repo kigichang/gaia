@@ -1,0 +1,19 @@
+{
+  "id": "mazatlan",
+  "name": { "zh": "馬薩特蘭", "en": "Mazatlán" },
+  "coord": { "lat": 23.249, "lng": -106.411 },
+  "elevation_m": 10,
+  "region": "world",
+  "topics": ["landform", "climate", "human"],
+  "koppen": "Aw",
+  "landform": "海岸平原",
+  "defaultZoom": 10,
+  "facts": [
+    { "label": "位置", "value": "墨西哥太平洋岸，北回歸線幾乎正好通過市區" },
+    { "label": "地形", "value": "西馬德雷山脈西側的狹長海岸平原" },
+    { "label": "氣候型", "value": "熱帶乾濕季氣候（Aw），雨量集中在夏季" },
+    { "label": "對照重點", "value": "同樣位於北回歸線，乾濕季分明的程度與臺灣、撒哈拉都不同" }
+  ],
+  "curriculum": { "level": "senior", "unit": "世界氣候分區" },
+  "sources": ["Open-Meteo ERA5 再分析資料", "Natural Earth"]
+}

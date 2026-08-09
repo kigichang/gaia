@@ -1,0 +1,19 @@
+{
+  "id": "cairo",
+  "name": { "zh": "開羅", "en": "Cairo" },
+  "coord": { "lat": 30.044, "lng": 31.236 },
+  "elevation_m": 23,
+  "region": "world",
+  "topics": ["landform", "climate", "hydrology", "human"],
+  "koppen": "BWh",
+  "landform": "河谷與三角洲",
+  "defaultZoom": 10,
+  "facts": [
+    { "label": "位置", "value": "埃及尼羅河三角洲頂點，副熱帶高壓帶下的乾燥地區" },
+    { "label": "水文", "value": "全城仰賴尼羅河外來河供水，形成沙漠中的綠洲帶" },
+    { "label": "氣候型", "value": "熱帶沙漠氣候（BWh），年雨量約 25 公釐" },
+    { "label": "對照重點", "value": "與臺灣中北部緯度接近，卻是典型的乾燥氣候" }
+  ],
+  "curriculum": { "level": "senior", "unit": "乾燥地區的人地關係" },
+  "sources": ["Open-Meteo ERA5 再分析資料", "Natural Earth"]
+}

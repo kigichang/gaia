@@ -1,0 +1,19 @@
+{
+  "id": "yushan",
+  "name": { "zh": "玉山主峰", "en": "Yushan (Mt. Jade)" },
+  "coord": { "lat": 23.47, "lng": 120.957 },
+  "elevation_m": 3952,
+  "region": "taiwan",
+  "topics": ["landform", "climate"],
+  "koppen": "ET",
+  "landform": "褶皺高山",
+  "defaultZoom": 12,
+  "facts": [
+    { "label": "海拔", "value": "3952 公尺，東北亞第一高峰" },
+    { "label": "成因", "value": "菲律賓海板塊與歐亞板塊聚合造山抬升" },
+    { "label": "垂直氣候", "value": "山頂屬高山寒原，冬季積雪" },
+    { "label": "位置", "value": "幾乎位於北回歸線（23.5°N）上" }
+  ],
+  "curriculum": { "level": "junior", "unit": "臺灣的地形" },
+  "sources": ["內政部國土測繪中心", "玉山國家公園管理處"]
+}
