@@ -1,0 +1,14 @@
+{
+  "id": "seediq",
+  "name": { "zh": "賽德克族", "en": "Seediq" },
+  "representativeCoord": { "lat": 24.0637, "lng": 121.2649 },
+  "mainDistribution": ["南投縣", "花蓮縣"],
+  "language": "賽德克語",
+  "facts": [
+    { "label": "歷史事件", "value": "1930 年霧社事件的發生地，是台灣原住民抗日史上的重要一頁" },
+    { "label": "文化特色", "value": "紋面（Ptasan）為成年與族群識別標誌，彩虹橋信仰是重要的靈魂觀" },
+    { "label": "認定歷程", "value": "2008 年從泰雅族分出，正式認定為第 14 個原住民族" }
+  ],
+  "curriculum": { "level": "junior", "unit": "台灣的原住民族" },
+  "sources": ["原住民族委員會全球資訊網"]
+}

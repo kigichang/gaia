@@ -1,0 +1,17 @@
+{
+  "id": "tao",
+  "name": { "zh": "達悟族（雅美族）", "en": "Tao (Yami)" },
+  "representativeCoord": { "lat": 22.0396, "lng": 121.5502 },
+  "mainDistribution": ["台東縣（蘭嶼）"],
+  "populationEstimate": 4684,
+  "populationYear": "2020-01",
+  "language": "達悟語（雅美語）",
+  "facts": [
+    { "label": "地理分布", "value": "台灣唯一主要傳統聚落在離島（蘭嶼）的原住民族" },
+    { "label": "文化特色", "value": "拼板舟（Tatala）與飛魚祭是最具代表性的海洋文化" },
+    { "label": "族群規模", "value": "台灣原住民 16 族中人口最少的族群之一" },
+    { "label": "對照重點", "value": "唯一沒有紋面、獵頭等文化的原住民族，發展出獨特的海洋祭儀曆法" }
+  ],
+  "curriculum": { "level": "junior", "unit": "台灣的原住民族" },
+  "sources": ["原住民族委員會全球資訊網", "台灣原住民族文化知識網"]
+}

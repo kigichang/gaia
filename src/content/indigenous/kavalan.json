@@ -1,0 +1,14 @@
+{
+  "id": "kavalan",
+  "name": { "zh": "噶瑪蘭族", "en": "Kavalan" },
+  "representativeCoord": { "lat": 23.628, "lng": 121.5578 },
+  "mainDistribution": ["花蓮縣", "宜蘭縣（原鄉）"],
+  "language": "噶瑪蘭語",
+  "facts": [
+    { "label": "遷徙歷史", "value": "原分布於宜蘭平原，19 世紀因漢人拓墾南遷至花蓮海岸一帶（新社部落）" },
+    { "label": "文化特色", "value": "香蕉絲編織是重要的傳統工藝，海祭是主要祭典之一" },
+    { "label": "認定歷程", "value": "2002 年正式獲政府認定為第 11 個原住民族" }
+  ],
+  "curriculum": { "level": "junior", "unit": "台灣的原住民族" },
+  "sources": ["原住民族委員會全球資訊網"]
+}

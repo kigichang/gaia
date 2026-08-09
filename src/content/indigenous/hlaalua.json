@@ -1,0 +1,14 @@
+{
+  "id": "hlaalua",
+  "name": { "zh": "拉阿魯哇族", "en": "Hla'alua (Saaroa)" },
+  "representativeCoord": { "lat": 23.159, "lng": 120.839 },
+  "mainDistribution": ["高雄市"],
+  "language": "拉阿魯哇語",
+  "facts": [
+    { "label": "分布地形", "value": "聚居於高雄市桃源區荖濃溪流域，是人口最少的原住民族之一" },
+    { "label": "文化特色", "value": "貝神祭（Miatungusu）是最重要的祭典，祭祀聖貝" },
+    { "label": "認定歷程", "value": "2014 年從鄒族分出，正式認定為第 15 個原住民族" }
+  ],
+  "curriculum": { "level": "junior", "unit": "台灣的原住民族" },
+  "sources": ["原住民族委員會全球資訊網"]
+}

@@ -19,7 +19,7 @@ interface PlaceCardProps {
 export function PlaceCard({ place, queriedElevation }: PlaceCardProps) {
   return (
     <div className="place-card">
-      <div className="place-stats">
+      <div className="detail-stats">
         <Stat label="緯度" value={formatLatitude(place.coord.lat)} />
         <Stat label="海拔" value={`${place.elevation_m.toLocaleString("zh-TW")} m`} />
         <Stat label="地形" value={place.landform} />
@@ -31,12 +31,12 @@ export function PlaceCard({ place, queriedElevation }: PlaceCardProps) {
       </div>
 
       {queriedElevation != null && (
-        <p className="place-probe">
+        <p className="detail-probe">
           地圖游標處海拔約 <strong>{Math.round(queriedElevation).toLocaleString("zh-TW")} m</strong>
         </p>
       )}
 
-      <ul className="place-facts">
+      <ul className="detail-facts">
         {place.facts.map((f) => (
           <li key={f.label}>
             <span className="fact-label">{f.label}</span>
@@ -45,12 +45,12 @@ export function PlaceCard({ place, queriedElevation }: PlaceCardProps) {
         ))}
       </ul>
 
-      <p className="place-sources">資料來源：{place.sources.join("、")}</p>
+      <p className="detail-sources">資料來源：{place.sources.join("、")}</p>
     </div>
   );
 }
 
-function Stat({ label, value, note }: { label: string; value: string; note?: string }) {
+export function Stat({ label, value, note }: { label: string; value: string; note?: string }) {
   return (
     <div className="stat">
       <span className="stat-label">{label}</span>

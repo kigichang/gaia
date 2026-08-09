@@ -1,0 +1,14 @@
+{
+  "id": "truku",
+  "name": { "zh": "太魯閣族", "en": "Truku" },
+  "representativeCoord": { "lat": 24.0715, "lng": 121.6198 },
+  "mainDistribution": ["花蓮縣", "南投縣"],
+  "language": "太魯閣語",
+  "facts": [
+    { "label": "族源關係", "value": "與賽德克族同源，18 世紀翻越中央山脈遷居花蓮立霧溪流域" },
+    { "label": "文化特色", "value": "紋面文化與泰雅族相近，織布與狩獵技藝發達" },
+    { "label": "認定歷程", "value": "2004 年從泰雅族分出，正式認定為第 12 個原住民族" }
+  ],
+  "curriculum": { "level": "junior", "unit": "台灣的原住民族" },
+  "sources": ["原住民族委員會全球資訊網"]
+}

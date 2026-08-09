@@ -1,0 +1,16 @@
+{
+  "id": "formosan-pangolin",
+  "name": { "zh": "台灣穿山甲", "en": "Formosan Pangolin", "latin": "Manis pentadactyla pentadactyla" },
+  "gbifTaxonKey": 7194049,
+  "category": "mammal",
+  "conservationStatus": "珍貴稀有保育類野生動物",
+  "habitat": "低、中海拔的丘陵與森林，善於挖掘洞穴，以白蟻、螞蟻為食",
+  "facts": [
+    { "label": "特徵", "value": "全身覆蓋角質鱗片，是唯一具有鱗甲的哺乳動物，受驚時會蜷縮成球狀" },
+    { "label": "分布範圍", "value": "主要分布於台灣中、低海拔的淺山地區森林" },
+    { "label": "保育現況", "value": "全球穿山甲屬普遍面臨盜獵威脅，台灣族群因棲地保護相對完整而受國際關注" },
+    { "label": "對照重點", "value": "觀測點多落在淺山地帶，可與台灣獼猴的全島廣泛分布做海拔區間的對照" }
+  ],
+  "curriculum": { "level": "senior", "unit": "台灣的自然地理與生態" },
+  "sources": ["GBIF Global Biodiversity Information Facility", "農業部林業及自然保育署"]
+}

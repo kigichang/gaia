@@ -1,0 +1,17 @@
+{
+  "id": "paiwan",
+  "name": { "zh": "排灣族", "en": "Paiwan" },
+  "representativeCoord": { "lat": 22.7423, "lng": 120.6934 },
+  "mainDistribution": ["屏東縣", "台東縣"],
+  "populationEstimate": 111000,
+  "populationYear": "2024",
+  "language": "排灣語",
+  "facts": [
+    { "label": "族群規模", "value": "台灣原住民人口第二多的一族，約占原住民總人口 18%" },
+    { "label": "社會制度", "value": "貴族與平民階級分明的世襲頭目制度，是台灣原住民中少見的階層化社會" },
+    { "label": "文化特色", "value": "百合花、陶壺、琉璃珠是重要的文化象徵，五年祭（Maleveq）是重要祭典" },
+    { "label": "分布地形", "value": "主要聚居於中央山脈南段東西兩側的丘陵與山地" }
+  ],
+  "curriculum": { "level": "junior", "unit": "台灣的原住民族" },
+  "sources": ["內政部 114年第6週內政統計通報（113年底原住民人口數）", "原住民族委員會全球資訊網"]
+}

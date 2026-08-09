@@ -1,0 +1,14 @@
+{
+  "id": "rukai",
+  "name": { "zh": "魯凱族", "en": "Rukai" },
+  "representativeCoord": { "lat": 22.7746, "lng": 120.7379 },
+  "mainDistribution": ["屏東縣", "台東縣", "高雄市"],
+  "language": "魯凱語",
+  "facts": [
+    { "label": "社會制度", "value": "貴族世襲階級制度，與排灣族並列台灣原住民中階層化程度最高的族群" },
+    { "label": "文化特色", "value": "百合花是家族地位與女性貞潔的重要象徵，石板屋建築技藝發達" },
+    { "label": "分布地形", "value": "傳統居住於中央山脈南段海拔較高的山地聚落" }
+  ],
+  "curriculum": { "level": "junior", "unit": "台灣的原住民族" },
+  "sources": ["原住民族委員會全球資訊網"]
+}

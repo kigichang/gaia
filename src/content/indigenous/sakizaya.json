@@ -1,0 +1,14 @@
+{
+  "id": "sakizaya",
+  "name": { "zh": "撒奇萊雅族", "en": "Sakizaya" },
+  "representativeCoord": { "lat": 23.9967, "lng": 121.6103 },
+  "mainDistribution": ["花蓮縣"],
+  "language": "撒奇萊雅語",
+  "facts": [
+    { "label": "歷史事件", "value": "19 世紀加禮宛戰役後族群一度隱身於阿美族之中，21 世紀才重新恢復族群身分" },
+    { "label": "文化特色", "value": "火神祭（Palamal）紀念先祖抗爭歷史，服飾以暗紅色系為代表色" },
+    { "label": "認定歷程", "value": "2007 年正式認定為第 13 個原住民族" }
+  ],
+  "curriculum": { "level": "junior", "unit": "台灣的原住民族" },
+  "sources": ["原住民族委員會全球資訊網"]
+}

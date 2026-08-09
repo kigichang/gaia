@@ -1,0 +1,14 @@
+{
+  "id": "thao",
+  "name": { "zh": "邵族", "en": "Thao" },
+  "representativeCoord": { "lat": 23.8626, "lng": 120.9203 },
+  "mainDistribution": ["南投縣"],
+  "language": "邵語",
+  "facts": [
+    { "label": "分布地形", "value": "聚居於日月潭畔的伊達邵部落，是台灣原住民中人口最少的族群之一" },
+    { "label": "文化特色", "value": "杵音（搗米音樂）與逐鹿祭是重要的文化特色" },
+    { "label": "認定歷程", "value": "2001 年正式獲政府認定為第 10 個原住民族" }
+  ],
+  "curriculum": { "level": "junior", "unit": "台灣的原住民族" },
+  "sources": ["原住民族委員會全球資訊網"]
+}

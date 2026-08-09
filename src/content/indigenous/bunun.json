@@ -1,0 +1,17 @@
+{
+  "id": "bunun",
+  "name": { "zh": "布農族", "en": "Bunun" },
+  "representativeCoord": { "lat": 23.5967, "lng": 121.027 },
+  "mainDistribution": ["南投縣", "花蓮縣", "高雄市", "台東縣"],
+  "populationEstimate": 62375,
+  "populationYear": "2024-04",
+  "language": "布農語",
+  "facts": [
+    { "label": "族群規模", "value": "台灣原住民人口第四多的一族" },
+    { "label": "分布地形", "value": "傳統居住海拔最高的原住民族之一，聚落多位於中央山脈高山地帶" },
+    { "label": "文化特色", "value": "八部合音（Pasibutbut，祈禱小米豐收歌）以複音和聲聞名於世界音樂界" },
+    { "label": "社會制度", "value": "以父系氏族為核心的社會組織，重視射耳祭（Malahtangia）等生命祭儀" }
+  ],
+  "curriculum": { "level": "junior", "unit": "台灣的原住民族" },
+  "sources": ["原住民族委員會 113年4月原住民族人口數統計資料"]
+}

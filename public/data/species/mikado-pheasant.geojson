@@ -1,0 +1,3005 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.173819,
+          24.243226
+        ]
+      },
+      "properties": {
+        "speciesId": "mikado-pheasant",
+        "date": "2026-01-17T10:04:09",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.148404,
+          24.386919
+        ]
+      },
+      "properties": {
+        "speciesId": "mikado-pheasant",
+        "date": "2026-01-06T10:17:25",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.110352,
+          24.512694
+        ]
+      },
+      "properties": {
+        "speciesId": "mikado-pheasant",
+        "date": "2026-01-14T14:33",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.055873,
+          24.270311
+        ]
+      },
+      "properties": {
+        "speciesId": "mikado-pheasant",
+        "date": "2026-01-16T16:03:58",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.151135,
+          24.321885
+        ]
+      },
+      "properties": {
+        "speciesId": "mikado-pheasant",
+        "date": "2026-01-17T09:57",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.01301,
+          24.263747
+        ]
+      },
+      "properties": {
+        "speciesId": "mikado-pheasant",
+        "date": "2026-01-06T09:33",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.176283,
+          24.315711
+        ]
+      },
+      "properties": {
+        "speciesId": "mikado-pheasant",
+        "date": "2026-02-15T10:25",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.85044,
+          23.279975
+        ]
+      },
+      "properties": {
+        "speciesId": "mikado-pheasant",
+        "date": "2026-02-19T07:39:10",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.102544,
+          24.347823
+        ]
+      },
+      "properties": {
+        "speciesId": "mikado-pheasant",
+        "date": "2026-02-15T10:27",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.963136,
+          23.434305
+        ]
+      },
+      "properties": {
+        "speciesId": "mikado-pheasant",
+        "date": "2026-02-19T07:03:55",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.010834,
+          23.412163
+        ]
+      },
+      "properties": {
+        "speciesId": "mikado-pheasant",
+        "date": "2026-02-21T13:35",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.17862,
+          23.401493
+        ]
+      },
+      "properties": {
+        "speciesId": "mikado-pheasant",
+        "date": "2026-02-21T15:37",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.155359,
+          24.348787
+        ]
+      },
+      "properties": {
+        "speciesId": "mikado-pheasant",
+        "date": "2026-03-03T10:56:06",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.85585,
+          23.527604
+        ]
+      },
+      "properties": {
+        "speciesId": "mikado-pheasant",
+        "date": "2026-03-11T12:11:07",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.961624,
+          23.460946
+        ]
+      },
+      "properties": {
+        "speciesId": "mikado-pheasant",
+        "date": "2026-03-29T07:58:05",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.198215,
+          24.309539
+        ]
+      },
+      "properties": {
+        "speciesId": "mikado-pheasant",
+        "date": "2026-03-17T15:58:46",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.00761,
+          24.218361
+        ]
+      },
+      "properties": {
+        "speciesId": "mikado-pheasant",
+        "date": "2026-03-21T17:18:33",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.964793,
+          23.240023
+        ]
+      },
+      "properties": {
+        "speciesId": "mikado-pheasant",
+        "date": "2026-03-29T07:32:16",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.804414,
+          23.402107
+        ]
+      },
+      "properties": {
+        "speciesId": "mikado-pheasant",
+        "date": "2026-03-16T12:20:04",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.85291,
+          23.644217
+        ]
+      },
+      "properties": {
+        "speciesId": "mikado-pheasant",
+        "date": "2026-03-31T09:48",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.192399,
+          24.234669
+        ]
+      },
+      "properties": {
+        "speciesId": "mikado-pheasant",
+        "date": "2026-03-31T08:36",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.183489,
+          24.31246
+        ]
+      },
+      "properties": {
+        "speciesId": "mikado-pheasant",
+        "date": "2026-03-31T09:17",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.845072,
+          23.52852
+        ]
+      },
+      "properties": {
+        "speciesId": "mikado-pheasant",
+        "date": "2026-04-07T17:27:12",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.08463,
+          24.351428
+        ]
+      },
+      "properties": {
+        "speciesId": "mikado-pheasant",
+        "date": "2026-04-04T15:45",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.071455,
+          24.274942
+        ]
+      },
+      "properties": {
+        "speciesId": "mikado-pheasant",
+        "date": "2026-04-05T06:36",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.044814,
+          24.368107
+        ]
+      },
+      "properties": {
+        "speciesId": "mikado-pheasant",
+        "date": "2026-04-12T07:34",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.162821,
+          24.269044
+        ]
+      },
+      "properties": {
+        "speciesId": "mikado-pheasant",
+        "date": "2026-04-04T14:38",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.853055,
+          23.494712
+        ]
+      },
+      "properties": {
+        "speciesId": "mikado-pheasant",
+        "date": "2026-04-07T17:35:57",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.880264,
+          23.542678
+        ]
+      },
+      "properties": {
+        "speciesId": "mikado-pheasant",
+        "date": "2026-04-11T15:53:03",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.845926,
+          23.462135
+        ]
+      },
+      "properties": {
+        "speciesId": "mikado-pheasant",
+        "date": "2026-04-07T17:38:43",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.163399,
+          24.271052
+        ]
+      },
+      "properties": {
+        "speciesId": "mikado-pheasant",
+        "date": "2026-04-04T15:44",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.147996,
+          24.225454
+        ]
+      },
+      "properties": {
+        "speciesId": "mikado-pheasant",
+        "date": "2026-04-05T12:04",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.078299,
+          24.273102
+        ]
+      },
+      "properties": {
+        "speciesId": "mikado-pheasant",
+        "date": "2026-04-05T12:05",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.04042,
+          24.381849
+        ]
+      },
+      "properties": {
+        "speciesId": "mikado-pheasant",
+        "date": "2026-04-05T06:38",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.938921,
+          23.516629
+        ]
+      },
+      "properties": {
+        "speciesId": "mikado-pheasant",
+        "date": "2026-04-21T16:06:01",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.91722,
+          23.575941
+        ]
+      },
+      "properties": {
+        "speciesId": "mikado-pheasant",
+        "date": "2026-04-14T07:42",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.85244,
+          23.396723
+        ]
+      },
+      "properties": {
+        "speciesId": "mikado-pheasant",
+        "date": "2026-04-23T15:05:35",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.821542,
+          23.598861
+        ]
+      },
+      "properties": {
+        "speciesId": "mikado-pheasant",
+        "date": "2026-04-19T14:11:32",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.081826,
+          24.239585
+        ]
+      },
+      "properties": {
+        "speciesId": "mikado-pheasant",
+        "date": "2026-04-11T12:58:21",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.901295,
+          23.587984
+        ]
+      },
+      "properties": {
+        "speciesId": "mikado-pheasant",
+        "date": "2026-04-22T13:52:49",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.943276,
+          23.237523
+        ]
+      },
+      "properties": {
+        "speciesId": "mikado-pheasant",
+        "date": "2026-04-03T09:27:52",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.187252,
+          24.346737
+        ]
+      },
+      "properties": {
+        "speciesId": "mikado-pheasant",
+        "date": "2026-04-15T08:33:38",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.950171,
+          23.41941
+        ]
+      },
+      "properties": {
+        "speciesId": "mikado-pheasant",
+        "date": "2026-04-27T05:49:58",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.774779,
+          23.545376
+        ]
+      },
+      "properties": {
+        "speciesId": "mikado-pheasant",
+        "date": "2026-04-15T22:45:26",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.23151,
+          24.476425
+        ]
+      },
+      "properties": {
+        "speciesId": "mikado-pheasant",
+        "date": "2026-04-13T13:59:48",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.158383,
+          24.345276
+        ]
+      },
+      "properties": {
+        "speciesId": "mikado-pheasant",
+        "date": "2026-04-01T08:18",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.012599,
+          24.320038
+        ]
+      },
+      "properties": {
+        "speciesId": "mikado-pheasant",
+        "date": "2026-04-01T08:17",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.016197,
+          24.293022
+        ]
+      },
+      "properties": {
+        "speciesId": "mikado-pheasant",
+        "date": "2026-04-29T09:00",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.018747,
+          24.288094
+        ]
+      },
+      "properties": {
+        "speciesId": "mikado-pheasant",
+        "date": "2026-05-02T06:41",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.094767,
+          24.24521
+        ]
+      },
+      "properties": {
+        "speciesId": "mikado-pheasant",
+        "date": "2026-05-02T06:31",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.157833,
+          24.241431
+        ]
+      },
+      "properties": {
+        "speciesId": "mikado-pheasant",
+        "date": "2026-05-02T06:31:25",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.068812,
+          24.325106
+        ]
+      },
+      "properties": {
+        "speciesId": "mikado-pheasant",
+        "date": "2026-05-01T07:55:22",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.89109,
+          23.578761
+        ]
+      },
+      "properties": {
+        "speciesId": "mikado-pheasant",
+        "date": "2026-05-05",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.004694,
+          24.211818
+        ]
+      },
+      "properties": {
+        "speciesId": "mikado-pheasant",
+        "date": "2026-05-01T08:12:54",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.921204,
+          23.464506
+        ]
+      },
+      "properties": {
+        "speciesId": "mikado-pheasant",
+        "date": "2026-05-17T11:27",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.972831,
+          23.499122
+        ]
+      },
+      "properties": {
+        "speciesId": "mikado-pheasant",
+        "date": "2026-05-17T11:33",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.83037,
+          23.552915
+        ]
+      },
+      "properties": {
+        "speciesId": "mikado-pheasant",
+        "date": "2026-05-17T06:31:53",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.913081,
+          23.588815
+        ]
+      },
+      "properties": {
+        "speciesId": "mikado-pheasant",
+        "date": "2026-05-17T06:35:38",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.921638,
+          23.599867
+        ]
+      },
+      "properties": {
+        "speciesId": "mikado-pheasant",
+        "date": "2026-05-17T06:45",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.573386,
+          24.514966
+        ]
+      },
+      "properties": {
+        "speciesId": "mikado-pheasant",
+        "date": "2026-05-18T06:50:34",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.958482,
+          23.425335
+        ]
+      },
+      "properties": {
+        "speciesId": "mikado-pheasant",
+        "date": "2026-05-17T11:30",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.408793,
+          24.407352
+        ]
+      },
+      "properties": {
+        "speciesId": "mikado-pheasant",
+        "date": "2026-05-17T08:06",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.607742,
+          24.560117
+        ]
+      },
+      "properties": {
+        "speciesId": "mikado-pheasant",
+        "date": "2026-05-17T13:53",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.478352,
+          24.544672
+        ]
+      },
+      "properties": {
+        "speciesId": "mikado-pheasant",
+        "date": "2026-05-23T05:24",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.596225,
+          24.497652
+        ]
+      },
+      "properties": {
+        "speciesId": "mikado-pheasant",
+        "date": "2026-05-23T05:24",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.971661,
+          23.552758
+        ]
+      },
+      "properties": {
+        "speciesId": "mikado-pheasant",
+        "date": "2026-05-17T06:44",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.155607,
+          24.219116
+        ]
+      },
+      "properties": {
+        "speciesId": "mikado-pheasant",
+        "date": "2026-05-19T09:33:35",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.768507,
+          24.497903
+        ]
+      },
+      "properties": {
+        "speciesId": "mikado-pheasant",
+        "date": "2026-05-17T10:12",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.137844,
+          24.353005
+        ]
+      },
+      "properties": {
+        "speciesId": "mikado-pheasant",
+        "date": "2026-05-07T17:33",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.000478,
+          24.322608
+        ]
+      },
+      "properties": {
+        "speciesId": "mikado-pheasant",
+        "date": "2026-05-15T06:32",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.893334,
+          23.494114
+        ]
+      },
+      "properties": {
+        "speciesId": "mikado-pheasant",
+        "date": "2026-05-17T11:31:16",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.041098,
+          24.326148
+        ]
+      },
+      "properties": {
+        "speciesId": "mikado-pheasant",
+        "date": "2026-05-01T10:52",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.19316,
+          24.208248
+        ]
+      },
+      "properties": {
+        "speciesId": "mikado-pheasant",
+        "date": "2026-05-01T11:13",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.102868,
+          24.278631
+        ]
+      },
+      "properties": {
+        "speciesId": "mikado-pheasant",
+        "date": "2026-06-14T08:15:20",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.50112,
+          24.464539
+        ]
+      },
+      "properties": {
+        "speciesId": "mikado-pheasant",
+        "date": "2026-06-13T11:21:42",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.85587,
+          23.53334
+        ]
+      },
+      "properties": {
+        "speciesId": "mikado-pheasant",
+        "date": "2026-06-06T08:58",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.192194,
+          24.537659
+        ]
+      },
+      "properties": {
+        "speciesId": "mikado-pheasant",
+        "date": "2026-06-19T13:18:23",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.636996,
+          24.514144
+        ]
+      },
+      "properties": {
+        "speciesId": "mikado-pheasant",
+        "date": "2026-06-29T14:32:38",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.198247,
+          24.318606
+        ]
+      },
+      "properties": {
+        "speciesId": "mikado-pheasant",
+        "date": "2026-06-23T14:40:26",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.512083,
+          24.523119
+        ]
+      },
+      "properties": {
+        "speciesId": "mikado-pheasant",
+        "date": "2026-07-18T13:08:01",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.315591,
+          24.122825
+        ]
+      },
+      "properties": {
+        "speciesId": "mikado-pheasant",
+        "date": "2026-07-23T16:43:25",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.11266,
+          24.326063
+        ]
+      },
+      "properties": {
+        "speciesId": "mikado-pheasant",
+        "date": "2025-01-05T11:20",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.010668,
+          24.478551
+        ]
+      },
+      "properties": {
+        "speciesId": "mikado-pheasant",
+        "date": "2025-01-11T09:58:27",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.872705,
+          23.577236
+        ]
+      },
+      "properties": {
+        "speciesId": "mikado-pheasant",
+        "date": "2025-01-09T08:37:17",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.066861,
+          24.26079
+        ]
+      },
+      "properties": {
+        "speciesId": "mikado-pheasant",
+        "date": "2025-01-08T14:52:27",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.94903,
+          23.500878
+        ]
+      },
+      "properties": {
+        "speciesId": "mikado-pheasant",
+        "date": "2025-01-18T12:42:44",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.711268,
+          24.664953
+        ]
+      },
+      "properties": {
+        "speciesId": "mikado-pheasant",
+        "date": "2025-02-04T11:51:23",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.133513,
+          24.345802
+        ]
+      },
+      "properties": {
+        "speciesId": "mikado-pheasant",
+        "date": "2025-02-27T08:25",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.847085,
+          23.453299
+        ]
+      },
+      "properties": {
+        "speciesId": "mikado-pheasant",
+        "date": "2025-02-04T13:13",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.99156,
+          23.416201
+        ]
+      },
+      "properties": {
+        "speciesId": "mikado-pheasant",
+        "date": "2025-02-23T10:51:25",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.815519,
+          23.405471
+        ]
+      },
+      "properties": {
+        "speciesId": "mikado-pheasant",
+        "date": "2025-02-23T11:05:23",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.025467,
+          24.279808
+        ]
+      },
+      "properties": {
+        "speciesId": "mikado-pheasant",
+        "date": "2025-02-14",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.56589,
+          24.507648
+        ]
+      },
+      "properties": {
+        "speciesId": "mikado-pheasant",
+        "date": "2025-03-02T16:30:49",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.078943,
+          23.588841
+        ]
+      },
+      "properties": {
+        "speciesId": "mikado-pheasant",
+        "date": "2025-03-11T07:31:37",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.414846,
+          24.500723
+        ]
+      },
+      "properties": {
+        "speciesId": "mikado-pheasant",
+        "date": "2025-03-13T09:26:07",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.116319,
+          24.227275
+        ]
+      },
+      "properties": {
+        "speciesId": "mikado-pheasant",
+        "date": "2025-03-18T09:05:33",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.17705,
+          24.284642
+        ]
+      },
+      "properties": {
+        "speciesId": "mikado-pheasant",
+        "date": "2025-03-18T09:12:16",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.01349,
+          24.293472
+        ]
+      },
+      "properties": {
+        "speciesId": "mikado-pheasant",
+        "date": "2025-03-04T09:37",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.193842,
+          24.324016
+        ]
+      },
+      "properties": {
+        "speciesId": "mikado-pheasant",
+        "date": "2025-03-04T09:34",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.868042,
+          23.481894
+        ]
+      },
+      "properties": {
+        "speciesId": "mikado-pheasant",
+        "date": "2025-03-06",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.469789,
+          24.213468
+        ]
+      },
+      "properties": {
+        "speciesId": "mikado-pheasant",
+        "date": "2025-03-21T07:39:19",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.038487,
+          24.285139
+        ]
+      },
+      "properties": {
+        "speciesId": "mikado-pheasant",
+        "date": "2025-03-15T12:11:24",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.806821,
+          23.425662
+        ]
+      },
+      "properties": {
+        "speciesId": "mikado-pheasant",
+        "date": "2025-04-13T10:53",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.984528,
+          23.486585
+        ]
+      },
+      "properties": {
+        "speciesId": "mikado-pheasant",
+        "date": "2025-04-20T09:50:33",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.036101,
+          24.357103
+        ]
+      },
+      "properties": {
+        "speciesId": "mikado-pheasant",
+        "date": "2025-04-15T12:03:38",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.828756,
+          24.386097
+        ]
+      },
+      "properties": {
+        "speciesId": "mikado-pheasant",
+        "date": "2025-04-23T08:54:16",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.997565,
+          23.527747
+        ]
+      },
+      "properties": {
+        "speciesId": "mikado-pheasant",
+        "date": "2025-04-24",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.846489,
+          23.594461
+        ]
+      },
+      "properties": {
+        "speciesId": "mikado-pheasant",
+        "date": "2025-04-24",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.945752,
+          23.546523
+        ]
+      },
+      "properties": {
+        "speciesId": "mikado-pheasant",
+        "date": "2025-04-25",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.059964,
+          24.317582
+        ]
+      },
+      "properties": {
+        "speciesId": "mikado-pheasant",
+        "date": "2025-04-24T11:38:52",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.831953,
+          23.522701
+        ]
+      },
+      "properties": {
+        "speciesId": "mikado-pheasant",
+        "date": "2025-04-29T07:09:15",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.849956,
+          23.522303
+        ]
+      },
+      "properties": {
+        "speciesId": "mikado-pheasant",
+        "date": "2025-04-26T06:19:48",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.022731,
+          24.263698
+        ]
+      },
+      "properties": {
+        "speciesId": "mikado-pheasant",
+        "date": "2025-04-15T12:06:13",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.859619,
+          23.307203
+        ]
+      },
+      "properties": {
+        "speciesId": "mikado-pheasant",
+        "date": "2025-04-29T10:46:17",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.123074,
+          24.266902
+        ]
+      },
+      "properties": {
+        "speciesId": "mikado-pheasant",
+        "date": "2025-04-24T12:35",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.817643,
+          23.256777
+        ]
+      },
+      "properties": {
+        "speciesId": "mikado-pheasant",
+        "date": "2025-04-29T11:02:58",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.85979,
+          23.414571
+        ]
+      },
+      "properties": {
+        "speciesId": "mikado-pheasant",
+        "date": "2025-04-28T10:02:05",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.959657,
+          23.503
+        ]
+      },
+      "properties": {
+        "speciesId": "mikado-pheasant",
+        "date": "2025-05-03",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.839282,
+          23.504291
+        ]
+      },
+      "properties": {
+        "speciesId": "mikado-pheasant",
+        "date": "2025-05-05T17:31",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.855971,
+          23.506482
+        ]
+      },
+      "properties": {
+        "speciesId": "mikado-pheasant",
+        "date": "2025-05-10T14:34",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.912206,
+          23.529924
+        ]
+      },
+      "properties": {
+        "speciesId": "mikado-pheasant",
+        "date": "2025-05-11T06:55:31",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.92151,
+          23.466006
+        ]
+      },
+      "properties": {
+        "speciesId": "mikado-pheasant",
+        "date": "2025-05-01",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.561785,
+          24.438721
+        ]
+      },
+      "properties": {
+        "speciesId": "mikado-pheasant",
+        "date": "2025-05-25T10:11:25",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.460335,
+          24.586757
+        ]
+      },
+      "properties": {
+        "speciesId": "mikado-pheasant",
+        "date": "2025-05-22T16:14:47",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.909669,
+          23.501859
+        ]
+      },
+      "properties": {
+        "speciesId": "mikado-pheasant",
+        "date": "2025-05-18T08:40:45",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.477112,
+          24.424201
+        ]
+      },
+      "properties": {
+        "speciesId": "mikado-pheasant",
+        "date": "2025-05-25T10:18:07",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.825982,
+          23.567901
+        ]
+      },
+      "properties": {
+        "speciesId": "mikado-pheasant",
+        "date": "2025-05-27",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.513214,
+          24.468087
+        ]
+      },
+      "properties": {
+        "speciesId": "mikado-pheasant",
+        "date": "2025-05-30T18:05:06",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.774324,
+          24.576275
+        ]
+      },
+      "properties": {
+        "speciesId": "mikado-pheasant",
+        "date": "2025-05-28T14:47:42",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.568384,
+          24.592114
+        ]
+      },
+      "properties": {
+        "speciesId": "mikado-pheasant",
+        "date": "2025-05-31T06:33",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.462859,
+          24.461579
+        ]
+      },
+      "properties": {
+        "speciesId": "mikado-pheasant",
+        "date": "2025-05-31T06:32",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.956756,
+          23.517903
+        ]
+      },
+      "properties": {
+        "speciesId": "mikado-pheasant",
+        "date": "2025-06-10",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.180209,
+          24.363522
+        ]
+      },
+      "properties": {
+        "speciesId": "mikado-pheasant",
+        "date": "2025-06-06T17:30:53",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.958721,
+          23.599745
+        ]
+      },
+      "properties": {
+        "speciesId": "mikado-pheasant",
+        "date": "2025-06-17T06:43:59",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.889772,
+          23.464847
+        ]
+      },
+      "properties": {
+        "speciesId": "mikado-pheasant",
+        "date": "2025-06-16T17:20",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.221395,
+          24.028486
+        ]
+      },
+      "properties": {
+        "speciesId": "mikado-pheasant",
+        "date": "2025-06-12T23:16",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.254463,
+          24.09851
+        ]
+      },
+      "properties": {
+        "speciesId": "mikado-pheasant",
+        "date": "2025-06-02T17:10",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.088414,
+          24.316088
+        ]
+      },
+      "properties": {
+        "speciesId": "mikado-pheasant",
+        "date": "2025-06-01T11:42",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.152682,
+          24.218497
+        ]
+      },
+      "properties": {
+        "speciesId": "mikado-pheasant",
+        "date": "2025-06-01T14:02",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.821574,
+          23.557272
+        ]
+      },
+      "properties": {
+        "speciesId": "mikado-pheasant",
+        "date": "2025-06-03T01:38",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.314422,
+          24.220988
+        ]
+      },
+      "properties": {
+        "speciesId": "mikado-pheasant",
+        "date": "2025-07-04T15:57",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.852486,
+          23.462697
+        ]
+      },
+      "properties": {
+        "speciesId": "mikado-pheasant",
+        "date": "2025-07-16T14:50:01",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.701743,
+          24.564225
+        ]
+      },
+      "properties": {
+        "speciesId": "mikado-pheasant",
+        "date": "2025-07-27T15:46:05",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.475724,
+          24.537681
+        ]
+      },
+      "properties": {
+        "speciesId": "mikado-pheasant",
+        "date": "2025-07-27T10:00",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.866045,
+          23.449392
+        ]
+      },
+      "properties": {
+        "speciesId": "mikado-pheasant",
+        "date": "2025-07-20T16:59",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.848546,
+          23.564448
+        ]
+      },
+      "properties": {
+        "speciesId": "mikado-pheasant",
+        "date": "2025-07-24T04:05:15",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.671862,
+          24.413298
+        ]
+      },
+      "properties": {
+        "speciesId": "mikado-pheasant",
+        "date": "2025-07-28T12:50",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.662207,
+          24.419621
+        ]
+      },
+      "properties": {
+        "speciesId": "mikado-pheasant",
+        "date": "2025-08-16T07:24",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.994378,
+          23.533074
+        ]
+      },
+      "properties": {
+        "speciesId": "mikado-pheasant",
+        "date": "2025-08-31T06:51:23",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.726928,
+          24.422746
+        ]
+      },
+      "properties": {
+        "speciesId": "mikado-pheasant",
+        "date": "2025-08-28T07:59:09",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.675579,
+          24.540758
+        ]
+      },
+      "properties": {
+        "speciesId": "mikado-pheasant",
+        "date": "2025-08-31T18:09:59",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.957431,
+          23.552295
+        ]
+      },
+      "properties": {
+        "speciesId": "mikado-pheasant",
+        "date": "2025-08-30T13:44:03",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.729688,
+          24.465471
+        ]
+      },
+      "properties": {
+        "speciesId": "mikado-pheasant",
+        "date": "2025-08-31T17:11:55",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.798648,
+          24.56686
+        ]
+      },
+      "properties": {
+        "speciesId": "mikado-pheasant",
+        "date": "2025-08-31T17:11:52",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.905035,
+          23.413681
+        ]
+      },
+      "properties": {
+        "speciesId": "mikado-pheasant",
+        "date": "2025-08-25",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.747002,
+          24.448775
+        ]
+      },
+      "properties": {
+        "speciesId": "mikado-pheasant",
+        "date": "2025-08-31T17:11:03",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.840254,
+          23.420047
+        ]
+      },
+      "properties": {
+        "speciesId": "mikado-pheasant",
+        "date": "2025-08-31T06:55",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.533922,
+          24.417393
+        ]
+      },
+      "properties": {
+        "speciesId": "mikado-pheasant",
+        "date": "2025-08-15T13:43:39",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.071334,
+          24.312956
+        ]
+      },
+      "properties": {
+        "speciesId": "mikado-pheasant",
+        "date": "2025-09-02T16:13:28",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.596414,
+          24.507614
+        ]
+      },
+      "properties": {
+        "speciesId": "mikado-pheasant",
+        "date": "2025-09-13T13:55:50",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.306011,
+          24.060968
+        ]
+      },
+      "properties": {
+        "speciesId": "mikado-pheasant",
+        "date": "2025-09-10T14:48",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.907249,
+          23.438443
+        ]
+      },
+      "properties": {
+        "speciesId": "mikado-pheasant",
+        "date": "2025-09-18T09:45:21",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.07349,
+          24.370083
+        ]
+      },
+      "properties": {
+        "speciesId": "mikado-pheasant",
+        "date": "2025-09-25T07:00:18",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.180305,
+          24.235388
+        ]
+      },
+      "properties": {
+        "speciesId": "mikado-pheasant",
+        "date": "2025-09-25T06:42:54",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.095498,
+          24.344346
+        ]
+      },
+      "properties": {
+        "speciesId": "mikado-pheasant",
+        "date": "2025-09-25T06:49:24",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.11564,
+          24.365062
+        ]
+      },
+      "properties": {
+        "speciesId": "mikado-pheasant",
+        "date": "2025-09-25T19:22",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.000115,
+          24.329294
+        ]
+      },
+      "properties": {
+        "speciesId": "mikado-pheasant",
+        "date": "2025-09-24T09:37:35",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.522924,
+          24.436581
+        ]
+      },
+      "properties": {
+        "speciesId": "mikado-pheasant",
+        "date": "2025-09-29T14:04:53",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.905996,
+          23.463787
+        ]
+      },
+      "properties": {
+        "speciesId": "mikado-pheasant",
+        "date": "2025-10-07T17:10",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.912292,
+          23.544483
+        ]
+      },
+      "properties": {
+        "speciesId": "mikado-pheasant",
+        "date": "2025-10-10T07:21:31",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.936275,
+          23.52917
+        ]
+      },
+      "properties": {
+        "speciesId": "mikado-pheasant",
+        "date": "2025-10-12T13:27:29",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.706276,
+          24.550887
+        ]
+      },
+      "properties": {
+        "speciesId": "mikado-pheasant",
+        "date": "2025-10-15T11:17",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.25105,
+          24.538419
+        ]
+      },
+      "properties": {
+        "speciesId": "mikado-pheasant",
+        "date": "2025-10-15T13:12:09",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.807833,
+          23.422478
+        ]
+      },
+      "properties": {
+        "speciesId": "mikado-pheasant",
+        "date": "2025-10-18T14:44:08",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.939719,
+          23.470897
+        ]
+      },
+      "properties": {
+        "speciesId": "mikado-pheasant",
+        "date": "2025-10-19T08:32:59",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.935457,
+          23.574323
+        ]
+      },
+      "properties": {
+        "speciesId": "mikado-pheasant",
+        "date": "2025-10-19T08:33:09",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.878758,
+          23.588182
+        ]
+      },
+      "properties": {
+        "speciesId": "mikado-pheasant",
+        "date": "2025-10-25T07:27:40",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.486768,
+          24.637037
+        ]
+      },
+      "properties": {
+        "speciesId": "mikado-pheasant",
+        "date": "2025-10-24T13:38:45",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.848767,
+          23.484747
+        ]
+      },
+      "properties": {
+        "speciesId": "mikado-pheasant",
+        "date": "2025-10-29T08:05",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.460311,
+          24.404533
+        ]
+      },
+      "properties": {
+        "speciesId": "mikado-pheasant",
+        "date": "2025-10-11T15:25:58",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.886358,
+          23.446613
+        ]
+      },
+      "properties": {
+        "speciesId": "mikado-pheasant",
+        "date": "2025-10-19T06:46:38",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.2921,
+          24.02484
+        ]
+      },
+      "properties": {
+        "speciesId": "mikado-pheasant",
+        "date": "2025-10-05T10:26",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.510901,
+          24.560755
+        ]
+      },
+      "properties": {
+        "speciesId": "mikado-pheasant",
+        "date": "2025-11-06T16:37",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.806426,
+          23.413384
+        ]
+      },
+      "properties": {
+        "speciesId": "mikado-pheasant",
+        "date": "2025-11-16T08:33:46",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.984404,
+          23.547047
+        ]
+      },
+      "properties": {
+        "speciesId": "mikado-pheasant",
+        "date": "2025-11-16T08:33:37",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.875103,
+          23.537892
+        ]
+      },
+      "properties": {
+        "speciesId": "mikado-pheasant",
+        "date": "2025-11-16T08:33:35",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.872725,
+          23.588983
+        ]
+      },
+      "properties": {
+        "speciesId": "mikado-pheasant",
+        "date": "2025-11-16T08:33:47",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.838612,
+          23.568979
+        ]
+      },
+      "properties": {
+        "speciesId": "mikado-pheasant",
+        "date": "2025-11-16T08:33:42",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.964757,
+          23.474296
+        ]
+      },
+      "properties": {
+        "speciesId": "mikado-pheasant",
+        "date": "2025-11-16T08:33:52",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.874025,
+          23.459996
+        ]
+      },
+      "properties": {
+        "speciesId": "mikado-pheasant",
+        "date": "2025-11-16T08:33:50",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.466163,
+          24.434689
+        ]
+      },
+      "properties": {
+        "speciesId": "mikado-pheasant",
+        "date": "2025-11-15T14:52:54",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.846252,
+          24.268545
+        ]
+      },
+      "properties": {
+        "speciesId": "mikado-pheasant",
+        "date": "2025-11-15T11:47:30",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.836979,
+          23.544083
+        ]
+      },
+      "properties": {
+        "speciesId": "mikado-pheasant",
+        "date": "2025-11-23T12:33",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.800289,
+          23.471326
+        ]
+      },
+      "properties": {
+        "speciesId": "mikado-pheasant",
+        "date": "2025-11-27T13:15:40",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.141959,
+          24.454448
+        ]
+      },
+      "properties": {
+        "speciesId": "mikado-pheasant",
+        "date": "2025-12-26T10:12:51",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.919595,
+          24.322138
+        ]
+      },
+      "properties": {
+        "speciesId": "mikado-pheasant",
+        "date": "2025-12-20T11:51:12",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.963057,
+          23.523102
+        ]
+      },
+      "properties": {
+        "speciesId": "mikado-pheasant",
+        "date": "2025-12-26T08:02:20",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.170162,
+          24.204092
+        ]
+      },
+      "properties": {
+        "speciesId": "mikado-pheasant",
+        "date": "2025-12-07T15:02",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.869516,
+          23.423392
+        ]
+      },
+      "properties": {
+        "speciesId": "mikado-pheasant",
+        "date": "2025-12-20T14:56:05",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.024022,
+          24.225866
+        ]
+      },
+      "properties": {
+        "speciesId": "mikado-pheasant",
+        "date": "2025-12-07T14:48",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    }
+  ]
+}

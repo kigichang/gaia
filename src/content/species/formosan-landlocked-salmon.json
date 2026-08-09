@@ -1,0 +1,20 @@
+{
+  "id": "formosan-landlocked-salmon",
+  "name": {
+    "zh": "櫻花鉤吻鮭",
+    "en": "Formosan Landlocked Salmon",
+    "latin": "Oncorhynchus formosanus"
+  },
+  "gbifTaxonKey": 5788350,
+  "category": "fish",
+  "conservationStatus": "瀕臨絕種保育類野生動物",
+  "habitat": "海拔 1500 公尺以上、水溫終年低於 16°C 的高山溪流，僅分布於大甲溪上游",
+  "facts": [
+    { "label": "特徵", "value": "冰河時期孑遺魚種，是全球分布緯度最低、海拔生存最高的鮭鱒魚類之一" },
+    { "label": "分布範圍", "value": "野生族群僅見於大甲溪上游七家灣溪一帶，是台灣分布範圍最狹窄的特有種之一" },
+    { "label": "保育現況", "value": "設有雪霸國家公園櫻花鉤吻鮭生態中心進行復育與人工放流" },
+    { "label": "對照重點", "value": "觀測點高度集中在單一流域，是本站收錄物種中分布範圍最小的一種" }
+  ],
+  "curriculum": { "level": "senior", "unit": "台灣的自然地理與生態" },
+  "sources": ["GBIF Global Biodiversity Information Facility", "雪霸國家公園管理處"]
+}

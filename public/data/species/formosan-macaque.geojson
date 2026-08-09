@@ -1,0 +1,3005 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.991242,
+          22.688903
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-macaque",
+        "date": "2026-01-03T10:22",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.542013,
+          25.143233
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-macaque",
+        "date": "2026-01-04T11:54:30",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.54203,
+          25.143236
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-macaque",
+        "date": "2026-01-04T11:54:14",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.263778,
+          22.657561
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-macaque",
+        "date": "2026-01-01T13:33:05",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.53397,
+          24.951222
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-macaque",
+        "date": "2026-01-04T15:40:52",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.54203,
+          25.143239
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-macaque",
+        "date": "2026-01-04T11:54:10",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.267105,
+          22.644167
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-macaque",
+        "date": "2026-01-03T14:06:11",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.275485,
+          22.638085
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-macaque",
+        "date": "2026-01-02T13:07:23",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.277345,
+          22.636142
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-macaque",
+        "date": "2026-01-05T13:34:38",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.542038,
+          25.143239
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-macaque",
+        "date": "2026-01-04T11:53:35",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.542045,
+          25.143242
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-macaque",
+        "date": "2026-01-04T11:53:28",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.542022,
+          25.143247
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-macaque",
+        "date": "2026-01-04T11:54",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.819667,
+          21.955108
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-macaque",
+        "date": "2026-01-06T13:52:13",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.823022,
+          21.951872
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-macaque",
+        "date": "2026-01-06T14:06:13",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.57063,
+          24.897336
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-macaque",
+        "date": "2026-01-11T11:54",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.5876,
+          24.759734
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-macaque",
+        "date": "2026-01-12T12:38:21",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.622374,
+          23.753835
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-macaque",
+        "date": "2026-01-11T11:07:01",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.5876,
+          24.759734
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-macaque",
+        "date": "2026-01-12T12:38:18",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.985764,
+          24.253278
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-macaque",
+        "date": "2026-01-05T15:51:55",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.81682,
+          21.935895
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-macaque",
+        "date": "2026-01-08T10:19:07",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.6314,
+          23.751738
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-macaque",
+        "date": "2026-01-10T09:55:57",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.272471,
+          22.655594
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-macaque",
+        "date": "2026-01-22T15:36:03",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.006103,
+          24.261837
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-macaque",
+        "date": "2026-01-05T07:00:29",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.678362,
+          23.820728
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-macaque",
+        "date": "2026-01-18T16:40:27",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.5876,
+          24.759734
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-macaque",
+        "date": "2026-01-12T12:38:24",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.274991,
+          22.638021
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-macaque",
+        "date": "2026-01-06T09:13:30",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.033956,
+          24.091353
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-macaque",
+        "date": "2026-01-07T12:33:47",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.81637,
+          21.957788
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-macaque",
+        "date": "2026-01-10T07:44:50",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.269478,
+          22.654936
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-macaque",
+        "date": "2026-01-13T14:35:24",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.731745,
+          24.827837
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-macaque",
+        "date": "2026-01-17T12:21",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.796389,
+          23.671944
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-macaque",
+        "date": "2026-01-12T14:11:21",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.994637,
+          24.263467
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-macaque",
+        "date": "2026-01-04T08:58:54",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.828903,
+          21.931945
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-macaque",
+        "date": "2026-01-09T16:57:34",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.369103,
+          24.524788
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-macaque",
+        "date": "2026-01-11T09:26:25",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.857697,
+          24.593047
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-macaque",
+        "date": "2026-01-09T16:08",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.5876,
+          24.759734
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-macaque",
+        "date": "2026-01-12T12:37:27",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.547633,
+          25.155447
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-macaque",
+        "date": "2026-01-17T12:18:11",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.711018,
+          22.894652
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-macaque",
+        "date": "2026-01-06T13:59:55",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.8856,
+          23.481914
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-macaque",
+        "date": "2026-01-21T11:29:31",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.514555,
+          23.095201
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-macaque",
+        "date": "2026-01-11T11:18:57",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.250504,
+          24.79118
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-macaque",
+        "date": "2026-01-11T12:33:47",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.494511,
+          22.894464
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-macaque",
+        "date": "2026-01-31T09:13:50",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.121126,
+          24.497182
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-macaque",
+        "date": "2026-01-25T10:17",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.501372,
+          23.260131
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-macaque",
+        "date": "2026-01-17T10:31",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.501372,
+          23.260131
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-macaque",
+        "date": "2026-01-17T10:53",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.643098,
+          22.509953
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-macaque",
+        "date": "2026-01-03T13:45",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.8896,
+          22.9931
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-macaque",
+        "date": "2026-01-04",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.867061,
+          23.479766
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-macaque",
+        "date": "2026-01-25T09:19:07",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.733422,
+          24.641425
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-macaque",
+        "date": "2026-01-24T17:23:48",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.16977,
+          23.116903
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-macaque",
+        "date": "2026-01-25T17:15:18",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.262672,
+          22.65095
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-macaque",
+        "date": "2026-01-10T09:42:49",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.265469,
+          22.647397
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-macaque",
+        "date": "2026-01-15T11:00",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.023693,
+          23.409003
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-macaque",
+        "date": "2026-01-17T07:53:08",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.616931,
+          23.224944
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-macaque",
+        "date": "2026-02-02T17:01:45",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.911958,
+          24.246004
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-macaque",
+        "date": "2026-02-01T10:37",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.812972,
+          21.961613
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-macaque",
+        "date": "2026-02-01T14:49:48",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.621894,
+          24.159043
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-macaque",
+        "date": "2026-02-05T14:53",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.885656,
+          23.482003
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-macaque",
+        "date": "2026-02-05T13:37:18",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.992275,
+          22.684667
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-macaque",
+        "date": "2026-02-02T11:30:05",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.259827,
+          22.652849
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-macaque",
+        "date": "2026-02-04T15:28:15",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.985467,
+          22.688149
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-macaque",
+        "date": "2026-02-09T12:19:27",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.0257,
+          24.282675
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-macaque",
+        "date": "2026-02-08T16:39",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.520378,
+          22.975238
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-macaque",
+        "date": "2026-02-08T16:32:04",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.670919,
+          22.696499
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-macaque",
+        "date": "2026-02-07T15:20:42",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.272314,
+          22.655702
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-macaque",
+        "date": "2026-02-14T12:42:23",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.787774,
+          23.666233
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-macaque",
+        "date": "2026-02-10T14:51:11",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.622968,
+          24.158847
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-macaque",
+        "date": "2026-02-13T10:00",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.819808,
+          21.954817
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-macaque",
+        "date": "2026-02-11T15:16:22",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.788253,
+          23.666168
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-macaque",
+        "date": "2026-02-10T14:57:49",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.752333,
+          24.625222
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-macaque",
+        "date": "2026-02-10T09:39:20",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.281413,
+          24.767925
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-macaque",
+        "date": "2026-02-14T11:04:22",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.695149,
+          23.524021
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-macaque",
+        "date": "2026-02-10T16:05:10",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.752144,
+          24.625186
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-macaque",
+        "date": "2026-02-10T09:33:46",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.747472,
+          24.606742
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-macaque",
+        "date": "2026-02-10T09:47:44",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.909285,
+          23.278256
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-macaque",
+        "date": "2026-02-14T14:36",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.819358,
+          21.9564
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-macaque",
+        "date": "2026-02-11T14:07:36",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.8194,
+          21.956886
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-macaque",
+        "date": "2026-02-11T13:58:40",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.581106,
+          24.759798
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-macaque",
+        "date": "2026-02-08T10:32",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.025225,
+          24.283336
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-macaque",
+        "date": "2026-02-12T14:03:55",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.237469,
+          23.329214
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-macaque",
+        "date": "2026-02-15T16:28:24",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.752392,
+          24.624533
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-macaque",
+        "date": "2026-02-10T09:40:24",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.819808,
+          21.954817
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-macaque",
+        "date": "2026-02-11T15:16:38",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.824733,
+          21.948767
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-macaque",
+        "date": "2026-02-11T10:43:32",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.792722,
+          23.729978
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-macaque",
+        "date": "2026-02-20T13:25:57",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.025878,
+          24.281813
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-macaque",
+        "date": "2026-02-09T15:31",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.798152,
+          23.667675
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-macaque",
+        "date": "2026-02-18T12:37:20",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.40963,
+          24.827723
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-macaque",
+        "date": "2026-02-21T15:35:39",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.695149,
+          23.524021
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-macaque",
+        "date": "2026-02-10T16:05:10",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.268765,
+          22.641746
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-macaque",
+        "date": "2026-02-17T13:25:16",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.615426,
+          23.755828
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-macaque",
+        "date": "2026-02-21T09:15",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.853624,
+          22.269907
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-macaque",
+        "date": "2026-02-13T16:43",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.63054,
+          23.831339
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-macaque",
+        "date": "2026-02-18T06:46:10",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.250618,
+          22.651068
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-macaque",
+        "date": "2026-02-23T13:46:19",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.799767,
+          23.663522
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-macaque",
+        "date": "2026-02-13T12:24:40",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.008724,
+          24.255597
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-macaque",
+        "date": "2026-02-15T07:29",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.250323,
+          22.651377
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-macaque",
+        "date": "2026-02-17T10:16:44",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.886432,
+          23.485841
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-macaque",
+        "date": "2026-02-19T06:44:39",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.812828,
+          21.963721
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-macaque",
+        "date": "2026-02-17T16:14:15",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.519403,
+          22.910536
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-macaque",
+        "date": "2026-02-22T15:13:39",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.267983,
+          22.652187
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-macaque",
+        "date": "2026-02-19T11:44:13",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.265466,
+          22.629412
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-macaque",
+        "date": "2026-02-20T13:57",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.537338,
+          25.13822
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-macaque",
+        "date": "2026-02-25T17:42:44",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.526916,
+          25.143177
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-macaque",
+        "date": "2026-02-11T14:42:58",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.500612,
+          24.937113
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-macaque",
+        "date": "2026-02-27T16:51:10",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.870497,
+          24.452711
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-macaque",
+        "date": "2026-02-24T12:33:01",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.622456,
+          24.158275
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-macaque",
+        "date": "2026-02-26T13:34:18",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.889503,
+          23.487363
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-macaque",
+        "date": "2026-02-25T13:37:17",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.926984,
+          23.870178
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-macaque",
+        "date": "2026-02-28T14:14:55",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.537234,
+          25.138274
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-macaque",
+        "date": "2026-02-25T17:44:23",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.267102,
+          22.655914
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-macaque",
+        "date": "2026-02-27T10:28",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.250768,
+          22.651219
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-macaque",
+        "date": "2026-02-17T11:47:16",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.2771,
+          22.6367
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-macaque",
+        "date": "2026-02-25T18:00:28",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.265507,
+          22.629423
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-macaque",
+        "date": "2026-02-20T13:56",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.265482,
+          22.629432
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-macaque",
+        "date": "2026-02-20T13:55",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.265482,
+          22.629432
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-macaque",
+        "date": "2026-02-20T13:55",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.250776,
+          22.651207
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-macaque",
+        "date": "2026-02-17T11:45:41",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.79303,
+          23.666562
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-macaque",
+        "date": "2026-02-20T14:50:45",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.89317,
+          23.48011
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-macaque",
+        "date": "2026-02-20T12:48",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.499017,
+          24.935692
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-macaque",
+        "date": "2026-02-19T14:18:07",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.500622,
+          24.936725
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-macaque",
+        "date": "2026-02-19T16:43:02",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.479864,
+          24.964477
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-macaque",
+        "date": "2026-02-21T17:32",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.986997,
+          22.68691
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-macaque",
+        "date": "2026-02-21T09:11",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.113085,
+          23.138013
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-macaque",
+        "date": "2026-02-04T11:17",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.554847,
+          23.365247
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-macaque",
+        "date": "2026-02-11T15:56",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.793097,
+          23.667311
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-macaque",
+        "date": "2026-03-04T15:10:38",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.460193,
+          24.842236
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-macaque",
+        "date": "2026-03-09T13:30:14",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.793097,
+          23.667311
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-macaque",
+        "date": "2026-03-04T15:11:33",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.268945,
+          22.64063
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-macaque",
+        "date": "2026-03-03T14:25:50",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.622189,
+          24.157933
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-macaque",
+        "date": "2026-03-03T13:30:09",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.921037,
+          23.844481
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-macaque",
+        "date": "2026-03-06T11:44",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.921037,
+          23.844481
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-macaque",
+        "date": "2026-03-06T11:42",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.921037,
+          23.844481
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-macaque",
+        "date": "2026-03-06T11:44",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.261514,
+          22.631876
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-macaque",
+        "date": "2026-03-07T03:30",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.40877,
+          24.829038
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-macaque",
+        "date": "2026-03-07T16:53:35",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.033232,
+          24.09136
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-macaque",
+        "date": "2026-03-11T15:12:32",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.9271,
+          23.870883
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-macaque",
+        "date": "2026-03-07T07:42:23",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.669898,
+          23.813404
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-macaque",
+        "date": "2026-03-14T15:16:43",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.791006,
+          23.672847
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-macaque",
+        "date": "2026-03-11T19:38:56",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.810379,
+          21.961506
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-macaque",
+        "date": "2026-03-07T14:38:19",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.793219,
+          23.667314
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-macaque",
+        "date": "2026-03-04T16:10:59",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.274642,
+          22.637945
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-macaque",
+        "date": "2026-03-16T14:28:12",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.271858,
+          22.647442
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-macaque",
+        "date": "2026-03-13T09:46",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.811875,
+          21.965872
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-macaque",
+        "date": "2026-03-07T13:51:05",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.735647,
+          24.821703
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-macaque",
+        "date": "2026-03-08T08:40:48",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.276603,
+          22.640347
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-macaque",
+        "date": "2026-03-07T13:23:25",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.498829,
+          23.263439
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-macaque",
+        "date": "2026-03-09T11:33:17",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.793081,
+          23.667311
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-macaque",
+        "date": "2026-03-04T15:09:11",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.268997,
+          22.655339
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-macaque",
+        "date": "2026-03-07T09:11:14",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.31195,
+          24.605287
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-macaque",
+        "date": "2026-03-14T14:15:54",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.907213,
+          23.546907
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-macaque",
+        "date": "2026-03-11T12:45:55",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.278728,
+          22.63552
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-macaque",
+        "date": "2026-03-15T12:47:32",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.737368,
+          24.796951
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-macaque",
+        "date": "2026-03-15T10:28:13",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.274628,
+          22.637972
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-macaque",
+        "date": "2026-03-16T14:27:43",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.793097,
+          23.667311
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-macaque",
+        "date": "2026-03-04T15:11:16",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.793636,
+          23.667344
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-macaque",
+        "date": "2026-03-04T15:11:01",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.544838,
+          25.15257
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-macaque",
+        "date": "2026-03-21T15:23:54",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.26265,
+          22.651017
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-macaque",
+        "date": "2026-03-17T19:54:01",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.813453,
+          23.514033
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-macaque",
+        "date": "2026-03-30T12:50:45",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.0223,
+          22.701336
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-macaque",
+        "date": "2026-03-19T06:44:20",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.494581,
+          24.1828
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-macaque",
+        "date": "2026-03-25T13:36:28",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.821625,
+          23.512313
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-macaque",
+        "date": "2026-03-19T09:24:04",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.545647,
+          25.152995
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-macaque",
+        "date": "2026-03-21T14:25:44",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.541328,
+          25.140542
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-macaque",
+        "date": "2026-03-17T13:38:03",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.619341,
+          23.754233
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-macaque",
+        "date": "2026-03-22T11:44",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.54155,
+          25.139747
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-macaque",
+        "date": "2026-03-17T13:38:05",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.812845,
+          23.514962
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-macaque",
+        "date": "2026-03-19T13:17:34",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.911833,
+          24.174822
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-macaque",
+        "date": "2026-03-22T10:42:55",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.54499,
+          25.1529
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-macaque",
+        "date": "2026-03-22T10:39",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.735717,
+          24.645272
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-macaque",
+        "date": "2026-03-18T16:46:13",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.768935,
+          24.871537
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-macaque",
+        "date": "2026-03-21T07:29:56",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.812989,
+          21.963581
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-macaque",
+        "date": "2026-03-23T15:32:31",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.61954,
+          23.75414
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-macaque",
+        "date": "2026-03-22T11:44",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.890145,
+          23.487408
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-macaque",
+        "date": "2026-03-28T15:52:56",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.925645,
+          23.872185
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-macaque",
+        "date": "2026-03-29T16:59:04",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.262589,
+          22.651026
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-macaque",
+        "date": "2026-03-19T14:58:04",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.991044,
+          22.688389
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-macaque",
+        "date": "2026-03-25T15:06:27",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.176719,
+          22.875778
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-macaque",
+        "date": "2026-03-21T11:28:55",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.60832,
+          23.59374
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-macaque",
+        "date": "2026-03-25T14:37:24",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.78405,
+          24.048033
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-macaque",
+        "date": "2026-03-29T13:50:13",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.275017,
+          22.627175
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-macaque",
+        "date": "2026-03-28T10:14:51",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.619912,
+          23.823638
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-macaque",
+        "date": "2026-03-21T15:00:14",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.813355,
+          23.514005
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-macaque",
+        "date": "2026-03-30T12:50:24",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.445458,
+          24.831295
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-macaque",
+        "date": "2026-03-15T13:39:19",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.502997,
+          24.917378
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-macaque",
+        "date": "2026-03-15T17:30",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.494015,
+          24.181868
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-macaque",
+        "date": "2026-03-25T11:40",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.796654,
+          23.402083
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-macaque",
+        "date": "2026-03-31T10:42",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.917,
+          23.870517
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-macaque",
+        "date": "2026-03-29T11:14:45",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.974806,
+          24.244831
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-macaque",
+        "date": "2026-03-30T14:54",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.163815,
+          24.626467
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-macaque",
+        "date": "2026-03-08T09:10:38",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.796705,
+          23.670572
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-macaque",
+        "date": "2026-03-20T12:48:43",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.796709,
+          23.671267
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-macaque",
+        "date": "2026-03-20T05:58",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.161432,
+          24.627397
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-macaque",
+        "date": "2026-03-08T09:25:57",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.796401,
+          23.671625
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-macaque",
+        "date": "2026-03-23T15:36",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.960515,
+          23.69781
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-macaque",
+        "date": "2026-03-31T06:58",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.275078,
+          22.627328
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-macaque",
+        "date": "2026-03-28T10:17:01",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.811612,
+          21.965763
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-macaque",
+        "date": "2026-03-29T15:21",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.552624,
+          23.363115
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-macaque",
+        "date": "2026-03-25T08:59",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.62895,
+          23.82831
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-macaque",
+        "date": "2026-03-13T16:09",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.788603,
+          24.04715
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-macaque",
+        "date": "2026-03-31T16:05:46",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.777555,
+          24.05374
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-macaque",
+        "date": "2026-03-31T16:08:50",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    }
+  ]
+}

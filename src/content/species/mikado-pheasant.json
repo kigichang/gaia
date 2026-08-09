@@ -1,0 +1,16 @@
+{
+  "id": "mikado-pheasant",
+  "name": { "zh": "帝雉", "en": "Mikado Pheasant", "latin": "Syrmaticus mikado" },
+  "gbifTaxonKey": 2473482,
+  "category": "bird",
+  "conservationStatus": "瀕臨絕種保育類野生動物",
+  "habitat": "海拔 2000–3800 公尺的中高海拔針闊葉混合林與箭竹草原",
+  "facts": [
+    { "label": "特徵", "value": "雄鳥全身藍黑色帶紫藍色金屬光澤，尾羽長，是台灣特有種" },
+    { "label": "分布範圍", "value": "主要分布於中央山脈中高海拔山區，玉山、雪霸國家公園為重要棲地" },
+    { "label": "文化地位", "value": "曾印製於新台幣千元紙鈔，是台灣高山生態的代表物種之一" },
+    { "label": "對照重點", "value": "觀測點高度集中在高海拔山區，可與等高線圖層對照看出明顯的垂直分布" }
+  ],
+  "curriculum": { "level": "senior", "unit": "台灣的自然地理與生態" },
+  "sources": ["GBIF Global Biodiversity Information Facility", "農業部林業及自然保育署"]
+}

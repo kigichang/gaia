@@ -1,0 +1,14 @@
+{
+  "id": "puyuma",
+  "name": { "zh": "卑南族", "en": "Puyuma" },
+  "representativeCoord": { "lat": 22.7972, "lng": 121.1444 },
+  "mainDistribution": ["台東縣"],
+  "language": "卑南語",
+  "facts": [
+    { "label": "分布地形", "value": "主要聚居於台東平原一帶，是知本、南王等八大社的所在地" },
+    { "label": "社會制度", "value": "會所（Palakuwan）制度嚴格，男子需經年齡階級訓練" },
+    { "label": "文化特色", "value": "猴祭與大獵祭是少年、青年成長禮的重要祭典" }
+  ],
+  "curriculum": { "level": "junior", "unit": "台灣的原住民族" },
+  "sources": ["原住民族委員會全球資訊網"]
+}

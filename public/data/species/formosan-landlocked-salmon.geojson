@@ -1,0 +1,1205 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.245717,
+          24.311066
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-landlocked-salmon",
+        "date": "2026-02-13T12:00:14",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.355947,
+          24.389438
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-landlocked-salmon",
+        "date": "2026-04-03T14:04",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.280023,
+          24.232223
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-landlocked-salmon",
+        "date": "2026-05-02T11:43",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.307495,
+          24.358576
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-landlocked-salmon",
+        "date": "2026-05-02T19:36",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.318295,
+          24.322844
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-landlocked-salmon",
+        "date": "2026-05-02T11:43",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.395156,
+          24.382349
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-landlocked-salmon",
+        "date": "2026-05-31T09:36:27",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.201837,
+          24.34546
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-landlocked-salmon",
+        "date": "2026-06-24T11:49:56",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.347448,
+          24.216868
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-landlocked-salmon",
+        "date": "2026-06-24T11:52:33",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.261029,
+          24.284972
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-landlocked-salmon",
+        "date": "2025-03-04T14:57",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.312714,
+          24.336297
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-landlocked-salmon",
+        "date": "2025-04-27T09:24:46",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.315363,
+          24.104905
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-landlocked-salmon",
+        "date": "2025-07-23T13:27:21",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.347031,
+          24.369836
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-landlocked-salmon",
+        "date": "2025-07-23T09:29",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.300952,
+          24.201322
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-landlocked-salmon",
+        "date": "2025-08-30T14:26",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.394798,
+          24.355234
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-landlocked-salmon",
+        "date": "2025-08-31T12:42",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.207436,
+          24.209568
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-landlocked-salmon",
+        "date": "2025-08-31T12:42",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.33522,
+          24.215558
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-landlocked-salmon",
+        "date": "2025-08-31T12:44",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.316141,
+          24.173365
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-landlocked-salmon",
+        "date": "2025-09-18T11:50",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.339981,
+          24.835485
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-landlocked-salmon",
+        "date": "2025-09-28T11:24:29",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.354117,
+          24.241674
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-landlocked-salmon",
+        "date": "2025-09-28T10:59:47",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.22998,
+          24.176072
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-landlocked-salmon",
+        "date": "2025-10-18T15:07:28",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.20221,
+          24.324102
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-landlocked-salmon",
+        "date": "2025-10-06T15:36:25",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.221895,
+          24.033352
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-landlocked-salmon",
+        "date": "2025-10-26T11:48",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.329194,
+          24.047688
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-landlocked-salmon",
+        "date": "2025-10-26T11:46",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.378933,
+          24.141561
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-landlocked-salmon",
+        "date": "2025-10-26T11:47",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.375361,
+          24.178439
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-landlocked-salmon",
+        "date": "2025-10-26T11:45",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.359782,
+          24.178531
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-landlocked-salmon",
+        "date": "2025-10-26T11:46",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.241239,
+          24.257437
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-landlocked-salmon",
+        "date": "2025-10-25T16:16",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.387326,
+          24.134713
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-landlocked-salmon",
+        "date": "2025-10-26T12:07",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.319139,
+          24.094122
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-landlocked-salmon",
+        "date": "2025-11-05T07:30:26",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.348183,
+          24.151841
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-landlocked-salmon",
+        "date": "2025-11-05T07:38:19",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.372459,
+          24.117877
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-landlocked-salmon",
+        "date": "2025-12-21T13:38",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.290661,
+          24.326097
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-landlocked-salmon",
+        "date": "2024-01-14T09:35",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.341603,
+          24.179169
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-landlocked-salmon",
+        "date": "2024-04-20T09:36:12",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.288714,
+          24.20246
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-landlocked-salmon",
+        "date": "2024-06-25T08:26",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.269896,
+          24.132497
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-landlocked-salmon",
+        "date": "2024-07-31T11:50:53",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.258059,
+          24.234339
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-landlocked-salmon",
+        "date": "2024-07-11T11:03",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.282293,
+          24.305094
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-landlocked-salmon",
+        "date": "2024-12-07T14:02:47",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.356375,
+          24.240444
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-landlocked-salmon",
+        "date": "2023-01-02T13:05:06",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.342876,
+          24.330987
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-landlocked-salmon",
+        "date": "2023-05-04T10:02",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.217486,
+          24.347252
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-landlocked-salmon",
+        "date": "2023-05-21T13:06",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.267505,
+          24.144747
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-landlocked-salmon",
+        "date": "2023-05-03T12:47",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.235888,
+          24.337776
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-landlocked-salmon",
+        "date": "2023-06-28T11:22:23",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.31592,
+          24.080492
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-landlocked-salmon",
+        "date": "2023-06-23T12:48",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.314516,
+          24.035647
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-landlocked-salmon",
+        "date": "2023-09-27T10:22",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.306669,
+          24.13241
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-landlocked-salmon",
+        "date": "2023-09-27T10:29",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.317976,
+          24.119043
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-landlocked-salmon",
+        "date": "2023-09-27T10:22",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.276084,
+          24.193118
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-landlocked-salmon",
+        "date": "2023-09-27T11:41",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.20625,
+          24.283344
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-landlocked-salmon",
+        "date": "2022-04-16T12:36:06",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.359759,
+          24.167404
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-landlocked-salmon",
+        "date": "2022-04-28T13:49",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.311897,
+          24.310615
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-landlocked-salmon",
+        "date": "2022-04-26T13:41",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.284289,
+          24.010142
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-landlocked-salmon",
+        "date": "2022-07-14T12:57:44",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.357185,
+          24.217283
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-landlocked-salmon",
+        "date": "2022-09-24T15:49:41",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.263622,
+          24.085254
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-landlocked-salmon",
+        "date": "2022-12-09T14:16",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.385274,
+          24.143608
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-landlocked-salmon",
+        "date": "2022-12-09T14:14",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.332781,
+          24.209502
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-landlocked-salmon",
+        "date": "2021-02-06T12:56",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.296608,
+          24.315263
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-landlocked-salmon",
+        "date": "2021-04-27T13:57",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.234283,
+          24.225284
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-landlocked-salmon",
+        "date": "2021-05-31T11:53Z",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.249248,
+          24.274257
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-landlocked-salmon",
+        "date": "2021-05-12T07:50",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.287634,
+          24.114203
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-landlocked-salmon",
+        "date": "2021-08-30T13:07",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.349366,
+          24.237651
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-landlocked-salmon",
+        "date": "2020-04-17T15:54",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.203796,
+          24.077497
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-landlocked-salmon",
+        "date": "2020-06-11T10:29Z",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.207067,
+          24.328019
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-landlocked-salmon",
+        "date": "2020-08-16T01:04Z",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.372091,
+          24.396427
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-landlocked-salmon",
+        "date": "2020-08-19T09:07",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.219702,
+          24.245206
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-landlocked-salmon",
+        "date": "2020-08-15T22:10",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.35313,
+          24.129
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-landlocked-salmon",
+        "date": "2020-09-07T23:59",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.280476,
+          24.274597
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-landlocked-salmon",
+        "date": "2020-10-28T08:29",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.314084,
+          24.270546
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-landlocked-salmon",
+        "date": "2020-10-28T08:14",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.334385,
+          24.16127
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-landlocked-salmon",
+        "date": "2020-10-05",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.276927,
+          24.204135
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-landlocked-salmon",
+        "date": "2019-04-25T13:06",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.229653,
+          24.219562
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-landlocked-salmon",
+        "date": "2019-07-23T10:44",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.302119,
+          24.079005
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-landlocked-salmon",
+        "date": "2019-11-02T20:43",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.265112,
+          24.238091
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-landlocked-salmon",
+        "date": "2019-11-21T10:07",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.336316,
+          24.254647
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-landlocked-salmon",
+        "date": "2019-11-21",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.386971,
+          24.328242
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-landlocked-salmon",
+        "date": "2019-11-21T10:07",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.263232,
+          24.084721
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-landlocked-salmon",
+        "date": "2019-11-18T08:50:23",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.35509,
+          24.311931
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-landlocked-salmon",
+        "date": "2019-12-27T12:19",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.398093,
+          24.368905
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-landlocked-salmon",
+        "date": "2007-07-09T08:41",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.32,
+          24.4
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-landlocked-salmon",
+        "date": "2002-09-21",
+        "basisOfRecord": "OCCURRENCE"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.32,
+          24.4
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-landlocked-salmon",
+        "date": "1996-07-31",
+        "basisOfRecord": "OCCURRENCE"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.163512,
+          24.259676
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-landlocked-salmon",
+        "date": "1935-07-25",
+        "basisOfRecord": "PRESERVED_SPECIMEN"
+      }
+    }
+  ]
+}

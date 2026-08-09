@@ -1,0 +1,2450 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.913339,
+          22.866399
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-black-bear",
+        "date": "2026-02-22T10:04",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.935033,
+          22.979014
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-black-bear",
+        "date": "2026-03-12T09:45:38",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.839631,
+          22.876319
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-black-bear",
+        "date": "2026-03-12T13:59:15",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.242554,
+          23.306332
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-black-bear",
+        "date": "2025-02-11T11:46:55",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.800596,
+          23.597284
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-black-bear",
+        "date": "2025-04-09T10:50",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.277518,
+          23.913899
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-black-bear",
+        "date": "2025-08-29T14:48:25",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.956503,
+          23.400923
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-black-bear",
+        "date": "2025-09-20T09:36:48",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.007979,
+          24.955949
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-black-bear",
+        "date": "2024-07-12T10:17:55",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.904101,
+          23.475096
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-black-bear",
+        "date": "2024-12-27T10:43:01",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.765606,
+          23.03758
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-black-bear",
+        "date": "2023-05-06T21:18:12",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.092333,
+          22.677143
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-black-bear",
+        "date": "2023-06-12T06:10:19",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.088735,
+          23.164081
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-black-bear",
+        "date": "2023-08-12T11:35",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.139207,
+          23.176355
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-black-bear",
+        "date": "2023-09-15T05:38",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.666056,
+          22.858668
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-black-bear",
+        "date": "2022-09-23T09:12:19",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.197378,
+          23.243686
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-black-bear",
+        "date": "2022-12-16T08:17",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.365766,
+          24.510429
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-black-bear",
+        "date": "2020-06-17T13:33",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.338635,
+          24.500279
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-black-bear",
+        "date": "2020-06-17T13:32",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.85588,
+          22.709622
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-black-bear",
+        "date": "2019-01-23T20:23:53",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.14063,
+          24.271533
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-black-bear",
+        "date": "2019-06-30T10:52:16",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.862016,
+          22.670971
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-black-bear",
+        "date": "2019-08-26",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.293522,
+          23.32439
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-black-bear",
+        "date": "2019-10-25T04:38",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.824053,
+          22.819694
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-black-bear",
+        "date": "2018-06-19",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.117833,
+          24.382845
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-black-bear",
+        "date": "2018-07-08T14:28:10",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.976358,
+          22.967439
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-black-bear",
+        "date": "2015-02-01T08:58",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.820758,
+          23.421367
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-black-bear",
+        "date": "2015-07-30",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.820758,
+          23.421367
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-black-bear",
+        "date": "2015-07-30",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.820758,
+          23.421367
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-black-bear",
+        "date": "2015-07-30",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.820758,
+          23.421367
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-black-bear",
+        "date": "2015-07-30",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.820758,
+          23.421367
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-black-bear",
+        "date": "2015-07-30",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.820758,
+          23.421367
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-black-bear",
+        "date": "2015-07-30",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.820758,
+          23.421367
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-black-bear",
+        "date": "2015-07-30",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.820758,
+          23.421367
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-black-bear",
+        "date": "2015-07-30",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.820758,
+          23.421367
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-black-bear",
+        "date": "2015-07-30",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.820758,
+          23.421367
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-black-bear",
+        "date": "2015-08-04",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.820758,
+          23.421367
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-black-bear",
+        "date": "2015-08-04",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.820758,
+          23.421367
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-black-bear",
+        "date": "2015-08-04",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.870673,
+          23.452751
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-black-bear",
+        "date": "2014-06-23",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.870673,
+          23.452751
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-black-bear",
+        "date": "2014-06-23",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.870673,
+          23.452751
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-black-bear",
+        "date": "2014-06-22",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.870673,
+          23.452751
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-black-bear",
+        "date": "2014-06-23",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.870673,
+          23.452751
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-black-bear",
+        "date": "2014-06-22",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.870673,
+          23.452751
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-black-bear",
+        "date": "2014-06-22",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.870673,
+          23.452751
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-black-bear",
+        "date": "2014-06-23",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.870673,
+          23.452751
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-black-bear",
+        "date": "2014-06-22",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.870673,
+          23.452751
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-black-bear",
+        "date": "2014-06-22",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.870673,
+          23.452751
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-black-bear",
+        "date": "2014-06-23",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.870673,
+          23.452751
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-black-bear",
+        "date": "2014-06-23",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.870673,
+          23.452751
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-black-bear",
+        "date": "2014-06-23",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.870673,
+          23.452751
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-black-bear",
+        "date": "2014-06-23",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.870673,
+          23.452751
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-black-bear",
+        "date": "2014-06-23",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.870673,
+          23.452751
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-black-bear",
+        "date": "2014-06-23",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.870673,
+          23.452751
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-black-bear",
+        "date": "2014-06-22",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.870673,
+          23.452751
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-black-bear",
+        "date": "2014-06-23",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.870673,
+          23.452751
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-black-bear",
+        "date": "2014-06-23",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.868056,
+          23.456181
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-black-bear",
+        "date": "2014-09-19",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.867474,
+          23.460741
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-black-bear",
+        "date": "2014-09-19",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.868056,
+          23.456181
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-black-bear",
+        "date": "2014-09-19",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.868056,
+          23.456181
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-black-bear",
+        "date": "2014-09-19",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.868056,
+          23.456181
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-black-bear",
+        "date": "2014-09-19",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.867474,
+          23.460741
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-black-bear",
+        "date": "2014-09-19",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.868056,
+          23.456181
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-black-bear",
+        "date": "2014-09-19",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.867474,
+          23.460741
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-black-bear",
+        "date": "2014-09-19",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.868056,
+          23.456181
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-black-bear",
+        "date": "2014-09-19",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.044071,
+          23.11312
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-black-bear",
+        "date": "2012-01-06",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.017993,
+          23.113098
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-black-bear",
+        "date": "2012-01-07",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.887151,
+          22.910355
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-black-bear",
+        "date": "2012-03-16",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.892229,
+          22.862261
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-black-bear",
+        "date": "2012-03-15",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.021944,
+          23.091108
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-black-bear",
+        "date": "2011-01-09",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.023691,
+          23.092173
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-black-bear",
+        "date": "2011-01-09",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.020333,
+          23.086737
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-black-bear",
+        "date": "2011-01-09",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.021797,
+          23.090982
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-black-bear",
+        "date": "2011-01-09",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.019444,
+          23.086403
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-black-bear",
+        "date": "2011-01-09",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.027431,
+          23.095099
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-black-bear",
+        "date": "2011-01-09",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.020528,
+          23.087062
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-black-bear",
+        "date": "2011-01-09",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.022754,
+          23.091379
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-black-bear",
+        "date": "2011-01-09",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.021514,
+          23.089898
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-black-bear",
+        "date": "2011-01-09",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.021163,
+          23.088742
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-black-bear",
+        "date": "2011-01-09",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.027187,
+          23.095153
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-black-bear",
+        "date": "2011-01-09",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.952246,
+          23.202991
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-black-bear",
+        "date": "2011-02-27",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.952246,
+          23.202928
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-black-bear",
+        "date": "2011-02-27",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.957407,
+          23.19575
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-black-bear",
+        "date": "2011-02-26",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.946588,
+          23.207188
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-black-bear",
+        "date": "2011-03-02",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.947546,
+          23.206791
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-black-bear",
+        "date": "2011-03-02",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.952021,
+          23.203018
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-black-bear",
+        "date": "2011-03-02",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.068448,
+          23.68312
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-black-bear",
+        "date": "2011-04-11",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.067987,
+          23.682461
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-black-bear",
+        "date": "2011-04-11",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.067987,
+          23.682461
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-black-bear",
+        "date": "2011-04-11",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.067722,
+          23.681558
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-black-bear",
+        "date": "2011-04-11",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.067722,
+          23.681558
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-black-bear",
+        "date": "2011-04-11",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.10462,
+          23.386723
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-black-bear",
+        "date": "2011-05-04",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.104639,
+          23.386642
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-black-bear",
+        "date": "2011-05-04",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.96472,
+          22.987731
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-black-bear",
+        "date": "2011-07-11",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.961148,
+          22.992399
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-black-bear",
+        "date": "2011-07-11",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.022434,
+          23.160887
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-black-bear",
+        "date": "2011-08-16",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.999355,
+          23.164564
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-black-bear",
+        "date": "2011-08-18",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.999668,
+          23.165386
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-black-bear",
+        "date": "2011-08-18",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.988846,
+          23.167174
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-black-bear",
+        "date": "2011-08-18",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.900115,
+          23.032433
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-black-bear",
+        "date": "2011-10-28",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.900095,
+          23.032406
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-black-bear",
+        "date": "2011-10-28",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.302923,
+          23.39997
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-black-bear",
+        "date": "2011-12-01T11:02",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.857143,
+          22.958908
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-black-bear",
+        "date": "2011-12-14",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.867209,
+          22.937613
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-black-bear",
+        "date": "2011-12-15",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.885061,
+          22.984199
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-black-bear",
+        "date": "2011-12-08",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.89265,
+          22.995718
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-black-bear",
+        "date": "2011-12-09",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.940061,
+          22.966312
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-black-bear",
+        "date": "2011-12-04",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.936515,
+          22.957957
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-black-bear",
+        "date": "2011-12-05",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.934761,
+          22.956141
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-black-bear",
+        "date": "2011-12-05",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.934751,
+          22.956286
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-black-bear",
+        "date": "2011-12-05",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.932479,
+          22.956005
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-black-bear",
+        "date": "2011-12-05",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.928259,
+          22.949853
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-black-bear",
+        "date": "2011-12-06",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.916876,
+          22.939453
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-black-bear",
+        "date": "2011-12-06",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.915892,
+          22.937962
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-black-bear",
+        "date": "2011-12-06",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.955194,
+          22.973948
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-black-bear",
+        "date": "2011-12-04",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.942888,
+          22.968498
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-black-bear",
+        "date": "2011-12-04",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.942918,
+          22.968525
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-black-bear",
+        "date": "2011-12-04",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.865104,
+          22.936473
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-black-bear",
+        "date": "2011-12-16",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.9202,
+          22.941071
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-black-bear",
+        "date": "2011-12-19",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.920171,
+          22.94155
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-black-bear",
+        "date": "2011-12-19",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.930031,
+          22.976025
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-black-bear",
+        "date": "2011-12-20",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.010444,
+          23.577701
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-black-bear",
+        "date": "2010-04-20",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.010395,
+          23.577728
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-black-bear",
+        "date": "2010-04-20",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.010414,
+          23.577764
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-black-bear",
+        "date": "2010-04-20",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.010424,
+          23.577701
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-black-bear",
+        "date": "2010-04-20",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.010444,
+          23.577782
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-black-bear",
+        "date": "2010-04-20",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.010454,
+          23.577809
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-black-bear",
+        "date": "2010-04-20",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.010434,
+          23.578242
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-black-bear",
+        "date": "2010-04-20",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.01061,
+          23.578098
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-black-bear",
+        "date": "2010-04-20",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.010542,
+          23.578089
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-black-bear",
+        "date": "2010-04-20",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.010542,
+          23.578089
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-black-bear",
+        "date": "2010-04-20",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.010365,
+          23.578152
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-black-bear",
+        "date": "2010-04-20",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.010385,
+          23.578161
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-black-bear",
+        "date": "2010-04-20",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.010414,
+          23.578215
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-black-bear",
+        "date": "2010-04-20",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.010424,
+          23.57827
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-black-bear",
+        "date": "2010-04-20",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.010552,
+          23.578071
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-black-bear",
+        "date": "2010-04-20",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.010552,
+          23.57808
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-black-bear",
+        "date": "2010-04-20",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.010552,
+          23.57808
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-black-bear",
+        "date": "2010-04-20",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.010503,
+          23.578143
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-black-bear",
+        "date": "2010-04-20",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.010395,
+          23.578107
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-black-bear",
+        "date": "2010-04-20",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.000449,
+          23.121055
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-black-bear",
+        "date": "2010-06-17",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.000469,
+          23.1211
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-black-bear",
+        "date": "2010-06-17",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.995548,
+          23.122256
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-black-bear",
+        "date": "2010-06-17",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.993839,
+          23.122689
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-black-bear",
+        "date": "2010-06-17",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.000859,
+          23.121245
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-black-bear",
+        "date": "2010-06-17",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.991213,
+          23.114742
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-black-bear",
+        "date": "2010-06-18",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.055031,
+          23.128649
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-black-bear",
+        "date": "2010-07-01",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.930289,
+          22.679738
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-black-bear",
+        "date": "2010-09-27",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.076418,
+          23.031787
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-black-bear",
+        "date": "2009-01-16",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.080621,
+          23.060231
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-black-bear",
+        "date": "2009-02-06",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.080446,
+          23.060313
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-black-bear",
+        "date": "2009-02-06",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.080621,
+          23.060231
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-black-bear",
+        "date": "2009-02-06",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.076371,
+          23.050805
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-black-bear",
+        "date": "2009-02-06",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.190671,
+          23.793733
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-black-bear",
+        "date": "2009-02-08",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.190975,
+          23.793679
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-black-bear",
+        "date": "2009-02-08",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.102922,
+          23.087509
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-black-bear",
+        "date": "2009-02-09",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.897996,
+          23.369314
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-black-bear",
+        "date": "2009-02-18",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.930837,
+          22.828868
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-black-bear",
+        "date": "2009-03-27",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.931645,
+          22.829843
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-black-bear",
+        "date": "2009-04-02",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.296023,
+          23.631816
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-black-bear",
+        "date": "2009-07-08",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.302913,
+          23.62754
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-black-bear",
+        "date": "2009-07-08",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.302913,
+          23.62754
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-black-bear",
+        "date": "2009-07-08",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.302913,
+          23.62754
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-black-bear",
+        "date": "2009-07-08",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.302913,
+          23.62754
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-black-bear",
+        "date": "2009-07-08",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.302913,
+          23.62754
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-black-bear",
+        "date": "2009-07-08",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    }
+  ]
+}

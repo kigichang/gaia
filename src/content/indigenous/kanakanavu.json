@@ -1,0 +1,14 @@
+{
+  "id": "kanakanavu",
+  "name": { "zh": "卡那卡那富族", "en": "Kanakanavu" },
+  "representativeCoord": { "lat": 23.2255, "lng": 120.7267 },
+  "mainDistribution": ["高雄市"],
+  "language": "卡那卡那富語",
+  "facts": [
+    { "label": "分布地形", "value": "聚居於高雄市那瑪夏區楠梓仙溪流域，是台灣人口最少的原住民族之一" },
+    { "label": "文化特色", "value": "河祭（Pasikarai）祈求漁獲豐收，是重要的傳統祭儀" },
+    { "label": "認定歷程", "value": "2014 年從鄒族分出，正式認定為第 16 個原住民族" }
+  ],
+  "curriculum": { "level": "junior", "unit": "台灣的原住民族" },
+  "sources": ["原住民族委員會全球資訊網"]
+}

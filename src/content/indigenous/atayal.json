@@ -1,0 +1,17 @@
+{
+  "id": "atayal",
+  "name": { "zh": "泰雅族", "en": "Atayal" },
+  "representativeCoord": { "lat": 24.6935, "lng": 121.3436 },
+  "mainDistribution": ["新北市", "桃園市", "新竹縣", "苗栗縣", "台中市", "南投縣", "宜蘭縣"],
+  "populationEstimate": 100000,
+  "populationYear": "2024",
+  "language": "泰雅語",
+  "facts": [
+    { "label": "族群規模", "value": "台灣原住民人口第三多的一族，約占原住民總人口 16%" },
+    { "label": "分布範圍", "value": "台灣原住民中傳統居住範圍最廣的一族，橫跨北部與中部山區七個縣市" },
+    { "label": "文化特色", "value": "紋面文化（Ptasan）曾是重要的成年與族群識別標誌，織布技藝發達" },
+    { "label": "社會制度", "value": "以 gaga（祖訓規範）為核心的祭祀與生活共同體" }
+  ],
+  "curriculum": { "level": "junior", "unit": "台灣的原住民族" },
+  "sources": ["內政部 114年第6週內政統計通報（113年底原住民人口數）", "原住民族委員會全球資訊網"]
+}

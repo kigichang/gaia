@@ -1,0 +1,3005 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.44943,
+          25.079515
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-pangolin",
+        "date": "2026-01-08T15:58:19",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.848171,
+          24.612245
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-pangolin",
+        "date": "2026-01-13T11:14",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.494238,
+          25.143243
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-pangolin",
+        "date": "2026-01-30T11:18:40",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.105938,
+          23.692976
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-pangolin",
+        "date": "2026-01-22T09:01",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.846709,
+          23.923883
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-pangolin",
+        "date": "2026-02-01T15:13:54",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.516055,
+          23.351262
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-pangolin",
+        "date": "2026-02-04T15:41:42",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.294688,
+          24.622353
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-pangolin",
+        "date": "2026-02-19T14:31:59",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.904902,
+          22.165198
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-pangolin",
+        "date": "2026-02-18T15:40:20",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.841602,
+          24.593213
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-pangolin",
+        "date": "2026-02-23T15:58:38",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.631893,
+          24.299559
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-pangolin",
+        "date": "2026-02-26T12:12:59",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.232625,
+          24.953336
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-pangolin",
+        "date": "2026-03-14T13:56:05",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.69159,
+          24.468611
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-pangolin",
+        "date": "2026-03-13T14:26:17",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.779877,
+          23.064382
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-pangolin",
+        "date": "2026-03-14T17:10",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.555809,
+          24.974
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-pangolin",
+        "date": "2026-03-25T16:16:06",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.811392,
+          24.454964
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-pangolin",
+        "date": "2026-03-21T13:52:05",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.503442,
+          25.132475
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-pangolin",
+        "date": "2026-03-20T10:04",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.596284,
+          23.283728
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-pangolin",
+        "date": "2026-03-24T16:06:31",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.171799,
+          24.74217
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-pangolin",
+        "date": "2026-03-23T09:37",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.553914,
+          25.113014
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-pangolin",
+        "date": "2026-04-09T12:41:11",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.794051,
+          25.042192
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-pangolin",
+        "date": "2026-04-13T09:55:34",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.026362,
+          24.69863
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-pangolin",
+        "date": "2026-04-24T20:00",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.420431,
+          25.24738
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-pangolin",
+        "date": "2026-05-20T12:38:18",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.77899,
+          23.637074
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-pangolin",
+        "date": "2026-05-26T15:11:49",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.999066,
+          22.110371
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-pangolin",
+        "date": "2026-05-31T21:03:11",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.234152,
+          23.261995
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-pangolin",
+        "date": "2026-05-30T21:55",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.544208,
+          24.679096
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-pangolin",
+        "date": "2026-05-17T13:01:28",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.983766,
+          24.051331
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-pangolin",
+        "date": "2026-05-16T08:19",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.788239,
+          24.303183
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-pangolin",
+        "date": "2026-06-01T11:35:34",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.747606,
+          24.362084
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-pangolin",
+        "date": "2026-06-01T11:35:34",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.008997,
+          24.632552
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-pangolin",
+        "date": "2026-06-18T14:18:26",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.946429,
+          24.553447
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-pangolin",
+        "date": "2026-06-22T17:34:09",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.516133,
+          23.225758
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-pangolin",
+        "date": "2026-06-23T01:08",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.630917,
+          25.294672
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-pangolin",
+        "date": "2026-06-07T22:11:22",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.495164,
+          25.004761
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-pangolin",
+        "date": "2026-07-14T19:44:22",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.028383,
+          24.744643
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-pangolin",
+        "date": "2026-07-22T12:43:35",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.123422,
+          24.718265
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-pangolin",
+        "date": "2026-07-25T08:51:03",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.68907,
+          25.09188
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-pangolin",
+        "date": "2025-01-04",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.68445,
+          25.09374
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-pangolin",
+        "date": "2025-01-06",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.949735,
+          24.928528
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-pangolin",
+        "date": "2025-02-01T15:52",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.739991,
+          23.459033
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-pangolin",
+        "date": "2025-02-24T19:38:35",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.56711,
+          24.632112
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-pangolin",
+        "date": "2025-02-25T13:20:02",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.65679,
+          23.599061
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-pangolin",
+        "date": "2025-02-28T15:28",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.765979,
+          23.436483
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-pangolin",
+        "date": "2025-02-28T15:44:51",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.687502,
+          23.571915
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-pangolin",
+        "date": "2025-02-28T15:25:43",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.658517,
+          25.106918
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-pangolin",
+        "date": "2025-02-28T17:28:04",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.934118,
+          22.249296
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-pangolin",
+        "date": "2025-03-01T10:28",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.628886,
+          23.480154
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-pangolin",
+        "date": "2025-03-01T14:24:44",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.890223,
+          24.511312
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-pangolin",
+        "date": "2025-03-08T17:51:51",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.876225,
+          23.886272
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-pangolin",
+        "date": "2025-03-28T13:10:49",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.59448,
+          24.641677
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-pangolin",
+        "date": "2025-03-01T15:01",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.128666,
+          24.782018
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-pangolin",
+        "date": "2025-04-11T16:38:37",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.594647,
+          24.643671
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-pangolin",
+        "date": "2025-04-05T13:20",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.11664,
+          24.659303
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-pangolin",
+        "date": "2025-04-20T20:40",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.520972,
+          25.030881
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-pangolin",
+        "date": "2025-04-24T14:29",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.520703,
+          25.063249
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-pangolin",
+        "date": "2025-04-24T14:29",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.065524,
+          24.637845
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-pangolin",
+        "date": "2025-04-17T20:01",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.123883,
+          24.677185
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-pangolin",
+        "date": "2025-04-26T15:41:50",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.460464,
+          24.71216
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-pangolin",
+        "date": "2025-04-08T13:44",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.61,
+          25.05
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-pangolin",
+        "date": "2025-04-28",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.61,
+          25.05
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-pangolin",
+        "date": "2025-04-28",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.874148,
+          24.44595
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-pangolin",
+        "date": "2025-04-23T12:01:26",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.912352,
+          24.4806
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-pangolin",
+        "date": "2025-04-23T12:03:55",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.5787,
+          24.616673
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-pangolin",
+        "date": "2025-04-02T14:41",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.468883,
+          24.663401
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-pangolin",
+        "date": "2025-04-02T14:51",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.978072,
+          22.318272
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-pangolin",
+        "date": "2025-05-07T14:49:10",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.827354,
+          22.380123
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-pangolin",
+        "date": "2025-05-07T16:34:06",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.880554,
+          22.37398
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-pangolin",
+        "date": "2025-05-07T15:42:31",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.841145,
+          22.302525
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-pangolin",
+        "date": "2025-05-07T15:36:43",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.536924,
+          25.036018
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-pangolin",
+        "date": "2025-05-23T11:40:39",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.884807,
+          22.049525
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-pangolin",
+        "date": "2025-05-17T21:54:16",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.902313,
+          24.430298
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-pangolin",
+        "date": "2025-06-10T12:06:02",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.951859,
+          24.43818
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-pangolin",
+        "date": "2025-06-10T12:05:36",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.915899,
+          24.428483
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-pangolin",
+        "date": "2025-06-10T11:42:55",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.879197,
+          24.416455
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-pangolin",
+        "date": "2025-06-10T11:58:53",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.880791,
+          24.490249
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-pangolin",
+        "date": "2025-06-10T12:04:54",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.931801,
+          24.422553
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-pangolin",
+        "date": "2025-06-10T12:02:30",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.978146,
+          24.403041
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-pangolin",
+        "date": "2025-06-07T21:30",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.88681,
+          24.489593
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-pangolin",
+        "date": "2025-06-10T11:42:50",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.848651,
+          24.446342
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-pangolin",
+        "date": "2025-06-10T11:51:10",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.905435,
+          24.43642
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-pangolin",
+        "date": "2025-06-10T12:04:12",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.975317,
+          24.519695
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-pangolin",
+        "date": "2025-06-10T12:00:39",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.987598,
+          24.524965
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-pangolin",
+        "date": "2025-06-10T12:00:50",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.900765,
+          24.532333
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-pangolin",
+        "date": "2025-06-10T11:54:53",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.819643,
+          24.500863
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-pangolin",
+        "date": "2025-06-10T11:56:20",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.803653,
+          24.528891
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-pangolin",
+        "date": "2025-06-10T11:58:23",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.894071,
+          24.503039
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-pangolin",
+        "date": "2025-06-07T06:52:46",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.86297,
+          22.277924
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-pangolin",
+        "date": "2025-06-27T20:10",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.696454,
+          22.524522
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-pangolin",
+        "date": "2025-06-17T22:13",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.483724,
+          24.603289
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-pangolin",
+        "date": "2025-06-25T21:15:03",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.932179,
+          24.436903
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-pangolin",
+        "date": "2025-06-10T11:53:45",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.943987,
+          24.460548
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-pangolin",
+        "date": "2025-06-10T12:01:42",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.61,
+          25.05
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-pangolin",
+        "date": "2025-06-03",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.917509,
+          24.459037
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-pangolin",
+        "date": "2025-06-24T11:09:59",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.861806,
+          24.444457
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-pangolin",
+        "date": "2025-06-24T11:13:20",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.94301,
+          24.524757
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-pangolin",
+        "date": "2025-06-24T11:18:03",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.857444,
+          24.57538
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-pangolin",
+        "date": "2025-06-24T11:18:34",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.867321,
+          24.418277
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-pangolin",
+        "date": "2025-06-24T11:13",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.849926,
+          24.597243
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-pangolin",
+        "date": "2025-06-24T11:09:36",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.841959,
+          24.561392
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-pangolin",
+        "date": "2025-06-24T11:12:20",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.858632,
+          24.508268
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-pangolin",
+        "date": "2025-06-24T11:06:54",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.807186,
+          24.438859
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-pangolin",
+        "date": "2025-06-24T11:08:20",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.831694,
+          24.47916
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-pangolin",
+        "date": "2025-06-24T11:10:44",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.949597,
+          24.40932
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-pangolin",
+        "date": "2025-06-24T11:12:40",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.451435,
+          25.195255
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-pangolin",
+        "date": "2025-07-01T10:06:38",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.611339,
+          22.629025
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-pangolin",
+        "date": "2025-07-05T00:36",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.872297,
+          24.484358
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-pangolin",
+        "date": "2025-07-16T12:39:55",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.827781,
+          24.525545
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-pangolin",
+        "date": "2025-07-16T12:32:27",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.969345,
+          24.42299
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-pangolin",
+        "date": "2025-07-16T12:26:31",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.849885,
+          24.418749
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-pangolin",
+        "date": "2025-07-16T12:31:26",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.992995,
+          24.409443
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-pangolin",
+        "date": "2025-07-16T12:25:41",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.866608,
+          24.499002
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-pangolin",
+        "date": "2025-07-16T12:34:06",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.412687,
+          25.292354
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-pangolin",
+        "date": "2025-08-08T19:55",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.536677,
+          25.207131
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-pangolin",
+        "date": "2025-08-13T22:02",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.588784,
+          25.294144
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-pangolin",
+        "date": "2025-08-13T14:45",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.846314,
+          25.000219
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-pangolin",
+        "date": "2025-08-12T12:17",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.476424,
+          25.206188
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-pangolin",
+        "date": "2025-08-12T12:25",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.494679,
+          25.356677
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-pangolin",
+        "date": "2025-08-12T12:22",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.49738,
+          24.772007
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-pangolin",
+        "date": "2025-08-21T12:18:48",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.517015,
+          25.279251
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-pangolin",
+        "date": "2025-08-13T12:52",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.475871,
+          25.161726
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-pangolin",
+        "date": "2025-08-26T12:51:36",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.467672,
+          24.611022
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-pangolin",
+        "date": "2025-08-21T12:19:44",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.61,
+          25.05
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-pangolin",
+        "date": "2025-08-19",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.576581,
+          23.18763
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-pangolin",
+        "date": "2025-09-24T11:53:39",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.557501,
+          25.319689
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-pangolin",
+        "date": "2025-09-05T08:46",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.982065,
+          24.836105
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-pangolin",
+        "date": "2025-09-24T16:17",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.99115,
+          25.023672
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-pangolin",
+        "date": "2025-09-28T10:56",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.845788,
+          24.818797
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-pangolin",
+        "date": "2025-09-08T10:42",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.169259,
+          24.652825
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-pangolin",
+        "date": "2025-09-28T16:15:43",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.841994,
+          24.929578
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-pangolin",
+        "date": "2025-09-28T11:26",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.391324,
+          23.323838
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-pangolin",
+        "date": "2025-09-11T14:18",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.545433,
+          25.168576
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-pangolin",
+        "date": "2025-09-04T20:14",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.513515,
+          25.103959
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-pangolin",
+        "date": "2025-10-10T17:26",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.905099,
+          24.716787
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-pangolin",
+        "date": "2025-10-17T02:31",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.445473,
+          25.367127
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-pangolin",
+        "date": "2025-10-01T23:10",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.982437,
+          25.107096
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-pangolin",
+        "date": "2025-10-12T11:48",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.541436,
+          25.239037
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-pangolin",
+        "date": "2025-10-15T20:55",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.228888,
+          23.039707
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-pangolin",
+        "date": "2025-10-15T14:19",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.61,
+          25.05
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-pangolin",
+        "date": "2025-10-07",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.990055,
+          25.041085
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-pangolin",
+        "date": "2025-11-08T10:14",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.525554,
+          25.239027
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-pangolin",
+        "date": "2025-11-23T22:22",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.628236,
+          22.491097
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-pangolin",
+        "date": "2025-12-05T11:09:50",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.78695,
+          23.635493
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-pangolin",
+        "date": "2025-12-28T20:26:47",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.970394,
+          24.506025
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-pangolin",
+        "date": "2025-12-20T12:02",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.549092,
+          23.350345
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-pangolin",
+        "date": "2025-12-24T11:16:46",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.5445,
+          23.387804
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-pangolin",
+        "date": "2025-12-24T14:34:38",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.083312,
+          24.19718
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-pangolin",
+        "date": "2025-12-25T15:51:32",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.585894,
+          24.937333
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-pangolin",
+        "date": "2025-12-24T18:42:16",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.434757,
+          25.123059
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-pangolin",
+        "date": "2024-01-14T16:00",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.723142,
+          23.442592
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-pangolin",
+        "date": "2024-01-27T13:39:56",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.548484,
+          24.908004
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-pangolin",
+        "date": "2024-01",
+        "basisOfRecord": "MACHINE_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.525315,
+          24.921858
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-pangolin",
+        "date": "2024-02-10T15:03:10",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.117004,
+          24.772073
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-pangolin",
+        "date": "2024-02-25T14:43:13",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.488319,
+          25.182261
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-pangolin",
+        "date": "2024-02-21T12:02:08",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.430491,
+          24.627362
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-pangolin",
+        "date": "2024-03-19T17:23:03",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.523783,
+          24.659597
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-pangolin",
+        "date": "2024-03-19T17:23:30",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.693903,
+          24.933781
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-pangolin",
+        "date": "2024-04",
+        "basisOfRecord": "MACHINE_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.67827,
+          25.09016
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-pangolin",
+        "date": "2024-04-28",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.711668,
+          23.933025
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-pangolin",
+        "date": "2024-05-01T09:31:49",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.869216,
+          22.063305
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-pangolin",
+        "date": "2024-05-27T14:07",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.69172,
+          25.09658
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-pangolin",
+        "date": "2024-05-07",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.67827,
+          25.09016
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-pangolin",
+        "date": "2024-05-05",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.61,
+          25.05
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-pangolin",
+        "date": "2024-05-07",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.61,
+          25.05
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-pangolin",
+        "date": "2024-05-07",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.61,
+          25.05
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-pangolin",
+        "date": "2024-05-07",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.759184,
+          23.596748
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-pangolin",
+        "date": "2024-06-04T05:23:18",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.69172,
+          25.09658
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-pangolin",
+        "date": "2024-06-08",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.45484,
+          25.377315
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-pangolin",
+        "date": "2024-07-30T16:34",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.930522,
+          23.973261
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-pangolin",
+        "date": "2024-07-09T18:16:46",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.739895,
+          24.894853
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-pangolin",
+        "date": "2024-07",
+        "basisOfRecord": "MACHINE_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.69327,
+          25.09422
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-pangolin",
+        "date": "2024-07-02",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.6,
+          25.05
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-pangolin",
+        "date": "2024-07-20",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.994353,
+          24.591815
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-pangolin",
+        "date": "2024-08-02T15:53",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.555819,
+          24.693634
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-pangolin",
+        "date": "2024-08-06T20:04",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.548484,
+          24.908004
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-pangolin",
+        "date": "2024-09",
+        "basisOfRecord": "MACHINE_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.68076,
+          25.09797
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-pangolin",
+        "date": "2024-09-13",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.433848,
+          23.93968
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-pangolin",
+        "date": "2024-10-11T20:14:53",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.874359,
+          24.75021
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-pangolin",
+        "date": "2024-10-06T03:21:48",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.697554,
+          24.643892
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-pangolin",
+        "date": "2024-10-10T13:31:33",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.8907,
+          24.406868
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-pangolin",
+        "date": "2024-10-26T00:39",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.68936,
+          25.09586
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-pangolin",
+        "date": "2024-10-10",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.75037,
+          24.665102
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-pangolin",
+        "date": "2024-11-22T02:59",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.667173,
+          24.515611
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-pangolin",
+        "date": "2024-11-17T14:34:32",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.6858,
+          25.097532
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-pangolin",
+        "date": "2024-11-17",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.68936,
+          25.09586
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-pangolin",
+        "date": "2024-11-12",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.818234,
+          23.951368
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-pangolin",
+        "date": "2024-12-21T15:11",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.065431,
+          24.106181
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-pangolin",
+        "date": "2024-12-14T09:22",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.601043,
+          24.289693
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-pangolin",
+        "date": "2024-12-30T08:41:13",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.944553,
+          23.930837
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-pangolin",
+        "date": "2024-12-21T15:10",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.127482,
+          24.002622
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-pangolin",
+        "date": "2024-12-14T09:16:10",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.684956,
+          23.476442
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-pangolin",
+        "date": "2024-12-06T17:35:23",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.750767,
+          23.230272
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-pangolin",
+        "date": "2024-12-14T09:51:55",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.6858,
+          25.097532
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-pangolin",
+        "date": "2024-12-24",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.68445,
+          25.09374
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-pangolin",
+        "date": "2024-12-08",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.68445,
+          25.09374
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-pangolin",
+        "date": "2024-12-06",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.68445,
+          25.09374
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-pangolin",
+        "date": "2024-12-29",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.453595,
+          25.137367
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-pangolin",
+        "date": "2023-01-05T16:29",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.182114,
+          24.634857
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-pangolin",
+        "date": "2023-01-09T12:53:56",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.638986,
+          23.467003
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-pangolin",
+        "date": "2023-01-24T15:50:18",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.904184,
+          23.856012
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-pangolin",
+        "date": "2023-01-04T11:07:23",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.406542,
+          23.885495
+        ]
+      },
+      "properties": {
+        "speciesId": "formosan-pangolin",
+        "date": "2023-02-13T08:28:56",
+        "basisOfRecord": "HUMAN_OBSERVATION"
+      }
+    }
+  ]
+}

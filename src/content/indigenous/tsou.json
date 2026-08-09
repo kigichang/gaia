@@ -1,0 +1,14 @@
+{
+  "id": "tsou",
+  "name": { "zh": "鄒族", "en": "Tsou" },
+  "representativeCoord": { "lat": 23.4692, "lng": 120.7256 },
+  "mainDistribution": ["嘉義縣", "南投縣"],
+  "language": "鄒語",
+  "facts": [
+    { "label": "分布地形", "value": "主要聚居於阿里山山區，達邦、特富野是傳統的兩大社" },
+    { "label": "社會制度", "value": "以會所（Kuba）為中心的部落組織，Kuba 是男子集會與戰祭舉行地" },
+    { "label": "文化特色", "value": "戰祭（Mayasvi）是最重要的部落祭典，於達邦、特富野輪流舉行" }
+  ],
+  "curriculum": { "level": "junior", "unit": "台灣的原住民族" },
+  "sources": ["原住民族委員會全球資訊網"]
+}

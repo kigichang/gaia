@@ -6,18 +6,27 @@
 import { readdir, readFile } from "node:fs/promises";
 import { join, dirname, basename } from "node:path";
 import { fileURLToPath } from "node:url";
-import { PlaceSchema, ClimateSchema } from "../src/lib/schema.ts";
+import {
+  PlaceSchema,
+  ClimateSchema,
+  IndigenousGroupSchema,
+  SpeciesSchema,
+  SpeciesOccurrenceSchema,
+} from "../src/lib/schema.ts";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 const PLACES_DIR = join(ROOT, "src/content/places");
 const CLIMATE_DIR = join(ROOT, "public/data/climate");
+const INDIGENOUS_DIR = join(ROOT, "src/content/indigenous");
+const SPECIES_DIR = join(ROOT, "src/content/species");
+const SPECIES_OCCURRENCE_DIR = join(ROOT, "public/data/species");
 
 const errors = [];
 
-async function validateDir(dir, schema, label, extraCheck) {
+async function validateDir(dir, schema, label, extraCheck, ext = ".json") {
   let files;
   try {
-    files = (await readdir(dir)).filter((f) => f.endsWith(".json"));
+    files = (await readdir(dir)).filter((f) => f.endsWith(ext));
   } catch {
     console.log(`（略過 ${label}：目錄不存在）`);
     return [];
@@ -52,6 +61,38 @@ await validateDir(CLIMATE_DIR, ClimateSchema, "climate", (climate, file) => {
     errors.push(`climate/${file} → placeId「${climate.placeId}」沒有對應的地點資料`);
   }
 });
+
+await validateDir(INDIGENOUS_DIR, IndigenousGroupSchema, "indigenous", (group, file) => {
+  if (basename(file, ".json") !== group.id) {
+    errors.push(`indigenous/${file} → 檔名必須等於 id（${group.id}.json）`);
+  }
+});
+
+const species = await validateDir(SPECIES_DIR, SpeciesSchema, "species", (sp, file) => {
+  if (basename(file, ".json") !== sp.id) {
+    errors.push(`species/${file} → 檔名必須等於 id（${sp.id}.json）`);
+  }
+});
+
+const speciesIds = new Set(species.map((s) => s.id));
+await validateDir(
+  SPECIES_OCCURRENCE_DIR,
+  SpeciesOccurrenceSchema,
+  "species-occurrence",
+  (occurrence, file) => {
+    const expectedId = basename(file, ".geojson");
+    if (!speciesIds.has(expectedId)) {
+      errors.push(`species-occurrence/${file} → 沒有對應的 species/${expectedId}.json`);
+    }
+    const wrongSpeciesId = occurrence.features.find((f) => f.properties.speciesId !== expectedId);
+    if (wrongSpeciesId) {
+      errors.push(
+        `species-occurrence/${file} → 內含 speciesId「${wrongSpeciesId.properties.speciesId}」跟檔名不符`,
+      );
+    }
+  },
+  ".geojson",
+);
 
 if (errors.length) {
   console.error(`\n內容驗證失敗（${errors.length} 個問題）：`);

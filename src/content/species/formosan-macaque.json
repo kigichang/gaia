@@ -1,0 +1,16 @@
+{
+  "id": "formosan-macaque",
+  "name": { "zh": "台灣獼猴", "en": "Formosan Rock Macaque", "latin": "Macaca cyclopis" },
+  "gbifTaxonKey": 2436615,
+  "category": "mammal",
+  "conservationStatus": "一般類保育類野生動物",
+  "habitat": "從低海拔丘陵到海拔 3000 公尺山區的森林與岩壁地形皆可見",
+  "facts": [
+    { "label": "特徵", "value": "台灣唯一原生的非人靈長類，臉部與臀部呈粉紅色，群居性強" },
+    { "label": "分布範圍", "value": "全島森林地區皆有分布，是台灣分布最廣的特有種哺乳動物之一" },
+    { "label": "保育現況", "value": "族群數量穩定，部分地區因靠近農地或遊憩區而與人類活動衝突增加" },
+    { "label": "對照重點", "value": "觀測點遍布全台各海拔，跟帝雉、台灣黑熊集中高山的分布形成明顯對比" }
+  ],
+  "curriculum": { "level": "senior", "unit": "台灣的自然地理與生態" },
+  "sources": ["GBIF Global Biodiversity Information Facility", "農業部林業及自然保育署"]
+}

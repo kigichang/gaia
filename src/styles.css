@@ -361,7 +361,7 @@ input {
   color: var(--text-muted);
 }
 
-.place-stats {
+.detail-stats {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
   gap: 8px;
@@ -392,13 +392,13 @@ input {
   color: var(--text-secondary);
 }
 
-.place-probe {
+.detail-probe {
   margin: 0 0 10px;
   font-size: 13px;
   color: var(--text-secondary);
 }
 
-.place-facts {
+.detail-facts {
   list-style: none;
   margin: 0 0 10px;
   padding: 0;
@@ -407,7 +407,7 @@ input {
   gap: 6px;
 }
 
-.place-facts li {
+.detail-facts li {
   display: grid;
   grid-template-columns: 4.5em 1fr;
   gap: 10px;
@@ -422,7 +422,7 @@ input {
   color: var(--text-secondary);
 }
 
-.place-sources,
+.detail-sources,
 .climate-source {
   margin: 0;
   font-size: 11px;
@@ -535,8 +535,11 @@ input {
 }
 
 .explore-side {
-  /* 側欄保持原本的內容高度，不要跟著整列被拉伸；伸展的是右側地圖欄 */
+  /* 側欄保持原本的內容高度，不要跟著整列被拉伸；伸展的是右側地圖欄。
+     但主題圖層開多個、清單變長時仍要能限制在地圖同樣高度內，改成內部捲動。 */
   align-self: start;
+  max-height: 100%;
+  overflow-y: auto;
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius);
@@ -597,10 +600,134 @@ input {
   min-height: 0;
 }
 
+.map-canvas-wrap {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+}
+
 .explore-canvas {
   /* 扣掉上面圖層開關列的高度後，把剩餘空間全部給地圖 */
   flex: 1;
   min-height: 0;
+}
+
+/* ---------- 主題圖層面板 ---------- */
+
+.thematic-panel {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 10px 12px;
+  margin-bottom: 12px;
+}
+
+.thematic-panel h3 {
+  margin: 0 0 8px;
+  font-size: 13px;
+  color: var(--text-muted);
+  font-weight: 600;
+}
+
+.thematic-toggle {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  padding: 3px 0;
+  cursor: pointer;
+}
+
+.species-select-list {
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid var(--grid);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.species-select-hint {
+  margin: 0 0 6px;
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.species-select-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+}
+
+.species-select-row label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}
+
+.species-name-btn {
+  background: none;
+  border: none;
+  padding: 2px 0;
+  font-size: 13px;
+  color: var(--text-primary);
+  text-align: left;
+  cursor: pointer;
+  text-decoration: underline;
+  text-decoration-color: transparent;
+  text-underline-offset: 2px;
+}
+
+.species-name-btn:hover {
+  text-decoration-color: currentColor;
+}
+
+.species-count {
+  font-size: 11px;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+.species-latin {
+  margin: -4px 0 10px;
+  font-size: 12px;
+  font-style: italic;
+  color: var(--text-muted);
+}
+
+/* ---------- 地圖圖例 ---------- */
+
+.map-legend {
+  position: absolute;
+  right: 10px;
+  bottom: 32px;
+  z-index: 1;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 8px 10px;
+  font-size: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+  max-width: 180px;
+}
+
+.map-legend-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 2px 0;
+  color: var(--text-secondary);
+}
+
+.map-legend-swatch {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  border: 1px solid rgba(0, 0, 0, 0.15);
+  flex-shrink: 0;
 }
 
 /* ---------- 行動裝置：雙地圖改成上下堆疊 ---------- */

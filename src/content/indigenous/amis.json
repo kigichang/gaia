@@ -1,0 +1,17 @@
+{
+  "id": "amis",
+  "name": { "zh": "阿美族", "en": "Amis (Pangcah)" },
+  "representativeCoord": { "lat": 23.9871, "lng": 121.6015 },
+  "mainDistribution": ["花蓮縣", "台東縣", "屏東縣（少部分）"],
+  "populationEstimate": 228000,
+  "populationYear": "2024",
+  "language": "阿美語（Pangcah / Amis）",
+  "facts": [
+    { "label": "族群規模", "value": "台灣原住民人口最多的一族，約占原住民總人口 37%" },
+    { "label": "分布地形", "value": "主要聚居於花東縱谷與海岸平原，是少數以平地聚落為主的原住民族" },
+    { "label": "社會制度", "value": "傳統上為母系社會，年齡階級制度是重要的社會組織方式" },
+    { "label": "文化特色", "value": "豐年祭（Ilisin）是最具代表性的年度祭典" }
+  ],
+  "curriculum": { "level": "junior", "unit": "台灣的原住民族" },
+  "sources": ["內政部 114年第6週內政統計通報（113年底原住民人口數）", "原住民族委員會全球資訊網"]
+}

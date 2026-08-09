@@ -1,0 +1,16 @@
+{
+  "id": "formosan-black-bear",
+  "name": { "zh": "台灣黑熊", "en": "Formosan Black Bear", "latin": "Ursus thibetanus formosanus" },
+  "gbifTaxonKey": 6163864,
+  "category": "mammal",
+  "conservationStatus": "瀕臨絕種保育類野生動物",
+  "habitat": "海拔 1000–3000 公尺的中高海拔森林，台灣體型最大的陸生哺乳動物",
+  "facts": [
+    { "label": "特徵", "value": "胸前有明顯的 V 字形白色斑紋，是台灣特有亞種" },
+    { "label": "分布範圍", "value": "主要分布於中央山脈、雪山山脈等中高海拔原始林" },
+    { "label": "保育現況", "value": "族群數量稀少，棲地破碎化與獵捕是主要威脅" },
+    { "label": "對照重點", "value": "觀測紀錄多集中在山區保護區周邊，反映棲地與人為活動範圍的關係" }
+  ],
+  "curriculum": { "level": "senior", "unit": "台灣的自然地理與生態" },
+  "sources": ["GBIF Global Biodiversity Information Facility", "農業部林業及自然保育署"]
+}

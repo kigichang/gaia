@@ -52,6 +52,7 @@ Node ≥ 22.12（vite 8 要求）。開發機與 CI 都用 Node 24。
 | 臺灣通用電子地圖 | `wmts.nlsc.gov.tw/wmts/EMAP/default/GoogleMapsCompatible/{z}/{y}/{x}` | 國土測繪中心 |
 | 臺灣正射影像 | 同上，`EMAP` → `PHOTO2` | |
 | 氣候正常值 | `archive-api.open-meteo.com/v1/archive`（ERA5） | **只在建置期呼叫** |
+| 特有種觀測紀錄 | `api.gbif.org/v1/occurrence/search`（GBIF） | **只在建置期呼叫**，`ACAO: *` |
 
 ### ⚠️ NLSC 的路徑順序陷阱
 
@@ -65,6 +66,14 @@ NLSC WMTS 是 `{z}/{y}/{x}`——**y 在 x 前面**，跟絕大多數 XYZ 服務
 
 **已知資料限制**：ERA5 是約 25 km 網格的再分析資料，會平滑掉小島與陡峭地形的地形雨。例如希洛實測年雨量約 3300 mm，ERA5 只給約 1590 mm。用於教學比較的量級關係仍然正確，但**不要把這些數字當成氣象站觀測值引用**。
 
+### 特有種觀測資料為什麼要預先產製
+
+`scripts/build-species.mjs` 在建置期向 GBIF 查詢每個物種在台灣（`country=TW`）的真實觀測紀錄，篩掉座標有問題的紀錄（`hasGeospatialIssue=false`），每物種最多留 200 筆，輸出到 `public/data/species/<species-id>.geojson`。理由跟氣候資料一樣：避免上課時大量學生同時開站對 GBIF 發出重複請求，也不用讓地圖疊圖等 API 回應。
+
+**用 `gbifTaxonKey`（數字）查詢，不要用學名字串**：GBIF 同一個學名可能對應到已被降級的 synonym（例如櫻花鉤吻鮭 `Oncorhynchus masou formosanus` 是 synonym，正式 accepted 名是 `Oncorhynchus formosanus`），用字串查詢容易漏資料或撈到錯的分類單元。先用 `https://api.gbif.org/v1/species/match?name=<學名>` 查一次拿到 `usageKey`，把這個數字存進 `gbifTaxonKey`。
+
+**已知資料限制**：GBIF 觀測點反映的是「歷史觀測熱點」，受賞鳥／採集活動的地點偏好影響，不是嚴謹的族群密度普查。教學呈現與 UI 文案都不要暗示這是完整、精確的分布範圍（`SpeciesCard` 已經在來源說明裡註記這件事，新增文案時比照辦理）。
+
 ---
 
 ## 硬性禁止事項
@@ -76,6 +85,9 @@ NLSC WMTS 是 `{z}/{y}/{x}`——**y 在 x 前面**，跟絕大多數 XYZ 服務
 5. **不得在執行期呼叫 Open-Meteo。** 氣候資料一律走 build-time 產製。
 6. **不得手動編輯 `public/data/climate/*.json`。** 由 `npm run build:climate` 產生。
 7. **不得使用雙 Y 軸圖表。** 兩個刻度可以任意縮放，會讓氣溫線與雨量柱的交叉看起來像有因果關係。詳見下面的圖表規範。
+8. **不得在執行期呼叫 GBIF。** 特有種觀測點一律走 build-time 產製。
+9. **不得手動編輯 `public/data/species/*.geojson`。** 由 `npm run build:species` 產生。
+10. **不得憑感覺挑主題圖層的顏色。** 改動或新增 `src/map/thematicColors.ts` 的顏色前，必須重新用 dataviz skill 的 `scripts/validate_palette.js`（`--pairs all`，因為主題圖層是可任意複選的核取方塊，不能只驗證清單裡「相鄰」的顏色）驗證明暗兩模式，理由與已驗證過的組合見該檔案的註解。
 
 ---
 
@@ -91,6 +103,9 @@ ID 常數定義在 `src/map/layers/*.ts`，**一律 import 常數，不要寫死
 | `DEM_SOURCE_ID` | `dem` | raster-dem（給 hillshade） |
 | `TERRAIN_SOURCE_ID` | `dem-terrain` | raster-dem（給 3D 地形） |
 | `HILLSHADE_LAYER_ID` | `hillshade` | hillshade |
+| `PLACES_SOURCE_ID` / `PLACES_LAYER_ID` | `places-source` / `places-points` | geojson / circle（Explore 頁主題圖層） |
+| `INDIGENOUS_SOURCE_ID` / `INDIGENOUS_LAYER_ID` | `indigenous-source` / `indigenous-points` | geojson / circle |
+| `speciesSourceId(id)` / `speciesLayerId(id)` | `species-<id>-source` / `species-<id>-points` | geojson / circle，每個物種各自一組 |
 
 `dem` 與 `dem-terrain` 是兩個來源但都指向同一個 shared DEM protocol：maplibre 會警告 hillshade 與 terrain 共用來源會降低算繪品質，拆開可消除警告，而底層圖磚快取仍然共用、不會重複下載。
 
@@ -114,6 +129,85 @@ maplibre-contour 把 worker 以 Blob URL 內嵌，**不需要額外部署 worker
 `CONTOUR_THRESHOLDS`（`src/config.ts`）：zoom → `[次要間距, 主要間距]`，單位公尺（`multiplier` 保持預設 1）。低於 `CONTOUR_MIN_ZOOM`（9）不顯示等高線——小比例尺畫等高線既沒意義又耗效能。
 
 `level` 屬性 = 該高程能整除的最高門檻索引：`1` 是計曲線（粗線 + 標高程），`0` 是首曲線（細線）。
+
+---
+
+## Explore 頁的主題圖層系統
+
+Explore 頁（`src/pages/ExplorePage.tsx`）可複選疊加三種主題：地形景點、原住民族分佈、特有種生態分佈。三種都用同一組 `src/map/layers/points.ts` 的通用 helper（`addPointLayer`/`removePointLayer`/`toFeatureCollection`），差別只在資料來源與顏色。
+
+### 關鍵坑：切換底圖會清掉主題圖層
+
+`MapView.tsx` 切換底圖時呼叫 `map.setStyle()`，會清空所有自訂 source/layer，然後在 `style.load` 事件重新加回 contour/hillshade（見上面等高線那節）。**主題圖層不是 `MapView` 加的，`MapView` 不知道要重新套用它們。**
+
+解法是 `src/map/useThematicLayers.ts`：不修改 `MapView`，改為直接對外部拿到的 `map` 實例額外掛一個 `style.load` 監聽，每次都重新套用主題圖層。`map.on(event, layerId, handler)` 的點擊/hover 監聽是掛在 Map 實例上、不是掛在圖層上，所以那些監聽只需要在圖層第一次建立時綁一次，`setStyle` 造成的圖層重建不需要重綁——`useThematicLayers.ts` 用兩層 `useEffect` 分開處理這兩件事（互動綁定 vs. 圖層新增/移除），改動時不要合併成一個。
+
+呼叫端（`ExplorePage.tsx`）傳給 `useThematicLayers` 的 `config` 物件要用 `useMemo`：這個 hook 的 effect 依賴整個 `config` 物件參照，每次拿到新物件就會重跑一次套用邏輯。
+
+**改動這個系統後必須實測「切底圖時主題圖層是否還在」**（不只測初始渲染），這是最容易回歸的地方：
+
+```js
+// production build (npm run preview) 下驗證，不能只測 dev
+m.getLayer('indigenous-points')
+m.queryRenderedFeatures({ layers: ['species-mikado-pheasant-points'] }).length
+```
+
+### 顏色
+
+`src/map/thematicColors.ts` 是唯一的顏色來源，不要在元件裡另外寫顏色：
+
+- 地形景點（藍 `#2a78d6`）、原住民族分佈（紅 `#e34948`）是固定單一色——清單靠點擊瀏覽，不靠顏色分類比較。
+- 特有種是唯一需要「依類別上色以便一眼比較」的圖層，因為多物種疊圖時顏色是分辨「這是哪個物種」的主要方式。目前是青／黃／紫三色（`SPECIES_COLORS`），對應 `MAX_SIMULTANEOUS_SPECIES = 3`——UI 會在達到這個數量後停用其餘物種的核取方塊。
+
+這五個顏色不是隨手選的：用 dataviz skill 的 `validate_palette.js` 以 `--pairs all` 驗證過（核取方塊可以任意複選組合，不能只驗證清單裡相鄰的顏色）。混更多顏色進去大機率會失敗——實測過橘配黃、青配洋紅在其中一種色盲模式下 ΔE 會掉到 2–7（遠低於安全門檻 15），這也是為什麼原住民族分佈選了「紅」而不是調色盤順位第二的「橘」（橘要留給物種色票，紅跟藍、紅跟青黃紫都驗證過安全）。**要調色或加物種顏色，先跑驗證器，不要憑感覺挑。**
+
+### 資料整理方式
+
+兩種新內容型別分別沿用專案既有的兩種資料模式，沒有發明新架構：
+
+**原住民族分佈**（比照地點資料的手動整理模式）：
+1. 建立 `src/content/indigenous/<id>.json`，**檔名必須等於 `id`**
+2. `representativeCoord` 選文化園區、部落大會地點或行政中心，**不是**正式的分布邊界，UI 文案與資料撰寫都要避免暗示這是精確的地理範圍
+3. `npm run validate` 確認通過
+
+```jsonc
+{
+  "id": "amis",
+  "name": { "zh": "阿美族", "en": "Amis (Pangcah)" },
+  "representativeCoord": { "lat": 23.9871, "lng": 121.6015 },
+  "mainDistribution": ["花蓮縣", "台東縣"],   // 文字列表，不是邊界資料
+  "populationEstimate": 228000,               // 選填，要填就要填 populationYear
+  "populationYear": "2024",
+  "language": "阿美語（Pangcah / Amis）",
+  "facts": [{ "label": "族群規模", "value": "……" }],
+  "curriculum": { "level": "junior", "unit": "台灣的原住民族" },
+  "sources": ["內政部 114年第6週內政統計通報（113年底原住民人口數）"]
+}
+```
+
+目前 16 族的骨架（id／中英文名／代表座標／主要分布）都已建好；`facts` 與完整人口統計目前只有 5 族（阿美、排灣、泰雅、布農、達悟）做了完整示範，其餘 11 族先放最小可行的 facts（分布地區、語言等不需要外部查證的穩定事實）。要補完剩下的族，照上面的格式加 `facts`／`sources` 即可，不需要改任何程式碼。
+
+**特有種生態分佈**（比照氣候資料的 build-time fetch 模式）：
+1. 建立 `src/content/species/<id>.json`（物種介紹文字，不含座標）
+2. 用 `https://api.gbif.org/v1/species/match?name=<學名>` 查 `gbifTaxonKey`
+3. 執行 `npm run build:species` 產生 `public/data/species/<id>.geojson`（已存在的會跳過，`--force` 可重抓）
+4. `npm run validate` 確認通過，且 geojson 的 `speciesId` 都能對應到 species 內容檔
+
+```jsonc
+{
+  "id": "mikado-pheasant",
+  "name": { "zh": "帝雉", "en": "Mikado Pheasant", "latin": "Syrmaticus mikado" },
+  "gbifTaxonKey": 2473482,
+  "category": "bird",                // mammal|bird|fish|amphibian|reptile|insect
+  "conservationStatus": "瀕臨絕種保育類野生動物",  // 選填
+  "habitat": "海拔 2000–3800 公尺的中高海拔針闊葉混合林與箭竹草原",
+  "facts": [{ "label": "特徵", "value": "……" }],
+  "curriculum": { "level": "senior", "unit": "台灣的自然地理與生態" },
+  "sources": ["GBIF Global Biodiversity Information Facility"]
+}
+```
+
+目前收錄 5 種示範（台灣黑熊、帝雉、台灣獼猴、櫻花鉤吻鮭、台灣穿山甲）。要新增物種，先用 `species/match` 確認 GBIF 有足夠觀測量（幾十筆以上比較有意義），再照上面步驟加資料。
 
 ---
 
@@ -142,6 +236,8 @@ Web Mercator 投影的面積放大率只跟緯度有關（放大倍率 = 1 / cos
 Schema 定義在 `src/lib/schema.ts`（zod）。`scripts/validate-content.mjs` 在每次 `npm run build` 前執行，格式錯誤直接中斷建置。
 
 Node 24 原生支援 TypeScript type stripping，所以 `.mjs` 腳本可以直接 `import` `schema.ts`，不需要另外編譯或維護第二份 schema。
+
+新增原住民族／特有種資料的步驟在上面「Explore 頁的主題圖層系統 → 資料整理方式」，這裡只講地點。
 
 ### 新增地點
 
@@ -204,9 +300,11 @@ npm run build           # validate → typecheck → vite build → postbuild
 npm run preview         # 預覽 production build
 npm run build:climate   # 產生氣候 JSON（已存在會跳過）
 npm run build:climate -- --force   # 全部重抓
+npm run build:species   # 產生特有種觀測點 geojson（已存在會跳過）
+npm run build:species -- --force   # 全部重抓
 ```
 
-`build:climate` 對 Open-Meteo 有指數退避重試（429 時等 5s/10s/20s…），連抓多個地點被限流是正常的，重跑一次即可補齊。
+`build:climate` 對 Open-Meteo、`build:species` 對 GBIF 都有指數退避重試（429 時等 5s/10s/20s…），連抓多筆被限流是正常的，重跑一次即可補齊。
 
 ---
 
@@ -248,6 +346,7 @@ m.isSourceLoaded('contour-source')
 5. DevTools Network：**不得有任何帶 API key 的請求**；圖磚全部回 200
 6. Console 無 CORS、WebGL 或 maplibre 錯誤
 7. **切到每一種向量底圖（目前是「世界地圖」）並確認地物真的渲染出來**，不能只看 `npm run build` 成功。這一項只在 production build 才驗得出來——`npm run dev` 用的是原始 ESM，不會踩到 worker 檔案沒被複製的問題，`npm run preview` 或實際部署才會踩到
+8. Explore 頁：三個主題圖層核取方塊可任意複選疊加；複選多個物種後**切換底圖**，確認圖層都還在（見「Explore 頁的主題圖層系統」的關鍵坑）；點地圖上的標記跟點側欄清單都能開啟對應詳情卡且互相 highlight
 
 ### 部署後
 
@@ -291,21 +390,26 @@ src/
 ├─ config.ts              # 所有資料源端點與等高線參數
 ├─ lib/schema.ts          # zod schema（建置期驗證用）
 ├─ content/
-│  ├─ index.ts            # import.meta.glob 載入地點；氣候 JSON 用 fetch
-│  └─ places/*.json
+│  ├─ index.ts            # import.meta.glob 載入地點/原住民族/物種；氣候與物種觀測點 JSON 用 fetch
+│  ├─ places/*.json
+│  ├─ indigenous/*.json   # 16 族代表點
+│  └─ species/*.json      # 物種介紹文字（不含座標）
 ├─ map/
 │  ├─ demSource.ts        # 單例 DemSource
 │  ├─ basemaps.ts         # 底圖樣式組裝 + OpenFreeMap 失敗時的備援
-│  ├─ layers/{contour,hillshade,terrain}.ts
+│  ├─ layers/{contour,hillshade,terrain,points}.ts
 │  ├─ MapView.tsx         # 單張地圖元件
-│  └─ useMapSync.ts       # 緯度／zoom 同步
+│  ├─ useMapSync.ts       # 緯度／zoom 同步（比較頁）
+│  ├─ useThematicLayers.ts # 主題圖層管理（探索頁）
+│  └─ thematicColors.ts   # 主題圖層顏色（已用 dataviz 驗證器驗證）
 ├─ compare/               # 同緯度比較頁
-├─ pages/ExplorePage.tsx  # 單張地圖的地形探索頁
-└─ components/
+├─ pages/ExplorePage.tsx  # 探索頁：可複選疊加地形景點/原住民族/特有種
+└─ components/            # PlaceCard/IndigenousCard/SpeciesCard/MapLegend/ThematicLayerPanel…
 scripts/
 ├─ build-climate.mjs      # Open-Meteo → public/data/climate
+├─ build-species.mjs      # GBIF → public/data/species
 ├─ validate-content.mjs   # 建置前 schema 驗證
 └─ postbuild.mjs          # 404.html + CNAME 確認
 ```
 
-`src/content/index.ts` 直接把 JSON 當成 `Place` 使用而不在瀏覽器端跑 zod——建置期已經驗過，不必把 zod 打包進前端。
+`src/content/index.ts` 直接把 JSON 當成對應型別使用而不在瀏覽器端跑 zod——建置期已經驗過，不必把 zod 打包進前端。
