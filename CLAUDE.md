@@ -248,9 +248,15 @@ m.isSourceLoaded('contour-source')
 ```bash
 curl -I  https://gaia.kigi.tw            # 200 + HTTPS
 curl -s  https://gaia.kigi.tw/CNAME      # gaia.kigi.tw
-curl -I  https://gaia.kigi.tw/compare    # 深層連結不得 404
-dig +short gaia.kigi.tw
+dig +short gaia.kigi.tw                  # 應指向 kigichang.github.io / 185.199.x.153
+
+# 深層連結：狀態碼會是 404（見下），要檢查的是「內容為 app shell」
+curl -s https://gaia.kigi.tw/compare | grep -c '<div id="root">'   # 應為 1
 ```
+
+**關於深層連結的 404 狀態碼**：GitHub Pages 沒有 SPA rewrite，`/compare` 這類路徑一定會走 404.html，所以 **HTTP 狀態碼就是 404**，這無法用 `postbuild` 的複製手法消除。使用者在瀏覽器開啟時完全正常（回傳的是 app shell，React Router 會接手算繪），但爬蟲與 SEO 會把它視為不存在。
+
+若之後需要真正的 200，唯一的靜態解法是改用 `HashRouter`（網址變成 `gaia.kigi.tw/#/compare`）。目前選擇保留乾淨網址，接受 404 狀態碼。
 
 ---
 
