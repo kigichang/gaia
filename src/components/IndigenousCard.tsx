@@ -1,5 +1,6 @@
 import type { IndigenousGroup } from "../lib/schema";
 import { Stat } from "./PlaceCard";
+import { SourceLinks } from "./SourceLinks";
 
 interface IndigenousCardProps {
   group: IndigenousGroup;
@@ -33,7 +34,9 @@ export function IndigenousCard({ group }: IndigenousCardProps) {
         ))}
       </ul>
 
-      <p className="detail-sources">資料來源：{group.sources.join("、")}</p>
+      <p className="detail-sources">
+        資料來源：<SourceLinks sources={group.sources} />
+      </p>
     </div>
   );
 }

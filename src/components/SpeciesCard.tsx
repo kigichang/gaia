@@ -1,5 +1,6 @@
 import type { Species } from "../lib/schema";
 import { Stat } from "./PlaceCard";
+import { SourceLinks } from "./SourceLinks";
 
 const CATEGORY_LABELS: Record<Species["category"], string> = {
   mammal: "哺乳類",
@@ -46,7 +47,7 @@ export function SpeciesCard({ species, occurrenceCount }: SpeciesCardProps) {
       </ul>
 
       <p className="detail-sources">
-        資料來源：{species.sources.join("、")}
+        資料來源：<SourceLinks sources={species.sources} />
         ，觀測點資料反映歷史觀測熱點，不是精確的族群密度普查
       </p>
     </div>

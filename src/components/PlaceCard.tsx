@@ -1,5 +1,6 @@
 import type { Place } from "../lib/schema";
 import { formatLatitude } from "../compare/LatitudeSlider";
+import { SourceLinks } from "./SourceLinks";
 
 /** 柯本氣候分類第一碼的中文說明，用來把代碼變成學生看得懂的字。 */
 const KOPPEN_GROUPS: Record<string, string> = {
@@ -45,7 +46,9 @@ export function PlaceCard({ place, queriedElevation }: PlaceCardProps) {
         ))}
       </ul>
 
-      <p className="detail-sources">資料來源：{place.sources.join("、")}</p>
+      <p className="detail-sources">
+        資料來源：<SourceLinks sources={place.sources} />
+      </p>
     </div>
   );
 }

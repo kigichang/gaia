@@ -439,6 +439,16 @@ input {
   color: var(--text-muted);
 }
 
+.detail-sources a {
+  color: inherit;
+  text-decoration-color: var(--text-muted);
+}
+
+.detail-sources a:hover {
+  color: var(--accent);
+  text-decoration-color: currentColor;
+}
+
 /* ---------- 氣候圖 ---------- */
 
 .climate {
