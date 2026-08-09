@@ -135,6 +135,8 @@ input {
 .app-nav {
   display: flex;
   gap: 4px;
+  /* 主題連結由註冊表產生，數量會隨主題增加，窄螢幕必須能換行 */
+  flex-wrap: wrap;
 }
 
 .app-nav a {
@@ -687,6 +689,149 @@ input {
   cursor: pointer;
 }
 
+.theme-subtitle {
+  margin: -6px 0 12px;
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--text-secondary);
+}
+
+/* 註冊表的分組（行政區／水系／人文…） */
+.layer-group + .layer-group {
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid var(--grid);
+}
+
+.layer-group-title {
+  margin: 0 0 4px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  color: var(--text-muted);
+}
+
+.layer-row + .layer-row {
+  margin-top: 6px;
+}
+
+/* 尚未有資料的圖層照樣列出來，但要看得出是停用的 */
+.thematic-toggle.is-planned {
+  cursor: default;
+  color: var(--text-muted);
+}
+
+.layer-planned {
+  font-size: 10px;
+  padding: 1px 6px;
+  border-radius: 999px;
+  background: var(--surface-sunken);
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+.layer-description {
+  margin: 2px 0 0 22px;
+  font-size: 11px;
+  line-height: 1.5;
+  color: var(--text-muted);
+}
+
+.layer-cap-hint {
+  margin: 2px 0 0 22px;
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+/* 示意幾何的警語：與 GBIF/ERA5 的既有做法一致，不得暗示精確性 */
+.layer-schematic {
+  color: var(--series-temp);
+}
+
+.layer-basemap-hint {
+  margin: 10px 0 0;
+  padding-top: 8px;
+  border-top: 1px solid var(--grid);
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+/*
+ * 圖例色塊的形狀必須跟圖層的幾何一致——點是圓、線是短橫線、面是半透明方塊。
+ * 形狀說謊的圖例比沒有圖例更糟：學生會照著圓點去找一條線。
+ */
+.layer-swatch {
+  flex-shrink: 0;
+  border: 1px solid rgba(0, 0, 0, 0.15);
+}
+
+.layer-swatch-circle {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+}
+
+.layer-swatch-line {
+  width: 14px;
+  height: 3px;
+  border-radius: 2px;
+  border: none;
+}
+
+.layer-swatch-fill {
+  width: 12px;
+  height: 10px;
+  border-radius: 2px;
+  /* 對應地圖上的 fill-opacity 0.18，色塊要讓人認得出是同一個東西 */
+  opacity: 0.55;
+  border-width: 1px;
+  border-style: solid;
+}
+
+/* 泛用地理要素卡：被點到的縣市／河流不像地點那樣在側欄有 active 按鈕提供上下文，
+   所以一定要有標題 */
+.feature-title {
+  margin: 0 0 6px;
+  font-size: 15px;
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.feature-subtitle {
+  margin: -2px 0 8px;
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+/* 還沒寫內容檔時顯示的圖層說明，不要給一張空卡 */
+.feature-fallback {
+  margin: 0 0 8px;
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--text-secondary);
+}
+
+.feature-schematic {
+  margin: 0 0 8px;
+  padding: 6px 8px;
+  border-left: 3px solid var(--series-temp);
+  background: var(--surface-sunken);
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--text-secondary);
+}
+
+.detail-empty {
+  margin: 0;
+  padding: 12px;
+  border: 1px dashed var(--border);
+  border-radius: 8px;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
 .species-select-list {
   margin-top: 8px;
   padding-top: 8px;
@@ -770,12 +915,10 @@ input {
   color: var(--text-secondary);
 }
 
-.map-legend-swatch {
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-  border: 1px solid rgba(0, 0, 0, 0.15);
-  flex-shrink: 0;
+/* 主題一忙起來圖例會很長，不能讓它把地圖頂出去 */
+.map-legend {
+  max-height: 42%;
+  overflow-y: auto;
 }
 
 /* ---------- 行動裝置：雙地圖改成上下堆疊 ---------- */

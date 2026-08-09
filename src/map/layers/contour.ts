@@ -2,10 +2,10 @@ import type { Map as MapLibreMap } from "maplibre-gl";
 import { CONTOUR_MIN_ZOOM, CONTOUR_THRESHOLDS, TERRAIN_MAXZOOM } from "../../config";
 import { getDemSource } from "../demSource";
 
-/** 圖層／來源 ID 常數。全站一律用這些常數，不要在別處寫死字串。 */
-export const CONTOUR_SOURCE_ID = "contour-source";
-export const CONTOUR_LINE_LAYER_ID = "contour-lines";
-export const CONTOUR_LABEL_LAYER_ID = "contour-labels";
+// ID 常數集中在 ids.ts（無相依模組），這樣 layerOrder.ts 才能在不載入
+// maplibre 與 DEM worker 的情況下引用它們。這裡 re-export 維持既有 import 路徑。
+export { CONTOUR_SOURCE_ID, CONTOUR_LINE_LAYER_ID, CONTOUR_LABEL_LAYER_ID } from "./ids";
+import { CONTOUR_SOURCE_ID, CONTOUR_LINE_LAYER_ID, CONTOUR_LABEL_LAYER_ID } from "./ids";
 
 /**
  * 在地圖上加入等高線來源與線／標註兩個圖層。

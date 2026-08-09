@@ -2,15 +2,8 @@ import type { Map as MapLibreMap } from "maplibre-gl";
 import { ATTRIBUTION, TERRAIN_MAXZOOM } from "../../config";
 import { getDemSource } from "../demSource";
 
-export const DEM_SOURCE_ID = "dem";
-/**
- * 3D 地形用獨立的來源 id。maplibre 會警告 hillshade 與 terrain 共用同一個
- * raster-dem 來源會降低算繪品質（兩者需要的 overzoom 行為不同）。
- * 兩個來源都指向同一個 shared DEM protocol，底層圖磚快取仍然共用，不會多下載。
- */
-export const TERRAIN_SOURCE_ID = "dem-terrain";
-export const HILLSHADE_LAYER_ID = "hillshade";
-
+export { DEM_SOURCE_ID, TERRAIN_SOURCE_ID, HILLSHADE_LAYER_ID } from "./ids";
+import { DEM_SOURCE_ID, HILLSHADE_LAYER_ID } from "./ids";
 /**
  * 加入 raster-dem 來源。
  *

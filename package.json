@@ -11,10 +11,13 @@
     "dev": "vite",
     "typecheck": "tsc --noEmit",
     "validate": "node scripts/validate-content.mjs",
-    "build": "npm run validate && npm run typecheck && vite build && node scripts/postbuild.mjs",
+    "test:order": "node scripts/test-layer-order.mjs",
+    "build": "npm run validate && npm run test:order && npm run typecheck && vite build && node scripts/postbuild.mjs",
+    "build:debug": "vite build --mode debug && node scripts/postbuild.mjs",
     "preview": "vite preview",
     "build:climate": "node scripts/build-climate.mjs",
-    "build:species": "node scripts/build-species.mjs"
+    "build:species": "node scripts/build-species.mjs",
+    "build:geodata": "node scripts/build-geodata.mjs"
   },
   "dependencies": {
     "maplibre-contour": "0.1.0",

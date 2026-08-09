@@ -12,6 +12,23 @@ export const LevelSchema = z.enum(["junior", "senior"]);
 
 export const RegionSchema = z.enum(["taiwan", "world"]);
 
+/**
+ * 課綱對應。
+ *
+ * 內容改成**以主題組織**（國小／國中／高中合流）之後，年級不再是分類軸——
+ * 導覽、篩選、圖層註冊表全部依主題與分組運作，沒有任何程式碼會讀 `level`
+ * （`grep -rn curriculum src scripts` 可確認：只有 27 個內容檔在寫它）。
+ *
+ * `level` 保留為 optional 是為了讓既有內容檔不必修改就能通過驗證。
+ * **新內容不要填。** 後續雜務可以機械式移除那 27 處並刪掉 LevelSchema。
+ */
+export const CurriculumSchema = z.object({
+  /** 課綱單元名稱，例如「臺灣的地形與都市」 */
+  unit: z.string(),
+  /** @deprecated 年級標記，已不再作為分類軸使用 */
+  level: LevelSchema.optional(),
+});
+
 export const PlaceSchema = z.object({
   /** 檔名（不含副檔名）必須等於 id */
   id: z.string().regex(/^[a-z0-9-]+$/, "id 只能用小寫英數與連字號"),
@@ -33,7 +50,7 @@ export const PlaceSchema = z.object({
   facts: z
     .array(z.object({ label: z.string(), value: z.string() }))
     .min(1),
-  curriculum: z.object({ level: LevelSchema, unit: z.string() }),
+  curriculum: CurriculumSchema,
   /** 資料來源。每一筆地點資料都必須標註出處。 */
   sources: z.array(z.string()).min(1),
 });
@@ -76,7 +93,7 @@ export const IndigenousGroupSchema = z.object({
   populationYear: z.string().optional(),
   language: z.string().optional(),
   facts: z.array(z.object({ label: z.string(), value: z.string() })).min(1),
-  curriculum: z.object({ level: LevelSchema, unit: z.string() }),
+  curriculum: CurriculumSchema,
   sources: z.array(z.string()).min(1),
 });
 
@@ -113,7 +130,7 @@ export const SpeciesSchema = z.object({
   conservationStatus: z.string().optional(),
   habitat: z.string(),
   facts: z.array(z.object({ label: z.string(), value: z.string() })).min(1),
-  curriculum: z.object({ level: LevelSchema, unit: z.string() }),
+  curriculum: CurriculumSchema,
   sources: z.array(z.string()).min(1),
 });
 
@@ -144,3 +161,66 @@ export const SpeciesOccurrenceSchema = z.object({
 });
 
 export type SpeciesOccurrence = z.infer<typeof SpeciesOccurrenceSchema>;
+
+/**
+ * 註冊表驅動的地理要素說明文字（縣市、河流、山脈、都市、洋流、板塊…）。
+ *
+ * **幾何不在這裡**——幾何在 `public/data/geo/<collection>.geojson`（由
+ * scripts/build-geodata.mjs 產生）或 `public/data/geo-manual/`（手繪的教學示意
+ * 幾何）。這個檔案只回答「點到那條線／那塊面之後要顯示什麼」。
+ *
+ * **不是每個圖徵都需要內容檔**：找不到對應檔案時 FeatureCard 會退回顯示 geojson
+ * 的 name 屬性 + 圖層自己的 description/sources，所以 22 個縣市可以先上線、
+ * 之後再逐一補寫說明。
+ */
+export const GeoFeatureSchema = z.object({
+  /** 必須等於檔名，也必須等於 geojson 裡的 properties.id */
+  id: z.string().regex(/^[a-z0-9-]+$/, "id 只能用小寫英數與連字號"),
+  /** 必須等於所在目錄名 */
+  collection: z.string().regex(/^[a-z0-9-]+$/, "collection 只能用小寫英數與連字號"),
+  name: z.object({ zh: z.string(), en: z.string().optional() }),
+  subtitle: z.string().optional(),
+  /** 卡片頂端的數據列，比照 PlaceCard 控制在 4 筆以內 */
+  stats: z.array(z.object({ label: z.string(), value: z.string() })).max(4).optional(),
+  facts: z.array(z.object({ label: z.string(), value: z.string() })).min(1),
+  curriculum: CurriculumSchema,
+  /** 這筆是簡化的教學示意幾何，不是精確測繪資料。UI 必須顯示警語。 */
+  schematic: z.boolean().optional(),
+  sources: z.array(z.string()).min(1),
+});
+
+export type GeoFeature = z.infer<typeof GeoFeatureSchema>;
+
+/**
+ * build-geodata.mjs 產生（或 geo-manual 手繪）的 geojson 格式。
+ *
+ * 幾何本身交給 maplibre 驗，這裡只保證兩件事：每個 feature 都有 `properties.id`
+ * （點擊互動與內容檔配對都靠它），以及有 metadata 可以追溯出處與授權。
+ */
+export const GeoCollectionSchema = z.object({
+  type: z.literal("FeatureCollection"),
+  metadata: z
+    .object({
+      collection: z.string(),
+      source: z.string(),
+      license: z.string(),
+      generatedAt: z.string(),
+      simplifyTolerance: z.number().optional(),
+      featureCount: z.number(),
+    })
+    .optional(),
+  features: z
+    .array(
+      // zod 4 用 z.looseObject 取代舊的 .passthrough()
+      z.looseObject({
+        type: z.literal("Feature"),
+        properties: z.looseObject({
+          id: z.string(),
+          name: z.string().optional(),
+        }),
+      }),
+    )
+    .min(1),
+});
+
+export type GeoCollection = z.infer<typeof GeoCollectionSchema>;

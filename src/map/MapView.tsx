@@ -8,6 +8,32 @@ import { addContourLayers, setContourVisibility } from "./layers/contour";
 import { addHillshadeLayer, setHillshadeVisibility } from "./layers/hillshade";
 import { setTerrainEnabled } from "./layers/terrain";
 
+/**
+ * 是否啟用地圖除錯掛勾（`window.__gaiaMaps` 與 preserveDrawingBuffer）。
+ *
+ * 這裡**不能只看 `import.meta.env.DEV`**：DEV 在 production build 會被 Vite 靜態
+ * 替換成 false，而 CLAUDE.md 的圖層驗證流程明確要求在 `npm run preview`（也就是
+ * production build）下驗證——因為 maplibre 的 worker 檔案沒被複製、向量底圖畫不
+ * 出來這類問題只有 production build 才踩得到。只認 DEV 的話那套驗證指令根本跑不起來。
+ *
+ * 所以另外開一個 `VITE_DEBUG_MAPS` 旗標：`npm run build:debug`（--mode debug 會讀
+ * `.env.debug`）產生的 build 帶掛勾，正式 `npm run build` 不帶。
+ */
+const MAP_DEBUG = import.meta.env.DEV || import.meta.env.VITE_DEBUG_MAPS === "1";
+
+/** 把地圖實例登記到 window.__gaiaMaps，回傳解除登記的函式。 */
+function registerDebugMap(map: MapLibreMap): () => void {
+  const w = window as unknown as { __gaiaMaps?: MapLibreMap[] };
+  const maps = (w.__gaiaMaps ??= []);
+  maps.push(map);
+  // 卸載時要移除，否則換頁後 __gaiaMaps[0] 會指著已經 remove() 掉的地圖，
+  // 驗證指令全部拿到空結果卻看不出原因。
+  return () => {
+    const i = maps.indexOf(map);
+    if (i >= 0) maps.splice(i, 1);
+  };
+}
+
 export interface OverlayState {
   contour: boolean;
   hillshade: boolean;
@@ -21,6 +47,17 @@ export interface MapViewProps {
   overlays: OverlayState;
   /** 地圖建立且首次樣式載入完成後呼叫，用來接上相機同步或事件監聽。 */
   onReady?: (map: MapLibreMap) => void;
+  /**
+   * 每次「樣式套用完、等高線與地形陰影都已經加回去」之後呼叫。
+   *
+   * 切底圖會 `setStyle()` 清掉所有自訂圖層，而外部加的主題圖層 MapView 並不知道。
+   * 以前是讓外部自己也掛一個 `style.load` 監聽，但**兩個監聽會互相競爭**：
+   * 外部的註冊得早、跑得早，於是它重新加圖層並排序時，等高線都還沒被加回去，
+   * 排序就錯了（而且只在特定底圖上重現，因為時序跟樣式大小有關）。
+   *
+   * 改成由 MapView 在確定做完自己的事之後明確回呼，時序就不再是猜的。
+   */
+  onStyleApplied?: (map: MapLibreMap) => void;
   className?: string;
 }
 
@@ -30,6 +67,7 @@ export function MapView({
   basemap,
   overlays,
   onReady,
+  onStyleApplied,
   className,
 }: MapViewProps) {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -42,6 +80,8 @@ export function MapView({
   overlaysRef.current = overlays;
   const onReadyRef = useRef(onReady);
   onReadyRef.current = onReady;
+  const onStyleAppliedRef = useRef(onStyleApplied);
+  onStyleAppliedRef.current = onStyleApplied;
 
   // 地圖目前實際套用的底圖。在建立地圖時就記下當下用的那一份樣式，
   // 下面的切換 effect 才能單純比對 id，不必猜「這次是不是初次渲染」。
@@ -51,6 +91,7 @@ export function MapView({
   useEffect(() => {
     if (!containerRef.current) return;
     let cancelled = false;
+    let unregisterDebug: (() => void) | undefined;
 
     void (async () => {
       const style = await loadBasemapStyle(basemap);
@@ -66,10 +107,10 @@ export function MapView({
         localIdeographFontFamily:
           "'Noto Sans TC', 'PingFang TC', 'Microsoft JhengHei', sans-serif",
         attributionControl: { compact: true },
-        // 開發模式保留繪圖緩衝區，才能用 canvas.toDataURL() 取得地圖畫面來驗證算繪。
+        // 除錯模式保留繪圖緩衝區，才能用 canvas.toDataURL() 取得地圖畫面來驗證算繪。
         // 注意 maplibre-gl v6 把這個選項移進 canvasContextAttributes；寫在頂層
         // 會被靜默忽略（型別檢查才會抓到）。正式版關閉以免影響效能。
-        canvasContextAttributes: { preserveDrawingBuffer: import.meta.env.DEV },
+        canvasContextAttributes: { preserveDrawingBuffer: MAP_DEBUG },
       });
       mapRef.current = map;
       // 記下這張地圖是用哪個底圖建立的。若使用者在樣式抓取／首次載入期間就換了底圖，
@@ -84,17 +125,16 @@ export function MapView({
         syncOverlayVisibility(map, overlaysRef.current);
         setReady(true);
         onReadyRef.current?.(map);
+        onStyleAppliedRef.current?.(map);
 
-        // 開發模式把地圖實例掛到 window，方便在 DevTools 或自動化中檢查圖層狀態
-        if (import.meta.env.DEV) {
-          const w = window as unknown as { __gaiaMaps?: MapLibreMap[] };
-          (w.__gaiaMaps ??= []).push(map);
-        }
+        // 除錯模式把地圖實例掛到 window，方便在 DevTools 或自動化中檢查圖層狀態
+        if (MAP_DEBUG) unregisterDebug = registerDebugMap(map);
       });
     })();
 
     return () => {
       cancelled = true;
+      unregisterDebug?.();
       mapRef.current?.remove();
       mapRef.current = null;
     };
@@ -122,6 +162,8 @@ export function MapView({
         if (cancelled) return;
         applyOverlayLayers(map);
         syncOverlayVisibility(map, overlaysRef.current);
+        // 等高線／地形陰影都加回去了，這時候外部再重套主題圖層才排得出正確順序
+        onStyleAppliedRef.current?.(map);
       });
       map.setStyle(style);
     })();

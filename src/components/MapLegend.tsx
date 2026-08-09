@@ -1,32 +1,44 @@
-import { INDIGENOUS_COLOR, PLACES_COLOR } from "../map/thematicColors";
+import type { GeometryKind } from "../map/registry/types";
 
-interface MapLegendProps {
-  showPlaces: boolean;
-  showIndigenous: boolean;
-  /** 目前有勾選、且資料已載入的物種（順序要跟指派顏色時一致） */
-  activeSpecies: Array<{ id: string; name: string; color: string }>;
+export interface LegendEntry {
+  key: string;
+  label: string;
+  color: string;
+  kind: GeometryKind;
+  schematic?: boolean;
 }
 
-/** 任一主題圖層開啟時顯示的地圖圖例，疊在地圖右下角。 */
-export function MapLegend({ showPlaces, showIndigenous, activeSpecies }: MapLegendProps) {
-  if (!showPlaces && !showIndigenous && activeSpecies.length === 0) return null;
+interface MapLegendProps {
+  entries: LegendEntry[];
+}
+
+/**
+ * 疊在地圖右下角的圖例，由目前開啟的圖層驅動。
+ *
+ * 色塊形狀必須跟該圖層的幾何一致（點／線／面）——形狀說謊的圖例比沒有圖例更糟，
+ * 學生會照著圓點去找一條線。
+ */
+export function MapLegend({ entries }: MapLegendProps) {
+  if (entries.length === 0) return null;
 
   return (
     <div className="map-legend">
-      {showPlaces && <LegendRow color={PLACES_COLOR} label="地形景點" />}
-      {showIndigenous && <LegendRow color={INDIGENOUS_COLOR} label="原住民族分佈" />}
-      {activeSpecies.map((s) => (
-        <LegendRow key={s.id} color={s.color} label={s.name} />
+      {entries.map((e) => (
+        <div key={e.key} className="map-legend-row">
+          <span
+            className={`layer-swatch layer-swatch-${e.kind}`}
+            style={
+              e.kind === "fill"
+                ? { backgroundColor: e.color, borderColor: e.color }
+                : { backgroundColor: e.color }
+            }
+          />
+          <span>
+            {e.label}
+            {e.schematic && <span className="layer-schematic">（示意）</span>}
+          </span>
+        </div>
       ))}
-    </div>
-  );
-}
-
-function LegendRow({ color, label }: { color: string; label: string }) {
-  return (
-    <div className="map-legend-row">
-      <span className="map-legend-swatch" style={{ backgroundColor: color }} />
-      <span>{label}</span>
     </div>
   );
 }

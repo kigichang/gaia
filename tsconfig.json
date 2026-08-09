@@ -13,7 +13,10 @@
     "isolatedModules": true,
     "esModuleInterop": true,
     "skipLibCheck": true,
-    "allowImportingTsExtensions": false,
+    // src/map/registry/* 之間必須用顯式的 .ts 副檔名互相 import：
+    // scripts/validate-content.mjs 用 Node 直接載入註冊表做建置期交叉檢查，
+    // 而 Node 的 ESM 解析器不會自己補副檔名。見 src/map/registry/types.ts。
+    "allowImportingTsExtensions": true,
     "noEmit": true,
     "types": ["vite/client", "node", "geojson"]
   },

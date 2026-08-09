@@ -53,6 +53,8 @@ Node ≥ 22.12（vite 8 要求）。開發機與 CI 都用 Node 24。
 | 臺灣正射影像 | 同上，`EMAP` → `PHOTO2` | |
 | 氣候正常值 | `archive-api.open-meteo.com/v1/archive`（ERA5） | **只在建置期呼叫** |
 | 特有種觀測紀錄 | `api.gbif.org/v1/occurrence/search`（GBIF） | **只在建置期呼叫**，`ACAO: *` |
+| 行政區／河流幾何 | `raw.githubusercontent.com/nvkelso/natural-earth-vector`（Natural Earth） | **只在建置期呼叫**，public domain |
+| 地震目錄 | `earthquake.usgs.gov/fdsnws/event/1/query`（USGS） | **只在建置期呼叫**，免金鑰、`ACAO: *` |
 
 ### ⚠️ NLSC 的路徑順序陷阱
 
@@ -87,7 +89,8 @@ NLSC WMTS 是 `{z}/{y}/{x}`——**y 在 x 前面**，跟絕大多數 XYZ 服務
 7. **不得使用雙 Y 軸圖表。** 兩個刻度可以任意縮放，會讓氣溫線與雨量柱的交叉看起來像有因果關係。詳見下面的圖表規範。
 8. **不得在執行期呼叫 GBIF。** 特有種觀測點一律走 build-time 產製。
 9. **不得手動編輯 `public/data/species/*.geojson`。** 由 `npm run build:species` 產生。
-10. **不得憑感覺挑主題圖層的顏色。** 改動或新增 `src/map/thematicColors.ts` 的顏色前，必須重新用 dataviz skill 的 `scripts/validate_palette.js`（`--pairs all`，因為主題圖層是可任意複選的核取方塊，不能只驗證清單裡「相鄰」的顏色）驗證明暗兩模式，理由與已驗證過的組合見該檔案的註解。
+10. **不得手動編輯 `public/data/geo/*.geojson`。** 由 `npm run build:geodata` 產生。手繪的教學示意幾何放 `public/data/geo-manual/`，那個目錄腳本永遠不會碰。
+11. **不得憑感覺挑主題圖層的顏色。** 改動或新增 `src/map/thematicColors.ts` 的顏色前，必須重新用 dataviz skill 的 `scripts/validate_palette.js`（`--pairs all`，因為主題圖層是可任意複選的核取方塊，不能只驗證清單裡「相鄰」的顏色）驗證明暗兩模式，理由與已驗證過的組合見該檔案的註解。
 
 ---
 
@@ -103,9 +106,19 @@ ID 常數定義在 `src/map/layers/*.ts`，**一律 import 常數，不要寫死
 | `DEM_SOURCE_ID` | `dem` | raster-dem（給 hillshade） |
 | `TERRAIN_SOURCE_ID` | `dem-terrain` | raster-dem（給 3D 地形） |
 | `HILLSHADE_LAYER_ID` | `hillshade` | hillshade |
-| `PLACES_SOURCE_ID` / `PLACES_LAYER_ID` | `places-source` / `places-points` | geojson / circle（Explore 頁主題圖層） |
-| `INDIGENOUS_SOURCE_ID` / `INDIGENOUS_LAYER_ID` | `indigenous-source` / `indigenous-points` | geojson / circle |
-| `speciesSourceId(id)` / `speciesLayerId(id)` | `species-<id>-source` / `species-<id>-points` | geojson / circle，每個物種各自一組 |
+
+主題圖層的 id **不是常數，是由註冊表的 `layer.id` 組合出來的**（見「圖層 id 的組合方式」），helper 在 `src/map/registry/index.ts`：`geoSourceId()` / `geoLayerIds()` / `geoHitLayerId()`。目前實際存在的：
+
+| id | 型別 |
+|---|---|
+| `places-source` / `places-points` | geojson / circle |
+| `indigenous-source` / `indigenous-points` | geojson / circle |
+| `species-<id>-source` / `species-<id>-points` | geojson / circle，每個物種各自一組 |
+| `tw-counties-fill` / `tw-counties-outline` | fill + line（面的外框一定是獨立圖層） |
+| `world-rivers-line` / `world-rivers-label` | line + symbol |
+| `world-places-points` | circle |
+| `latitude-lines-line` / `latitude-lines-label` | line + symbol |
+| `quakes-points` | circle |
 
 `dem` 與 `dem-terrain` 是兩個來源但都指向同一個 shared DEM protocol：maplibre 會警告 hillshade 與 terrain 共用來源會降低算繪品質，拆開可消除警告，而底層圖磚快取仍然共用、不會重複下載。
 
@@ -132,85 +145,121 @@ maplibre-contour 把 worker 以 Blob URL 內嵌，**不需要額外部署 worker
 
 ---
 
-## Explore 頁的主題圖層系統
+## 主題地圖頁與圖層註冊表
 
-Explore 頁（`src/pages/ExplorePage.tsx`）可複選疊加三種主題：地形景點、原住民族分佈、特有種生態分佈。三種都用同一組 `src/map/layers/points.ts` 的通用 helper（`addPointLayer`/`removePointLayer`/`toFeatureCollection`），差別只在資料來源與顏色。
+內容以**主題**組織（國小／國中／高中合流，不再依年級分類）。目前三個主題，路由都是 `/theme/:themeId`，共用同一支 `src/pages/ThemeMapPage.tsx`：
 
-### 關鍵坑：切換底圖會清掉主題圖層
+| 主題 | 路由 | 內容 |
+|---|---|---|
+| 臺灣地理 | `/theme/taiwan` | 行政區、地形、水系、人文（原住民族）、植被生態（特有種）、農業物產 |
+| 世界地理 | `/theme/world` | 世界重要城市、國界與大洲、地形水系、人文專題 |
+| 全球地理形貌 | `/theme/global` | 緯度參考線、氣候與生物群系、洋流、板塊與地震帶 |
 
-`MapView.tsx` 切換底圖時呼叫 `map.setStyle()`，會清空所有自訂 source/layer，然後在 `style.load` 事件重新加回 contour/hillshade（見上面等高線那節）。**主題圖層不是 `MapView` 加的，`MapView` 不知道要重新套用它們。**
+`/compare`（雙地圖同緯度比較）是獨立的一頁，跟這套系統無關，也**沒有**被改動。兩者互補：`/theme/global` 說明「為什麼緯度重要」，`/compare` 帶學生鑽進同一條緯度上的兩個地方看差異。
 
-解法是 `src/map/useThematicLayers.ts`：不修改 `MapView`，改為直接對外部拿到的 `map` 實例額外掛一個 `style.load` 監聽，每次都重新套用主題圖層。`map.on(event, layerId, handler)` 的點擊/hover 監聽是掛在 Map 實例上、不是掛在圖層上，所以那些監聽只需要在圖層第一次建立時綁一次，`setStyle` 造成的圖層重建不需要重綁——`useThematicLayers.ts` 用兩層 `useEffect` 分開處理這兩件事（互動綁定 vs. 圖層新增/移除），改動時不要合併成一個。
+### 圖層註冊表
 
-呼叫端（`ExplorePage.tsx`）傳給 `useThematicLayers` 的 `config` 物件要用 `useMemo`：這個 hook 的 effect 依賴整個 `config` 物件參照，每次拿到新物件就會重跑一次套用邏輯。
+**加一個新圖層或新主題 = 加一筆資料，不需要寫任何元件。** 定義在 `src/map/registry/`：
 
-**改動這個系統後必須實測「切底圖時主題圖層是否還在」**（不只測初始渲染），這是最容易回歸的地方：
-
-```js
-// production build (npm run preview) 下驗證，不能只測 dev
-m.getLayer('indigenous-points')
-m.queryRenderedFeatures({ layers: ['species-mikado-pheasant-points'] }).length
 ```
+registry/
+├─ types.ts        # 型別（含 MAX_ACTIVE_BY_KIND）
+├─ index.ts        # THEMES、getTheme、allLayers、id 組合 helper
+├─ themes/*.ts     # 三個主題的圖層清單（純資料）
+├─ generators.ts   # 程式產生的幾何（緯度參考線）
+└─ resolve.ts      # 標籤 → 實際資料（瀏覽器專用）
+```
+
+**最重要的約束：`themes/*.ts` 與 `index.ts` 必須是純資料且 Node 可直接 import。**
+`scripts/validate-content.mjs` 會用 Node 24 的 type stripping 載入 `registry/index.ts` 做建置期交叉檢查（remote 路徑是否存在、圖層 id 是否撞名、`maxActive` 是否超過色票長度、`group` 是否在 `theme.groups` 裡）。這件事值得為它扭曲型別設計，因為「宣告的 geojson 不存在」在執行期是**完全靜默**的：fetch 404 → `resolveLayerData()` 回 null → 圖層永遠不出現 → console 什麼都沒有。
+
+所以規則是：`themes/*.ts` 只能 `import type` 型別 + value-import `thematicColors.ts`（一個零 import 的常數模組）；**不准放 closure、不准 `import.meta.glob`、不准 value-import maplibre**。資料來源一律寫成標籤（`LayerSource`），由 `resolve.ts` 在瀏覽器端解析。
+
+因為 Node 的 ESM 解析器不會自己補副檔名，`registry/` 內部互相 import **必須寫 `.ts` 副檔名**（`tsconfig.json` 因此開了 `allowImportingTsExtensions`）。
+
+`status: "planned"` 的圖層照樣列在側欄（停用的核取方塊 + 「資料整理中」），但**仍然必須填 `description` 與 `sources`**——一個停用又沒有文字的核取方塊什麼都沒教到。
+
+子項目（`items`）是「一個勾選項展開成 N 個子圖層」的第一級概念，目前只有特有種用到。清單來源寫成 `{ type: "content", collection: "species" }` 而不是硬編，這樣**新增一個物種 JSON 就會自動出現在 UI**。
+
+### 圖層 id 的組合方式
+
+```
+instanceId = item ? `${layer.id}-${item.id}` : layer.id
+circle → `${instanceId}-points`
+line   → `${instanceId}-line`（有 label 再加 `-label`）
+fill   → `${instanceId}-fill` + `${instanceId}-outline`
+```
+
+`-points` 後綴是刻意沿用的舊命名，讓 `places-points`／`indigenous-points`／`species-<id>-points` 一個字元都不變。
+
+**fill 一定是兩個 maplibre 圖層**：maplibre 的 `fill-outline-color` 只能畫 1px 髮絲線、線寬不可調，外框必須是同一個 source 上的獨立 line 圖層。
+
+### 關鍵坑一：切換底圖會清掉主題圖層
+
+`MapView.tsx` 切底圖時呼叫 `map.setStyle()`，會清空所有自訂 source/layer，然後在 `style.load` 重新加回 contour/hillshade。**主題圖層不是 `MapView` 加的，`MapView` 不知道要重新套用它們。**
+
+解法是 `MapView` 的 `onStyleApplied` 回呼：`MapView` 在**自己把等高線與地形陰影加回去之後**才呼叫它，`useGeoLayers` 回傳的 `reapply` 接上去，重套的時序就不再是猜的。
+
+⚠️ **不要退回成「在 useGeoLayers 裡自己也掛一個 `style.load` 監聽」的舊做法**——那樣兩個監聽會競爭：`useGeoLayers` 在 mount 就註冊、跑得早，重新加圖層並排序時等高線根本還沒加回來，排序就反了（見下面的關鍵坑二）。`styledata`、`idle`、`queueMicrotask` 這些補救式觸發全都試過，全都不夠。
+
+互動監聽（`map.on(event, layerId, handler)`）是掛在 Map 實例上、不是掛在圖層上，所以 `setStyle` 造成的圖層重建**不需要**重綁——重綁只會讓監聽無限累積。`useGeoLayers` 因此把「互動綁定」與「圖層套用」分成不同的 effect，**改動時不要合併**。
+
+呼叫端傳給 `useGeoLayers` 的 `instances` 陣列要用 `useMemo`。
+
+### 關鍵坑二：切底圖後的圖層排序會反過來
+
+兩個 `style.load` 監聽會互相競爭：`useGeoLayers` 若在 mount 就註冊，會比 `MapView` 在切底圖那一刻才註冊的更早跑，於是主題圖層被加進一個還沒有等高線的樣式，contour 才補上去——排序跟首次載入相反。
+
+主題圖層全是圓點時，被一條細棕線壓過去沒人會發現；換成縣市界的半透明面就很明顯，而且**只有切過底圖才重現**。更陰險的是**它只在部分底圖上出現**：NLSC 的樣式只有兩個圖層、載入極快，時序跟一百多個圖層的 liberty 完全不同，所以很容易「切一種底圖測過就以為沒事」。
+
+時序問題已經由 `onStyleApplied` 回呼從根本解掉（見上一節）；`layerOrder.ts` 負責的是「在正確的時機把順序排對」。
+
+`src/map/layerOrder.ts` 用冪等的 `moveLayer` 後處理解決，堆疊順序（由下往上）：
+
+```
+底圖 → hillshade → 底圖地名 → contour-lines
+  → 主題 fill → 主題 line/outline → 主題 points → 主題 label
+  → contour-labels（錨點）
+```
+
+`enforceThemeLayerOrder()` 的 early-return 閘門**三個條件缺一不可**（相對順序正確、在 contour-labels 之下、在 contour-lines 之上）。少了「在 contour-lines 之上」那條，函式會把實測到的壞掉狀態 `[主題圖層, contour-lines, contour-labels]` 誤判成正確而直接 return，排序永遠修不好。
+
+這個坑咬過兩次，所以有回歸測試：**`npm run test:order`**（已納入 `npm run build`）。它用假的 map 物件重現三種堆疊狀態，不需要瀏覽器——這很重要，因為背景分頁下 maplibre 不觸發 rAF，用瀏覽器手動驗會給出**假的通過**。排序邏輯要改就先改測試。
+
+### 沿線標註很脆弱
+
+`text-font` 只有 `"Noto Sans Bold"` 確定存在於 `basemaps.ts` 借用的 OpenFreeMap glyph 端點上，換別的字型名稱會**靜默**畫不出任何標註。
+
+**線越彎、字串越長，放置演算法就越容易靜默拒絕。** 預設用等高線驗證過的寬鬆組合（`symbol-spacing: 120` / `text-max-angle: 60`）：實測世界主要河流用 240/45 時標註數是 **0**，改成 120/60 之後在 zoom 4 可標出 8 條。反過來，緯度參考線又直又橫跨全球，要把 `spacing` 調高到 320，否則同一條線上會重複出現一長串「赤道 赤道 赤道…」。
+
+改動後一定要用 `queryRenderedFeatures` 實測放置數量，不要只靠肉眼。
 
 ### 顏色
 
-`src/map/thematicColors.ts` 是唯一的顏色來源，不要在元件裡另外寫顏色：
+`src/map/thematicColors.ts` 是唯一的顏色來源。策略是**三組獨立色票**（`POINT` / `LINE` / `FILL`），各自**組內** all-pairs 驗證即可——形狀本身就在區辨（18% 透明度的面染跟 6px 圓點是不同的視覺通道），跨幾何的配對不需要驗證。每組再用 `MAX_ACTIVE_BY_KIND`（circle 4 / line 3 / fill 2）封頂，需求才維持在可解範圍。
 
-- 地形景點（藍 `#2a78d6`）、原住民族分佈（紅 `#e34948`）是固定單一色——清單靠點擊瀏覽，不靠顏色分類比較。
-- 特有種是唯一需要「依類別上色以便一眼比較」的圖層，因為多物種疊圖時顏色是分辨「這是哪個物種」的主要方式。目前是青／黃／紫三色（`SPECIES_COLORS`），對應 `MAX_SIMULTANEOUS_SPECIES = 3`——UI 會在達到這個數量後停用其餘物種的核取方塊。
+已驗證：地形景點藍 `#2a78d6` + 原住民族紅 `#e34948`；物種三色青／黃／紫；水系藍 `#2a78d6` + 行政區橘 `#d95926`（`--pairs all`，明暗兩模式六項全 PASS，CVD 最差 ΔE 25.4）。
 
-這五個顏色不是隨手選的：用 dataviz skill 的 `validate_palette.js` 以 `--pairs all` 驗證過（核取方塊可以任意複選組合，不能只驗證清單裡相鄰的顏色）。混更多顏色進去大機率會失敗——實測過橘配黃、青配洋紅在其中一種色盲模式下 ΔE 會掉到 2–7（遠低於安全門檻 15），這也是為什麼原住民族分佈選了「紅」而不是調色盤順位第二的「橘」（橘要留給物種色票，紅跟藍、紅跟青黃紫都驗證過安全）。**要調色或加物種顏色，先跑驗證器，不要憑感覺挑。**
+行政區橘刻意用 `#d95926` 而不是色票的 light step `#eb6834`：後者在 **dark 模式的亮度帶檢查會 FAIL**。地圖是 WebGL 畫布只能有一組固定色，所以必須挑「兩個模式都過」的值。
 
-### 資料整理方式
+`reference`（緯度參考線）與 `hazard`（地震帶）是**非分類的固定角色**，比照 hillshade 的棕色，刻意排除在色票驗證之外。地震帶尤其不該給分類色相：2800 個依震級縮放的點是**密度場**，教學內容是「地震帶沿板塊邊緣浮現」，不是「這個色相代表地震」；給它色相不但擠爆色票驗證，2800 個不透明白框圓點在投影機上也只是一坨糊的（所以 `strokeWidth: 0` 必須是可設定的）。
 
-兩種新內容型別分別沿用專案既有的兩種資料模式，沒有發明新架構：
+### 新增資料
 
-**原住民族分佈**（比照地點資料的手動整理模式）：
-1. 建立 `src/content/indigenous/<id>.json`，**檔名必須等於 `id`**
-2. `representativeCoord` 選文化園區、部落大會地點或行政中心，**不是**正式的分布邊界，UI 文案與資料撰寫都要避免暗示這是精確的地理範圍
-3. `npm run validate` 確認通過
+**手動整理的內容**（地點、原住民族、物種介紹）：建 `src/content/<type>/<id>.json`，**檔名必須等於 `id`**，跑 `npm run validate`。
 
-```jsonc
-{
-  "id": "amis",
-  "name": { "zh": "阿美族", "en": "Amis (Pangcah)" },
-  "representativeCoord": { "lat": 23.9871, "lng": 121.6015 },
-  "mainDistribution": ["花蓮縣", "台東縣"],   // 文字列表，不是邊界資料
-  "populationEstimate": 228000,               // 選填，要填就要填 populationYear
-  "populationYear": "2024",
-  "language": "阿美語（Pangcah / Amis）",
-  "facts": [{ "label": "族群規模", "value": "……" }],
-  "curriculum": { "level": "junior", "unit": "台灣的原住民族" },
-  "sources": ["內政部 114年第6週內政統計通報（113年底原住民人口數）"]
-}
-```
+**註冊表驅動的地理要素**（縣市、河流、山脈、洋流…）：
+1. 幾何進 `public/data/geo/`（`npm run build:geodata` 產生）或 `public/data/geo-manual/`（手繪示意幾何）
+2. 在 `registry/themes/*.ts` 加一筆圖層定義
+3. 說明文字**選填**：`src/content/geo/<collection>/<id>.json`。**沒有內容檔時 `FeatureCard` 會退回顯示 geojson 的 `name` + 圖層自己的 `description`/`sources`**，所以 21 個縣市可以先上線再逐一補寫
 
-目前 16 族的骨架（id／中英文名／代表座標／主要分布）都已建好；`facts` 與完整人口統計目前只有 5 族（阿美、排灣、泰雅、布農、達悟）做了完整示範，其餘 11 族先放最小可行的 facts（分布地區、語言等不需要外部查證的穩定事實）。要補完剩下的族，照上面的格式加 `facts`／`sources` 即可，不需要改任何程式碼。
+手繪示意幾何（洋流、氣候帶、風系）一定要標 `schematic: true`，UI 才會顯示「教學示意圖，非精確界線」的警語——這是內容誠信的承諾，比照 GBIF 觀測點與 ERA5 氣候值的既有做法。
 
-**特有種生態分佈**（比照氣候資料的 build-time fetch 模式）：
-1. 建立 `src/content/species/<id>.json`（物種介紹文字，不含座標）
-2. 用 `https://api.gbif.org/v1/species/match?name=<學名>` 查 `gbifTaxonKey`
-3. 執行 `npm run build:species` 產生 `public/data/species/<id>.geojson`（已存在的會跳過，`--force` 可重抓）
-4. `npm run validate` 確認通過，且 geojson 的 `speciesId` 都能對應到 species 內容檔
+### 已知資料限制
 
-```jsonc
-{
-  "id": "mikado-pheasant",
-  "name": { "zh": "帝雉", "en": "Mikado Pheasant", "latin": "Syrmaticus mikado" },
-  "gbifTaxonKey": 2473482,
-  "category": "bird",                // mammal|bird|fish|amphibian|reptile|insect
-  "conservationStatus": "瀕臨絕種保育類野生動物",  // 選填
-  "habitat": "海拔 2000–3800 公尺的中高海拔針闊葉混合林與箭竹草原",
-  "facts": [{ "label": "特徵", "value": "……" }],
-  "curriculum": { "level": "senior", "unit": "台灣的自然地理與生態" },
-  "sources": ["GBIF Global Biodiversity Information Facility"]
-}
-```
-
-目前收錄 5 種示範（台灣黑熊、帝雉、台灣獼猴、櫻花鉤吻鮭、台灣穿山甲）。要新增物種，先用 `species/match` 確認 GBIF 有足夠觀測量（幾十筆以上比較有意義），再照上面步驟加資料。
-
----
-
+- **臺灣縣市界只有 21 個，缺連江縣（馬祖）。** 已確認 Natural Earth 10m 整份資料集裡都沒有它，不是篩選寫錯。要補齊 22 個縣市得改用政府資料開放平臺的 shapefile（需要 `ogr2ogr`）。圖層的 `description` 有向使用者明講。
+- **Natural Earth 的河流沒有中文名欄位**，中文名靠 `build-geodata.mjs` 裡的 `RIVER_NAMES_ZH` 對照表。對不到就沿用原名。注意 NE 把黃河的 name 寫成 `"Huang"`（不是 `"Huang He"`）。
+- **相鄰的面各自簡化會在共用邊界開出次像素縫隙**（Douglas–Peucker 不保拓樸）。免依賴的緩解方式是設 `maxzoom`（縣市界設 11），讓它在縫隙變得可解析之前就停止繪製。
 ## 雙地圖同步規則
 
 `src/map/useMapSync.ts`。
@@ -295,16 +344,22 @@ Node 24 原生支援 TypeScript type stripping，所以 `.mjs` 腳本可以直�
 ```bash
 npm run dev             # http://localhost:5173
 npm run typecheck       # tsc --noEmit
-npm run validate        # zod 驗證 src/content 與 public/data/climate
-npm run build           # validate → typecheck → vite build → postbuild
+npm run validate        # zod 驗證內容 + 圖層註冊表交叉檢查
+npm run test:order      # 圖層堆疊順序的回歸測試（不需瀏覽器）
+npm run build           # validate → test:order → typecheck → vite build → postbuild
+npm run build:debug     # 帶地圖除錯掛勾的 production build（驗證用，見下）
 npm run preview         # 預覽 production build
 npm run build:climate   # 產生氣候 JSON（已存在會跳過）
 npm run build:climate -- --force   # 全部重抓
 npm run build:species   # 產生特有種觀測點 geojson（已存在會跳過）
 npm run build:species -- --force   # 全部重抓
+npm run build:geodata   # 產生行政區/河流/地震 geojson（已存在會跳過）
+npm run build:geodata -- --force --only=quakes   # 只重抓一個資料集
 ```
 
-`build:climate` 對 Open-Meteo、`build:species` 對 GBIF 都有指數退避重試（429 時等 5s/10s/20s…），連抓多筆被限流是正常的，重跑一次即可補齊。
+`build:climate` 對 Open-Meteo、`build:species` 對 GBIF、`build:geodata` 對 Natural Earth 與 USGS 都有指數退避重試（429/5xx 時等 5s/10s/20s…），連抓多筆被限流是正常的，重跑一次即可補齊。
+
+`build:geodata` 有**大小預算**：單一圖層超過 1 MB 直接 `exit 1`（不是印警告），超過 500 KB 印提醒。真正的限制不是 GitHub Pages，是一個班 30 個學生同時用學校 wifi 開站。
 
 ---
 
@@ -318,9 +373,20 @@ maplibre 的 `Style.loadJSON()` 會先 `await` 一個 `requestAnimationFrame` �
 `osascript -e 'tell application "Google Chrome" to set active tab index of window 1 to N'` 把分頁切到前景再等幾秒。
 同理，在背景載入、之後才切到前景的分頁，相機狀態可能跟網址參數對不上（`_constrain` 會在尺寸還沒定案時調整 zoom／緯度），要重新整理後再驗一次比較頁的 URL 還原。
 
-### 開發模式的地圖除錯掛勾
+### 地圖除錯掛勾（`npm run preview` 要用 `build:debug`）
 
-`import.meta.env.DEV` 為真時，`MapView` 會把地圖實例掛到 `window.__gaiaMaps`，並透過 `canvasContextAttributes.preserveDrawingBuffer` 保留繪圖緩衝區。
+`MapView` 會把地圖實例掛到 `window.__gaiaMaps`，並透過 `canvasContextAttributes.preserveDrawingBuffer` 保留繪圖緩衝區。
+
+⚠️ **這個掛勾的開關不是只有 `import.meta.env.DEV`。** DEV 在 production build 會被 Vite 靜態替換成 `false`，所以只認 DEV 的話，下面所有「production build 下驗證」的指令**根本跑不起來**（`__gaiaMaps` 是 undefined、`toDataURL()` 回空白），而且症狀跟「地圖真的壞了」一模一樣。
+
+因此另外有一個 `VITE_DEBUG_MAPS` 旗標（`.env.debug`）。驗證流程是：
+
+```bash
+npm run build:debug && npm run preview     # 帶掛勾
+npm run build                              # 正式部署，掛勾會被 DCE 掉（可用 grep -c __gaiaMaps dist/assets/*.js 確認為 0）
+```
+
+換頁時 `MapView` 會把自己從 `__gaiaMaps` 移除，所以陣列長度永遠等於畫面上實際存在的地圖數（探索頁 1、比較頁 2）。要拿最新的一張用 `window.__gaiaMaps.at(-1)`。
 
 **要取得地圖畫面**（一般截圖工具只會拍到空白 canvas），把 canvas 轉成已解碼的 `<img>` 再截圖：
 
@@ -336,7 +402,7 @@ document.body.appendChild(img);
 **驗證圖層時優先用程式查詢，不要只靠肉眼看圖：**
 
 ```js
-const m = window.__gaiaMaps[0];
+const m = window.__gaiaMaps.at(-1);
 m.queryRenderedFeatures({ layers: ['contour-lines'] }).length   // 等高線條數
 m.queryRenderedFeatures({ layers: ['contour-labels'] }).length  // 標註數（易被放置演算法拒絕）
 m.isSourceLoaded('contour-source')
@@ -354,7 +420,26 @@ m.isSourceLoaded('contour-source')
 5. DevTools Network：**不得有任何帶 API key 的請求**；圖磚全部回 200
 6. Console 無 CORS、WebGL 或 maplibre 錯誤
 7. **切到每一種向量底圖（目前是「世界地圖」）並確認地物真的渲染出來**，不能只看 `npm run build` 成功。這一項只在 production build 才驗得出來——`npm run dev` 用的是原始 ESM，不會踩到 worker 檔案沒被複製的問題，`npm run preview` 或實際部署才會踩到
-8. Explore 頁：三個主題圖層核取方塊可任意複選疊加；複選多個物種後**切換底圖**，確認圖層都還在（見「Explore 頁的主題圖層系統」的關鍵坑）；點地圖上的標記跟點側欄清單都能開啟對應詳情卡且互相 highlight
+8. 主題頁：每個主題的圖層核取方塊可任意複選疊加；`planned` 的是停用狀態但仍有說明文字；點地圖上的圖徵跟點側欄清單都能開啟對應詳情卡
+9. **切底圖之後把所有主題圖層的存在與排序全部重驗一次。** 這是最容易回歸的地方，也是「排序反過來」那個坑唯一會現形的路徑（見上面的關鍵坑二）：
+   ```js
+   const ids = m.getStyle().layers.map(l => l.id), at = id => ids.indexOf(id);
+   at('contour-lines') < at('tw-counties-fill')      // 面在等高線之上
+   at('tw-counties-fill') < at('places-points')      // 面在點之下
+   at('places-points')   < at('contour-labels')      // 全部在高程數字之下
+   m._listeners.click.length                          // 切 3 次底圖前後應相同（監聽沒累積）
+   ```
+10. 沿線標註要用 `queryRenderedFeatures` 數，**不能只看有沒有圖層**：
+   ```js
+   m.queryRenderedFeatures({ layers: ['latitude-lines-label'] }).length  // 全球主題預設視角應為 9
+   m.queryRenderedFeatures({ layers: ['world-rivers-label'] }).length    // zoom 4 的非洲一帶應有數條
+   ```
+11. 用導覽切主題時 `window.__gaiaMaps.length` 不變（證明沒有 remount 重建地圖）
+
+### ⚠️ 用瀏覽器自動化點 UI 的兩個陷阱
+
+- **底圖下拉選單的 CSS class 在 `<label>` 上，不是 `<select>` 上。** 選擇器要寫 `.basemap-select select`，寫成 `.basemap-select` 會拿到 label，`.value = …` 只是加了一個沒人看的屬性，**切底圖根本不會發生**，而測試看起來還是「通過」。
+- **React 會用 `_valueTracker` 記住上次的值**，直接指派 `.value` 再 `dispatchEvent(new Event('change'))` 會被忽略。要先 `sel._valueTracker?.setValue('__force__')` 再指派。
 
 ### 部署後
 
@@ -402,21 +487,32 @@ src/
 │  ├─ places/*.json
 │  ├─ indigenous/*.json   # 16 族代表點
 │  └─ species/*.json      # 物種介紹文字（不含座標）
+│  └─ geo/<collection>/*.json  # 地理要素說明（選填，沒有就走 FeatureCard fallback）
 ├─ map/
 │  ├─ demSource.ts        # 單例 DemSource
 │  ├─ basemaps.ts         # 底圖樣式組裝 + OpenFreeMap 失敗時的備援
-│  ├─ layers/{contour,hillshade,terrain,points}.ts
+│  ├─ layers/{contour,hillshade,terrain}.ts
+│  ├─ layers/geo.ts       # 通用圖層 helper（circle/line/fill）
 │  ├─ MapView.tsx         # 單張地圖元件
 │  ├─ useMapSync.ts       # 緯度／zoom 同步（比較頁）
-│  ├─ useThematicLayers.ts # 主題圖層管理（探索頁）
+│  ├─ useGeoLayers.ts     # 主題圖層管理（主題頁）
+│  ├─ layerOrder.ts       # 冪等的堆疊順序後處理
+│  ├─ registry/           # 圖層註冊表（純資料，Node 可 import）
 │  └─ thematicColors.ts   # 主題圖層顏色（已用 dataviz 驗證器驗證）
-├─ compare/               # 同緯度比較頁
-├─ pages/ExplorePage.tsx  # 探索頁：可複選疊加地形景點/原住民族/特有種
-└─ components/            # PlaceCard/IndigenousCard/SpeciesCard/MapLegend/ThematicLayerPanel…
+├─ compare/               # 同緯度比較頁（獨立，未被註冊表系統改動）
+├─ pages/ThemeMapPage.tsx # 主題地圖頁 /theme/:themeId
+└─ components/            # PlaceCard/IndigenousCard/SpeciesCard/FeatureCard/LayerPanel…
+public/data/
+├─ climate/*.json         # build:climate 產生
+├─ species/*.geojson      # build:species 產生
+├─ geo/*.geojson          # build:geodata 產生（禁止手改）
+└─ geo-manual/*.geojson   # 手繪教學示意幾何（可以手改）
 scripts/
 ├─ build-climate.mjs      # Open-Meteo → public/data/climate
 ├─ build-species.mjs      # GBIF → public/data/species
-├─ validate-content.mjs   # 建置前 schema 驗證
+├─ build-geodata.mjs      # Natural Earth / USGS → public/data/geo
+├─ lib/simplify.mjs       # 自帶的 Douglas–Peucker（刻意不加依賴）
+├─ validate-content.mjs   # 建置前 schema 驗證 + 註冊表交叉檢查
 └─ postbuild.mjs          # 404.html + CNAME 確認
 ```
 

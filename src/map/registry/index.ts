@@ -1,0 +1,68 @@
+// 這裡的 .ts 副檔名是必要的，不是筆誤：Node 的 ESM 解析器不會自己補副檔名，
+// 而 validate-content.mjs 要用 Node 直接載入這支模組。見下方說明。
+import { taiwanTheme } from "./themes/taiwan.ts";
+import { worldTheme } from "./themes/world.ts";
+import { globalTheme } from "./themes/global.ts";
+import type { GeometryKind, LayerDefinition, LayerRender, ThemeDefinition } from "./types.ts";
+
+/**
+ * 主題圖層註冊表的入口。
+ *
+ * ⚠️ **這個模組必須維持 Node 可直接 import**（`scripts/validate-content.mjs`
+ * 用 Node 24 的 type stripping 載入它做建置期交叉檢查）。所以這裡只能相依
+ * `./themes/*` 與 `./types`，**不准** import `src/content`（裡面有
+ * `import.meta.glob`）或任何 maplibre 的值。
+ *
+ * 需要內容資料才能算出來的東西（例如把特有種展開成 N 個子圖層）一律放
+ * `./resolve.ts`，那支是瀏覽器專用的。這條界線請不要跨過去。
+ */
+
+export const THEMES: ThemeDefinition[] = [taiwanTheme, worldTheme, globalTheme];
+
+export const DEFAULT_THEME_ID = THEMES[0].id;
+
+export function getTheme(id: string | undefined): ThemeDefinition | undefined {
+  return THEMES.find((t) => t.id === id);
+}
+
+/** 全站所有圖層（含 planned），給驗證器與圖層 id 唯一性檢查用。 */
+export function allLayers(): { theme: ThemeDefinition; layer: LayerDefinition }[] {
+  return THEMES.flatMap((theme) => theme.layers.map((layer) => ({ theme, layer })));
+}
+
+/**
+ * maplibre id 的前綴。
+ *
+ * `"species"` + `"mikado-pheasant"` → `"species-mikado-pheasant"`
+ *   → source `species-mikado-pheasant-source`、layer `species-mikado-pheasant-points`
+ * 這與重構前 `speciesLayerId()` 產生的字串完全相同，既有的驗證指令不必改。
+ */
+export function layerInstanceId(layerId: string, itemId?: string): string {
+  return itemId ? `${layerId}-${itemId}` : layerId;
+}
+
+/** 一個 instance 的 geojson source id。 */
+export const geoSourceId = (instanceId: string) => `${instanceId}-source`;
+
+const SUFFIXES: Record<GeometryKind, readonly string[]> = {
+  // "-points" 是刻意保留的舊後綴，見 types.ts 的說明
+  circle: ["points"],
+  line: ["line"],
+  fill: ["fill", "outline"],
+};
+
+/** 一個 instance 展開出來的所有 maplibre 圖層 id（由下往上排）。 */
+export function geoLayerIds(instanceId: string, render: LayerRender): string[] {
+  const ids = SUFFIXES[render.kind].map((s) => `${instanceId}-${s}`);
+  if (render.kind === "line" && render.label) ids.push(`${instanceId}-label`);
+  return ids;
+}
+
+/**
+ * 綁點擊／hover 互動的那一個圖層。
+ * fill 綁的是面而不是外框，否則點在邊界上會觸發兩次。
+ */
+export function geoHitLayerId(instanceId: string, kind: GeometryKind): string {
+  if (kind === "fill") return `${instanceId}-fill`;
+  return `${instanceId}-${kind === "circle" ? "points" : "line"}`;
+}

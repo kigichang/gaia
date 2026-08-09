@@ -1,0 +1,270 @@
+import type { GeoJSONSource, Map as MapLibreMap, MapLayerMouseEvent } from "maplibre-gl";
+import { geoLayerIds, geoSourceId } from "../registry/index.ts";
+import type { LayerRender } from "../registry/types.ts";
+
+/**
+ * 通用主題圖層 helper（circle / line / fill）。
+ *
+ * 取代舊的 `layers/points.ts`——三種內容型別（地形景點、原住民族、特有種）
+ * 都只是圓點，但註冊表要表達的行政區是面、水系與洋流是線，所以 helper 必須
+ * 泛化到三種幾何。
+ *
+ * ## 一個 instance 可能對應多個 maplibre 圖層
+ *
+ *   circle → `${id}-points`
+ *   line   → `${id}-line`（有 label 時再加 `${id}-label`）
+ *   fill   → `${id}-fill` + `${id}-outline`
+ *
+ * fill 的外框必須是獨立的 line 圖層：maplibre 的 `fill-outline-color` 只能畫
+ * 1px 髮絲線，線寬完全不可調。兩個子圖層共用同一個 source，但**分屬不同的排序
+ * band**（面在下、線在上），插入位置各自決定，見 `../layerOrder.ts`。
+ *
+ * `addGeoLayer` 刻意**不收 `beforeId`**：排序是一個獨立且冪等的後處理，
+ * 理由見 layerOrder.ts。
+ */
+
+export interface GeoLayerSpec {
+  /** maplibre id 的前綴，例如 "places"、"species-mikado-pheasant" */
+  instanceId: string;
+  data: GeoJSON.FeatureCollection;
+  color: string;
+  render: LayerRender;
+  minzoom?: number;
+  maxzoom?: number;
+}
+
+export function addGeoLayer(map: MapLibreMap, spec: GeoLayerSpec) {
+  const { instanceId, data, color, render, minzoom, maxzoom } = spec;
+  const sourceId = geoSourceId(instanceId);
+
+  if (map.getSource(sourceId)) {
+    (map.getSource(sourceId) as GeoJSONSource).setData(data);
+  } else {
+    map.addSource(sourceId, { type: "geojson", data });
+  }
+
+  const zoom = { ...(minzoom != null && { minzoom }), ...(maxzoom != null && { maxzoom }) };
+
+  if (render.kind === "circle") {
+    const id = `${instanceId}-points`;
+    if (map.getLayer(id)) {
+      // 顏色可能會變（特有種依勾選順序指派色票，取消勾選其中一個會讓後面的遞補），
+      // 所以既有圖層要更新 paint，不能像舊版那樣只在不存在時才處理。
+      map.setPaintProperty(id, "circle-color", color);
+    } else {
+      map.addLayer({
+        id,
+        type: "circle",
+        source: sourceId,
+        ...zoom,
+        paint: {
+          "circle-radius": render.radius ?? 6,
+          "circle-color": color,
+          // 大量點位（例如上千筆地震）要能把白框關掉，否則會糊成一片
+          "circle-stroke-width": render.strokeWidth ?? 1.5,
+          "circle-stroke-color": "#fff",
+          "circle-opacity": render.opacity ?? 0.85,
+        },
+      });
+    }
+    return;
+  }
+
+  if (render.kind === "line") {
+    const id = `${instanceId}-line`;
+    if (map.getLayer(id)) {
+      map.setPaintProperty(id, "line-color", color);
+    } else {
+      map.addLayer({
+        id,
+        type: "line",
+        source: sourceId,
+        ...zoom,
+        layout: { "line-join": "round", "line-cap": "round" },
+        paint: {
+          "line-color": color,
+          "line-width": render.width ?? 1.4,
+          "line-opacity": render.opacity ?? 0.9,
+          ...(render.dash && { "line-dasharray": render.dash }),
+        },
+      });
+    }
+
+    if (render.label) {
+      const labelId = `${instanceId}-label`;
+      if (!map.getLayer(labelId)) {
+        map.addLayer({
+          id: labelId,
+          type: "symbol",
+          source: sourceId,
+          ...zoom,
+          layout: {
+            "symbol-placement": "line",
+            "text-field": ["get", render.label.property],
+            // 只有 "Noto Sans Bold" 確定存在於 basemaps.ts 借用的 OpenFreeMap
+            // glyph 端點上。換成別的字型名稱會**靜默**畫不出任何標註。
+            "text-font": ["Noto Sans Bold"],
+            "text-size": render.label.size ?? 11,
+            // 預設用等高線實測過的寬鬆組合：河川、洋流這類彎曲的線用 240/45
+            // 會被放置演算法全數拒絕（實測世界主要河流標註數 = 0）。
+            // 筆直又橫跨全球的線（緯度參考線）要自己調高 spacing。
+            "symbol-spacing": render.label.spacing ?? 120,
+            "text-max-angle": render.label.maxAngle ?? 60,
+            "text-padding": 2,
+          },
+          paint: {
+            "text-color": color,
+            "text-halo-color": "#fff",
+            "text-halo-width": 1.4,
+          },
+        });
+      } else {
+        map.setPaintProperty(labelId, "text-color", color);
+      }
+    }
+    return;
+  }
+
+  // fill：面 + 獨立的外框線圖層
+  const fillId = `${instanceId}-fill`;
+  if (map.getLayer(fillId)) {
+    map.setPaintProperty(fillId, "fill-color", color);
+  } else {
+    map.addLayer({
+      id: fillId,
+      type: "fill",
+      source: sourceId,
+      ...zoom,
+      paint: {
+        "fill-color": color,
+        // 主題面疊在底圖地名之上，不透明會把地名整片蓋掉。上限 0.25。
+        "fill-opacity": render.fillOpacity ?? 0.18,
+      },
+    });
+  }
+
+  const outlineId = `${instanceId}-outline`;
+  if (map.getLayer(outlineId)) {
+    map.setPaintProperty(outlineId, "line-color", color);
+  } else {
+    map.addLayer({
+      id: outlineId,
+      type: "line",
+      source: sourceId,
+      ...zoom,
+      layout: { "line-join": "round" },
+      paint: {
+        "line-color": color,
+        "line-width": render.outlineWidth ?? 1,
+        "line-opacity": 0.9,
+      },
+    });
+  }
+}
+
+export function removeGeoLayer(map: MapLibreMap, instanceId: string, render: LayerRender) {
+  for (const id of geoLayerIds(instanceId, render)) {
+    if (map.getLayer(id)) map.removeLayer(id);
+  }
+  const sourceId = geoSourceId(instanceId);
+  if (map.getSource(sourceId)) map.removeSource(sourceId);
+}
+
+export function setGeoLayerVisible(
+  map: MapLibreMap,
+  instanceId: string,
+  render: LayerRender,
+  visible: boolean,
+) {
+  for (const id of geoLayerIds(instanceId, render)) {
+    if (map.getLayer(id)) {
+      map.setLayoutProperty(id, "visibility", visible ? "visible" : "none");
+    }
+  }
+}
+
+/** 把任意陣列轉成點位 GeoJSON。 */
+export function toFeatureCollection<T>(
+  items: T[],
+  getCoord: (item: T) => [number, number],
+  getId: (item: T) => string,
+  /** 側欄清單與詳情卡 fallback 要用的欄位（name／meta／zoom…） */
+  getProperties?: (item: T) => Record<string, unknown>,
+): GeoJSON.FeatureCollection<GeoJSON.Point> {
+  return {
+    type: "FeatureCollection",
+    features: items.map((item) => ({
+      type: "Feature",
+      geometry: { type: "Point", coordinates: getCoord(item) },
+      properties: { ...getProperties?.(item), id: getId(item) },
+    })),
+  };
+}
+
+/**
+ * 幫圖層掛上點擊（回呼收到該圖徵的 `id` 屬性）與滑鼠游標樣式切換。
+ * 回傳的 cleanup 要在圖層被移除或 effect 卸載時呼叫。
+ *
+ * ⚠️ `map.on(event, layerId, handler)` 的監聽是掛在 **Map 實例**上、不是掛在
+ * 圖層上，所以 `setStyle()` 造成的圖層重建**不需要**重綁；重綁只會讓監聽無限累積。
+ */
+export function bindGeoLayerInteractions(
+  map: MapLibreMap,
+  layerId: string,
+  onClick: (id: string) => void,
+) {
+  const handleClick = (e: MapLayerMouseEvent) => {
+    const id = e.features?.[0]?.properties?.id;
+    if (typeof id === "string") onClick(id);
+  };
+  const setPointer = () => {
+    map.getCanvas().style.cursor = "pointer";
+  };
+  const resetCursor = () => {
+    map.getCanvas().style.cursor = "";
+  };
+
+  map.on("click", layerId, handleClick);
+  map.on("mouseenter", layerId, setPointer);
+  map.on("mouseleave", layerId, resetCursor);
+
+  return () => {
+    map.off("click", layerId, handleClick);
+    map.off("mouseenter", layerId, setPointer);
+    map.off("mouseleave", layerId, resetCursor);
+  };
+}
+
+/** 整份 FeatureCollection 的外接矩形，給 fitBounds 用。空集合回 null。 */
+export function bboxOf(
+  data: GeoJSON.FeatureCollection,
+): [[number, number], [number, number]] | null {
+  let minLng = Infinity;
+  let minLat = Infinity;
+  let maxLng = -Infinity;
+  let maxLat = -Infinity;
+
+  const visit = (coords: unknown): void => {
+    if (!Array.isArray(coords)) return;
+    if (typeof coords[0] === "number" && typeof coords[1] === "number") {
+      const [lng, lat] = coords as [number, number];
+      if (lng < minLng) minLng = lng;
+      if (lat < minLat) minLat = lat;
+      if (lng > maxLng) maxLng = lng;
+      if (lat > maxLat) maxLat = lat;
+      return;
+    }
+    for (const c of coords) visit(c);
+  };
+
+  for (const f of data.features) {
+    if (f.geometry && "coordinates" in f.geometry) visit(f.geometry.coordinates);
+  }
+
+  return Number.isFinite(minLng)
+    ? [
+        [minLng, minLat],
+        [maxLng, maxLat],
+      ]
+    : null;
+}

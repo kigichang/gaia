@@ -1,4 +1,11 @@
-import type { Climate, IndigenousGroup, Place, Species, SpeciesOccurrence } from "../lib/schema";
+import type {
+  Climate,
+  GeoFeature,
+  IndigenousGroup,
+  Place,
+  Species,
+  SpeciesOccurrence,
+} from "../lib/schema";
 
 /**
  * 載入所有地點／原住民族／物種資料。
@@ -64,6 +71,27 @@ export const speciesById = new Map(speciesList.map((s) => [s.id, s]));
 
 export function getSpecies(id: string): Species | undefined {
   return speciesById.get(id);
+}
+
+/**
+ * 註冊表驅動的地理要素說明（縣市、河流、山脈…）。
+ *
+ * 幾何在 public/data/geo 底下，這裡只有文字說明。**不是每個圖徵都需要內容檔**——
+ * 查不到就由 FeatureCard 退回顯示 geojson 的 name 與圖層自己的說明。
+ */
+const geoFeatureModules = import.meta.glob<{ default: GeoFeature }>("./geo/*/*.json", {
+  eager: true,
+});
+
+const geoFeatureByKey = new Map(
+  Object.values(geoFeatureModules).map((m) => [
+    `${m.default.collection}/${m.default.id}`,
+    m.default,
+  ]),
+);
+
+export function getGeoFeature(collection: string, id: string): GeoFeature | undefined {
+  return geoFeatureByKey.get(`${collection}/${id}`);
 }
 
 /**
