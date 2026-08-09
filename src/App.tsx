@@ -20,7 +20,7 @@ export function App() {
       <header className="app-header">
         <NavLink to="/explore" className="brand">
           <span className="brand-mark">GAIA</span>
-          <span className="brand-sub">地理課互動地圖</span>
+          <span className="brand-sub">人文地理互動地圖</span>
         </NavLink>
         <div className="header-controls">
           <LayerToggles
