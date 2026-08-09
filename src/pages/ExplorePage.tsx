@@ -2,7 +2,6 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import type { Map as MapLibreMap } from "maplibre-gl";
 import { MapView, type OverlayState } from "../map/MapView";
 import type { BasemapId } from "../map/basemaps";
-import { LayerToggles } from "../components/LayerToggles";
 import { ThematicLayerPanel } from "../components/ThematicLayerPanel";
 import { MapLegend } from "../components/MapLegend";
 import { PlaceCard } from "../components/PlaceCard";
@@ -60,15 +59,14 @@ function boundsOf(fc: GeoJSON.FeatureCollection<GeoJSON.Point>): [[number, numbe
   ];
 }
 
+interface ExplorePageProps {
+  overlays: OverlayState;
+  basemap: BasemapId;
+}
+
 /** 單張地圖的地形探索頁，可複選疊加地形景點／原住民族分佈／特有種生態分佈。 */
-export function ExplorePage() {
+export function ExplorePage({ overlays, basemap }: ExplorePageProps) {
   const [map, setMap] = useState<MapLibreMap | null>(null);
-  const [overlays, setOverlays] = useState<OverlayState>({
-    contour: true,
-    hillshade: true,
-    terrain: false,
-  });
-  const [basemap, setBasemap] = useState<BasemapId>("nlsc-emap");
 
   const [selected, setSelected] = useState<Selected>(() => ({
     kind: "place",
@@ -235,12 +233,6 @@ export function ExplorePage() {
       </aside>
 
       <div className="explore-main">
-        <LayerToggles
-          overlays={overlays}
-          onOverlaysChange={setOverlays}
-          basemap={basemap}
-          onBasemapChange={setBasemap}
-        />
         <div className="map-canvas-wrap">
           <MapView
             className="map-canvas explore-canvas"

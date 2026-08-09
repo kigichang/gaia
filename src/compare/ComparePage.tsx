@@ -4,7 +4,6 @@ import type { Map as MapLibreMap } from "maplibre-gl";
 import { MapView, type OverlayState } from "../map/MapView";
 import { useMapSync, type CameraState } from "../map/useMapSync";
 import type { BasemapId } from "../map/basemaps";
-import { LayerToggles } from "../components/LayerToggles";
 import { PlaceCard } from "../components/PlaceCard";
 import { LatitudeSlider, formatLatitude } from "./LatitudeSlider";
 import { ClimateChart, sharedDomains } from "./ClimateChart";
@@ -14,7 +13,12 @@ import type { Climate, Place } from "../lib/schema";
 
 type Side = "a" | "b";
 
-export function ComparePage() {
+interface ComparePageProps {
+  overlays: OverlayState;
+  basemap: BasemapId;
+}
+
+export function ComparePage({ overlays, basemap }: ComparePageProps) {
   const [params, setParams] = useSearchParams();
 
   const placeA = getPlace(params.get("a") ?? DEFAULT_PRESET.a) ?? places[0];
@@ -30,13 +34,6 @@ export function ComparePage() {
     lngA: placeA.coord.lng,
     lngB: placeB.coord.lng,
   });
-
-  const [overlays, setOverlays] = useState<OverlayState>({
-    contour: true,
-    hillshade: true,
-    terrain: false,
-  });
-  const [basemap, setBasemap] = useState<BasemapId>("liberty");
 
   // 相機狀態寫回網址，讓老師可以把一組比較直接貼給學生。
   // replace 避免每次拖動地圖都塞一筆瀏覽紀錄。
@@ -128,12 +125,6 @@ export function ComparePage() {
             </button>
           ))}
         </div>
-        <LayerToggles
-          overlays={overlays}
-          onOverlaysChange={setOverlays}
-          basemap={basemap}
-          onBasemapChange={setBasemap}
-        />
       </section>
 
       {activePreset && <p className="preset-hint">{activePreset.hint}</p>}
