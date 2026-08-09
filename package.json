@@ -3,7 +3,7 @@
   "private": true,
   "version": "0.1.0",
   "type": "module",
-  "description": "國/高中地理課程等高線地圖教學網站",
+  "description": "地理課程互動地圖：以主題組織的等高線地圖與同緯度比較工具",
   "engines": {
     "node": ">=22.12"
   },
