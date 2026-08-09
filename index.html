@@ -11,6 +11,19 @@
     />
     <link rel="preconnect" href="https://s3.amazonaws.com" crossorigin />
     <link rel="preconnect" href="https://tiles.openfreemap.org" crossorigin />
+    <script>
+      // 在 React 掛載、CSS 套用之前先設好 data-theme，避免使用者選過「淺色」但
+      // 系統是深色模式時，畫面先閃一下深色才切回淺色。邏輯必須跟 src/useTheme.ts
+      // 的 readStored/applyToDocument 保持一致。
+      (function () {
+        try {
+          var v = localStorage.getItem("gaia-theme");
+          if (v === "light" || v === "dark") {
+            document.documentElement.setAttribute("data-theme", v);
+          }
+        } catch (e) {}
+      })();
+    </script>
   </head>
   <body>
     <div id="root"></div>

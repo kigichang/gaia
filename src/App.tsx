@@ -3,6 +3,8 @@ import { NavLink, Navigate, Route, Routes } from "react-router-dom";
 import { ComparePage } from "./compare/ComparePage";
 import { ExplorePage } from "./pages/ExplorePage";
 import { LayerToggles } from "./components/LayerToggles";
+import { ThemeToggle } from "./components/ThemeToggle";
+import { useTheme } from "./useTheme";
 import type { BasemapId } from "./map/basemaps";
 import type { OverlayState } from "./map/MapView";
 
@@ -14,6 +16,7 @@ export function App() {
     terrain: false,
   });
   const [basemap, setBasemap] = useState<BasemapId>("liberty");
+  const { theme, setTheme } = useTheme();
 
   return (
     <div className="app">
@@ -33,6 +36,7 @@ export function App() {
             <NavLink to="/explore">地形探索</NavLink>
             <NavLink to="/compare">同緯度比較</NavLink>
           </nav>
+          <ThemeToggle theme={theme} onChange={setTheme} />
         </div>
       </header>
       <main className="app-main">
