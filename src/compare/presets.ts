@@ -12,6 +12,9 @@ export interface ComparePreset {
 /**
  * 預設比較組合。每一組都刻意挑選「緯度接近、地理條件差很多」的配對，
  * 讓學生自己看出緯度不是決定氣候的唯一因素。
+ *
+ * 最後一組是**反過來的對照**：前面幾組是「氣溫接近、雨量差很多」，
+ * 大塔山 ↔ 玉山則是「雨量幾乎一樣、氣溫差很多」，把海拔單獨隔離出來。
  */
 export const COMPARE_PRESETS: ComparePreset[] = [
   {
@@ -49,6 +52,16 @@ export const COMPARE_PRESETS: ComparePreset[] = [
     zoom: 6,
     a: "taipei",
     b: "cairo",
+  },
+  {
+    id: "elevation-datashan-yushan",
+    label: "同緯度不同海拔：大塔山 ↔ 玉山",
+    hint: "同在 23.5°N 的臺灣山區，年雨量幾乎一樣（約 3000 mm），海拔差 1290 公尺，年均溫就差了 6.5 °C——這一組把海拔單獨隔離出來看。",
+    lat: 23.5,
+    // 兩座山相距不到 30 公里，拉近才看得到等高線（zoom ≥ 9 才畫）
+    zoom: 10,
+    a: "datashan",
+    b: "yushan",
   },
 ];
 
