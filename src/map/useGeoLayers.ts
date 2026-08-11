@@ -58,11 +58,23 @@ export function useGeoLayers(
   map: MapLibreMap | null,
   instances: GeoLayerInstance[],
   onSelect: (detail: DetailSpec, featureId: string) => void,
+  /**
+   * 目前選取的圖徵 id，會讓該筆被畫得比同層其他筆明顯（見 `addGeoLayer` 的說明）。
+   *
+   * 刻意只收 id、不收「是哪個圖層的」：圖徵 id 在各 collection 內是唯一的
+   * （`taipei`／`amis`／`tw-tao`），同時可見的兩個圖層撞到同一個 id 實務上不會
+   * 發生，就算發生了兩邊一起強調也不會錯到哪裡去。換來的是呼叫端不必解析
+   * 「這個 selection 屬於哪個 instance」。
+   */
+  selectedId: string | null,
 ): () => void {
   const instancesRef = useRef(instances);
   instancesRef.current = instances;
   const onSelectRef = useRef(onSelect);
   onSelectRef.current = onSelect;
+  // 切底圖重套時要帶著「當下」的選取，所以跟 instances 一樣走 ref
+  const selectedIdRef = useRef(selectedId);
+  selectedIdRef.current = selectedId;
 
   // 只有「有哪些 instance」會影響互動綁定，資料載入完成不會。
   const instanceKey = instances.map((i) => i.instanceId).join("|");
@@ -145,6 +157,7 @@ export function useGeoLayers(
           render: i.render,
           minzoom: i.minzoom,
           maxzoom: i.maxzoom,
+          selectedId: selectedIdRef.current,
         });
         applied.current.set(i.instanceId, i.render);
       }
@@ -154,7 +167,9 @@ export function useGeoLayers(
 
     applyRef.current = apply;
     apply();
-  }, [map, instances]);
+    // selectedId 也要在這裡重跑：它只改 paint，addGeoLayer 對既有圖層走
+    // setPaintProperty，不會把圖層拆掉重加。
+  }, [map, instances, selectedId]);
 
   // 換地圖實例時清掉記帳，否則新地圖會以為圖層已經加過
   useEffect(() => {

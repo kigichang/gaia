@@ -31,10 +31,43 @@ export interface GeoLayerSpec {
   render: LayerRender;
   minzoom?: number;
   maxzoom?: number;
+  /** 目前選取的圖徵 `properties.id`，該筆會被畫得比同層其他筆明顯（見下） */
+  selectedId?: string | null;
 }
 
+/**
+ * 「選取中」的強調。
+ *
+ * 同一個圖層裡所有圖徵都是同一個顏色（顏色代表的是**圖層身分**，不是個別圖徵），
+ * 所以選了 16 個原住民族裡的某一族之後，根本認不出地圖上哪一顆紅點才是它。
+ * 解法**不能是換顏色**——那會讓「紅點＝原住民族」這個圖例對應失效，也違反
+ * 「顏色跟著實體、不跟著狀態」的規則。改用**尺寸與外框**這兩個獨立通道：
+ * 選取的那一筆半徑加倍、外框加粗，色相完全不動。
+ *
+ * 做成 data-driven 的 `case` 表達式而不是另外加一個 highlight 圖層，有兩個好處：
+ * 不會多出需要排進 `layerOrder` 那條堆疊帶的圖層 id，而且切底圖重套時
+ * `addGeoLayer` 會照常帶著當下的 `selectedId` 重建，不需要另一條狀態同步路徑。
+ *
+ * `base` 可能本身就是表達式（地震用震級驅動半徑），所以倍率用 `["*", base, n]`
+ * 而不是先算成數字。
+ */
+type Expr = unknown;
+const whenSelected = <T>(selectedId: string | null | undefined, selected: Expr, base: T): T =>
+  (selectedId ? ["case", ["==", ["get", "id"], selectedId], selected, base] : base) as T;
+
+/** 選取狀態的倍率／固定值，集中在這裡方便一起調整。 */
+const SELECTED = {
+  radiusScale: 2,
+  strokeWidth: 3,
+  opacity: 1,
+  lineScale: 2.2,
+  outlineScale: 2.5,
+  /** 面本來就半透明，選取時加深但仍要看得到底圖地名 */
+  fillOpacity: 0.38,
+} as const;
+
 export function addGeoLayer(map: MapLibreMap, spec: GeoLayerSpec) {
-  const { instanceId, data, color, render, minzoom, maxzoom } = spec;
+  const { instanceId, data, color, render, minzoom, maxzoom, selectedId } = spec;
   const sourceId = geoSourceId(instanceId);
 
   if (map.getSource(sourceId)) {
@@ -47,10 +80,23 @@ export function addGeoLayer(map: MapLibreMap, spec: GeoLayerSpec) {
 
   if (render.kind === "circle") {
     const id = `${instanceId}-points`;
+    const baseRadius = render.radius ?? 6;
+    const baseStroke = render.strokeWidth ?? 1.5;
+    const baseOpacity = render.opacity ?? 0.85;
+    const paint = {
+      radius: whenSelected(selectedId, ["*", baseRadius, SELECTED.radiusScale], baseRadius),
+      stroke: whenSelected(selectedId, SELECTED.strokeWidth, baseStroke),
+      opacity: whenSelected(selectedId, SELECTED.opacity, baseOpacity),
+    };
+
     if (map.getLayer(id)) {
       // 顏色可能會變（特有種依勾選順序指派色票，取消勾選其中一個會讓後面的遞補），
       // 所以既有圖層要更新 paint，不能像舊版那樣只在不存在時才處理。
+      // 選取狀態同理——換一筆選取不該把整個圖層拆掉重加。
       map.setPaintProperty(id, "circle-color", color);
+      map.setPaintProperty(id, "circle-radius", paint.radius);
+      map.setPaintProperty(id, "circle-stroke-width", paint.stroke);
+      map.setPaintProperty(id, "circle-opacity", paint.opacity);
     } else {
       map.addLayer({
         id,
@@ -58,12 +104,12 @@ export function addGeoLayer(map: MapLibreMap, spec: GeoLayerSpec) {
         source: sourceId,
         ...zoom,
         paint: {
-          "circle-radius": render.radius ?? 6,
+          "circle-radius": paint.radius,
           "circle-color": color,
           // 大量點位（例如上千筆地震）要能把白框關掉，否則會糊成一片
-          "circle-stroke-width": render.strokeWidth ?? 1.5,
+          "circle-stroke-width": paint.stroke,
           "circle-stroke-color": "#fff",
-          "circle-opacity": render.opacity ?? 0.85,
+          "circle-opacity": paint.opacity,
         },
       });
     }
@@ -72,8 +118,15 @@ export function addGeoLayer(map: MapLibreMap, spec: GeoLayerSpec) {
 
   if (render.kind === "line") {
     const id = `${instanceId}-line`;
+    const baseWidth = render.width ?? 1.4;
+    const baseOpacity = render.opacity ?? 0.9;
+    const lineWidth = whenSelected(selectedId, ["*", baseWidth, SELECTED.lineScale], baseWidth);
+    const lineOpacity = whenSelected(selectedId, SELECTED.opacity, baseOpacity);
+
     if (map.getLayer(id)) {
       map.setPaintProperty(id, "line-color", color);
+      map.setPaintProperty(id, "line-width", lineWidth);
+      map.setPaintProperty(id, "line-opacity", lineOpacity);
     } else {
       map.addLayer({
         id,
@@ -83,8 +136,8 @@ export function addGeoLayer(map: MapLibreMap, spec: GeoLayerSpec) {
         layout: { "line-join": "round", "line-cap": "round" },
         paint: {
           "line-color": color,
-          "line-width": render.width ?? 1.4,
-          "line-opacity": render.opacity ?? 0.9,
+          "line-width": lineWidth,
+          "line-opacity": lineOpacity,
           ...(render.dash && { "line-dasharray": render.dash }),
         },
       });
@@ -127,8 +180,11 @@ export function addGeoLayer(map: MapLibreMap, spec: GeoLayerSpec) {
 
   // fill：面 + 獨立的外框線圖層
   const fillId = `${instanceId}-fill`;
+  const baseFillOpacity = render.fillOpacity ?? 0.18;
+  const fillOpacity = whenSelected(selectedId, SELECTED.fillOpacity, baseFillOpacity);
   if (map.getLayer(fillId)) {
     map.setPaintProperty(fillId, "fill-color", color);
+    map.setPaintProperty(fillId, "fill-opacity", fillOpacity);
   } else {
     map.addLayer({
       id: fillId,
@@ -138,14 +194,21 @@ export function addGeoLayer(map: MapLibreMap, spec: GeoLayerSpec) {
       paint: {
         "fill-color": color,
         // 主題面疊在底圖地名之上，不透明會把地名整片蓋掉。上限 0.25。
-        "fill-opacity": render.fillOpacity ?? 0.18,
+        "fill-opacity": fillOpacity,
       },
     });
   }
 
   const outlineId = `${instanceId}-outline`;
+  const baseOutline = render.outlineWidth ?? 1;
+  const outlineWidth = whenSelected(
+    selectedId,
+    ["*", baseOutline, SELECTED.outlineScale],
+    baseOutline,
+  );
   if (map.getLayer(outlineId)) {
     map.setPaintProperty(outlineId, "line-color", color);
+    map.setPaintProperty(outlineId, "line-width", outlineWidth);
   } else {
     map.addLayer({
       id: outlineId,
@@ -155,7 +218,7 @@ export function addGeoLayer(map: MapLibreMap, spec: GeoLayerSpec) {
       layout: { "line-join": "round" },
       paint: {
         "line-color": color,
-        "line-width": render.outlineWidth ?? 1,
+        "line-width": outlineWidth,
         "line-opacity": 0.9,
       },
     });

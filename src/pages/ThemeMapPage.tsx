@@ -108,8 +108,9 @@ function ThemeMapView({ theme, chrome }: { theme: ThemeDefinition; chrome: Chrom
     [closeTransient],
   );
 
-  // 切底圖之後由 MapView 明確回呼重套主題圖層（見 useGeoLayers 的說明）
-  const reapplyLayers = useGeoLayers(map, instances, handleSelect);
+  // 切底圖之後由 MapView 明確回呼重套主題圖層（見 useGeoLayers 的說明）。
+  // 傳選取的圖徵 id 進去，被選到的那一筆才會在同色的一堆圖徵裡認得出來。
+  const reapplyLayers = useGeoLayers(map, instances, handleSelect, selected?.featureId ?? null);
 
   // 換主題：重設圖層開關與詳情卡，並把相機飛過去。
   //

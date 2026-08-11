@@ -255,6 +255,22 @@ fill   → `${instanceId}-fill` + `${instanceId}-outline`
 
 `reference`（緯度參考線）與 `hazard`（地震帶）是**非分類的固定角色**，比照 hillshade 的棕色，刻意排除在色票驗證之外。地震帶尤其不該給分類色相：2800 個依震級縮放的點是**密度場**，教學內容是「地震帶沿板塊邊緣浮現」，不是「這個色相代表地震」；給它色相不但擠爆色票驗證，2800 個不透明白框圓點在投影機上也只是一坨糊的（所以 `strokeWidth: 0` 必須是可設定的）。
 
+### 選取中的圖徵怎麼強調
+
+同一個圖層裡所有圖徵都是同一個顏色（顏色代表**圖層身分**，不是個別圖徵），所以選了 16 族裡的某一族之後，地圖上根本認不出哪一顆紅點是它。
+
+**強調不可以用換顏色做。** 那會讓「紅點＝原住民族」這個圖例對應失效，也違反「顏色跟著實體、不跟著狀態」。改用**尺寸與外框**這兩個獨立通道，色相完全不動：
+
+| 幾何 | 選取時 |
+|---|---|
+| circle | 半徑 ×2、外框 3px、不透明度 1 |
+| line | 線寬 ×2.2、不透明度 1 |
+| fill | 面不透明度 0.38、外框 ×2.5 |
+
+實作在 `addGeoLayer` 的 `whenSelected()`，做成 data-driven 的 `case` 表達式而**不是**另外加一個 highlight 圖層——後者會多出必須排進 `layerOrder` 那條堆疊帶的圖層 id，而且切底圖時得再寫一條狀態同步路徑。表達式的寫法是 `["*", base, 倍率]` 而不是先算成數字，因為 `base` 本身可能就是表達式（地震用震級驅動半徑）。
+
+`useGeoLayers` 收的是**單純的 `selectedId` 字串**，不管它屬於哪個圖層：圖徵 id 在各 collection 內唯一（`taipei`／`amis`／`tw-tao`），同時可見的兩層撞 id 實務上不會發生。它跟 `instances` 一樣要放進 ref，切底圖 `reapply` 才帶得到當下的選取。
+
 ### 新增資料
 
 **手動整理的內容**（地點、原住民族、物種介紹）：建 `src/content/<type>/<id>.json`，**檔名必須等於 `id`**，跑 `npm run validate`。
@@ -580,6 +596,14 @@ m.isSourceLoaded('contour-source')
       performance.getEntriesByType('resource').filter(r => /geojson/.test(r.name)).map(r => r.name.split('/').pop())
       ```
     - 鍵盤：打字 → ↓↑ 移動 `.search-hit.is-active` → Enter 選取；Escape 第一次關清單、第二次清空輸入框
+13. **選取中的圖徵要在同色的一堆裡認得出來**（見「選取中的圖徵怎麼強調」）。看的是 paint 表達式，不是只看卡片有沒有開：
+    ```js
+    m.getPaintProperty('indigenous-points', 'circle-radius')
+    // 選了阿美族 → ["case",["==",["get","id"],"amis"],["*",7,2],7]
+    // 改選泰雅族 → 同一條式子換成 "atayal"（舊的自動變回一般大小）
+    // 關掉詳情面板 → 回到單純的 7，沒有 case
+    ```
+    三種幾何各驗一次（`indigenous-points` 點／`tw-ranges-line` 線／`tw-counties-fill` 面），**而且切底圖之後要再驗一次**——`setStyle` 會清光圖層，強調是靠 `selectedIdRef` 在 `reapply` 時重建的。
 
 ### ⚠️ 用瀏覽器自動化點 UI 的三個陷阱
 
