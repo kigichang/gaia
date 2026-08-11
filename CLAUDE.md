@@ -287,7 +287,8 @@ fill   → `${instanceId}-fill` + `${instanceId}-outline`
 - **臺灣縣市界只有 21 個，缺連江縣（馬祖）。** 已確認 Natural Earth 10m 整份資料集裡都沒有它，不是篩選寫錯。要補齊 22 個縣市得改用政府資料開放平臺的 shapefile（需要 `ogr2ogr`）。圖層的 `description` 有向使用者明講。
 - **Natural Earth 的河流沒有中文名欄位**，中文名靠 `build-geodata.mjs` 裡的 `RIVER_NAMES_ZH` 對照表。對不到就沿用原名。注意 NE 把黃河的 name 寫成 `"Huang"`（不是 `"Huang He"`）。
 - **相鄰的面各自簡化會在共用邊界開出次像素縫隙**（Douglas–Peucker 不保拓樸）。免依賴的緩解方式是設 `maxzoom`（縣市界設 11），讓它在縫隙變得可解析之前就停止繪製。
-- **五大山脈的稜線是手繪示意幾何**（`public/data/geo-manual/tw-ranges.geojson`）。山脈沒有像行政區那樣的官方界線圖資，Natural Earth 也沒收錄，所以走向與端點是依維基百科各條目與地形圖描繪的。圖層與五份內容檔都標了 `schematic: true`，UI 會顯示警語。**不要把它當成精確稜線**；要真的精確得改用 DEM 推導分水嶺。
+- **五大山脈的稜線是手繪示意幾何**（`public/data/geo-manual/tw-ranges.geojson`）。山脈沒有像行政區那樣的官方界線圖資，Natural Earth 也沒收錄，所以走向與端點是依維基百科各條目與地形圖描繪的。圖層與五份內容檔都標了 `schematic: true`，UI 會顯示警語。**不要把它當成精確稜線**；要真的精確得改用 DEM 推導分水嶺。（已離線量過五座主峰到所屬稜線的最短距離：0～2.2 km，走向本身站得住腳。）
+- **⚠️ 中央山脈的長度刻意寫「約 340 公里」，不要照維基百科改成 500 公里。** 維基百科中文版寫的是「全長約500公里」，但課本與國土測繪中心慣用的是 340 公里（蘇澳到鵝鑾鼻），這是學生會考的數字，而本站是課程用途。這個差異是知道之後刻意選的，不是漏改——要動它請先確認課綱怎麼寫。
 ## 全螢幕地圖外框與浮動控制
 
 三個主題頁的版面是 `ThemeMapPage` 組出來的 `.map-shell`（`position: fixed; inset: 0`）：
@@ -537,6 +538,7 @@ m.isSourceLoaded('contour-source')
 1. 等高線在 zoom 9–15 隨縮放正確加密／變疏；線上數字是海拔公尺數
 2. 比較頁：拖動任一地圖 → 另一張的緯度與 zoom 跟著變、經度不變；緯度滑桿雙向同步
 3. 比較頁 URL 帶 `?lat=&z=&a=&b=` 重新整理後狀態還原
+   - ⚠️ **點預設組合與換下拉選單之後，`a`／`b` 必須真的出現在網址上**，而且下面的地點選單、hint、氣候圖表要跟著換成新的那一組。這裡踩過一次：`jumpTo` 會同步觸發 `handleCamera` 寫網址，它拿到的 `prev` 是**還沒有 a/b 的快照**，所以「先寫網址再飛」會把 a/b 洗掉——兩張地圖飛對了位置，但下面的圖表還是舊的那一組，圖表與地圖對不起來。修法是**先飛、網址最後寫**（見 `ComparePage` 的 `applyPreset`／`selectPlace`）
 4. 兩側氣候圖表的 Y 軸範圍相同
 5. DevTools Network：**不得有任何帶 API key 的請求**；圖磚全部回 200
 6. Console 無 CORS、WebGL 或 maplibre 錯誤

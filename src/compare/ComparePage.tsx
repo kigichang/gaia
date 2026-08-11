@@ -72,6 +72,8 @@ export function ComparePage({ chrome }: ComparePageProps) {
       const place = getPlace(id);
       const map = side === "a" ? mapA : mapB;
       if (!place || !map) return;
+      // 先飛再寫網址，理由與 applyPreset 相同（見下面那段說明）
+      map.jumpTo({ center: [place.coord.lng, place.coord.lat] });
       setParamsRef.current(
         (prev) => {
           const p = new URLSearchParams(prev);
@@ -80,7 +82,6 @@ export function ComparePage({ chrome }: ComparePageProps) {
         },
         { replace: true },
       );
-      map.jumpTo({ center: [place.coord.lng, place.coord.lat] });
     },
     [mapA, mapB],
   );
@@ -91,6 +92,20 @@ export function ComparePage({ chrome }: ComparePageProps) {
       const a = preset && getPlace(preset.a);
       const b = preset && getPlace(preset.b);
       if (!preset || !a || !b || !mapA || !mapB) return;
+
+      // ⚠️ 順序不能反過來：先飛，網址最後才寫。
+      //
+      // `jumpTo` 會**同步**派送 move 事件 → useMapSync → handleCamera，而
+      // handleCamera 也會寫網址（只寫 lat/z）。React Router 的
+      // `setSearchParams(prev => …)` 拿到的 `prev` 是**目前已提交**的網址，不是
+      // 前一次呼叫排隊中的結果，所以如果先寫 a/b 再 jumpTo，handleCamera 那次
+      // 寫入會用還沒有 a/b 的快照覆蓋掉，a/b 就消失了。
+      //
+      // 症狀很像「預設組合壞掉」但其實更陰險：兩張地圖**確實**飛到正確位置，
+      // 只有下面的地點選單、氣候圖表與 hint 還停在舊的那一組——也就是圖表跟
+      // 地圖對不起來，而比較頁的全部意義就在那個對照。
+      mapA.jumpTo({ center: [a.coord.lng, preset.lat], zoom: preset.zoom });
+      mapB.jumpTo({ center: [b.coord.lng, preset.lat], zoom: preset.zoom });
 
       setParamsRef.current(
         (prev) => {
@@ -103,8 +118,6 @@ export function ComparePage({ chrome }: ComparePageProps) {
         },
         { replace: true },
       );
-      mapA.jumpTo({ center: [a.coord.lng, preset.lat], zoom: preset.zoom });
-      mapB.jumpTo({ center: [b.coord.lng, preset.lat], zoom: preset.zoom });
     },
     [mapA, mapB],
   );
