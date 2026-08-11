@@ -108,9 +108,27 @@ function ThemeMapView({ theme, chrome }: { theme: ThemeDefinition; chrome: Chrom
     [closeTransient],
   );
 
+  /**
+   * 要在地圖上強調的圖徵：選取的那一筆，加上它「順帶指名」的關聯圖徵。
+   *
+   * 目前唯一的關聯是山脈 → 主峰（geojson 的 `peakId`）：選了中央山脈，秀姑巒山
+   * 那顆點也要一起標出來，否則使用者只看得到一條線、不知道最高點在哪。主峰屬於
+   * 「地形景點」圖層，跟山脈不同層，但強調是各圖層拿同一份 id 清單去比對的，
+   * 所以這裡不需要知道它在哪一層——那一層沒開就自然不會有東西被標，也合理。
+   */
+  const highlightIds = useMemo(() => {
+    if (!selected) return [];
+    const ids = [selected.featureId];
+    for (const inst of instances) {
+      const f = inst.data?.features.find((x) => x.properties?.id === selected.featureId);
+      const peakId = f?.properties?.peakId;
+      if (typeof peakId === "string") ids.push(peakId);
+    }
+    return ids;
+  }, [selected, instances]);
+
   // 切底圖之後由 MapView 明確回呼重套主題圖層（見 useGeoLayers 的說明）。
-  // 傳選取的圖徵 id 進去，被選到的那一筆才會在同色的一堆圖徵裡認得出來。
-  const reapplyLayers = useGeoLayers(map, instances, handleSelect, selected?.featureId ?? null);
+  const reapplyLayers = useGeoLayers(map, instances, handleSelect, highlightIds);
 
   // 換主題：重設圖層開關與詳情卡，並把相機飛過去。
   //

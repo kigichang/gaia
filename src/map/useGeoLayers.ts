@@ -59,22 +59,26 @@ export function useGeoLayers(
   instances: GeoLayerInstance[],
   onSelect: (detail: DetailSpec, featureId: string) => void,
   /**
-   * 目前選取的圖徵 id，會讓該筆被畫得比同層其他筆明顯（見 `addGeoLayer` 的說明）。
+   * 要強調的圖徵 id（見 `addGeoLayer` 的說明）。通常只有目前選取的那一筆，選到
+   * 山脈時會多一筆它的主峰。
    *
    * 刻意只收 id、不收「是哪個圖層的」：圖徵 id 在各 collection 內是唯一的
    * （`taipei`／`amis`／`tw-tao`），同時可見的兩個圖層撞到同一個 id 實務上不會
    * 發生，就算發生了兩邊一起強調也不會錯到哪裡去。換來的是呼叫端不必解析
-   * 「這個 selection 屬於哪個 instance」。
+   * 「這個 id 屬於哪個 instance」——主峰在地形景點、山脈在五大山脈，兩個圖層
+   * 各自拿同一份清單去比對就好。
    */
-  selectedId: string | null,
+  highlightIds: readonly string[],
 ): () => void {
   const instancesRef = useRef(instances);
   instancesRef.current = instances;
   const onSelectRef = useRef(onSelect);
   onSelectRef.current = onSelect;
-  // 切底圖重套時要帶著「當下」的選取，所以跟 instances 一樣走 ref
-  const selectedIdRef = useRef(selectedId);
-  selectedIdRef.current = selectedId;
+  // 切底圖重套時要帶著「當下」的強調清單，所以跟 instances 一樣走 ref
+  const highlightIdsRef = useRef(highlightIds);
+  highlightIdsRef.current = highlightIds;
+  // 陣列每次算繪都是新的，用內容當 effect 依賴才不會白重跑（比照 instanceKey）
+  const highlightKey = highlightIds.join("|");
 
   // 只有「有哪些 instance」會影響互動綁定，資料載入完成不會。
   const instanceKey = instances.map((i) => i.instanceId).join("|");
@@ -157,7 +161,7 @@ export function useGeoLayers(
           render: i.render,
           minzoom: i.minzoom,
           maxzoom: i.maxzoom,
-          selectedId: selectedIdRef.current,
+          highlightIds: highlightIdsRef.current,
         });
         applied.current.set(i.instanceId, i.render);
       }
@@ -167,9 +171,9 @@ export function useGeoLayers(
 
     applyRef.current = apply;
     apply();
-    // selectedId 也要在這裡重跑：它只改 paint，addGeoLayer 對既有圖層走
+    // 強調清單也要在這裡重跑：它只改 paint，addGeoLayer 對既有圖層走
     // setPaintProperty，不會把圖層拆掉重加。
-  }, [map, instances, selectedId]);
+  }, [map, instances, highlightKey]);
 
   // 換地圖實例時清掉記帳，否則新地圖會以為圖層已經加過
   useEffect(() => {

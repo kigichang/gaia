@@ -31,8 +31,11 @@ export interface GeoLayerSpec {
   render: LayerRender;
   minzoom?: number;
   maxzoom?: number;
-  /** 目前選取的圖徵 `properties.id`，該筆會被畫得比同層其他筆明顯（見下） */
-  selectedId?: string | null;
+  /**
+   * 要強調的圖徵 `properties.id`。通常只有一筆（目前選取的），但選到山脈時會連
+   * 它的主峰一起帶進來——主峰是另一個圖層的點，兩層各自比對這份清單即可。
+   */
+  highlightIds?: readonly string[];
 }
 
 /**
@@ -46,14 +49,20 @@ export interface GeoLayerSpec {
  *
  * 做成 data-driven 的 `case` 表達式而不是另外加一個 highlight 圖層，有兩個好處：
  * 不會多出需要排進 `layerOrder` 那條堆疊帶的圖層 id，而且切底圖重套時
- * `addGeoLayer` 會照常帶著當下的 `selectedId` 重建，不需要另一條狀態同步路徑。
+ * `addGeoLayer` 會照常帶著當下的 `highlightIds` 重建，不需要另一條狀態同步路徑。
+ *
+ * 比對的是一份 **id 清單**而不是單一 id：選到山脈時要連它的主峰一起強調，而主峰
+ * 是另一個圖層（地形景點）的點——兩個圖層各自拿同一份清單去比對就好，不需要知道
+ * 對方存不存在。
  *
  * `base` 可能本身就是表達式（地震用震級驅動半徑），所以倍率用 `["*", base, n]`
  * 而不是先算成數字。
  */
 type Expr = unknown;
-const whenSelected = <T>(selectedId: string | null | undefined, selected: Expr, base: T): T =>
-  (selectedId ? ["case", ["==", ["get", "id"], selectedId], selected, base] : base) as T;
+const whenSelected = <T>(ids: readonly string[] | undefined, selected: Expr, base: T): T =>
+  (ids?.length
+    ? ["case", ["in", ["get", "id"], ["literal", [...ids]]], selected, base]
+    : base) as T;
 
 /** 選取狀態的倍率／固定值，集中在這裡方便一起調整。 */
 const SELECTED = {
@@ -67,7 +76,7 @@ const SELECTED = {
 } as const;
 
 export function addGeoLayer(map: MapLibreMap, spec: GeoLayerSpec) {
-  const { instanceId, data, color, render, minzoom, maxzoom, selectedId } = spec;
+  const { instanceId, data, color, render, minzoom, maxzoom, highlightIds } = spec;
   const sourceId = geoSourceId(instanceId);
 
   if (map.getSource(sourceId)) {
@@ -84,9 +93,9 @@ export function addGeoLayer(map: MapLibreMap, spec: GeoLayerSpec) {
     const baseStroke = render.strokeWidth ?? 1.5;
     const baseOpacity = render.opacity ?? 0.85;
     const paint = {
-      radius: whenSelected(selectedId, ["*", baseRadius, SELECTED.radiusScale], baseRadius),
-      stroke: whenSelected(selectedId, SELECTED.strokeWidth, baseStroke),
-      opacity: whenSelected(selectedId, SELECTED.opacity, baseOpacity),
+      radius: whenSelected(highlightIds, ["*", baseRadius, SELECTED.radiusScale], baseRadius),
+      stroke: whenSelected(highlightIds, SELECTED.strokeWidth, baseStroke),
+      opacity: whenSelected(highlightIds, SELECTED.opacity, baseOpacity),
     };
 
     if (map.getLayer(id)) {
@@ -120,8 +129,8 @@ export function addGeoLayer(map: MapLibreMap, spec: GeoLayerSpec) {
     const id = `${instanceId}-line`;
     const baseWidth = render.width ?? 1.4;
     const baseOpacity = render.opacity ?? 0.9;
-    const lineWidth = whenSelected(selectedId, ["*", baseWidth, SELECTED.lineScale], baseWidth);
-    const lineOpacity = whenSelected(selectedId, SELECTED.opacity, baseOpacity);
+    const lineWidth = whenSelected(highlightIds, ["*", baseWidth, SELECTED.lineScale], baseWidth);
+    const lineOpacity = whenSelected(highlightIds, SELECTED.opacity, baseOpacity);
 
     if (map.getLayer(id)) {
       map.setPaintProperty(id, "line-color", color);
@@ -181,7 +190,7 @@ export function addGeoLayer(map: MapLibreMap, spec: GeoLayerSpec) {
   // fill：面 + 獨立的外框線圖層
   const fillId = `${instanceId}-fill`;
   const baseFillOpacity = render.fillOpacity ?? 0.18;
-  const fillOpacity = whenSelected(selectedId, SELECTED.fillOpacity, baseFillOpacity);
+  const fillOpacity = whenSelected(highlightIds, SELECTED.fillOpacity, baseFillOpacity);
   if (map.getLayer(fillId)) {
     map.setPaintProperty(fillId, "fill-color", color);
     map.setPaintProperty(fillId, "fill-opacity", fillOpacity);
@@ -202,7 +211,7 @@ export function addGeoLayer(map: MapLibreMap, spec: GeoLayerSpec) {
   const outlineId = `${instanceId}-outline`;
   const baseOutline = render.outlineWidth ?? 1;
   const outlineWidth = whenSelected(
-    selectedId,
+    highlightIds,
     ["*", baseOutline, SELECTED.outlineScale],
     baseOutline,
   );

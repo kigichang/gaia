@@ -269,7 +269,15 @@ fill   → `${instanceId}-fill` + `${instanceId}-outline`
 
 實作在 `addGeoLayer` 的 `whenSelected()`，做成 data-driven 的 `case` 表達式而**不是**另外加一個 highlight 圖層——後者會多出必須排進 `layerOrder` 那條堆疊帶的圖層 id，而且切底圖時得再寫一條狀態同步路徑。表達式的寫法是 `["*", base, 倍率]` 而不是先算成數字，因為 `base` 本身可能就是表達式（地震用震級驅動半徑）。
 
-`useGeoLayers` 收的是**單純的 `selectedId` 字串**，不管它屬於哪個圖層：圖徵 id 在各 collection 內唯一（`taipei`／`amis`／`tw-tao`），同時可見的兩層撞 id 實務上不會發生。它跟 `instances` 一樣要放進 ref，切底圖 `reapply` 才帶得到當下的選取。
+`useGeoLayers` 收的是**一份 id 清單**（`highlightIds`），不管它們屬於哪個圖層：圖徵 id 在各 collection 內唯一（`taipei`／`amis`／`tw-tao`），同時可見的兩層撞 id 實務上不會發生。它跟 `instances` 一樣要放進 ref，切底圖 `reapply` 才帶得到當下的強調；effect 依賴用 `join("|")` 的字串，比照 `instanceKey`，否則每次算繪的新陣列都會白重跑。
+
+### 順帶強調的關聯圖徵（山脈 → 主峰）
+
+清單之所以是清單而不是單一 id：**選了山脈要連它的主峰一起標出來**，否則畫面上只有一條線，看不出最高點在哪。
+
+關聯寫在資料裡——`tw-ranges.geojson` 每個 feature 有 `peakId`，指向 `src/content/places` 的主峰 id。`ThemeMapPage` 的 `highlightIds` memo 會在選取的圖徵上找這個屬性並把它加進清單。
+
+兩個圖層**互相不需要知道對方**：山脈在 `tw-ranges`、主峰在 `places`，各自拿同一份清單去比對即可。所以「地形景點」被關掉時不會壞——那個 id 只是比不到任何圖徵，山脈照樣強調（已實測無錯誤）。要再加別的關聯（例如流域 → 出海口）只要在 geojson 補一個同名屬性，不必動算繪程式。
 
 ### 新增資料
 
@@ -605,7 +613,14 @@ m.isSourceLoaded('contour-source')
     // 改選泰雅族 → 同一條式子換成 "atayal"（舊的自動變回一般大小）
     // 關掉詳情面板 → 回到單純的 7，沒有 case
     ```
-    三種幾何各驗一次（`indigenous-points` 點／`tw-ranges-line` 線／`tw-counties-fill` 面），**而且切底圖之後要再驗一次**——`setStyle` 會清光圖層，強調是靠 `selectedIdRef` 在 `reapply` 時重建的。
+    三種幾何各驗一次（`indigenous-points` 點／`tw-ranges-line` 線／`tw-counties-fill` 面），**而且切底圖之後要再驗一次**——`setStyle` 會清光圖層，強調是靠 `highlightIdsRef` 在 `reapply` 時重建的。
+    選山脈時清單要有**兩筆**（山脈 + 主峰），而且兩個圖層的表達式都要帶到：
+    ```js
+    // 選中央山脈後
+    m.getPaintProperty('tw-ranges-line','line-width')   // …["literal",["central-range","xiuguluan"]]…
+    m.getPaintProperty('places-points','circle-radius') // 同一份清單
+    ```
+    反向不成立是對的：直接選主峰只強調主峰，不會把山脈一起加粗。關掉「地形景點」圖層也不得出錯（主峰 id 比不到東西而已）。
 
 ### ⚠️ 用瀏覽器自動化點 UI 的三個陷阱
 

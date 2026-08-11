@@ -2,7 +2,7 @@
   "type": "FeatureCollection",
   "metadata": {
     "collection": "tw-ranges",
-    "source": "手繪教學示意幾何，稜線走向依維基百科各山脈條目與內政部國土測繪中心地形圖描繪",
+    "source": "手繪教學示意幾何，稜線走向依維基百科各山脈條目與內政部國土測繪中心地形圖描繪；peakId 對應 src/content/places 的主峰",
     "license": "CC BY-SA 4.0（描繪自維基百科條目所述之走向與端點）",
     "generatedAt": "2026-08-11",
     "featureCount": 5
@@ -13,7 +13,8 @@
       "properties": {
         "id": "central-range",
         "name": "中央山脈",
-        "meta": "主峰秀姑巒山 3829 m・長約 340 km"
+        "meta": "主峰秀姑巒山 3829 m・長約 340 km",
+        "peakId": "xiuguluan"
       },
       "geometry": {
         "type": "LineString",
@@ -46,7 +47,8 @@
       "properties": {
         "id": "xueshan-range",
         "name": "雪山山脈",
-        "meta": "主峰雪山 3886 m・長約 260 km"
+        "meta": "主峰雪山 3886 m・長約 260 km",
+        "peakId": "xueshan"
       },
       "geometry": {
         "type": "LineString",
@@ -71,7 +73,8 @@
       "properties": {
         "id": "yushan-range",
         "name": "玉山山脈",
-        "meta": "主峰玉山 3952 m・長約 180 km"
+        "meta": "主峰玉山 3952 m・長約 180 km",
+        "peakId": "yushan"
       },
       "geometry": {
         "type": "LineString",
@@ -93,7 +96,8 @@
       "properties": {
         "id": "alishan-range",
         "name": "阿里山山脈",
-        "meta": "主峰大塔山 2662 m・長約 250 km"
+        "meta": "主峰大塔山 2662 m・長約 250 km",
+        "peakId": "datashan"
       },
       "geometry": {
         "type": "LineString",
@@ -116,7 +120,8 @@
       "properties": {
         "id": "coastal-range",
         "name": "海岸山脈",
-        "meta": "主峰新港山 1679 m・長約 150 km"
+        "meta": "主峰新港山 1679 m・長約 150 km",
+        "peakId": "xingangshan"
       },
       "geometry": {
         "type": "LineString",
