@@ -350,12 +350,6 @@ maplibre 的四個角落容器是 map container 內的 `position: absolute; z-in
 - **`detail.type === "none"` 只飛不開卡**；圖層本身的結果只勾選 + `fitBounds`，也不開卡。一張沒有內容的詳情卡什麼都沒教到。
 - 抓資料失敗時 instance 的 `data` 永遠是 null、effect 不會再被觸發，所以 `pendingHit` 有一條 8 秒死線，否則它會一直卡著並讓下一次換主題誤判。
 
-### ⚠️ `?browse=drawer|panel` 是暫時的 A/B 裝置
-
-「勾選縣市界／世界主要河流之後出現的可點清單」有兩種放法還沒定案：`drawer`（長在圖層抽屜裡該圖層那一列底下）與 `panel`（放進詳情面板，沒選東西時顯示清單、選了換成詳情 + 「返回清單」）。兩版都實作了，用網址參數切換，預設值是 `src/components/ThemeBrowse.tsx` 的 `DEFAULT_BROWSE_MODE`。
-
-`browseSlots()` 裡只有一個 `if/else`，兩版在結構上不可能同時出現。**決定之後刪掉輸家只動 `ThemeBrowse.tsx` 一個檔案**，再把已經永遠是 undefined 的那個 prop（`LayerPanel.renderLayerExtra` 或 `MapDetailPanel.onBack`）移掉，並刪掉這一節。
-
 ---
 
 ## 雙地圖同步規則
@@ -526,10 +520,10 @@ m.isSourceLoaded('contour-source')
    - `localStorage.removeItem('gaia-layer-drawer')` 後重整 → 抽屜是**收起的**，搜尋框與詳情卡直接可見
    - 手動開抽屜 → 重新整理後仍是開的；模擬封鎖 localStorage 不得拋錯
    - 搜尋（見下面第 12 項）
-   - `?browse=drawer` 與 `?browse=panel` 兩版可點清單各驗一次，且**只有一版**會出現在畫面上：
+   - 勾選縣市界／世界主要河流後，可點清單長在圖層抽屜裡該圖層那一列底下：
      ```js
-     document.querySelectorAll('.layer-drawer .place-list').length      // drawer 版 > 0、panel 版 = 0
-     document.querySelectorAll('.map-detail-panel .place-list').length  // 反之
+     document.querySelectorAll('.layer-drawer .place-list').length      // > 0
+     document.querySelectorAll('.map-detail-panel .place-list').length  // 0（詳情面板不放清單）
      ```
    - 鍵盤：Tab 到 ☰ → Enter 開啟 → Escape 關閉且焦點回到 ☰；⋮⋮⋮ 同理；⋮⋮⋮ 開著時點「圖層」磚會關掉 ⋮⋮⋮ 但**不會**關掉抽屜
      （⚠️ `MapView` 是第一個子節點，所以 Tab 會先走過 canvas 與 maplibre 自己的縮放鈕才輪到 ☰）
@@ -655,7 +649,7 @@ src/
    ├─ LayerDrawer.tsx     # 圖層抽屜外框（觸發器在搜尋藥丸裡，見上）
    ├─ MapDetailPanel.tsx  # 左側詳情面板外框（≤860px 變底部卡）
    ├─ DetailCard.tsx      # 選取 → 對應詳情卡的分派
-   ├─ ThemeBrowse.tsx     # ⚠️ 可點清單擺放的 A/B 切換，決定後整支刪掉
+   ├─ ThemeBrowse.tsx     # 圖層抽屜裡的可點清單（browseLayerExtra）
    └─ PlaceCard/IndigenousCard/SpeciesCard/FeatureCard/LayerPanel/MapLegend…
 public/data/
 ├─ climate/*.json         # build:climate 產生

@@ -132,7 +132,7 @@ export type DetailSpec =
   | { type: "geo"; collection: string; fallbackNameProperty?: string }
   | { type: "none" };
 
-/** 為這個圖層列出可點清單（點了飛過去並開詳情卡）。擺放位置見 components/ThemeBrowse.tsx。 */
+/** 為這個圖層列出可點清單（點了飛過去並開詳情卡），長在圖層抽屜裡（見 components/ThemeBrowse.tsx）。 */
 export interface LayerBrowse {
   /** 清單主標取自 feature.properties 的哪個欄位，預設 "name" */
   primary?: string;

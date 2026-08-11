@@ -1014,8 +1014,7 @@ input {
   padding: 14px 16px 24px;
 }
 
-.panel-close,
-.panel-back {
+.panel-close {
   display: flex;
   align-items: center;
   gap: 4px;
@@ -1029,21 +1028,12 @@ input {
   cursor: pointer;
 }
 
-.panel-close:hover,
-.panel-back:hover {
+.panel-close:hover {
   background: var(--hover-wash);
   color: var(--text-primary);
 }
 
-/* version B（?browse=panel）在面板裡顯示的清單分段 */
-.browse-section-title {
-  margin: 0 0 6px;
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--text-muted);
-}
-
-/* version A（?browse=drawer）把清單塞進抽屜的圖層列底下 */
+/* 可點清單塞進抽屜的圖層列底下 */
 .layer-row-extra .place-list {
   margin-bottom: 4px;
 }

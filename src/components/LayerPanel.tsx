@@ -16,7 +16,7 @@ interface LayerPanelProps {
   itemCounts: Record<string, number | undefined>;
   /**
    * 在已勾選圖層那一列的最後插入額外內容，回 null 就不插。
-   * 目前只有 `?browse=drawer` 版本的可點圖徵清單在用（見 ThemeBrowse.tsx）。
+   * 可點圖徵清單走這裡（見 `ThemeBrowse.tsx` 的 `browseLayerExtra`）。
    */
   renderLayerExtra?: (layer: LayerDefinition) => React.ReactNode;
 }

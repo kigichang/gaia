@@ -10,7 +10,7 @@ import { LayerDrawer } from "../components/LayerDrawer";
 import { MapSearchBox } from "../components/MapSearchBox";
 import { MapDetailPanel } from "../components/MapDetailPanel";
 import { DetailCard, detailTitle, type Selection } from "../components/DetailCard";
-import { browseSlots, useBrowseMode } from "../components/ThemeBrowse";
+import { browseLayerExtra } from "../components/ThemeBrowse";
 import { DEFAULT_THEME_ID, getTheme, layerInstanceId } from "../map/registry/index";
 import {
   colorOf,
@@ -63,7 +63,6 @@ function ThemeMapView({ theme, chrome }: { theme: ThemeDefinition; chrome: Chrom
   const [data, setData] = useState<Record<string, GeoJSON.FeatureCollection | null>>({});
   const [pendingHit, setPendingHit] = useState<SearchHit | null>(null);
   const { open: drawerOpen, setOpen: setDrawerOpen, closeTransient } = useDrawerOpen();
-  const browseMode = useBrowseMode();
 
   // 抽屜的開關繫結。刻意上提到這裡：☰ 住在搜尋藥丸裡、面板是抽屜，兩者不再
   // 共用一個 DOM 子樹（為什麼這樣安全，見 LayerDrawer.tsx 的說明）。
@@ -365,21 +364,19 @@ function ThemeMapView({ theme, chrome }: { theme: ThemeDefinition; chrome: Chrom
     (l) => l.status === "ready" && l.browse && !l.items && activeLayerIds.has(l.id),
   );
 
-  // 可點清單的兩種擺法（A/B 測試中），見 ThemeBrowse.tsx
+  // 可點清單長在圖層抽屜裡（見 ThemeBrowse.tsx 的 browseLayerExtra）
   const dataOf = useCallback(
     (layerId: string) => instances.find((i) => i.instanceId === layerId)?.data ?? null,
     [instances],
   );
-  const slots = browseSlots({
-    mode: browseMode,
+  const renderLayerExtra = browseLayerExtra({
     layers: browseLayers,
     dataOf,
     selected,
     onSelect: handleBrowseSelect,
-    onBackToList: () => setSelected(null),
   });
 
-  const detailOpen = Boolean(selected) || slots.panelOpenWithoutSelection;
+  const detailOpen = Boolean(selected);
 
   return (
     // data-* 驅動 --left-panel-w／--bottom-sheet-h，浮動控制靠這兩個屬性讓開，
@@ -428,19 +425,13 @@ function ThemeMapView({ theme, chrome }: { theme: ThemeDefinition; chrome: Chrom
       </div>
 
       {detailOpen && (
-        <MapDetailPanel
-          onClose={() => setSelected(null)}
-          onBack={slots.panelBack}
-          title={detailTitle(selected)}
-        >
-          {slots.panelList ?? (
-            <DetailCard
-              selection={selected}
-              itemCounts={itemCounts}
-              theme={theme}
-              instances={instances}
-            />
-          )}
+        <MapDetailPanel onClose={() => setSelected(null)} title={detailTitle(selected)}>
+          <DetailCard
+            selection={selected}
+            itemCounts={itemCounts}
+            theme={theme}
+            instances={instances}
+          />
         </MapDetailPanel>
       )}
 
@@ -459,7 +450,7 @@ function ThemeMapView({ theme, chrome }: { theme: ThemeDefinition; chrome: Chrom
           onToggleItem={toggleItem}
           onItemNameClick={handleItemNameClick}
           itemCounts={itemCounts}
-          renderLayerExtra={slots.drawerExtra}
+          renderLayerExtra={renderLayerExtra}
         />
       </LayerDrawer>
     </div>
