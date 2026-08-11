@@ -109,7 +109,7 @@ ID 常數定義在 `src/map/layers/*.ts`，**一律 import 常數，不要寫死
 | `TERRAIN_SOURCE_ID` | `dem-terrain` | raster-dem（給 3D 地形） |
 | `HILLSHADE_LAYER_ID` | `hillshade` | hillshade |
 
-主題圖層的 id **不是常數，是由註冊表的 `layer.id` 組合出來的**（見「圖層 id 的組合方式」），helper 在 `src/map/registry/index.ts`：`geoSourceId()` / `geoLayerIds()` / `geoHitLayerId()`。目前實際存在的：
+主題圖層的 id **不是常數，是由註冊表的 `layer.id` 組合出來的**（見「圖層 id 的組合方式」），helper 在 `src/map/registry/index.ts`：`geoSourceId()` / `geoLayerIds()` / `geoHitLayerIds()`。目前實際存在的：
 
 | id | 型別 |
 |---|---|
@@ -237,6 +237,10 @@ fill   → `${instanceId}-fill` + `${instanceId}-outline`
 **線越彎、字串越長，放置演算法就越容易靜默拒絕。** 預設用等高線驗證過的寬鬆組合（`symbol-spacing: 120` / `text-max-angle: 60`）：實測世界主要河流用 240/45 時標註數是 **0**，改成 120/60 之後在 zoom 4 可標出 8 條。反過來，緯度參考線又直又橫跨全球，要把 `spacing` 調高到 320，否則同一條線上會重複出現一長串「赤道 赤道 赤道…」。
 
 改動後一定要用 `queryRenderedFeatures` 實測放置數量，不要只靠肉眼。
+
+**標註本身也要能點。** `geoHitLayerIds()` 對有標註的線會回傳 `[線, 標註]` 兩層——使用者看到的是「中央山脈」那四個字，自然會去點字，但字畫在 symbol 圖層上而線只有 2.6px 寬，只綁線的話點在字上有很高機率整個落空，而且畫面上沒有任何反應可以解釋原因。
+
+兩層在畫面上是重疊的，所以 `bindGeoLayerInteractions()` 收**一組**圖層一起管理，不是一層一組獨立監聽：游標用 `hovered` 集合記住還停在哪幾層上（否則滑鼠從字移到線時，標註層的 `mouseleave` 會把游標重設掉，即使人還停在線上），點擊則用 `originalEvent` 的同一性擋掉第二次（點在字的正中央會同時命中兩層）。`useGeoLayers` 的互動記帳因此以 **instanceId** 為 key，不是 layerId。
 
 ### 顏色
 

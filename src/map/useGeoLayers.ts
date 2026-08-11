@@ -2,7 +2,7 @@ import { useCallback, useEffect, useRef } from "react";
 import type { Map as MapLibreMap } from "maplibre-gl";
 import { addGeoLayer, bindGeoLayerInteractions, removeGeoLayer } from "./layers/geo";
 import { enforceThemeLayerOrder } from "./layerOrder";
-import { geoHitLayerId } from "./registry/index.ts";
+import { geoHitLayerIds } from "./registry/index.ts";
 import type { DetailSpec, LayerRender } from "./registry/types.ts";
 
 export interface GeoLayerInstance {
@@ -72,24 +72,26 @@ export function useGeoLayers(
   useEffect(() => {
     if (!map) return;
 
+    // 一個 instance 可能有多個可點圖層（有標註的線＝線＋標註），所以記帳的 key
+    // 是 instanceId 而不是 layerId——游標與重複點擊的處理需要它們被當成一組。
     const wanted = new Map(
       instancesRef.current
         .filter((i) => i.detail.type !== "none")
-        .map((i) => [geoHitLayerId(i.instanceId, i.render.kind), i.instanceId]),
+        .map((i) => [i.instanceId, geoHitLayerIds(i.instanceId, i.render)]),
     );
 
-    for (const [layerId, off] of interactionCleanups.current) {
-      if (!wanted.has(layerId)) {
+    for (const [instanceId, off] of interactionCleanups.current) {
+      if (!wanted.has(instanceId)) {
         off();
-        interactionCleanups.current.delete(layerId);
+        interactionCleanups.current.delete(instanceId);
       }
     }
 
-    for (const [layerId, instanceId] of wanted) {
-      if (interactionCleanups.current.has(layerId)) continue;
+    for (const [instanceId, layerIds] of wanted) {
+      if (interactionCleanups.current.has(instanceId)) continue;
       interactionCleanups.current.set(
-        layerId,
-        bindGeoLayerInteractions(map, layerId, (featureId) => {
+        instanceId,
+        bindGeoLayerInteractions(map, layerIds, (featureId) => {
           // 從 ref 現查 detail，避免 closure 抓到過期的 DetailSpec
           const inst = instancesRef.current.find((i) => i.instanceId === instanceId);
           if (inst) onSelectRef.current(inst.detail, featureId);

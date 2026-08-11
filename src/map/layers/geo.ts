@@ -202,36 +202,65 @@ export function toFeatureCollection<T>(
 }
 
 /**
- * 幫圖層掛上點擊（回呼收到該圖徵的 `id` 屬性）與滑鼠游標樣式切換。
- * 回傳的 cleanup 要在圖層被移除或 effect 卸載時呼叫。
+ * 幫**同一個 instance 的一組圖層**掛上點擊（回呼收到該圖徵的 `id` 屬性）與滑鼠
+ * 游標樣式切換。回傳的 cleanup 要在圖層被移除或 effect 卸載時呼叫。
  *
  * ⚠️ `map.on(event, layerId, handler)` 的監聽是掛在 **Map 實例**上、不是掛在
  * 圖層上，所以 `setStyle()` 造成的圖層重建**不需要**重綁；重綁只會讓監聽無限累積。
+ *
+ * ## 為什麼收一組圖層而不是一個
+ *
+ * 有沿線標註的線圖層要把「線」與「標註」都綁起來（見 `geoHitLayerIds`），而這兩層
+ * 在畫面上是**重疊**的——字就畫在線上。一層一組獨立監聽會壞掉兩件事，所以這裡
+ * 統一管理：
+ *
+ * - **游標**：滑鼠從字移到線時，標註層的 `mouseleave` 會把游標重設掉，即使人還停在
+ *   線上。所以用 `hovered` 集合記住「目前還停在哪幾層上」，全空了才還原游標。
+ * - **點擊**：點在字的正中央會同時命中兩層，兩個 handler 都會收到**同一個**
+ *   `click` 事件。用 `originalEvent` 的同一性擋掉第二次，避免同一下點擊觸發兩次
+ *   選取（結果一樣，但會多一次算繪與一次抽屜收合）。
  */
 export function bindGeoLayerInteractions(
   map: MapLibreMap,
-  layerId: string,
+  layerIds: string[],
   onClick: (id: string) => void,
 ) {
-  const handleClick = (e: MapLayerMouseEvent) => {
-    const id = e.features?.[0]?.properties?.id;
-    if (typeof id === "string") onClick(id);
-  };
-  const setPointer = () => {
-    map.getCanvas().style.cursor = "pointer";
-  };
-  const resetCursor = () => {
-    map.getCanvas().style.cursor = "";
-  };
+  const hovered = new Set<string>();
+  let handledEvent: unknown = null;
+  const offs: (() => void)[] = [];
 
-  map.on("click", layerId, handleClick);
-  map.on("mouseenter", layerId, setPointer);
-  map.on("mouseleave", layerId, resetCursor);
+  for (const layerId of layerIds) {
+    const handleClick = (e: MapLayerMouseEvent) => {
+      if (e.originalEvent === handledEvent) return; // 同一下點擊已經被另一層處理過
+      const id = e.features?.[0]?.properties?.id;
+      if (typeof id !== "string") return;
+      handledEvent = e.originalEvent;
+      onClick(id);
+    };
+    const setPointer = () => {
+      hovered.add(layerId);
+      map.getCanvas().style.cursor = "pointer";
+    };
+    const resetCursor = () => {
+      hovered.delete(layerId);
+      if (hovered.size === 0) map.getCanvas().style.cursor = "";
+    };
+
+    map.on("click", layerId, handleClick);
+    map.on("mouseenter", layerId, setPointer);
+    map.on("mouseleave", layerId, resetCursor);
+
+    offs.push(() => {
+      map.off("click", layerId, handleClick);
+      map.off("mouseenter", layerId, setPointer);
+      map.off("mouseleave", layerId, resetCursor);
+      hovered.delete(layerId);
+    });
+  }
 
   return () => {
-    map.off("click", layerId, handleClick);
-    map.off("mouseenter", layerId, setPointer);
-    map.off("mouseleave", layerId, resetCursor);
+    for (const off of offs) off();
+    map.getCanvas().style.cursor = "";
   };
 }
 

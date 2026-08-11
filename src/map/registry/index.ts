@@ -59,10 +59,18 @@ export function geoLayerIds(instanceId: string, render: LayerRender): string[] {
 }
 
 /**
- * 綁點擊／hover 互動的那一個圖層。
- * fill 綁的是面而不是外框，否則點在邊界上會觸發兩次。
+ * 綁點擊／hover 互動的圖層。
+ *
+ * - fill 綁的是面而不是外框，否則點在邊界上會觸發兩次。
+ * - **有沿線標註的 line 要連標註一起綁**：使用者看到的是「中央山脈」那四個字，
+ *   自然會去點字，但字是畫在 symbol 圖層上、而線只有 2.6px 寬——只綁線的話，
+ *   點在字上有很高機率整個落空，而且畫面上完全沒有反應可以解釋為什麼。
+ *   標註與線來自同一個 source、同一個 feature，所以兩邊拿到的 id 一定相同。
  */
-export function geoHitLayerId(instanceId: string, kind: GeometryKind): string {
-  if (kind === "fill") return `${instanceId}-fill`;
-  return `${instanceId}-${kind === "circle" ? "points" : "line"}`;
+export function geoHitLayerIds(instanceId: string, render: LayerRender): string[] {
+  if (render.kind === "fill") return [`${instanceId}-fill`];
+  if (render.kind === "circle") return [`${instanceId}-points`];
+  return render.label
+    ? [`${instanceId}-line`, `${instanceId}-label`]
+    : [`${instanceId}-line`];
 }
