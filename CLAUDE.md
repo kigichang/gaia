@@ -44,7 +44,7 @@ Node ≥ 22.12（vite 8 要求）。開發機與 CI 都用 Node 24。
 
 ## 資料源
 
-全部免金鑰、支援 CORS、已實測可從瀏覽器直接存取。端點常數集中在 `src/config.ts`，不要在別處寫死。
+**會被程式抓取的**端點全部免金鑰、支援 CORS、已實測可從瀏覽器直接存取；端點常數集中在 `src/config.ts`，不要在別處寫死。表格最後一列的維基百科是例外——它從來不被程式碰到，是人工查閱後把結論寫進內容檔的參考來源，列在這裡是為了讓「這筆數字哪來的」有地方追。
 
 | 用途 | 端點 | 備註 |
 |---|---|---|
@@ -57,6 +57,7 @@ Node ≥ 22.12（vite 8 要求）。開發機與 CI 都用 Node 24。
 | 特有種觀測紀錄 | `api.gbif.org/v1/occurrence/search`（GBIF） | **只在建置期呼叫**，`ACAO: *` |
 | 行政區／河流幾何 | `raw.githubusercontent.com/nvkelso/natural-earth-vector`（Natural Earth） | **只在建置期呼叫**，public domain |
 | 地震目錄 | `earthquake.usgs.gov/fdsnws/event/1/query`（USGS） | **只在建置期呼叫**，免金鑰、`ACAO: *` |
+| 基本地理事實（山脈走向、主峰高度、河川分界…） | `zh.wikipedia.org` 各條目 | **程式完全不呼叫**，人工查閱後寫進 `src/content/`。次級來源，用法見「內容撰寫規範」，CC BY-SA |
 
 ### ⚠️ NLSC 的路徑順序陷阱
 

@@ -73,7 +73,9 @@ npm run build:debug  # 帶地圖除錯掛勾的 production build，配合 npm ru
 - 地震目錄：[USGS](https://earthquake.usgs.gov/)（public domain）
 - 特有種觀測紀錄：[GBIF](https://www.gbif.org/)
 - 原住民族人口與分布：[原住民族委員會](https://www.cip.gov.tw/)、內政部統計通報
-- 山脈走向與主峰高度：[維基百科](https://zh.wikipedia.org/) 各山脈條目（次級來源，僅用於已有共識的基本地理事實）
+- 基本地理事實（山脈走向、主峰高度、河川分界等）：[維基百科](https://zh.wikipedia.org/) 各條目
+
+維基百科是**次級來源**，只用於已有共識的基本地理事實；氣候正常值、人口統計、保育等級這類數值一律以主管機關的原始資料為準。卡片上的「資料來源」會把兩者都列出來，並列時官方來源排在後面。
 
 ### 已知資料限制
 
