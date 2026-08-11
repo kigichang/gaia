@@ -271,7 +271,7 @@ fill   → `${instanceId}-fill` + `${instanceId}-outline`
 ```
 .map-shell  [data-detail-open] [data-drawer-open]
 ├─ MapView            ← 永遠是第一個、無條件的子節點
-├─ .map-top-left      MapSearchBox 搜尋藥丸（[☰][輸入框][✕][🔍]）+ 建議清單
+├─ .map-top-left      MapSearchBox 搜尋藥丸（[☰][輸入框][✕][🔍]）+ 建議清單，右邊接 DonateButton
 ├─ .map-top-right     ⋮⋮⋮ AppMenu（主題導覽 + 淺／深色）
 ├─ .map-bottom-left   MapLegend + 「圖層」磚（底圖與等高線／地形陰影／3D 地形）
 ├─ MapDetailPanel     左側詳情面板（top: var(--search-h)，接在搜尋框正下方）
@@ -281,6 +281,8 @@ fill   → `${instanceId}-fill` + `${instanceId}-outline`
 左上角是一整欄：搜尋藥丸在上、詳情面板接在它下面。`--search-h` = 藥丸高度 + 上下留白，藥丸自己有明確的 `height: var(--search-pill-h)`，兩個值不可能分歧，所以面板的 `top` 直接用 token，不必量測 DOM。
 
 `.map-top-left` **刻意不讀 `--left-panel-w`**：詳情面板現在排在它正下方而不是旁邊，本來就沒有要閃避的東西。它的 `z-index` 是 `--z-popover`（不是 `--z-map-ui`），否則建議清單會被 `--z-panel` 的詳情面板蓋掉——`.map-top-left` 自己有 z-index，子節點爬不出這個堆疊脈絡。它因此也高過抽屜，但抽屜開著時整欄是 `visibility: hidden`，兩者不會同時出現。
+
+`.map-top-left` 是 `display: flex` 的一列，`MapSearchBox` 用 `flex: 1; min-width: 0` 佔滿剩下的寬度，`DonateButton`（`src/components/DonateButton.tsx`）用 `flex: none` 排在右邊——這是唯一一個心型固定用暖紅色（不是 `.map-fab` 預設的中性灰）的浮動按鈕，因為它要引導點擊而不是單純導覽，是 `<a target="_blank">` 連到均一的贊助頁，不是 React Router 內部連結。抽屜開著時整欄一起 `visibility: hidden`，贊助按鈕也會跟著收起。
 
 ### `<MapView>` 必須是 shell 的第一個、無條件的子節點
 
@@ -646,6 +648,7 @@ src/
    ├─ MapPopover.tsx      # ⋮⋮⋮ 與「圖層」磚共用的泡泡容器
    ├─ MapLayersPopover.tsx# 左下「圖層」磚（內容重用 LayerToggles）
    ├─ MapSearchBox.tsx    # 左上搜尋藥丸（含開抽屜的 ☰）與建議清單
+   ├─ DonateButton.tsx    # 搜尋藥丸右邊的贊助按鈕，另開分頁連到均一
    ├─ LayerDrawer.tsx     # 圖層抽屜外框（觸發器在搜尋藥丸裡，見上）
    ├─ MapDetailPanel.tsx  # 左側詳情面板外框（≤860px 變底部卡）
    ├─ DetailCard.tsx      # 選取 → 對應詳情卡的分派

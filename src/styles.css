@@ -660,6 +660,9 @@ input {
   width: var(--panel-w);
   padding: var(--fab-gap);
   z-index: var(--z-popover);
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
 }
 
 /* 抽屜開著時把整條搜尋欄收起來：抽屜自己的標題已經寫著同一個主題名，而且它有 ✕，
@@ -803,6 +806,18 @@ input {
 
 .map-search-root {
   position: relative;
+  /* .map-top-left 現在是搜尋欄 + 贊助按鈕的一列，這裡要能縮才不會把按鈕擠出去 */
+  flex: 1;
+  min-width: 0;
+}
+
+/* 搜尋框右邊的贊助按鈕，另開分頁連到均一的贊助頁（見 DonateButton.tsx）。
+   心型固定用暖紅色，跟其他 .map-fab 的中性灰圖示區隔——這是唯一一個要引導
+   點擊而不是單純導覽的按鈕。.map-fab:hover 本身的 background 換色已經夠，
+   不需要額外的 hover 規則。 */
+.map-donate {
+  flex: none;
+  color: #e5484d;
 }
 
 .map-search {
