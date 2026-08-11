@@ -11,7 +11,8 @@ interface ThemeToggleProps {
   onChange: (next: ThemePreference) => void;
 }
 
-/** 淺色／深色／跟隨系統的三段式切換，放在 header 內，全站共用。 */
+/** 淺色／深色／跟隨系統的三段式切換。由 `AppMenu` 擺放（主題頁在 ⋮⋮⋮ 彈出層裡，
+ *  `/compare` 直接攤在頁首），全站共用同一份。 */
 export function ThemeToggle({ theme, onChange }: ThemeToggleProps) {
   return (
     <div className="theme-toggle" role="radiogroup" aria-label="外觀主題">

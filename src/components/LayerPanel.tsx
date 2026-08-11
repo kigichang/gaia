@@ -14,6 +14,11 @@ interface LayerPanelProps {
   onItemNameClick: (layerId: string, itemId: string) => void;
   /** 每個子項目已載入的圖徵數，未載入完成是 undefined */
   itemCounts: Record<string, number | undefined>;
+  /**
+   * 在已勾選圖層那一列的最後插入額外內容，回 null 就不插。
+   * 目前只有 `?browse=drawer` 版本的可點圖徵清單在用（見 ThemeBrowse.tsx）。
+   */
+  renderLayerExtra?: (layer: LayerDefinition) => React.ReactNode;
 }
 
 /**
@@ -30,6 +35,7 @@ export function LayerPanel({
   onToggleItem,
   onItemNameClick,
   itemCounts,
+  renderLayerExtra,
 }: LayerPanelProps) {
   // 每種幾何同時開啟的數量上限，用來 disable 其餘核取方塊。
   // 這是「三組獨立色票」策略的執行面，見 thematicColors.ts。
@@ -84,6 +90,10 @@ export function LayerPanel({
                       onNameClick={(itemId) => onItemNameClick(layer.id, itemId)}
                       counts={itemCounts}
                     />
+                  )}
+
+                  {checked && renderLayerExtra && (
+                    <div className="layer-row-extra">{renderLayerExtra(layer)}</div>
                   )}
                 </div>
               );

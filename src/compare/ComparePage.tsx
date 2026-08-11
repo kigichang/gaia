@@ -4,7 +4,9 @@ import type { Map as MapLibreMap } from "maplibre-gl";
 import { MapView, type OverlayState } from "../map/MapView";
 import { useMapSync, type CameraState } from "../map/useMapSync";
 import type { BasemapId } from "../map/basemaps";
+import type { ChromeState } from "../chrome";
 import { PlaceCard } from "../components/PlaceCard";
+import { SiteHeader } from "../components/SiteHeader";
 import { LatitudeSlider, formatLatitude } from "./LatitudeSlider";
 import { ClimateChart, sharedDomains } from "./ClimateChart";
 import { COMPARE_PRESETS, DEFAULT_PRESET } from "./presets";
@@ -14,11 +16,11 @@ import type { Climate, Place } from "../lib/schema";
 type Side = "a" | "b";
 
 interface ComparePageProps {
-  overlays: OverlayState;
-  basemap: BasemapId;
+  chrome: ChromeState;
 }
 
-export function ComparePage({ overlays, basemap }: ComparePageProps) {
+export function ComparePage({ chrome }: ComparePageProps) {
+  const { overlays, basemap } = chrome;
   const [params, setParams] = useSearchParams();
 
   const placeA = getPlace(params.get("a") ?? DEFAULT_PRESET.a) ?? places[0];
@@ -110,61 +112,66 @@ export function ComparePage({ overlays, basemap }: ComparePageProps) {
   const activePreset = COMPARE_PRESETS.find((p) => p.a === placeA.id && p.b === placeB.id);
 
   return (
-    <div className="compare">
-      <section className="compare-controls">
-        <div className="preset-row">
-          <span className="preset-label">預設比較</span>
-          {COMPARE_PRESETS.map((p) => (
-            <button
-              key={p.id}
-              type="button"
-              className={p.id === activePreset?.id ? "preset is-active" : "preset"}
-              onClick={() => applyPreset(p.id)}
-            >
-              {p.label}
-            </button>
-          ))}
+    <div className="app">
+      <SiteHeader chrome={chrome} />
+      <main className="app-main">
+        <div className="compare">
+          <section className="compare-controls">
+            <div className="preset-row">
+              <span className="preset-label">預設比較</span>
+              {COMPARE_PRESETS.map((p) => (
+                <button
+                  key={p.id}
+                  type="button"
+                  className={p.id === activePreset?.id ? "preset is-active" : "preset"}
+                  onClick={() => applyPreset(p.id)}
+                >
+                  {p.label}
+                </button>
+              ))}
+            </div>
+          </section>
+
+          {activePreset && <p className="preset-hint">{activePreset.hint}</p>}
+
+          <section className="compare-maps">
+            <MapPanel
+              side="a"
+              place={placeA}
+              onSelect={selectPlace}
+              initialCenter={[placeA.coord.lng, initialLat]}
+              initialZoom={initialZoom}
+              basemap={basemap}
+              overlays={overlays}
+              onReady={setMapA}
+            />
+            <MapPanel
+              side="b"
+              place={placeB}
+              onSelect={selectPlace}
+              initialCenter={[placeB.coord.lng, initialLat]}
+              initialZoom={initialZoom}
+              basemap={basemap}
+              overlays={overlays}
+              onReady={setMapB}
+            />
+          </section>
+
+          <section className="compare-latitude">
+            <LatitudeSlider lat={camera.lat} onChange={setLatitude} />
+            <p className="latitude-note">
+              兩張地圖鎖定在 <strong>{formatLatitude(camera.lat)}</strong>，縮放層級也相同。
+              Web Mercator 的放大倍率只跟緯度有關，所以唯有同緯度、同縮放時，兩張地圖的比例尺才真正一致，
+              面積與距離才能直接互相比較。左右各自的經度可以獨立平移。
+            </p>
+          </section>
+
+          <section className="compare-details">
+            <DetailPanel place={placeA} climate={climateA} domains={domains} elevation={elevationA} />
+            <DetailPanel place={placeB} climate={climateB} domains={domains} elevation={elevationB} />
+          </section>
         </div>
-      </section>
-
-      {activePreset && <p className="preset-hint">{activePreset.hint}</p>}
-
-      <section className="compare-maps">
-        <MapPanel
-          side="a"
-          place={placeA}
-          onSelect={selectPlace}
-          initialCenter={[placeA.coord.lng, initialLat]}
-          initialZoom={initialZoom}
-          basemap={basemap}
-          overlays={overlays}
-          onReady={setMapA}
-        />
-        <MapPanel
-          side="b"
-          place={placeB}
-          onSelect={selectPlace}
-          initialCenter={[placeB.coord.lng, initialLat]}
-          initialZoom={initialZoom}
-          basemap={basemap}
-          overlays={overlays}
-          onReady={setMapB}
-        />
-      </section>
-
-      <section className="compare-latitude">
-        <LatitudeSlider lat={camera.lat} onChange={setLatitude} />
-        <p className="latitude-note">
-          兩張地圖鎖定在 <strong>{formatLatitude(camera.lat)}</strong>，縮放層級也相同。
-          Web Mercator 的放大倍率只跟緯度有關，所以唯有同緯度、同縮放時，兩張地圖的比例尺才真正一致，
-          面積與距離才能直接互相比較。左右各自的經度可以獨立平移。
-        </p>
-      </section>
-
-      <section className="compare-details">
-        <DetailPanel place={placeA} climate={climateA} domains={domains} elevation={elevationA} />
-        <DetailPanel place={placeB} climate={climateB} domains={domains} elevation={elevationB} />
-      </section>
+      </main>
     </div>
   );
 }

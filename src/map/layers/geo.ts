@@ -188,7 +188,7 @@ export function toFeatureCollection<T>(
   items: T[],
   getCoord: (item: T) => [number, number],
   getId: (item: T) => string,
-  /** 側欄清單與詳情卡 fallback 要用的欄位（name／meta／zoom…） */
+  /** 可點清單與詳情卡 fallback 要用的欄位（name／meta／zoom…） */
   getProperties?: (item: T) => Record<string, unknown>,
 ): GeoJSON.FeatureCollection<GeoJSON.Point> {
   return {

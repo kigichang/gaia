@@ -25,7 +25,7 @@ interface FeatureCardProps {
  * 之後可以一個一個補。點下去有反應、看得到名稱與出處，就已經有教學價值。
  *
  * 跟 PlaceCard 不同，這裡一定要有 `<h4>` 標題——被點到的縣市不像地點那樣
- * 在側欄清單裡有一個 active 的按鈕在提供上下文。
+ * 在清單裡有一個 active 的按鈕、或詳情面板的標題在提供上下文。
  */
 export function FeatureCard({ feature, fallback }: FeatureCardProps) {
   const title = feature?.name.zh ?? fallback.name ?? fallback.layerLabel;

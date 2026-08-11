@@ -132,7 +132,7 @@ export type DetailSpec =
   | { type: "geo"; collection: string; fallbackNameProperty?: string }
   | { type: "none" };
 
-/** 側欄要為這個圖層列出可點清單（點了飛過去並開詳情卡）。 */
+/** 為這個圖層列出可點清單（點了飛過去並開詳情卡）。擺放位置見 components/ThemeBrowse.tsx。 */
 export interface LayerBrowse {
   /** 清單主標取自 feature.properties 的哪個欄位，預設 "name" */
   primary?: string;
@@ -163,7 +163,7 @@ export type LayerItemsSource =
   | { type: "inline"; list: LayerItem[] };
 
 /**
- * 「一個側欄勾選項展開成 N 個子圖層」的第一級概念。
+ * 「一個勾選項展開成 N 個子圖層」的第一級概念。
  *
  * 目前只有特有種用到，但這是可預期會重複的形狀（洋流的暖流／寒流、
  * 農業物產依作物分類都是同一件事）。刻意只做**一層、有上限、有色票**，
@@ -191,7 +191,7 @@ interface LayerBase {
    */
   id: string;
   label: string;
-  /** 側欄分組標題，必須出現在所屬 ThemeDefinition 的 `groups` 裡 */
+  /** 圖層抽屜裡的分組標題，必須出現在所屬 ThemeDefinition 的 `groups` 裡 */
   group: string;
   render: LayerRender;
   detail: DetailSpec;
@@ -244,15 +244,17 @@ export interface ThemeDefinition {
   /** 路由 `/theme/:themeId` */
   id: string;
   label: string;
-  /** 側欄標題底下的一行說明 */
+  /** 圖層抽屜標題底下的一行說明 */
   subtitle: string;
   camera: { center: [number, number]; zoom: number };
   /**
-   * 建議底圖。**只顯示成側欄的一行提示，不會自動切換**——底圖是 App 層級的
-   * 全站狀態，換個頁面就把使用者手動選的底圖改掉會很莫名其妙。
+   * 建議底圖。進入這個主題、且使用者在本次瀏覽還沒手動選過這個主題的底圖時，
+   * 會自動套用（見 `App.tsx` 的 effect）；圖層抽屜也會顯示同一個值當提示。
+   * 使用者手動切換底圖後，該選擇只在同一主題內被記住、不會被這個預設值蓋掉；
+   * 切到別的主題不受影響（NLSC 只涵蓋臺灣，不能整站共用同一個底圖狀態）。
    */
   recommendedBasemap?: "liberty" | "nlsc-emap" | "nlsc-photo";
-  /** 側欄分組的顯示順序 */
+  /** 圖層抽屜裡分組的顯示順序 */
   groups: string[];
   /** 進入主題時預設打開的詳情卡；不填就顯示「點地圖或清單」的提示 */
   initialSelection?: { detail: DetailSpec; featureId: string };

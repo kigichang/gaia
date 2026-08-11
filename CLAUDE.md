@@ -157,7 +157,9 @@ maplibre-contour 把 worker 以 Blob URL 內嵌，**不需要額外部署 worker
 | 世界地理 | `/theme/world` | 世界重要城市、國界與大洲、地形水系、人文專題 |
 | 全球地理形貌 | `/theme/global` | 緯度參考線、氣候與生物群系、洋流、板塊與地震帶 |
 
-`/compare`（雙地圖同緯度比較）是獨立的一頁，跟這套系統無關，也**沒有**被改動。兩者互補：`/theme/global` 說明「為什麼緯度重要」，`/compare` 帶學生鑽進同一條緯度上的兩個地方看差異。
+三個主題頁都是**滿版地圖 + 浮動控制**（仿 Google Map），沒有頁首也沒有側欄——版面機制見下面的「全螢幕地圖外框與浮動控制」。
+
+`/compare`（雙地圖同緯度比較）是獨立的一頁，跟這套系統無關，版面也**沒有**被改動（它是雙地圖 + 緯度滑桿 + 兩組圖表，沒有地方掛浮動控制，所以保留一條自己的頁首 `SiteHeader`）。兩者互補：`/theme/global` 說明「為什麼緯度重要」，`/compare` 帶學生鑽進同一條緯度上的兩個地方看差異。
 
 ### 圖層註冊表
 
@@ -179,7 +181,7 @@ registry/
 
 因為 Node 的 ESM 解析器不會自己補副檔名，`registry/` 內部互相 import **必須寫 `.ts` 副檔名**（`tsconfig.json` 因此開了 `allowImportingTsExtensions`）。
 
-`status: "planned"` 的圖層照樣列在側欄（停用的核取方塊 + 「資料整理中」），但**仍然必須填 `description` 與 `sources`**——一個停用又沒有文字的核取方塊什麼都沒教到。
+`status: "planned"` 的圖層照樣列在圖層抽屜裡（停用的核取方塊 + 「資料整理中」），但**仍然必須填 `description` 與 `sources`**——一個停用又沒有文字的核取方塊什麼都沒教到。
 
 子項目（`items`）是「一個勾選項展開成 N 個子圖層」的第一級概念，目前只有特有種用到。清單來源寫成 `{ type: "content", collection: "species" }` 而不是硬編，這樣**新增一個物種 JSON 就會自動出現在 UI**。
 
@@ -262,6 +264,63 @@ fill   → `${instanceId}-fill` + `${instanceId}-outline`
 - **臺灣縣市界只有 21 個，缺連江縣（馬祖）。** 已確認 Natural Earth 10m 整份資料集裡都沒有它，不是篩選寫錯。要補齊 22 個縣市得改用政府資料開放平臺的 shapefile（需要 `ogr2ogr`）。圖層的 `description` 有向使用者明講。
 - **Natural Earth 的河流沒有中文名欄位**，中文名靠 `build-geodata.mjs` 裡的 `RIVER_NAMES_ZH` 對照表。對不到就沿用原名。注意 NE 把黃河的 name 寫成 `"Huang"`（不是 `"Huang He"`）。
 - **相鄰的面各自簡化會在共用邊界開出次像素縫隙**（Douglas–Peucker 不保拓樸）。免依賴的緩解方式是設 `maxzoom`（縣市界設 11），讓它在縫隙變得可解析之前就停止繪製。
+## 全螢幕地圖外框與浮動控制
+
+三個主題頁的版面是 `ThemeMapPage` 組出來的 `.map-shell`（`position: fixed; inset: 0`）：
+
+```
+.map-shell  [data-detail-open] [data-drawer-open]
+├─ MapView            ← 永遠是第一個、無條件的子節點
+├─ .map-top-left      ☰ 藥丸（帶主題名，開圖層抽屜）
+├─ .map-top-right     ⋮⋮⋮ AppMenu（主題導覽 + 淺／深色）
+├─ .map-bottom-left   MapLegend + 「圖層」磚（底圖與等高線／地形陰影／3D 地形）
+├─ MapDetailPanel     左側詳情面板
+└─ LayerDrawer        左側圖層抽屜（刻意蓋在詳情面板之上，比照 Google Map）
+```
+
+### `<MapView>` 必須是 shell 的第一個、無條件的子節點
+
+不准把它移進條件分支、加 key 的包裝層、或抽屜／面板擁有的子樹。任何一種都會讓 React 重建那個節點，於是 maplibre remount：整份圖磚快取丟掉，`window.__gaiaMaps` 累積殘骸（檢查清單第 11 項就是在抓這個）。面板一律是**排在地圖後面**的條件式兄弟節點，地圖的 reconciliation 位置永遠是 index 0。
+
+### 為什麼不需要 `map.resize()`
+
+`.map-shell` 是 `fixed; inset: 0`，`.map-shell-canvas` 是 `absolute; inset: 0`，canvas 的邊框盒等於視窗，**與抽屜／面板的開關完全無關**——面板是疊上去的絕對定位兄弟節點，不是把地圖擠小的欄位。所以整份程式碼裡沒有、也不該有任何 `map.resize()`。
+
+⚠️ 維持這件事成立的規則只有一條：**面板永遠不可以改成會縮短地圖的 grid／flex 欄位**（那是重構前 `.explore` 的作法）。真要改，`resize()` 必須掛在面板的 `transitionend` 而不是狀態變更，否則動畫期間 canvas 是髒的。
+
+### 面板閃避只有一個機制
+
+`--left-panel-w` 與 `--bottom-sheet-h` 由 shell 上的 `data-*` 屬性決定，所有靠左／靠下的浮動控制（含 maplibre 自己的角落容器）都用 `calc()` 讀它們。**不准再出現第二條硬寫 `left`／`bottom` 的規則。** 窄螢幕的媒體查詢也只是重設這兩個屬性，浮動控制不需要任何額外規則。
+
+### z-index 階梯與 maplibre 的堆疊脈絡
+
+`--z-map-ui: 5` → `--z-panel: 10` → `--z-scrim: 15` → `--z-drawer: 20` → `--z-popover: 30`。抽屜在詳情面板**之上**是刻意的設計決定；因此**選取任何圖徵都會自動收起抽屜**（`useDrawerOpen` 的 `closeTransient`），否則剛開出來的詳情卡會被整片蓋住。`closeTransient` 不寫 localStorage——那是系統替使用者做的決定，不能覆寫他自己記住的偏好（`setOpen` 才會寫）。
+
+maplibre 的四個角落容器是 map container 內的 `position: absolute; z-index: 2`，所以 `.map-shell-canvas` 要 `isolation: isolate` 把它關進自己的堆疊脈絡。浮動控制的容器一律 `pointer-events: none`，只有按鈕與面板本身 `auto`，否則會吃掉地圖手勢。
+
+### 內建控制的位置
+
+主題頁把 `NavigationControl` 與 `ScaleControl` 都移到 `bottom-right`（`MapView` 的 `navPosition` / `scalePosition` prop，預設值維持 top-right／bottom-left 給 `/compare`），因為右上角讓給 ⋮⋮⋮、左下角讓給「圖層」磚。`MapLegend` 也從絕對定位改成 `.map-bottom-left` 這個 flex 欄位的普通子節點，白拿面板閃避。
+
+**maplibre 自己的控制維持預設淺色外觀**：它的圖示是內嵌的深色 SVG data URI，把 `.maplibregl-ctrl-group` 換成 `var(--surface)` 會讓深色模式下的圖示直接消失。它們疊在圖磚上，而圖磚本來就不隨主題變色。
+
+### 彈出層機制（`src/usePopover.ts`）
+
+**不用 `<dialog>`、不用原生 Popover API。** `showModal()` 會鎖焦點並擋住地圖拖曳；`show()` / `popover=""` 會升到 top layer，於是跳出上面那道 z-index 階梯與 `--left-panel-w` 的定位脈絡——而整個 shell 的重點就是這幾層彼此的相對順序。
+
+- Escape 掛在**面板層級**的 `onKeyDown`，不是 document 監聽：開啟時焦點已在面板裡，Escape 自然只關掉最上層；document 監聽會把抽屜跟選單一起關掉。
+- 點外面關閉用 `pointerdown` 而不是 `click`，這樣彈出層會在 maplibre 開始拖曳前就關掉。原生 `<select>` 的選項清單不派發頁面層級的 `pointerdown`，所以「圖層」彈出層裡的底圖 `<select>` 不會把自己關掉。
+- `didOpenRef` 擋住「抽屜從 localStorage 還原成開啟」時在首次算繪就搶走文件焦點。
+- 不做 focus trap、不加 `aria-modal`：底下的地圖仍然可以操作，宣告成 modal 是對輔助科技說謊。
+
+### ⚠️ `?browse=drawer|panel` 是暫時的 A/B 裝置
+
+「勾選縣市界／世界主要河流之後出現的可點清單」有兩種放法還沒定案：`drawer`（長在圖層抽屜裡該圖層那一列底下）與 `panel`（放進詳情面板，沒選東西時顯示清單、選了換成詳情 + 「返回清單」）。兩版都實作了，用網址參數切換，預設值是 `src/components/ThemeBrowse.tsx` 的 `DEFAULT_BROWSE_MODE`。
+
+`browseSlots()` 裡只有一個 `if/else`，兩版在結構上不可能同時出現。**決定之後刪掉輸家只動 `ThemeBrowse.tsx` 一個檔案**，再把已經永遠是 undefined 的那個 prop（`LayerPanel.renderLayerExtra` 或 `MapDetailPanel.onBack`）移掉，並刪掉這一節。
+
+---
+
 ## 雙地圖同步規則
 
 `src/map/useMapSync.ts`。
@@ -375,6 +434,8 @@ maplibre 的 `Style.loadJSON()` 會先 `await` 一個 `requestAnimationFrame` �
 `osascript -e 'tell application "Google Chrome" to set active tab index of window 1 to N'` 把分頁切到前景再等幾秒。
 同理，在背景載入、之後才切到前景的分頁，相機狀態可能跟網址參數對不上（`_constrain` 會在尺寸還沒定案時調整 zoom／緯度），要重新整理後再驗一次比較頁的 URL 還原。
 
+**分頁在測試中途才掉到背景也算數，而且症狀更難認。** 這時地圖已經載好了（`__gaiaMaps` 有東西、DOM 一切正常、React 也照常算繪），只有靠 rAF 的東西會靜靜地不動——尤其 `flyTo`。實測過的誤判：用 ⋮⋮⋮ 選單切主題時，路由、☰ 上的主題名、抽屜內容全都正確更新了，只有相機沒飛、zoom 停在切換前的值，看起來活像「換主題的 effect 壞了」。**每一段驗證腳本的開頭都印一次 `document.visibilityState`**，不要只在最開始確認一次。
+
 ### 地圖除錯掛勾（`npm run preview` 要用 `build:debug`）
 
 `MapView` 會把地圖實例掛到 `window.__gaiaMaps`，並透過 `canvasContextAttributes.preserveDrawingBuffer` 保留繪圖緩衝區。
@@ -422,8 +483,24 @@ m.isSourceLoaded('contour-source')
 5. DevTools Network：**不得有任何帶 API key 的請求**；圖磚全部回 200
 6. Console 無 CORS、WebGL 或 maplibre 錯誤
 7. **切到每一種向量底圖（目前是「世界地圖」）並確認地物真的渲染出來**，不能只看 `npm run build` 成功。這一項只在 production build 才驗得出來——`npm run dev` 用的是原始 ESM，不會踩到 worker 檔案沒被複製的問題，`npm run preview` 或實際部署才會踩到
-8. 主題頁：每個主題的圖層核取方塊可任意複選疊加；`planned` 的是停用狀態但仍有說明文字；點地圖上的圖徵跟點側欄清單都能開啟對應詳情卡
-9. **切底圖之後把所有主題圖層的存在與排序全部重驗一次。** 這是最容易回歸的地方，也是「排序反過來」那個坑唯一會現形的路徑（見上面的關鍵坑二）：
+8. 主題頁（滿版版面）：
+   - 左上 ☰ 開圖層抽屜 → 核取方塊可任意複選疊加；`planned` 的是停用狀態但仍有說明文字
+   - 點地圖圖徵 → **左側詳情面板**開卡，且**抽屜會自動收起**（否則詳情被蓋住），但 `localStorage.getItem('gaia-layer-drawer')` **不變**
+   - 手動關抽屜 → 重新整理後仍是關的；模擬封鎖 localStorage 不得拋錯
+   - `?browse=drawer` 與 `?browse=panel` 兩版可點清單各驗一次，且**只有一版**會出現在畫面上：
+     ```js
+     document.querySelectorAll('.layer-drawer .place-list').length      // drawer 版 > 0、panel 版 = 0
+     document.querySelectorAll('.map-detail-panel .place-list').length  // 反之
+     ```
+   - 鍵盤：Tab 到 ☰ → Enter 開啟 → Escape 關閉且焦點回到 ☰；⋮⋮⋮ 同理；⋮⋮⋮ 開著時點「圖層」磚會關掉 ⋮⋮⋮ 但**不會**關掉抽屜
+   - 面板閃避：抽屜或詳情開啟時 `document.querySelector('.map-bottom-left').getBoundingClientRect().left >= 360`
+   - 面板開關**不得**改變 canvas 尺寸（證明不需要 `resize()`）：
+     ```js
+     const before = [m.getCanvas().width, m.getCanvas().height];
+     // 開抽屜、開詳情面板後
+     JSON.stringify(before) === JSON.stringify([m.getCanvas().width, m.getCanvas().height])  // true
+     ```
+9. **切底圖之後把所有主題圖層的存在與排序全部重驗一次。** 這是最容易回歸的地方，也是「排序反過來」那個坑唯一會現形的路徑（見上面的關鍵坑二）。⚠️ **主題頁要先點開左下角「圖層」磚**（`document.querySelector('.map-tile').click()`）才找得到底圖 `<select>`：
    ```js
    const ids = m.getStyle().layers.map(l => l.id), at = id => ids.indexOf(id);
    at('contour-lines') < at('tw-counties-fill')      // 面在等高線之上
@@ -431,15 +508,17 @@ m.isSourceLoaded('contour-source')
    at('places-points')   < at('contour-labels')      // 全部在高程數字之下
    m._listeners.click.length                          // 切 3 次底圖前後應相同（監聽沒累積）
    ```
-10. 沿線標註要用 `queryRenderedFeatures` 數，**不能只看有沒有圖層**：
+10. 沿線標註要用 `queryRenderedFeatures` 數，**不能只看有沒有圖層**。⚠️ 這些數字**跟視窗大小相依**（放置演算法看的是實際畫布），改版面之後一定要重新實測並更新這裡的期望值。下列數字實測於 **1440×723 的 CSS 視窗**（滿版版面）：
    ```js
-   m.queryRenderedFeatures({ layers: ['latitude-lines-label'] }).length  // 全球主題預設視角應為 9
-   m.queryRenderedFeatures({ layers: ['world-rivers-label'] }).length    // zoom 4 的非洲一帶應有數條
+   m.queryRenderedFeatures({ layers: ['latitude-lines-label'] }).length  // 全球主題預設視角（zoom 1.8）為 6
+   m.queryRenderedFeatures({ layers: ['world-rivers-label'] }).length    // jumpTo([20,5], zoom 4) 為 7（線 32 條）
+   m.queryRenderedFeatures({ layers: ['contour-labels'] }).length        // 臺灣主題預設視角（zoom 12）為 28
    ```
-11. 用導覽切主題時 `window.__gaiaMaps.length` 不變（證明沒有 remount 重建地圖）
+11. `window.__gaiaMaps.length` 不變（證明沒有 remount 重建地圖）：用**右上角 ⋮⋮⋮ 選單**走完三個主題與 `/compare` 再回來（主題頁應為 1、`/compare` 為 2），以及開關抽屜／詳情面板／兩個彈出層各五次之後。
 
-### ⚠️ 用瀏覽器自動化點 UI 的兩個陷阱
+### ⚠️ 用瀏覽器自動化點 UI 的三個陷阱
 
+- **主題頁的底圖選單藏在左下角「圖層」彈出層裡**，必須先 `document.querySelector('.map-tile').click()` 才找得到 `<select>`；`/compare` 的仍然直接在頁首。
 - **底圖下拉選單的 CSS class 在 `<label>` 上，不是 `<select>` 上。** 選擇器要寫 `.basemap-select select`，寫成 `.basemap-select` 會拿到 label，`.value = …` 只是加了一個沒人看的屬性，**切底圖根本不會發生**，而測試看起來還是「通過」。
 - **React 會用 `_valueTracker` 記住上次的值**，直接指派 `.value` 再 `dispatchEvent(new Event('change'))` 會被忽略。要先 `sel._valueTracker?.setValue('__force__')` 再指派。
 
@@ -483,6 +562,10 @@ curl -s https://gaia.kigi.tw/compare | grep -c '<div id="root">'   # 應為 1
 ```
 src/
 ├─ config.ts              # 所有資料源端點與等高線參數
+├─ chrome.ts              # ChromeState 型別（底圖／疊圖／淺深色，兩種外框共用）
+├─ useTheme.ts            # 淺色／深色／自動（localStorage: gaia-theme）
+├─ useDrawerOpen.ts       # 圖層抽屜開關記憶（localStorage: gaia-layer-drawer）
+├─ usePopover.ts          # 彈出層／抽屜共用的開關、Escape 與焦點處理
 ├─ lib/schema.ts          # zod schema（建置期驗證用）
 ├─ content/
 │  ├─ index.ts            # import.meta.glob 載入地點/原住民族/物種；氣候與物種觀測點 JSON 用 fetch
@@ -502,8 +585,17 @@ src/
 │  ├─ registry/           # 圖層註冊表（純資料，Node 可 import）
 │  └─ thematicColors.ts   # 主題圖層顏色（已用 dataviz 驗證器驗證）
 ├─ compare/               # 同緯度比較頁（獨立，未被註冊表系統改動）
-├─ pages/ThemeMapPage.tsx # 主題地圖頁 /theme/:themeId
-└─ components/            # PlaceCard/IndigenousCard/SpeciesCard/FeatureCard/LayerPanel…
+├─ pages/ThemeMapPage.tsx # 主題地圖頁 /theme/:themeId，同時負責組裝 .map-shell
+└─ components/
+   ├─ SiteHeader.tsx      # /compare 專用頁首（主題頁沒有頁首）
+   ├─ AppMenu.tsx         # 主題導覽 + 淺深色（floating=⋮⋮⋮ 彈出層／inline=頁首）
+   ├─ MapPopover.tsx      # ⋮⋮⋮ 與「圖層」磚共用的泡泡容器
+   ├─ MapLayersPopover.tsx# 左下「圖層」磚（內容重用 LayerToggles）
+   ├─ LayerDrawer.tsx     # 左上 ☰ 的圖層抽屜外框
+   ├─ MapDetailPanel.tsx  # 左側詳情面板外框（≤860px 變底部卡）
+   ├─ DetailCard.tsx      # 選取 → 對應詳情卡的分派
+   ├─ ThemeBrowse.tsx     # ⚠️ 可點清單擺放的 A/B 切換，決定後整支刪掉
+   └─ PlaceCard/IndigenousCard/SpeciesCard/FeatureCard/LayerPanel/MapLegend…
 public/data/
 ├─ climate/*.json         # build:climate 產生
 ├─ species/*.geojson      # build:species 產生

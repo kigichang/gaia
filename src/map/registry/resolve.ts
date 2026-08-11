@@ -31,7 +31,7 @@ const COLORS: Record<ColorRole, string> = LAYER_COLORS;
 
 // ── 已打包進 bundle 的內容 → GeoJSON ───────────────────────────────────
 //
-// 這裡也是側欄清單所需屬性（name／meta／zoom）附加上去的地方——
+// 這裡也是可點清單所需屬性（name／meta／zoom）附加上去的地方——
 // 有了它，一個通用的清單元件就能取代 ExplorePage 裡兩份寫死的清單。
 
 const BUNDLED_LOADERS = {
@@ -196,7 +196,7 @@ export function expandActive(
   return { instances, pending };
 }
 
-/** 顏色角色查詢，給圖例與側欄色塊用。 */
+/** 顏色角色查詢，給圖例與圖層抽屜的色塊用。 */
 export function colorOf(role: ColorRole): string {
   return COLORS[role];
 }

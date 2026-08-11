@@ -25,6 +25,19 @@
 
   --radius: 10px;
   --font: system-ui, -apple-system, "Segoe UI", "Noto Sans TC", "PingFang TC", sans-serif;
+
+  /* 浮在地圖上的表面需要比流內卡片更重的陰影才分得出層次 */
+  --float-shadow: 0 2px 10px rgba(0, 0, 0, 0.18);
+  --scrim: rgba(0, 0, 0, 0.4);
+
+  /* 滿版地圖外框（見「全螢幕地圖外框與浮動控制」） */
+  --panel-w: 360px;
+  --fab-gap: 10px;
+  --z-map-ui: 5; /* 浮動控制與圖例 */
+  --z-panel: 10; /* 詳情面板 */
+  --z-scrim: 15; /* 窄螢幕遮罩：在面板之上、抽屜之下 */
+  --z-drawer: 20; /* 圖層抽屜（刻意蓋在詳情面板之上，比照 Google Map） */
+  --z-popover: 30; /* ⋮⋮⋮ 與「圖層」彈出層 */
 }
 
 @media (prefers-color-scheme: dark) {
@@ -43,6 +56,8 @@
     --accent: #3987e5;
     --series-precip: #3987e5;
     --series-temp: #d95926;
+    --float-shadow: 0 2px 12px rgba(0, 0, 0, 0.55);
+    --scrim: rgba(0, 0, 0, 0.55);
   }
 }
 
@@ -61,6 +76,8 @@
   --accent: #3987e5;
   --series-precip: #3987e5;
   --series-temp: #d95926;
+  --float-shadow: 0 2px 12px rgba(0, 0, 0, 0.55);
+  --scrim: rgba(0, 0, 0, 0.55);
 }
 
 * {
@@ -573,32 +590,315 @@ input {
   color: var(--text-muted);
 }
 
-/* ---------- 探索頁 ---------- */
+/* ---------- 滿版地圖外框（主題頁） ---------- */
 
-.explore {
-  display: grid;
-  grid-template-columns: 260px 1fr;
-  gap: 16px;
-  /* 撐滿 .app-main 剩下的高度，讓右側地圖可以長到底部，而不是被內容撐多高就多高 */
-  flex: 1;
-  min-height: 0;
+/*
+ * 三個主題頁的版面：地圖鋪滿整個視窗，所有控制項都是疊在它上面的浮動層。
+ *
+ * ⚠️ 兩條不能違反的規則：
+ *
+ * 1. 面板永遠是「絕對定位、疊在地圖上」的兄弟節點，**不可以**改成把地圖擠小的
+ *    grid／flex 欄位。因為 canvas 的邊框盒等於視窗、與面板開關完全無關，所以
+ *    整份程式碼裡不需要任何 map.resize()。真要改成擠壓式版面，resize() 必須掛在
+ *    面板的 transitionend（不是狀態變更），否則動畫期間 canvas 是髒的。
+ * 2. 面板閃避只有 --left-panel-w / --bottom-sheet-h 這一個機制。任何靠左或靠下
+ *    的浮動控制都用 calc() 讀它們，**不准**再出現第二條硬寫 left/bottom 的規則。
+ */
+.map-shell {
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+  --left-panel-w: 0px;
+  --bottom-sheet-h: 0px;
 }
 
-.explore-side {
-  /* 側欄保持原本的內容高度，不要跟著整列被拉伸；伸展的是右側地圖欄。
-     但主題圖層開多個、清單變長時仍要能限制在地圖同樣高度內，改成內部捲動。 */
-  align-self: start;
-  max-height: 100%;
+.map-shell[data-detail-open="true"],
+.map-shell[data-drawer-open="true"] {
+  --left-panel-w: var(--panel-w);
+}
+
+.map-shell-canvas {
+  position: absolute;
+  inset: 0;
+  /* maplibre 自己的四個角落容器是 map container 內的 z-index: 2。
+     用 isolation 把它關進自己的堆疊脈絡，我們的 --z-* 階梯才能乾淨地疊在上面。 */
+  isolation: isolate;
+}
+
+/* 浮動控制的容器不能吃掉地圖手勢，只有真正的按鈕與面板收事件 */
+.map-top-left,
+.map-top-right,
+.map-bottom-left {
+  position: absolute;
+  z-index: var(--z-map-ui);
+  pointer-events: none;
+}
+
+.map-top-left,
+.map-top-right {
+  top: var(--fab-gap);
+}
+
+.map-top-left {
+  left: calc(var(--left-panel-w) + var(--fab-gap));
+  transition: left 0.18s ease;
+}
+
+/* 抽屜開著時把 ☰ 藥丸收起來：抽屜自己的標題已經寫著同一個主題名，而且它有 ✕，
+   兩顆功能重疊的按鈕並排只是噪音。
+   用 visibility 而不是 opacity，藥丸才會一併退出 tab 順序與輔助技術；
+   抽屜關閉時屬性同一次算繪就變回 false，所以 usePopover 把焦點還給它時它已經可見。 */
+.map-shell[data-drawer-open="true"] .map-top-left {
+  visibility: hidden;
+}
+
+.map-top-right {
+  right: var(--fab-gap);
+}
+
+.map-bottom-left {
+  left: calc(var(--left-panel-w) + var(--fab-gap));
+  bottom: calc(var(--bottom-sheet-h) + var(--fab-gap));
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+  transition:
+    left 0.18s ease,
+    bottom 0.18s ease;
+}
+
+.map-fab,
+.map-tile,
+.map-popover-panel,
+.map-legend {
+  pointer-events: auto;
+}
+
+/* maplibre 內建控制也要一起讓開面板（右下角那疊：attribution + 縮放 + 比例尺） */
+.map-shell .maplibregl-ctrl-bottom-left {
+  left: var(--left-panel-w);
+}
+
+.map-shell .maplibregl-ctrl-bottom-right {
+  bottom: var(--bottom-sheet-h);
+}
+
+/* ---------- 浮動按鈕與彈出層 ---------- */
+
+.map-fab,
+.map-tile {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--text-primary);
+  box-shadow: var(--float-shadow);
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.map-fab {
+  padding: 9px 12px;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.map-fab:hover,
+.map-tile:hover {
+  background: var(--hover-wash);
+}
+
+.map-fab-label {
+  white-space: nowrap;
+}
+
+/* 左下角的「圖層」磚：Google 那塊底圖縮圖的位置。
+   我們沒有（也不能有）需要金鑰的底圖縮圖，所以用圖示 + 文字。 */
+.map-tile {
+  flex-direction: column;
+  gap: 2px;
+  padding: 8px 10px;
+  border-radius: 10px;
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+.map-popover {
+  position: relative;
+  pointer-events: auto;
+}
+
+.map-popover-panel {
+  position: absolute;
+  z-index: var(--z-popover);
+  min-width: 220px;
+  max-height: 70dvh;
   overflow-y: auto;
+  padding: 10px 12px;
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius);
-  padding: 14px 16px;
+  box-shadow: var(--float-shadow);
 }
 
-.explore-side h2 {
-  margin: 0 0 10px;
+.map-popover-panel.is-top-right {
+  top: calc(100% + 6px);
+  right: 0;
+}
+
+.map-popover-panel.is-bottom-left {
+  bottom: calc(100% + 6px);
+  left: 0;
+}
+
+/* ⋮⋮⋮ 選單：品牌列 → 主題導覽（直排）→ 淺／深色切換 */
+.map-menu-brand {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 2px 4px 6px;
+  text-decoration: none;
+  color: inherit;
+}
+
+.map-menu-sep {
+  margin: 6px 0;
+  border: none;
+  border-top: 1px solid var(--border);
+}
+
+.map-menu .app-nav {
+  flex-direction: column;
+  align-items: stretch;
+  gap: 2px;
+}
+
+.map-menu .theme-toggle {
+  justify-content: center;
+}
+
+/* 「圖層」彈出層：LayerToggles 原封不動重用，只改成直排 */
+.map-layers-panel .layer-toggles {
+  flex-direction: column;
+  align-items: stretch;
+  gap: 10px;
+}
+
+/* ---------- 圖層抽屜 ---------- */
+
+.layer-drawer {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  z-index: var(--z-drawer);
+  width: var(--panel-w);
+  display: flex;
+  flex-direction: column;
+  background: var(--surface);
+  border-right: 1px solid var(--border);
+  box-shadow: var(--float-shadow);
+}
+
+.layer-drawer-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 14px 16px 8px;
+  border-bottom: 1px solid var(--border);
+}
+
+.layer-drawer-title {
+  margin: 0 0 4px;
   font-size: 16px;
+}
+
+.layer-drawer-body {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 12px 16px 20px;
+}
+
+/* 遮罩只在窄螢幕出現；桌機上抽屜是常駐面板，地圖仍然可以直接操作 */
+.drawer-scrim {
+  display: none;
+}
+
+/* ---------- 詳情面板 ---------- */
+
+/* 名稱不能叫 .detail-panel：那是 ComparePage 自己的卡片 */
+.map-detail-panel {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  z-index: var(--z-panel);
+  width: var(--panel-w);
+  display: flex;
+  flex-direction: column;
+  background: var(--surface);
+  border-right: 1px solid var(--border);
+  box-shadow: var(--float-shadow);
+}
+
+.map-detail-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 10px 12px 10px 16px;
+  border-bottom: 1px solid var(--border);
+}
+
+.map-detail-head-title {
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.map-detail-body {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 14px 16px 24px;
+}
+
+.panel-close,
+.panel-back {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 5px 8px;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--text-secondary);
+  font-family: inherit;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.panel-close:hover,
+.panel-back:hover {
+  background: var(--hover-wash);
+  color: var(--text-primary);
+}
+
+/* version B（?browse=panel）在面板裡顯示的清單分段 */
+.browse-section-title {
+  margin: 0 0 6px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+/* version A（?browse=drawer）把清單塞進抽屜的圖層列底下 */
+.layer-row-extra .place-list {
+  margin-bottom: 4px;
 }
 
 .place-list {
@@ -642,35 +942,11 @@ input {
   color: var(--text-muted);
 }
 
-.explore-main {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  min-width: 0;
-  min-height: 0;
-}
-
-.map-canvas-wrap {
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  flex: 1;
-  min-height: 0;
-}
-
-.explore-canvas {
-  /* 扣掉上面圖層開關列的高度後，把剩餘空間全部給地圖 */
-  flex: 1;
-  min-height: 0;
-}
-
 /* ---------- 主題圖層面板 ---------- */
 
+/* 抽屜本身已經是一個表面了，面板不需要再套一層框 */
 .thematic-panel {
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  padding: 10px 12px;
-  margin-bottom: 12px;
+  margin-bottom: 4px;
 }
 
 .thematic-panel h3 {
@@ -893,18 +1169,23 @@ input {
 
 /* ---------- 地圖圖例 ---------- */
 
+/*
+ * 圖例是 .map-bottom-left 這個 flex 欄位的普通子節點（在「圖層」磚上方），
+ * 不再自己絕對定位——這樣它免費繼承面板閃避，也不會再跟右下角那疊
+ * maplibre 內建控制打架。
+ */
 .map-legend {
-  position: absolute;
-  right: 10px;
-  bottom: 32px;
-  z-index: 1;
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: 8px;
   padding: 8px 10px;
   font-size: 12px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+  box-shadow: var(--float-shadow);
   max-width: 180px;
+  /* 主題一忙起來圖例會很長，不能讓它把「圖層」磚頂出畫面。
+     父層不再是絕對定位，百分比高度失效，改用視窗單位。 */
+  max-height: 34dvh;
+  overflow-y: auto;
 }
 
 .map-legend-row {
@@ -915,18 +1196,12 @@ input {
   color: var(--text-secondary);
 }
 
-/* 主題一忙起來圖例會很長，不能讓它把地圖頂出去 */
-.map-legend {
-  max-height: 42%;
-  overflow-y: auto;
-}
-
-/* ---------- 行動裝置：雙地圖改成上下堆疊 ---------- */
+/* ---------- 行動裝置 ---------- */
 
 @media (max-width: 860px) {
+  /* /compare：雙地圖與雙詳情改成上下堆疊 */
   .compare-maps,
-  .compare-details,
-  .explore {
+  .compare-details {
     grid-template-columns: 1fr;
   }
 
@@ -937,6 +1212,53 @@ input {
 
   .app-main {
     padding: 12px 12px 24px;
+  }
+
+  /*
+   * 主題頁：左側面板放不下，改成兩種不同的形態。刻意不對稱——
+   * 抽屜可以整片蓋住地圖（挑圖層時不需要看地圖），但詳情面板不行：
+   * 使用者剛剛才點了地圖上的一個點，必須還看得到那個點在哪，
+   * 所以詳情改成底部抽拉卡。
+   */
+  .map-shell[data-detail-open="true"],
+  .map-shell[data-drawer-open="true"] {
+    --left-panel-w: 0px;
+  }
+
+  .map-shell[data-detail-open="true"] {
+    --bottom-sheet-h: 62dvh;
+  }
+
+  .layer-drawer {
+    width: 100%;
+    border-right: none;
+  }
+
+  .drawer-scrim {
+    display: block;
+    position: absolute;
+    inset: 0;
+    z-index: var(--z-scrim);
+    background: var(--scrim);
+  }
+
+  .map-detail-panel {
+    top: auto;
+    right: 0;
+    height: var(--bottom-sheet-h);
+    width: auto;
+    border-right: none;
+    border-top: 1px solid var(--border);
+    border-radius: 16px 16px 0 0;
+  }
+
+  /* ☰ 收成純圖示、「圖層」磚縮小，把寬度讓給地圖 */
+  .map-fab-drawer .map-fab-label {
+    display: none;
+  }
+
+  .map-tile {
+    padding: 6px 8px;
   }
 }
 

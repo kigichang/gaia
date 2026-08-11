@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 // maplibre-gl v6 起不再提供 default export，必須用 namespace import
 import * as maplibregl from "maplibre-gl";
-import type { Map as MapLibreMap, StyleSpecification } from "maplibre-gl";
+import type { ControlPosition, Map as MapLibreMap, StyleSpecification } from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
 import { type BasemapId, firstSymbolLayerId, loadBasemapStyle } from "./basemaps";
 import { addContourLayers, setContourVisibility } from "./layers/contour";
@@ -59,6 +59,15 @@ export interface MapViewProps {
    */
   onStyleApplied?: (map: MapLibreMap) => void;
   className?: string;
+  /**
+   * maplibre 內建縮放／指北控制的位置。預設 `top-right`（`/compare` 沿用）。
+   *
+   * 主題頁改成滿版之後右上角讓給 ⋮⋮⋮ 選單、左下角讓給「圖層」磚，所以那邊會把
+   * 這兩個控制都移到 `bottom-right`。
+   */
+  navPosition?: ControlPosition;
+  /** 比例尺的位置。預設 `bottom-left`（`/compare` 沿用），主題頁移到 `bottom-right`。 */
+  scalePosition?: ControlPosition;
 }
 
 export function MapView({
@@ -69,6 +78,8 @@ export function MapView({
   onReady,
   onStyleApplied,
   className,
+  navPosition = "top-right",
+  scalePosition = "bottom-left",
 }: MapViewProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<MapLibreMap | null>(null);
@@ -116,8 +127,10 @@ export function MapView({
       // 記下這張地圖是用哪個底圖建立的。若使用者在樣式抓取／首次載入期間就換了底圖，
       // 下面的 effect 會在 ready 之後比對出差異並補上 setStyle。
       appliedBasemap.current = basemap;
-      map.addControl(new maplibregl.NavigationControl({ visualizePitch: true }), "top-right");
-      map.addControl(new maplibregl.ScaleControl({ unit: "metric" }), "bottom-left");
+      // navPosition／scalePosition 跟 initialCenter 一樣只在建立時讀一次，
+      // 不放進 effect 相依（見下面 eslint-disable 的說明）。
+      map.addControl(new maplibregl.NavigationControl({ visualizePitch: true }), navPosition);
+      map.addControl(new maplibregl.ScaleControl({ unit: "metric" }), scalePosition);
 
       map.on("load", () => {
         if (cancelled) return;

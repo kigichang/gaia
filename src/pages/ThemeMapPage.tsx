@@ -1,15 +1,15 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Navigate, useParams } from "react-router-dom";
 import type { Map as MapLibreMap } from "maplibre-gl";
-import { MapView, type OverlayState } from "../map/MapView";
-import type { BasemapId } from "../map/basemaps";
+import { MapView } from "../map/MapView";
 import { LayerPanel } from "../components/LayerPanel";
-import { LayerBrowseList } from "../components/LayerBrowseList";
 import { MapLegend } from "../components/MapLegend";
-import { PlaceCard } from "../components/PlaceCard";
-import { IndigenousCard } from "../components/IndigenousCard";
-import { SpeciesCard } from "../components/SpeciesCard";
-import { FeatureCard } from "../components/FeatureCard";
+import { AppMenu } from "../components/AppMenu";
+import { MapLayersPopover } from "../components/MapLayersPopover";
+import { LayerDrawer } from "../components/LayerDrawer";
+import { MapDetailPanel } from "../components/MapDetailPanel";
+import { DetailCard, detailTitle, type Selection } from "../components/DetailCard";
+import { browseSlots, useBrowseMode } from "../components/ThemeBrowse";
 import { DEFAULT_THEME_ID, getTheme, layerInstanceId } from "../map/registry/index";
 import {
   colorOf,
@@ -19,44 +19,40 @@ import {
   type ActiveState,
 } from "../map/registry/resolve";
 import type { DetailSpec, LayerDefinition, ThemeDefinition } from "../map/registry/types";
-import { useGeoLayers, type GeoLayerInstance } from "../map/useGeoLayers";
+import { useGeoLayers } from "../map/useGeoLayers";
+import { useDrawerOpen } from "../useDrawerOpen";
 import { bboxOf } from "../map/layers/geo";
-import { getGeoFeature, getIndigenousGroup, getPlace, getSpecies } from "../content";
+import type { ChromeState } from "../chrome";
 
 interface ThemeMapPageProps {
-  overlays: OverlayState;
-  basemap: BasemapId;
+  chrome: ChromeState;
 }
-
-type Selection = { detail: DetailSpec; featureId: string } | null;
 
 /**
  * 主題地圖頁：`/theme/:themeId`。
  *
- * 取代舊的 ExplorePage。整頁由 `src/map/registry` 的圖層註冊表驅動，
- * 加一個新主題或新圖層只要加一筆註冊表資料，不需要動這支元件。
+ * 整頁由 `src/map/registry` 的圖層註冊表驅動，加一個新主題或新圖層只要加一筆
+ * 註冊表資料，不需要動這支元件。
+ *
+ * 版面是滿版地圖 + 浮動控制（仿 Google Map）：左上 ☰ 圖層抽屜、右上 ⋮⋮⋮ 主題與
+ * 外觀選單、左下圖例與「圖層」磚、點圖徵從左側開詳情面板。細節與那幾條硬規則
+ * 見 CLAUDE.md 的「全螢幕地圖外框與浮動控制」。
  */
-export function ThemeMapPage({ overlays, basemap }: ThemeMapPageProps) {
+export function ThemeMapPage({ chrome }: ThemeMapPageProps) {
   const { themeId } = useParams();
   const theme = getTheme(themeId);
   if (!theme) return <Navigate to={`/theme/${DEFAULT_THEME_ID}`} replace />;
-  return <ThemeMapView key="theme-map" theme={theme} overlays={overlays} basemap={basemap} />;
+  return <ThemeMapView key="theme-map" theme={theme} chrome={chrome} />;
 }
 
-function ThemeMapView({
-  theme,
-  overlays,
-  basemap,
-}: {
-  theme: ThemeDefinition;
-  overlays: OverlayState;
-  basemap: BasemapId;
-}) {
+function ThemeMapView({ theme, chrome }: { theme: ThemeDefinition; chrome: ChromeState }) {
   const [map, setMap] = useState<MapLibreMap | null>(null);
   const [activeLayerIds, setActiveLayerIds] = useState<Set<string>>(() => defaultOnIds(theme));
   const [activeItemIds, setActiveItemIds] = useState<Record<string, string[]>>({});
   const [selected, setSelected] = useState<Selection>(() => theme.initialSelection ?? null);
   const [data, setData] = useState<Record<string, GeoJSON.FeatureCollection | null>>({});
+  const { open: drawerOpen, setOpen: setDrawerOpen, closeTransient } = useDrawerOpen();
+  const browseMode = useBrowseMode();
 
   const active = useMemo<ActiveState>(
     () => ({ layerIds: activeLayerIds, itemIds: activeItemIds }),
@@ -81,9 +77,16 @@ function ThemeMapView({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pendingKey]);
 
-  const handleSelect = useCallback((detail: DetailSpec, featureId: string) => {
-    setSelected({ detail, featureId });
-  }, []);
+  // 抽屜疊在詳情面板之上，所以一旦選了圖徵就得把抽屜收起來，否則剛開出來的
+  // 詳情卡會被整片蓋住。用 closeTransient 而不是 setOpen(false)：這是系統替
+  // 使用者做的決定，不可以覆寫他自己記在 localStorage 裡的偏好。
+  const handleSelect = useCallback(
+    (detail: DetailSpec, featureId: string) => {
+      setSelected({ detail, featureId });
+      closeTransient();
+    },
+    [closeTransient],
+  );
 
   // 切底圖之後由 MapView 明確回呼重套主題圖層（見 useGeoLayers 的說明）
   const reapplyLayers = useGeoLayers(map, instances, handleSelect);
@@ -158,9 +161,10 @@ function ThemeMapView({
   const handleBrowseSelect = useCallback(
     (layer: LayerDefinition, featureId: string) => {
       setSelected({ detail: layer.detail, featureId });
+      closeTransient();
       flyToFeature(layer, featureId);
     },
-    [flyToFeature],
+    [flyToFeature, closeTransient],
   );
 
   const handleItemNameClick = useCallback(
@@ -168,9 +172,10 @@ function ThemeMapView({
       const layer = theme.layers.find((l) => l.id === layerId);
       if (!layer) return;
       setSelected({ detail: layer.detail, featureId: itemId });
+      closeTransient();
       flyToFeature(layer, itemId);
     },
-    [theme, flyToFeature],
+    [theme, flyToFeature, closeTransient],
   );
 
   // 子項目的圖徵數（特有種的觀測點筆數）
@@ -225,12 +230,80 @@ function ThemeMapView({
     (l) => l.status === "ready" && l.browse && !l.items && activeLayerIds.has(l.id),
   );
 
-  return (
-    <div className="explore">
-      <aside className="explore-side">
-        <h2>{theme.label}</h2>
-        <p className="theme-subtitle">{theme.subtitle}</p>
+  // 可點清單的兩種擺法（A/B 測試中），見 ThemeBrowse.tsx
+  const dataOf = useCallback(
+    (layerId: string) => instances.find((i) => i.instanceId === layerId)?.data ?? null,
+    [instances],
+  );
+  const slots = browseSlots({
+    mode: browseMode,
+    layers: browseLayers,
+    dataOf,
+    selected,
+    onSelect: handleBrowseSelect,
+    onBackToList: () => setSelected(null),
+  });
 
+  const detailOpen = Boolean(selected) || slots.panelOpenWithoutSelection;
+
+  return (
+    // data-* 驅動 --left-panel-w／--bottom-sheet-h，浮動控制靠這兩個屬性讓開，
+    // 不准有第二條硬寫 left/bottom 的規則（見 styles.css 的說明）。
+    <div className="map-shell" data-detail-open={detailOpen} data-drawer-open={drawerOpen}>
+      {/*
+        ⚠️ MapView 必須是 shell 的第一個、無條件的子節點。
+        永遠不要把它移進條件分支、加 key 的包裝層、或抽屜／面板擁有的子樹——
+        任何一種都會讓 React 重建這個節點，於是 maplibre remount：整份圖磚快取
+        丟掉，window.__gaiaMaps 累積殘骸。面板一律是「排在地圖後面」的兄弟節點，
+        地圖的 reconciliation 位置永遠是 index 0。
+
+        也因為面板是絕對定位的疊層而不是把地圖擠小的欄位，canvas 尺寸與面板開關
+        完全無關，所以這裡不需要（也不該有）任何 map.resize()。
+      */}
+      <MapView
+        className="map-shell-canvas"
+        initialCenter={theme.camera.center}
+        initialZoom={theme.camera.zoom}
+        basemap={chrome.basemap}
+        overlays={chrome.overlays}
+        onReady={setMap}
+        onStyleApplied={reapplyLayers}
+        navPosition="bottom-right"
+        scalePosition="bottom-right"
+      />
+
+      <div className="map-top-right">
+        <AppMenu themePref={chrome.themePref} onThemePrefChange={chrome.onThemePrefChange} />
+      </div>
+
+      <div className="map-bottom-left">
+        <MapLegend entries={legendEntries} />
+        <MapLayersPopover chrome={chrome} />
+      </div>
+
+      {detailOpen && (
+        <MapDetailPanel
+          onClose={() => setSelected(null)}
+          onBack={slots.panelBack}
+          title={detailTitle(selected)}
+        >
+          {slots.panelList ?? (
+            <DetailCard
+              selection={selected}
+              itemCounts={itemCounts}
+              theme={theme}
+              instances={instances}
+            />
+          )}
+        </MapDetailPanel>
+      )}
+
+      <LayerDrawer
+        open={drawerOpen}
+        onOpenChange={setDrawerOpen}
+        title={theme.label}
+        subtitle={theme.subtitle}
+      >
         <LayerPanel
           theme={theme}
           activeLayerIds={activeLayerIds}
@@ -239,105 +312,11 @@ function ThemeMapView({
           onToggleItem={toggleItem}
           onItemNameClick={handleItemNameClick}
           itemCounts={itemCounts}
+          renderLayerExtra={slots.drawerExtra}
         />
-
-        {browseLayers.map((layer) => {
-          const fc = instances.find((i) => i.instanceId === layer.id)?.data;
-          if (!fc) return null;
-          return (
-            <LayerBrowseList
-              key={layer.id}
-              data={fc}
-              browse={layer.browse!}
-              selectedId={
-                selected && selected.detail.type === layer.detail.type
-                  ? selected.featureId
-                  : undefined
-              }
-              onSelect={(featureId) => handleBrowseSelect(layer, featureId)}
-            />
-          );
-        })}
-
-        <DetailCard
-          selection={selected}
-          itemCounts={itemCounts}
-          theme={theme}
-          instances={instances}
-        />
-      </aside>
-
-      <div className="explore-main">
-        <div className="map-canvas-wrap">
-          <MapView
-            className="map-canvas explore-canvas"
-            initialCenter={theme.camera.center}
-            initialZoom={theme.camera.zoom}
-            basemap={basemap}
-            overlays={overlays}
-            onReady={setMap}
-            onStyleApplied={reapplyLayers}
-          />
-          <MapLegend entries={legendEntries} />
-        </div>
-      </div>
+      </LayerDrawer>
     </div>
   );
-}
-
-function DetailCard({
-  selection,
-  itemCounts,
-  theme,
-  instances,
-}: {
-  selection: Selection;
-  itemCounts: Record<string, number | undefined>;
-  theme: ThemeDefinition;
-  instances: GeoLayerInstance[];
-}) {
-  if (!selection) {
-    return <p className="detail-empty">點地圖上的圖徵或左側清單查看說明。</p>;
-  }
-
-  const { detail, featureId } = selection;
-  if (detail.type === "geo") {
-    // 找出這個圖徵屬於哪個圖層，好在沒有內容檔時退回顯示圖層自己的說明
-    const layer = theme.layers.find(
-      (l) => l.detail.type === "geo" && l.detail.collection === detail.collection,
-    );
-    const fc = instances.find((i) => i.instanceId === layer?.id)?.data;
-    const props = fc?.features.find((f) => f.properties?.id === featureId)?.properties;
-    return (
-      <FeatureCard
-        feature={getGeoFeature(detail.collection, featureId)}
-        fallback={{
-          name: typeof props?.[detail.fallbackNameProperty ?? "name"] === "string"
-            ? String(props[detail.fallbackNameProperty ?? "name"])
-            : undefined,
-          layerLabel: layer?.label ?? detail.collection,
-          description: layer?.description ?? "",
-          sources: layer?.sources ?? [],
-          schematic: layer?.schematic,
-        }}
-      />
-    );
-  }
-  if (detail.type === "place") {
-    const place = getPlace(featureId);
-    return place ? <PlaceCard place={place} /> : null;
-  }
-  if (detail.type === "indigenous") {
-    const group = getIndigenousGroup(featureId);
-    return group ? <IndigenousCard group={group} /> : null;
-  }
-  if (detail.type === "species") {
-    const species = getSpecies(featureId);
-    return species ? (
-      <SpeciesCard species={species} occurrenceCount={itemCounts[featureId]} />
-    ) : null;
-  }
-  return null;
 }
 
 function defaultOnIds(theme: ThemeDefinition): Set<string> {
