@@ -1,0 +1,30 @@
+{
+  "id": "alishan-range",
+  "collection": "tw-ranges",
+  "name": { "zh": "阿里山山脈", "en": "Alishan Range" },
+  "subtitle": "最靠西側的山脈，是山地與嘉南平原之間的最後一道地形階梯",
+  "stats": [
+    { "label": "主峰", "value": "大塔山" },
+    { "label": "最高海拔", "value": "2,663 m" },
+    { "label": "長度", "value": "約 250 km" },
+    { "label": "走向", "value": "北北東—南南西" }
+  ],
+  "facts": [
+    { "label": "範圍", "value": "北起南投濁水溪南岸，南抵高雄燕巢一帶" },
+    {
+      "label": "與玉山山脈的分界",
+      "value": "以楠梓仙溪（旗山溪）為界，兩條山脈之間夾著這條南北向河谷"
+    },
+    {
+      "label": "高度",
+      "value": "五大山脈中最低，沒有 3000 公尺以上的山峰，但緊鄰平原、落差最醒目"
+    },
+    {
+      "label": "人文",
+      "value": "日治時期為了運送檜木而修築阿里山森林鐵路，是臺灣林業史的代表地景"
+    }
+  ],
+  "curriculum": { "unit": "臺灣的地形" },
+  "schematic": true,
+  "sources": ["維基百科", "農業部林業及自然保育署"]
+}

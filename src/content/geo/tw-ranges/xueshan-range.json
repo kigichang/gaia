@@ -1,0 +1,27 @@
+{
+  "id": "xueshan-range",
+  "collection": "tw-ranges",
+  "name": { "zh": "雪山山脈", "en": "Xueshan Range" },
+  "subtitle": "位於中央山脈西北側，走向與東北季風正面相對",
+  "stats": [
+    { "label": "主峰", "value": "雪山" },
+    { "label": "最高海拔", "value": "3,886 m" },
+    { "label": "長度", "value": "約 260 km" },
+    { "label": "走向", "value": "東北—西南" }
+  ],
+  "facts": [
+    { "label": "範圍", "value": "北起新北三貂角，向西南延伸至南投濁水溪谷" },
+    { "label": "地位", "value": "雪山是臺灣第二高峰，僅次於玉山" },
+    {
+      "label": "冰河遺跡",
+      "value": "雪山主峰下的圈谷是臺灣少數的末次冰期冰河地形證據"
+    },
+    {
+      "label": "對照重點",
+      "value": "它與中央山脈之間的縱谷是蘭陽溪與大甲溪上游的通道，也是雪山隧道穿越的位置"
+    }
+  ],
+  "curriculum": { "unit": "臺灣的地形" },
+  "schematic": true,
+  "sources": ["維基百科", "內政部國土測繪中心"]
+}

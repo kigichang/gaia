@@ -108,11 +108,18 @@ export const taiwanTheme: ThemeDefinition = {
       id: "tw-ranges",
       label: "五大山脈",
       group: "地形",
-      status: "planned",
-      render: { kind: "line" },
-      detail: { type: "none" },
-      description: "中央、雪山、玉山、阿里山、海岸五大山脈的走向與分界。",
-      sources: ["內政部國土測繪中心"],
+      status: "ready",
+      // 手繪示意稜線：山脈沒有像行政區那樣的官方界線圖資，Natural Earth 也沒有
+      // 收錄。畫的是「走向與分界」，不是精確稜線，所以一定要標 schematic。
+      source: { type: "remote", path: "data/geo-manual/tw-ranges.geojson" },
+      render: { kind: "line", width: 2.6, label: { property: "name" } },
+      colorRole: "relief",
+      detail: { type: "geo", collection: "tw-ranges" },
+      browse: {},
+      schematic: true,
+      description:
+        "中央、雪山、玉山、阿里山、海岸五大山脈的走向與分界。搭配等高線一起看，可以對照稜線位置與高程分布。",
+      sources: ["維基百科", "內政部國土測繪中心"],
     },
     {
       id: "tw-landform-zones",

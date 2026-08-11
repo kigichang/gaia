@@ -1,0 +1,27 @@
+{
+  "id": "yushan-range",
+  "collection": "tw-ranges",
+  "name": { "zh": "玉山山脈", "en": "Yushan Range" },
+  "subtitle": "五大山脈中最短，卻擁有東北亞第一高峰",
+  "stats": [
+    { "label": "主峰", "value": "玉山主峰" },
+    { "label": "最高海拔", "value": "3,952 m" },
+    { "label": "長度", "value": "約 180 km" },
+    { "label": "走向", "value": "北北東—南南西" }
+  ],
+  "facts": [
+    { "label": "範圍", "value": "北起南投陳有蘭溪，南抵高雄六龜的荖濃溪谷" },
+    { "label": "地位", "value": "玉山主峰 3,952 公尺，是臺灣與東北亞的最高峰" },
+    {
+      "label": "與中央山脈的分界",
+      "value": "以荖濃溪為界——河谷就是兩條山脈之間的地形界線"
+    },
+    {
+      "label": "對照重點",
+      "value": "山脈雖短，卻集中了臺灣最高的一段稜線，垂直氣候帶從亞熱帶一路排到高山寒原"
+    }
+  ],
+  "curriculum": { "unit": "臺灣的地形" },
+  "schematic": true,
+  "sources": ["維基百科", "玉山國家公園管理處"]
+}

@@ -1,0 +1,30 @@
+{
+  "id": "central-range",
+  "collection": "tw-ranges",
+  "name": { "zh": "中央山脈", "en": "Central Mountain Range" },
+  "subtitle": "臺灣的屋脊，也是全島最重要的分水嶺",
+  "stats": [
+    { "label": "主峰", "value": "秀姑巒山" },
+    { "label": "最高海拔", "value": "3,805 m" },
+    { "label": "長度", "value": "約 340 km" },
+    { "label": "走向", "value": "北北東—南南西" }
+  ],
+  "facts": [
+    { "label": "範圍", "value": "北起宜蘭蘇澳，南抵屏東鵝鑾鼻，縱貫全島" },
+    {
+      "label": "分水嶺",
+      "value": "稜線把臺灣的河川分成東西兩側：西側河長坡緩、東側短促陡急"
+    },
+    {
+      "label": "對氣候的影響",
+      "value": "冬季阻擋東北季風、夏季攔截西南氣流，兩側的雨季因此相反"
+    },
+    {
+      "label": "對照重點",
+      "value": "打開等高線圖層，會看到 3000 公尺以上的山峰幾乎都排在這條線附近"
+    }
+  ],
+  "curriculum": { "unit": "臺灣的地形" },
+  "schematic": true,
+  "sources": ["維基百科", "內政部國土測繪中心"]
+}

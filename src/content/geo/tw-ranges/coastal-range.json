@@ -1,0 +1,30 @@
+{
+  "id": "coastal-range",
+  "collection": "tw-ranges",
+  "name": { "zh": "海岸山脈", "en": "Coastal Range" },
+  "subtitle": "唯一不屬於歐亞板塊的山脈——它是被推上來的火山島弧",
+  "stats": [
+    { "label": "主峰", "value": "新港山" },
+    { "label": "最高海拔", "value": "1,682 m" },
+    { "label": "長度", "value": "約 150 km" },
+    { "label": "寬度", "value": "約 10 km" }
+  ],
+  "facts": [
+    { "label": "範圍", "value": "北起花蓮溪口，南至臺東卑南溪口，緊貼東部海岸" },
+    {
+      "label": "成因",
+      "value": "原本是菲律賓海板塊上的火山島弧，隨板塊北移撞上歐亞板塊而被抬升"
+    },
+    {
+      "label": "花東縱谷",
+      "value": "它與中央山脈之間的縱谷正是兩大板塊的縫合線，也是臺灣地震最密集的地帶之一"
+    },
+    {
+      "label": "對照重點",
+      "value": "把「全球地理形貌」的地震帶圖層打開，會看到震源沿著這條縫合線排列"
+    }
+  ],
+  "curriculum": { "unit": "臺灣的地形與板塊構造" },
+  "schematic": true,
+  "sources": ["維基百科", "內政部國土測繪中心"]
+}

@@ -63,7 +63,7 @@ export function FeatureCard({ feature, fallback }: FeatureCardProps) {
 
       {schematic && (
         <p className="feature-schematic">
-          這是簡化的教學示意幾何，用來說明分布趨勢，**不是**精確的測繪界線。
+          這是簡化的教學示意幾何，用來說明分布趨勢，<strong>不是</strong>精確的測繪界線。
         </p>
       )}
 

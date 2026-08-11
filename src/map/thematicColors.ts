@@ -58,6 +58,25 @@ export const BOUNDARY_COLOR = "#d95926";
 export const HYDROLOGY_COLOR = "#2a78d6";
 
 /**
+ * 山脈稜線（五大山脈、世界主要山脈）。洋紅。
+ *
+ * 三色一起以 `--pairs all` 驗證過**明暗兩模式**：
+ *   node scripts/validate_palette.js "#2a78d6,#d95926,#c23f8f" --pairs all --mode light|dark
+ *   → 兩模式各五項全數 PASS（CVD 最差 ΔE 12.3、一般視覺最差 ΔE 16.7）
+ *
+ * 為什麼**不能**用直覺上最像山的棕色：等高線是 `rgba(120,78,42,.55)`、地形陰影是
+ * `#5a4632`，兩者都是棕色而且正好是使用者會同時打開的圖層——山脈線畫成棕色就等於
+ * 畫在它自己要說明的那片地形上看不見。綠色同樣不行：NLSC 通用電子地圖的山區底色
+ * 就是綠的。
+ *
+ * 紫色 `#7a3fa6` 其實比較接近製圖上「構造分區」的慣例，但它在 **dark 模式的對比
+ * 檢查只有 2.56:1（WARN）**；比照 boundary 橘的既有決定——地圖是 WebGL 畫布只能有
+ * 一組固定色，所以挑「兩個模式都乾淨通過」的值。`#6d3f9e` 與物種紫 `#4a3aa7` 更是
+ * 直接在 dark 模式的亮度帶 FAIL。
+ */
+export const RELIEF_COLOR = "#c23f8f";
+
+/**
  * 非分類的固定色角色——比照 hillshade 的棕色與等高線的棕色，
  * **刻意排除在分類色票之外**，也不參與 all-pairs 驗證。
  *
@@ -86,6 +105,8 @@ export const LAYER_COLORS = {
   boundary: BOUNDARY_COLOR,
   /** 水系（線）。藍——河川用藍是製圖慣例。 */
   hydrology: HYDROLOGY_COLOR,
+  /** 山脈稜線（線）。洋紅——棕與綠都被地形本身佔走了，見上。 */
+  relief: RELIEF_COLOR,
   /** 緯度參考線等參考幾何。中性色，非分類。 */
   reference: REFERENCE_COLOR,
   /** 地震帶等密度場。中性色，非分類。 */
