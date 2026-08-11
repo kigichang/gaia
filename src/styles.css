@@ -33,6 +33,10 @@
   /* 滿版地圖外框（見「全螢幕地圖外框與浮動控制」） */
   --panel-w: 360px;
   --fab-gap: 10px;
+  /* 搜尋藥丸佔掉的高度＝藥丸本身 + 上下留白。藥丸有明確的 height: 40px，
+     兩個值不可能分歧，所以詳情面板的 top 可以直接用它，不必量測 DOM。 */
+  --search-pill-h: 40px;
+  --search-h: calc(var(--search-pill-h) + var(--fab-gap) * 2);
   --z-map-ui: 5; /* 浮動控制與圖例 */
   --z-panel: 10; /* 詳情面板 */
   --z-scrim: 15; /* 窄螢幕遮罩：在面板之上、抽屜之下 */
@@ -634,26 +638,36 @@ input {
   pointer-events: none;
 }
 
-.map-top-left,
 .map-top-right {
   top: var(--fab-gap);
+  right: var(--fab-gap);
 }
 
+/*
+ * 左上角是「搜尋欄」：搜尋藥丸在上、詳情面板從 --search-h 開始接在它下面。
+ *
+ * 它**刻意不讀 --left-panel-w**，這不是在破壞「面板閃避只有一個機制」那條規則：
+ * 詳情面板現在排在搜尋框的正下方而不是旁邊，本來就沒有要閃避的東西。靠左靠下的
+ * 其他浮動控制（.map-bottom-left 與 maplibre 角落容器）仍然只用那兩個變數。
+ *
+ * z-index 是 --z-popover 而不是 --z-map-ui：建議清單要蓋在詳情面板(--z-panel)
+ * 之上，而 .map-top-left 自己有 z-index、形成堆疊脈絡，子節點爬不出去。它因此
+ * 也高過抽屜(--z-drawer)，但抽屜開著時整欄是 visibility: hidden，不會同時存在。
+ */
 .map-top-left {
-  left: calc(var(--left-panel-w) + var(--fab-gap));
-  transition: left 0.18s ease;
+  top: 0;
+  left: 0;
+  width: var(--panel-w);
+  padding: var(--fab-gap);
+  z-index: var(--z-popover);
 }
 
-/* 抽屜開著時把 ☰ 藥丸收起來：抽屜自己的標題已經寫著同一個主題名，而且它有 ✕，
-   兩顆功能重疊的按鈕並排只是噪音。
-   用 visibility 而不是 opacity，藥丸才會一併退出 tab 順序與輔助技術；
+/* 抽屜開著時把整條搜尋欄收起來：抽屜自己的標題已經寫著同一個主題名，而且它有 ✕，
+   而抽屜的寬度就等於這一欄，並排只會互相蓋住。
+   用 visibility 而不是 opacity，☰ 才會一併退出 tab 順序與輔助技術；
    抽屜關閉時屬性同一次算繪就變回 false，所以 usePopover 把焦點還給它時它已經可見。 */
 .map-shell[data-drawer-open="true"] .map-top-left {
   visibility: hidden;
-}
-
-.map-top-right {
-  right: var(--fab-gap);
 }
 
 .map-bottom-left {
@@ -671,7 +685,9 @@ input {
 .map-fab,
 .map-tile,
 .map-popover-panel,
-.map-legend {
+.map-legend,
+.map-search,
+.map-search-results {
   pointer-events: auto;
 }
 
@@ -709,10 +725,6 @@ input {
 .map-fab:hover,
 .map-tile:hover {
   background: var(--hover-wash);
-}
-
-.map-fab-label {
-  white-space: nowrap;
 }
 
 /* 左下角的「圖層」磚：Google 那塊底圖縮圖的位置。
@@ -787,6 +799,140 @@ input {
   gap: 10px;
 }
 
+/* ---------- 搜尋框 ---------- */
+
+.map-search-root {
+  position: relative;
+}
+
+.map-search {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  height: var(--search-pill-h);
+  padding: 0 8px 0 4px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--surface);
+  box-shadow: var(--float-shadow);
+}
+
+.map-search-menu,
+.map-search-clear {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  width: 30px;
+  height: 30px;
+  border: none;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--text-secondary);
+  cursor: pointer;
+}
+
+.map-search-menu:hover,
+.map-search-clear:hover {
+  background: var(--hover-wash);
+  color: var(--text-primary);
+}
+
+.map-search-input {
+  flex: 1;
+  min-width: 0;
+  border: none;
+  background: transparent;
+  color: var(--text-primary);
+  font-family: inherit;
+  font-size: 14px;
+}
+
+.map-search-input:focus {
+  outline: none;
+}
+
+.map-search-icon {
+  display: flex;
+  flex: none;
+  color: var(--text-muted);
+}
+
+/* 建議清單。樣式跟 .place-list 是同一個家族，但另立 class：這裡需要「滑鼠 hover」
+   與「鍵盤高亮」共用同一個 is-active 狀態，而可點清單只有選取中的那一項。 */
+.map-search-results {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  right: 0;
+  max-height: 60dvh;
+  overflow-y: auto;
+  margin: 0;
+  padding: 6px;
+  list-style: none;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--float-shadow);
+}
+
+.search-hit {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  padding: 7px 10px;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  color: inherit;
+  font-family: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.search-hit.is-active {
+  background: var(--hover-wash);
+}
+
+.search-hit-name {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.search-hit-meta {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+/* 「圖層」與跨主題徽章：兩個都是在說「選了它會發生的事跟你以為的不一樣」 */
+.search-hit-kind,
+.search-hit-theme {
+  padding: 1px 6px;
+  border-radius: 999px;
+  background: var(--surface-sunken);
+  color: var(--text-secondary);
+  font-size: 11px;
+  font-weight: 500;
+}
+
+.search-hit-theme {
+  color: var(--accent);
+}
+
+.map-search-empty {
+  padding: 8px 10px;
+  color: var(--text-muted);
+  font-size: 13px;
+}
+
 /* ---------- 圖層抽屜 ---------- */
 
 .layer-drawer {
@@ -834,7 +980,8 @@ input {
 /* 名稱不能叫 .detail-panel：那是 ComparePage 自己的卡片 */
 .map-detail-panel {
   position: absolute;
-  top: 0;
+  /* 接在搜尋藥丸下面，不是從視窗頂端開始（比照 Google Map 的左欄） */
+  top: var(--search-h);
   bottom: 0;
   left: 0;
   z-index: var(--z-panel);
@@ -1234,6 +1381,11 @@ input {
     border-right: none;
   }
 
+  /* 搜尋框改成滿寬（--panel-w 比窄螢幕還寬） */
+  .map-top-left {
+    width: 100%;
+  }
+
   .drawer-scrim {
     display: block;
     position: absolute;
@@ -1252,11 +1404,7 @@ input {
     border-radius: 16px 16px 0 0;
   }
 
-  /* ☰ 收成純圖示、「圖層」磚縮小，把寬度讓給地圖 */
-  .map-fab-drawer .map-fab-label {
-    display: none;
-  }
-
+  /* 「圖層」磚縮小，把寬度讓給地圖（☰ 本來就只有圖示） */
   .map-tile {
     padding: 6px 8px;
   }

@@ -2,19 +2,20 @@ import { useCallback, useState } from "react";
 
 const STORAGE_KEY = "gaia-layer-drawer";
 
-/** 讀 localStorage。沒存過、值不合法、或根本沒有 localStorage（隱私模式）一律視為開啟。 */
+/** 讀 localStorage。沒存過、值不合法、或根本沒有 localStorage（隱私模式）一律視為收起。 */
 function readStored(): boolean {
   try {
-    return localStorage.getItem(STORAGE_KEY) !== "closed";
+    return localStorage.getItem(STORAGE_KEY) === "open";
   } catch {
-    return true;
+    return false;
   }
 }
 
 /**
  * 圖層抽屜的開關，會記住使用者上次的選擇。作法比照 `useTheme`（同樣包 try/catch，
- * 隱私模式下只是不跨次保留，不會拋錯）。**首次到訪預設開啟**——圖層勾選是這個
- * 網站的核心操作，藏在一顆按鈕後面會讓人發現不了。
+ * 隱私模式下只是不跨次保留，不會拋錯）。**首次到訪預設收起**——抽屜疊在詳情面板
+ * 之上又蓋住左上角的搜尋框，預設開著會讓人第一眼看不到搜尋框與詳情卡。圖層仍然
+ * 找得到：☰ 就在搜尋藥丸的最左邊，而且搜尋本身也搜得到圖層名稱。
  *
  * 分成兩個 setter 是有原因的：抽屜疊在詳情面板之上，所以只要選取了任何圖徵就得
  * 自動把抽屜收起來，否則剛開出來的詳情卡會被抽屜整個蓋住。但那次收起是系統替

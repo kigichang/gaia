@@ -271,12 +271,16 @@ fill   → `${instanceId}-fill` + `${instanceId}-outline`
 ```
 .map-shell  [data-detail-open] [data-drawer-open]
 ├─ MapView            ← 永遠是第一個、無條件的子節點
-├─ .map-top-left      ☰ 藥丸（帶主題名，開圖層抽屜）
+├─ .map-top-left      MapSearchBox 搜尋藥丸（[☰][輸入框][✕][🔍]）+ 建議清單
 ├─ .map-top-right     ⋮⋮⋮ AppMenu（主題導覽 + 淺／深色）
 ├─ .map-bottom-left   MapLegend + 「圖層」磚（底圖與等高線／地形陰影／3D 地形）
-├─ MapDetailPanel     左側詳情面板
+├─ MapDetailPanel     左側詳情面板（top: var(--search-h)，接在搜尋框正下方）
 └─ LayerDrawer        左側圖層抽屜（刻意蓋在詳情面板之上，比照 Google Map）
 ```
+
+左上角是一整欄：搜尋藥丸在上、詳情面板接在它下面。`--search-h` = 藥丸高度 + 上下留白，藥丸自己有明確的 `height: var(--search-pill-h)`，兩個值不可能分歧，所以面板的 `top` 直接用 token，不必量測 DOM。
+
+`.map-top-left` **刻意不讀 `--left-panel-w`**：詳情面板現在排在它正下方而不是旁邊，本來就沒有要閃避的東西。它的 `z-index` 是 `--z-popover`（不是 `--z-map-ui`），否則建議清單會被 `--z-panel` 的詳情面板蓋掉——`.map-top-left` 自己有 z-index，子節點爬不出這個堆疊脈絡。它因此也高過抽屜，但抽屜開著時整欄是 `visibility: hidden`，兩者不會同時出現。
 
 ### `<MapView>` 必須是 shell 的第一個、無條件的子節點
 
@@ -294,7 +298,9 @@ fill   → `${instanceId}-fill` + `${instanceId}-outline`
 
 ### z-index 階梯與 maplibre 的堆疊脈絡
 
-`--z-map-ui: 5` → `--z-panel: 10` → `--z-scrim: 15` → `--z-drawer: 20` → `--z-popover: 30`。抽屜在詳情面板**之上**是刻意的設計決定；因此**選取任何圖徵都會自動收起抽屜**（`useDrawerOpen` 的 `closeTransient`），否則剛開出來的詳情卡會被整片蓋住。`closeTransient` 不寫 localStorage——那是系統替使用者做的決定，不能覆寫他自己記住的偏好（`setOpen` 才會寫）。
+`--z-map-ui: 5` → `--z-panel: 10` → `--z-scrim: 15` → `--z-drawer: 20` → `--z-popover: 30`。抽屜在詳情面板**之上**是刻意的設計決定；因此**選取任何圖徵（點地圖或選搜尋結果）都會自動收起抽屜**（`useDrawerOpen` 的 `closeTransient`），否則剛開出來的詳情卡會被整片蓋住。`closeTransient` 不寫 localStorage——那是系統替使用者做的決定，不能覆寫他自己記住的偏好（`setOpen` 才會寫）。
+
+抽屜**首次造訪預設收起**：它蓋住的正好是左上角的搜尋框與詳情面板，預設開著會讓人第一眼看不到這次的主要入口。圖層仍然找得到——☰ 就在搜尋藥丸最左邊，而且搜尋本身也搜得到圖層名稱。
 
 maplibre 的四個角落容器是 map container 內的 `position: absolute; z-index: 2`，所以 `.map-shell-canvas` 要 `isolation: isolate` 把它關進自己的堆疊脈絡。浮動控制的容器一律 `pointer-events: none`，只有按鈕與面板本身 `auto`，否則會吃掉地圖手勢。
 
@@ -312,6 +318,37 @@ maplibre 的四個角落容器是 map container 內的 `position: absolute; z-in
 - 點外面關閉用 `pointerdown` 而不是 `click`，這樣彈出層會在 maplibre 開始拖曳前就關掉。原生 `<select>` 的選項清單不派發頁面層級的 `pointerdown`，所以「圖層」彈出層裡的底圖 `<select>` 不會把自己關掉。
 - `didOpenRef` 擋住「抽屜從 localStorage 還原成開啟」時在首次算繪就搶走文件焦點。
 - 不做 focus trap、不加 `aria-modal`：底下的地圖仍然可以操作，宣告成 modal 是對輔助科技說謊。
+
+`usePopover` 由 `ThemeMapPage` 呼叫（不是 `LayerDrawer` 自己），因為 ☰ 現在住在搜尋藥丸裡、面板是抽屜，兩者不再共用一個 DOM 子樹。這樣拆是安全的：`rootRef` **只**用在「點外面關閉」那個 effect，而抽屜是 `dismissOnOutsideClick: false`，那個 effect 直接 early return；焦點的進出靠 `triggerRef`／`panelRef`，與 DOM 結構無關。
+
+`MapSearchBox` 的建議清單**不重用 `usePopover`**：它的觸發器語意是 `aria-haspopup="dialog"` 的按鈕，而搜尋框是 combobox（輸入框自己是觸發器、清單是 listbox），套上去是對輔助科技說謊。但「點外面用 `pointerdown` 關閉」的手法是照抄的，理由相同。
+
+---
+
+## 主題頁搜尋（`src/search/searchIndex.ts` + `MapSearchBox`）
+
+三個主題頁共用同一個搜尋框，索引跨全部三個主題。
+
+### 索引哪些東西（規則要照著走，不要臨時擴充）
+
+`allLayers()` 裡 `status === "ready"` 的圖層：
+
+- **地物**：只索引「有 `browse` 設定」「有 `items`」或「來源是 `generated`」的圖層。
+  `browse` 本來就代表「這個圖層的圖徵是一份可以逐一點選的清單」，所以新圖層照常宣告 `browse` 就會自動進索引。
+  ⚠️ 這條規則同時把 `quakes` 擋在外面，這是刻意的：那份 geojson 有 **400 KB**、2831 筆**沒有名稱**的點，它是密度場不是清單。索引它只會多抓一份大檔案再產生 2831 筆搜不到的項目。
+- **圖層本身**：所有 ready 圖層的名稱（搜「河流」要找得到「世界主要河流」這個圖層）。`planned` 的不列，因為勾不動。
+- 沒有 `properties.id` 或沒有 `properties.name` 的圖徵一律跳過——前者選不了、後者搜不到。
+
+索引是 **lazy 的**：搜尋框第一次獲得焦點才 `buildSearchIndex()`，因為它要抓 `tw-counties.geojson`(35 KB) 與 `world-rivers.geojson`(146 KB)。一個班 30 個學生同時開站時，這 181 KB 不該是每個人無條件付的成本。資料一律走 `resolveLayerData()`，與圖層顯示共用同一份快取，不會抓兩次。
+
+### 選了一筆結果之後（`ThemeMapPage` 的 `pendingHit` 狀態機）
+
+不能同步飛過去：圖層可能還沒勾選、資料可能還沒抓回來，甚至可能要先換主題。所以只記下 `pendingHit`，由一個 effect 分批消化——每一輪只做當下做得到的事，做不到就 return，等 `instances` 變了再來。三個容易踩的點：
+
+- **`enableLayer()` 要自己守 `MAX_ACTIVE_BY_KIND`。** 平常那個上限是靠 `LayerPanel` 把核取方塊 disable 掉來落實的，搜尋自動勾選繞過那個 UI。超過就踢掉同幾何、`Set` 迭代順序最前面（最早勾）的那一個。
+- **跨主題時要抑制換主題 effect 的 `flyTo`**（用 `pendingHitRef`，不是 state——導覽發生在 setState 生效之前），否則會先飛到主題預設相機再飛第二次。但**詳情卡一定要清成 `null`**：目標若是 `detail.type === "none"` 的圖層（緯度參考線），pendingHit effect 永遠不會 `setSelected`，上一個主題的詳情卡就會留在畫面上（實測踩過）。
+- **`detail.type === "none"` 只飛不開卡**；圖層本身的結果只勾選 + `fitBounds`，也不開卡。一張沒有內容的詳情卡什麼都沒教到。
+- 抓資料失敗時 instance 的 `data` 永遠是 null、effect 不會再被觸發，所以 `pendingHit` 有一條 8 秒死線，否則它會一直卡著並讓下一次換主題誤判。
 
 ### ⚠️ `?browse=drawer|panel` 是暫時的 A/B 裝置
 
@@ -484,15 +521,18 @@ m.isSourceLoaded('contour-source')
 6. Console 無 CORS、WebGL 或 maplibre 錯誤
 7. **切到每一種向量底圖（目前是「世界地圖」）並確認地物真的渲染出來**，不能只看 `npm run build` 成功。這一項只在 production build 才驗得出來——`npm run dev` 用的是原始 ESM，不會踩到 worker 檔案沒被複製的問題，`npm run preview` 或實際部署才會踩到
 8. 主題頁（滿版版面）：
-   - 左上 ☰ 開圖層抽屜 → 核取方塊可任意複選疊加；`planned` 的是停用狀態但仍有說明文字
-   - 點地圖圖徵 → **左側詳情面板**開卡，且**抽屜會自動收起**（否則詳情被蓋住），但 `localStorage.getItem('gaia-layer-drawer')` **不變**
-   - 手動關抽屜 → 重新整理後仍是關的；模擬封鎖 localStorage 不得拋錯
+   - 搜尋藥丸左邊的 ☰ 開圖層抽屜 → 核取方塊可任意複選疊加；`planned` 的是停用狀態但仍有說明文字
+   - 點地圖圖徵 → **搜尋框下方的詳情面板**開卡，且**抽屜會自動收起**（否則詳情被蓋住），但 `localStorage.getItem('gaia-layer-drawer')` **不變**
+   - `localStorage.removeItem('gaia-layer-drawer')` 後重整 → 抽屜是**收起的**，搜尋框與詳情卡直接可見
+   - 手動開抽屜 → 重新整理後仍是開的；模擬封鎖 localStorage 不得拋錯
+   - 搜尋（見下面第 12 項）
    - `?browse=drawer` 與 `?browse=panel` 兩版可點清單各驗一次，且**只有一版**會出現在畫面上：
      ```js
      document.querySelectorAll('.layer-drawer .place-list').length      // drawer 版 > 0、panel 版 = 0
      document.querySelectorAll('.map-detail-panel .place-list').length  // 反之
      ```
    - 鍵盤：Tab 到 ☰ → Enter 開啟 → Escape 關閉且焦點回到 ☰；⋮⋮⋮ 同理；⋮⋮⋮ 開著時點「圖層」磚會關掉 ⋮⋮⋮ 但**不會**關掉抽屜
+     （⚠️ `MapView` 是第一個子節點，所以 Tab 會先走過 canvas 與 maplibre 自己的縮放鈕才輪到 ☰）
    - 面板閃避：抽屜或詳情開啟時 `document.querySelector('.map-bottom-left').getBoundingClientRect().left >= 360`
    - 面板開關**不得**改變 canvas 尺寸（證明不需要 `resize()`）：
      ```js
@@ -514,7 +554,26 @@ m.isSourceLoaded('contour-source')
    m.queryRenderedFeatures({ layers: ['world-rivers-label'] }).length    // jumpTo([20,5], zoom 4) 為 7（線 32 條）
    m.queryRenderedFeatures({ layers: ['contour-labels'] }).length        // 臺灣主題預設視角（zoom 12）為 28
    ```
-11. `window.__gaiaMaps.length` 不變（證明沒有 remount 重建地圖）：用**右上角 ⋮⋮⋮ 選單**走完三個主題與 `/compare` 再回來（主題頁應為 1、`/compare` 為 2），以及開關抽屜／詳情面板／兩個彈出層各五次之後。
+11. `window.__gaiaMaps.length` 不變（證明沒有 remount 重建地圖）：用**右上角 ⋮⋮⋮ 選單**走完三個主題與 `/compare` 再回來（主題頁應為 1、`/compare` 為 2），以及開關抽屜／詳情面板／兩個彈出層各五次、跨主題搜尋數次之後。
+12. **搜尋**（四種結果各驗一次，全部都要在前景分頁做——`flyTo` 靠 rAF）：
+    ```js
+    // 用 React 認得的方式填字（直接指派 .value 會被 _valueTracker 吃掉）
+    const inp = document.querySelector('.map-search-input');
+    inp.focus();
+    Object.getOwnPropertyDescriptor(HTMLInputElement.prototype,'value').set.call(inp, '桃園');
+    inp.dispatchEvent(new Event('input', { bubbles: true }));
+    // 建議清單的選取是 pointerdown（早於 blur），不是 click
+    document.querySelector('.search-hit').dispatchEvent(new PointerEvent('pointerdown', { bubbles: true }));
+    ```
+    - 同主題、圖層原本沒勾（搜「桃園市」）→ `m.getLayer('tw-counties-fill')` 存在、相機飛過去、詳情開卡
+    - 跨主題（在世界地理搜「阿美族」）→ 路由變 `/theme/taiwan`、圖層勾上、詳情開卡，而且**只飛一次**（掛 `movestart` 數，應為 1）
+    - `detail.type === "none"`（搜「北回歸線」）→ 飛到 lat 23.44、圖層勾上，`data-detail-open` 是 **false**（不開空卡，也不能殘留上一個主題的詳情卡）
+    - 圖層本身（搜「河流」）→ 勾選 + fitBounds，`data-detail-open` 是 **false**
+    - Network 只多抓 `tw-counties.geojson` 與 `world-rivers.geojson`，**沒有 `quakes.geojson`**：
+      ```js
+      performance.getEntriesByType('resource').filter(r => /geojson/.test(r.name)).map(r => r.name.split('/').pop())
+      ```
+    - 鍵盤：打字 → ↓↑ 移動 `.search-hit.is-active` → Enter 選取；Escape 第一次關清單、第二次清空輸入框
 
 ### ⚠️ 用瀏覽器自動化點 UI 的三個陷阱
 
@@ -567,6 +626,7 @@ src/
 ├─ useDrawerOpen.ts       # 圖層抽屜開關記憶（localStorage: gaia-layer-drawer）
 ├─ usePopover.ts          # 彈出層／抽屜共用的開關、Escape 與焦點處理
 ├─ lib/schema.ts          # zod schema（建置期驗證用）
+├─ search/searchIndex.ts  # 主題頁搜尋索引（跨三個主題，lazy 建立）
 ├─ content/
 │  ├─ index.ts            # import.meta.glob 載入地點/原住民族/物種；氣候與物種觀測點 JSON 用 fetch
 │  ├─ places/*.json
@@ -591,7 +651,8 @@ src/
    ├─ AppMenu.tsx         # 主題導覽 + 淺深色（floating=⋮⋮⋮ 彈出層／inline=頁首）
    ├─ MapPopover.tsx      # ⋮⋮⋮ 與「圖層」磚共用的泡泡容器
    ├─ MapLayersPopover.tsx# 左下「圖層」磚（內容重用 LayerToggles）
-   ├─ LayerDrawer.tsx     # 左上 ☰ 的圖層抽屜外框
+   ├─ MapSearchBox.tsx    # 左上搜尋藥丸（含開抽屜的 ☰）與建議清單
+   ├─ LayerDrawer.tsx     # 圖層抽屜外框（觸發器在搜尋藥丸裡，見上）
    ├─ MapDetailPanel.tsx  # 左側詳情面板外框（≤860px 變底部卡）
    ├─ DetailCard.tsx      # 選取 → 對應詳情卡的分派
    ├─ ThemeBrowse.tsx     # ⚠️ 可點清單擺放的 A/B 切換，決定後整支刪掉

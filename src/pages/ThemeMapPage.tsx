@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Navigate, useParams } from "react-router-dom";
+import { Navigate, useNavigate, useParams } from "react-router-dom";
 import type { Map as MapLibreMap } from "maplibre-gl";
 import { MapView } from "../map/MapView";
 import { LayerPanel } from "../components/LayerPanel";
@@ -7,6 +7,7 @@ import { MapLegend } from "../components/MapLegend";
 import { AppMenu } from "../components/AppMenu";
 import { MapLayersPopover } from "../components/MapLayersPopover";
 import { LayerDrawer } from "../components/LayerDrawer";
+import { MapSearchBox } from "../components/MapSearchBox";
 import { MapDetailPanel } from "../components/MapDetailPanel";
 import { DetailCard, detailTitle, type Selection } from "../components/DetailCard";
 import { browseSlots, useBrowseMode } from "../components/ThemeBrowse";
@@ -18,9 +19,16 @@ import {
   resolveLayerData,
   type ActiveState,
 } from "../map/registry/resolve";
-import type { DetailSpec, LayerDefinition, ThemeDefinition } from "../map/registry/types";
+import {
+  MAX_ACTIVE_BY_KIND,
+  type DetailSpec,
+  type LayerDefinition,
+  type ThemeDefinition,
+} from "../map/registry/types";
 import { useGeoLayers } from "../map/useGeoLayers";
 import { useDrawerOpen } from "../useDrawerOpen";
+import { usePopover } from "../usePopover";
+import { hitInstanceId, type SearchHit } from "../search/searchIndex";
 import { bboxOf } from "../map/layers/geo";
 import type { ChromeState } from "../chrome";
 
@@ -34,9 +42,10 @@ interface ThemeMapPageProps {
  * 整頁由 `src/map/registry` 的圖層註冊表驅動，加一個新主題或新圖層只要加一筆
  * 註冊表資料，不需要動這支元件。
  *
- * 版面是滿版地圖 + 浮動控制（仿 Google Map）：左上 ☰ 圖層抽屜、右上 ⋮⋮⋮ 主題與
- * 外觀選單、左下圖例與「圖層」磚、點圖徵從左側開詳情面板。細節與那幾條硬規則
- * 見 CLAUDE.md 的「全螢幕地圖外框與浮動控制」。
+ * 版面是滿版地圖 + 浮動控制（仿 Google Map）：左上搜尋框（藥丸裡含開圖層抽屜的
+ * ☰）、右上 ⋮⋮⋮ 主題與外觀選單、左下圖例與「圖層」磚，點圖徵或選搜尋結果從
+ * 搜尋框下方開詳情面板。細節與那幾條硬規則見 CLAUDE.md 的「全螢幕地圖外框與
+ * 浮動控制」。
  */
 export function ThemeMapPage({ chrome }: ThemeMapPageProps) {
   const { themeId } = useParams();
@@ -46,13 +55,24 @@ export function ThemeMapPage({ chrome }: ThemeMapPageProps) {
 }
 
 function ThemeMapView({ theme, chrome }: { theme: ThemeDefinition; chrome: ChromeState }) {
+  const navigate = useNavigate();
   const [map, setMap] = useState<MapLibreMap | null>(null);
   const [activeLayerIds, setActiveLayerIds] = useState<Set<string>>(() => defaultOnIds(theme));
   const [activeItemIds, setActiveItemIds] = useState<Record<string, string[]>>({});
   const [selected, setSelected] = useState<Selection>(() => theme.initialSelection ?? null);
   const [data, setData] = useState<Record<string, GeoJSON.FeatureCollection | null>>({});
+  const [pendingHit, setPendingHit] = useState<SearchHit | null>(null);
   const { open: drawerOpen, setOpen: setDrawerOpen, closeTransient } = useDrawerOpen();
   const browseMode = useBrowseMode();
+
+  // 抽屜的開關繫結。刻意上提到這裡：☰ 住在搜尋藥丸裡、面板是抽屜，兩者不再
+  // 共用一個 DOM 子樹（為什麼這樣安全，見 LayerDrawer.tsx 的說明）。
+  const { triggerProps: drawerTriggerProps, panelProps: drawerPanelProps } = usePopover({
+    open: drawerOpen,
+    onOpenChange: setDrawerOpen,
+    label: `圖層選單：${theme.label}`,
+    dismissOnOutsideClick: false,
+  });
 
   const active = useMemo<ActiveState>(
     () => ({ layerIds: activeLayerIds, itemIds: activeItemIds }),
@@ -97,6 +117,7 @@ function ThemeMapView({ theme, chrome }: { theme: ThemeDefinition; chrome: Chrom
   // 地圖，丟掉整份圖磚快取，而且每次導覽都會在 window.__gaiaMaps 累積一個新實例，
   // 讓文件裡的驗證指令拿到已經 remove() 掉的地圖。
   const firstRender = useRef(true);
+  const pendingHitRef = useRef<SearchHit | null>(null);
   useEffect(() => {
     if (firstRender.current) {
       firstRender.current = false;
@@ -104,6 +125,16 @@ function ThemeMapView({ theme, chrome }: { theme: ThemeDefinition; chrome: Chrom
     }
     setActiveLayerIds(defaultOnIds(theme));
     setActiveItemIds({});
+    // 跨主題搜尋：目標圖徵與相機都由下面的 pendingHit effect 決定。這裡要是照常
+    // 飛到主題預設相機，畫面會先飛一次再飛第二次，而且 initialSelection 的詳情卡
+    // 會閃一下才被換掉。ref 而不是 state：導覽發生在 setState 生效之前。
+    //
+    // 但詳情卡一定要清掉：目標圖徵若是 detail.type === "none" 的圖層（緯度參考線），
+    // pendingHit effect 永遠不會 setSelected，上一個主題的詳情卡就會留在畫面上。
+    if (pendingHitRef.current?.themeId === theme.id) {
+      setSelected(null);
+      return;
+    }
     setSelected(theme.initialSelection ?? null);
     map?.flyTo({ center: theme.camera.center, zoom: theme.camera.zoom, duration: 1200 });
   }, [theme, map]);
@@ -167,6 +198,61 @@ function ThemeMapView({ theme, chrome }: { theme: ThemeDefinition; chrome: Chrom
     [flyToFeature, closeTransient],
   );
 
+  /**
+   * 把圖層（必要時連同子項目）打開。
+   *
+   * `MAX_ACTIVE_BY_KIND` 的上限平常是靠 `LayerPanel` 把核取方塊 disable 掉來
+   * 落實的，搜尋自動勾選會繞過那個 UI，所以這裡得自己守。`Set` 保序，迭代順序
+   * 最前面的就是最早勾的那一個，踢它最不意外。
+   */
+  const enableLayer = useCallback(
+    (layer: LayerDefinition, itemId?: string) => {
+      setActiveLayerIds((prev) => {
+        if (prev.has(layer.id)) return prev;
+        const kind = layer.render.kind;
+        const sameKind = [...prev].filter(
+          (id) => theme.layers.find((l) => l.id === id)?.render.kind === kind,
+        );
+        const next = new Set(prev);
+        if (sameKind.length >= MAX_ACTIVE_BY_KIND[kind]) next.delete(sameKind[0]);
+        next.add(layer.id);
+        return next;
+      });
+
+      const items = layer.items;
+      if (!itemId || !items) return;
+      setActiveItemIds((prev) => {
+        const current = prev[layer.id] ?? [];
+        if (current.includes(itemId)) return prev;
+        const next = [...current, itemId];
+        // 超過同時可比較的數量就從最早勾的開始擠掉（色票長度是硬上限）
+        return { ...prev, [layer.id]: next.slice(Math.max(0, next.length - items.maxActive)) };
+      });
+    },
+    [theme],
+  );
+
+  const clearPending = useCallback(() => {
+    pendingHitRef.current = null;
+    setPendingHit(null);
+  }, []);
+
+  /**
+   * 選了一筆搜尋結果。
+   *
+   * 不能在這裡直接飛過去：圖層可能還沒勾選、資料可能還沒抓回來，甚至可能要先
+   * 換主題。所以只記下待處理的目標，剩下的交給下面的 effect 分批完成。
+   */
+  const handleSelectHit = useCallback(
+    (hit: SearchHit) => {
+      pendingHitRef.current = hit;
+      setPendingHit(hit);
+      closeTransient();
+      if (hit.themeId !== theme.id) navigate(`/theme/${hit.themeId}`);
+    },
+    [theme, navigate, closeTransient],
+  );
+
   const handleItemNameClick = useCallback(
     (layerId: string, itemId: string) => {
       const layer = theme.layers.find((l) => l.id === layerId);
@@ -177,6 +263,55 @@ function ThemeMapView({ theme, chrome }: { theme: ThemeDefinition; chrome: Chrom
     },
     [theme, flyToFeature, closeTransient],
   );
+
+  /**
+   * 消化搜尋結果。可能要跑好幾輪：勾選圖層 → 等資料抓回來 → 才飛得過去。
+   * 每一輪只做當下做得到的事，做不到就 return，等 instances 變了再來。
+   *
+   * ⚠️ 宣告順序在換主題那個 effect 之後是刻意的：跨主題時兩個 effect 會在
+   * 同一輪跑，換主題要先把圖層勾選重設掉，我們才在乾淨的狀態上加圖層。
+   */
+  useEffect(() => {
+    if (!pendingHit || !map || pendingHit.themeId !== theme.id) return;
+    const layer = theme.layers.find((l) => l.id === pendingHit.layerId);
+    if (!layer || layer.status !== "ready") {
+      clearPending();
+      return;
+    }
+
+    enableLayer(layer, pendingHit.itemId);
+
+    // 圖層本身的搜尋結果落在有子項目的圖層上（例如「特有種生態分佈」）：
+    // 沒有指定物種就沒有幾何可以框，勾起來讓使用者自己挑就是正確的結束。
+    if (!pendingHit.featureId || (layer.items && !pendingHit.itemId)) {
+      clearPending();
+      return;
+    }
+
+    const inst = instances.find((i) => i.instanceId === hitInstanceId(pendingHit));
+    if (!inst?.data) return; // 資料還沒到
+
+    if (pendingHit.kind === "feature") {
+      // detail.type === "none" 的圖層（緯度參考線）飛過去就好——
+      // 開一張沒有內容的詳情卡什麼都沒教到
+      if (layer.detail.type !== "none") {
+        setSelected({ detail: layer.detail, featureId: pendingHit.featureId });
+      }
+      flyToFeature(layer, pendingHit.featureId);
+    } else {
+      const bounds = bboxOf(inst.data);
+      if (bounds) map.fitBounds(bounds, { padding: 48, duration: 1200, maxZoom: 12 });
+    }
+    clearPending();
+  }, [pendingHit, theme, map, instances, enableLayer, flyToFeature, clearPending]);
+
+  // 資料抓失敗時 instance 的 data 永遠是 null，effect 不會再被觸發，pending 會
+  // 一直卡著（並讓下一次換主題誤以為還有待處理的目標）。給它一條死線。
+  useEffect(() => {
+    if (!pendingHit) return;
+    const timer = setTimeout(clearPending, 8000);
+    return () => clearTimeout(timer);
+  }, [pendingHit, clearPending]);
 
   // 子項目的圖徵數（特有種的觀測點筆數）
   const itemCounts = useMemo(() => {
@@ -272,6 +407,17 @@ function ThemeMapView({ theme, chrome }: { theme: ThemeDefinition; chrome: Chrom
         scalePosition="bottom-right"
       />
 
+      {/* 搜尋框是左上角那一欄的頂端，詳情面板接在它下面（--search-h） */}
+      <div className="map-top-left">
+        <MapSearchBox
+          themeLabel={theme.label}
+          themeId={theme.id}
+          menuButtonProps={drawerTriggerProps}
+          menuLabel={`圖層選單：${theme.label}`}
+          onSelectHit={handleSelectHit}
+        />
+      </div>
+
       <div className="map-top-right">
         <AppMenu themePref={chrome.themePref} onThemePrefChange={chrome.onThemePrefChange} />
       </div>
@@ -300,7 +446,8 @@ function ThemeMapView({ theme, chrome }: { theme: ThemeDefinition; chrome: Chrom
 
       <LayerDrawer
         open={drawerOpen}
-        onOpenChange={setDrawerOpen}
+        panelProps={drawerPanelProps}
+        onClose={() => setDrawerOpen(false)}
         title={theme.label}
         subtitle={theme.subtitle}
       >

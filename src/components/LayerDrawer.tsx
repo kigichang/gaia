@@ -1,79 +1,61 @@
-import { useCallback } from "react";
 import type { ReactNode } from "react";
-import { usePopover } from "../usePopover";
+import type { PopoverBindings } from "../usePopover";
 
 interface LayerDrawerProps {
   open: boolean;
-  /** 使用者主動切換（會被 useDrawerOpen 寫進 localStorage） */
-  onOpenChange: (open: boolean) => void;
-  /** 主題名稱，同時也是 ☰ 藥丸上的文字 */
+  /** usePopover 的面板繫結，由 ThemeMapPage 傳進來（見下方說明） */
+  panelProps: PopoverBindings["panelProps"];
+  onClose: () => void;
   title: string;
   subtitle: string;
   children: ReactNode;
 }
 
 /**
- * 左上角 ☰ 開啟的圖層抽屜。
+ * 左側圖層抽屜的外框。
  *
- * 只負責外框（觸發器、遮罩、面板與標題），內容由呼叫端用 children 傳進來，
- * 這樣「圖層清單怎麼組出來」仍然完全由註冊表驅動，抽屜不需要知道任何圖層的事。
+ * 只負責遮罩、面板與標題，內容由呼叫端用 children 傳進來，這樣「圖層清單怎麼
+ * 組出來」仍然完全由註冊表驅動，抽屜不需要知道任何圖層的事。
  *
- * ☰ 做成帶主題名的藥丸（`☰ 臺灣地理`）：全站頁首被拿掉之後，這是畫面上唯一
- * 隨時看得到「現在在哪個主題」的地方，而按鈕本身也因此自我說明。
+ * ## 觸發器為什麼不在這裡
  *
- * `dismissOnOutsideClick` 是 false：桌機上它是常駐面板（比照 Google 的側欄），
- * 點地圖不該把它收掉；窄螢幕改成全螢幕覆蓋，靠遮罩關閉。
+ * ☰ 現在住在左上角的搜尋藥丸裡（`MapSearchBox`），所以 `usePopover` 被上提到
+ * `ThemeMapPage`：`triggerProps` 給搜尋框、`panelProps` 給這裡。
+ *
+ * 觸發器與面板因此不再共用一個 `rootRef` 子樹，但這對抽屜沒有影響——
+ * `usePopover` 的 `rootRef` **只**用在「點面板外面關閉」那個 effect 裡，而抽屜
+ * 是 `dismissOnOutsideClick: false`（桌機上它是常駐面板，點地圖不該把它收掉；
+ * 窄螢幕改成全螢幕覆蓋，靠遮罩關閉），那個 effect 直接 early return。焦點的
+ * 進出靠的是 `triggerRef`／`panelRef`，與 DOM 結構無關。
  */
-export function LayerDrawer({ open, onOpenChange, title, subtitle, children }: LayerDrawerProps) {
-  const { rootRef, triggerProps, panelProps } = usePopover({
-    open,
-    onOpenChange,
-    label: `圖層選單：${title}`,
-    dismissOnOutsideClick: false,
-  });
-  const close = useCallback(() => onOpenChange(false), [onOpenChange]);
+export function LayerDrawer({
+  open,
+  panelProps,
+  onClose,
+  title,
+  subtitle,
+  children,
+}: LayerDrawerProps) {
+  if (!open) return null;
 
   return (
-    <div ref={rootRef}>
-      <div className="map-top-left">
-        <button
-          {...triggerProps}
-          className="map-fab map-fab-drawer"
-          aria-label={`圖層選單：${title}`}
-        >
-          <MenuIcon />
-          <span className="map-fab-label">{title}</span>
-        </button>
-      </div>
-
+    <>
       {/* 遮罩只在窄螢幕顯示（CSS 控制），桌機上抽屜是常駐面板 */}
-      {open && <div className="drawer-scrim" onClick={close} aria-hidden="true" />}
+      <div className="drawer-scrim" onClick={onClose} aria-hidden="true" />
 
-      {open && (
-        <aside {...panelProps} className="layer-drawer">
-          <div className="layer-drawer-head">
-            <div>
-              <h2 className="layer-drawer-title">{title}</h2>
-              <p className="theme-subtitle">{subtitle}</p>
-            </div>
-            <button type="button" className="panel-close" onClick={close} aria-label="關閉圖層選單">
-              <CloseIcon />
-            </button>
+      <aside {...panelProps} className="layer-drawer">
+        <div className="layer-drawer-head">
+          <div>
+            <h2 className="layer-drawer-title">{title}</h2>
+            <p className="theme-subtitle">{subtitle}</p>
           </div>
-          <div className="layer-drawer-body">{children}</div>
-        </aside>
-      )}
-    </div>
-  );
-}
-
-function MenuIcon() {
-  return (
-    <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" focusable="false">
-      <g stroke="currentColor" strokeWidth="1.8" strokeLinecap="round">
-        <path d="M4 7h16M4 12h16M4 17h16" />
-      </g>
-    </svg>
+          <button type="button" className="panel-close" onClick={onClose} aria-label="關閉圖層選單">
+            <CloseIcon />
+          </button>
+        </div>
+        <div className="layer-drawer-body">{children}</div>
+      </aside>
+    </>
   );
 }
 
