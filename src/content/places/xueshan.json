@@ -1,0 +1,19 @@
+{
+  "id": "xueshan",
+  "name": { "zh": "雪山", "en": "Xueshan (Mt. Sylvia)" },
+  "coord": { "lat": 24.3834, "lng": 121.2318 },
+  "elevation_m": 3886,
+  "region": "taiwan",
+  "topics": ["landform", "climate"],
+  "koppen": "ET",
+  "landform": "褶皺高山",
+  "defaultZoom": 12,
+  "facts": [
+    { "label": "地位", "value": "雪山山脈最高峰，臺灣第二高峰，僅次於玉山" },
+    { "label": "位置", "value": "臺中市和平區與苗栗縣泰安鄉交界" },
+    { "label": "冰河遺跡", "value": "主峰周圍有多個圈谷，是臺灣末次冰期曾有冰河的直接證據" },
+    { "label": "翠池", "value": "臺灣海拔最高的高山湖泊，也是大安溪的源頭" }
+  ],
+  "curriculum": { "unit": "臺灣的地形" },
+  "sources": ["維基百科", "內政部國土測繪中心"]
+}

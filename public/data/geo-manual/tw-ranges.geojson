@@ -13,7 +13,7 @@
       "properties": {
         "id": "central-range",
         "name": "中央山脈",
-        "meta": "主峰秀姑巒山 3805 m・長約 340 km"
+        "meta": "主峰秀姑巒山 3829 m・長約 340 km"
       },
       "geometry": {
         "type": "LineString",
@@ -93,7 +93,7 @@
       "properties": {
         "id": "alishan-range",
         "name": "阿里山山脈",
-        "meta": "主峰大塔山 2663 m・長約 250 km"
+        "meta": "主峰大塔山 2662 m・長約 250 km"
       },
       "geometry": {
         "type": "LineString",
@@ -116,7 +116,7 @@
       "properties": {
         "id": "coastal-range",
         "name": "海岸山脈",
-        "meta": "主峰新港山 1682 m・長約 150 km"
+        "meta": "主峰新港山 1679 m・長約 150 km"
       },
       "geometry": {
         "type": "LineString",

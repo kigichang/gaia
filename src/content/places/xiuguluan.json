@@ -1,0 +1,19 @@
+{
+  "id": "xiuguluan",
+  "name": { "zh": "秀姑巒山", "en": "Mount Xiuguluan" },
+  "coord": { "lat": 23.4968, "lng": 121.0576 },
+  "elevation_m": 3829,
+  "region": "taiwan",
+  "topics": ["landform", "climate"],
+  "koppen": "ET",
+  "landform": "褶皺高山",
+  "defaultZoom": 12,
+  "facts": [
+    { "label": "地位", "value": "中央山脈最高峰，也是臺灣第三高峰" },
+    { "label": "位置", "value": "南投縣信義鄉與花蓮縣卓溪鄉交界，正在中央山脈主稜上" },
+    { "label": "分水嶺", "value": "站在這裡的稜線上，東西兩側的水各自流向太平洋與臺灣海峽" },
+    { "label": "對照重點", "value": "打開「五大山脈」圖層，它就落在中央山脈那條線的中段" }
+  ],
+  "curriculum": { "unit": "臺灣的地形" },
+  "sources": ["維基百科", "內政部國土測繪中心"]
+}

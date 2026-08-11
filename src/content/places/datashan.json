@@ -1,0 +1,22 @@
+{
+  "id": "datashan",
+  "name": { "zh": "大塔山", "en": "Mount Data" },
+  "coord": { "lat": 23.5357, "lng": 120.8086 },
+  "elevation_m": 2662,
+  "region": "taiwan",
+  "topics": ["landform", "human"],
+  "koppen": "Cfb",
+  "landform": "褶皺山地",
+  "defaultZoom": 12,
+  "facts": [
+    { "label": "地位", "value": "阿里山山脈最高峰，五大山脈的主峰中最矮的一座" },
+    { "label": "位置", "value": "嘉義縣阿里山鄉與南投縣信義鄉交界，俯瞰阿里山遊樂區" },
+    { "label": "人文", "value": "鄒族視為祖靈安息之地；山下就是日治時期為運檜木而建的阿里山森林鐵路" },
+    {
+      "label": "對照重點",
+      "value": "海拔不到 2700 公尺卻緊鄰嘉南平原，是山地與平原之間落差最醒目的一段"
+    }
+  ],
+  "curriculum": { "unit": "臺灣的地形" },
+  "sources": ["維基百科", "農業部林業及自然保育署"]
+}

@@ -1,0 +1,25 @@
+{
+  "id": "xingangshan",
+  "name": { "zh": "新港山", "en": "Mount Xingang" },
+  "coord": { "lat": 23.1436, "lng": 121.3242 },
+  "elevation_m": 1679,
+  "region": "taiwan",
+  "topics": ["landform"],
+  "koppen": "Cfb",
+  "landform": "火山島弧山地",
+  "defaultZoom": 12,
+  "facts": [
+    { "label": "地位", "value": "海岸山脈最高峰，又稱新港大山" },
+    { "label": "位置", "value": "臺東縣成功鎮與花蓮縣富里鄉交界" },
+    {
+      "label": "成因",
+      "value": "與其他四座主峰不同——它原本是菲律賓海板塊上的火山島弧，被推擠上來才成為陸地"
+    },
+    {
+      "label": "對照重點",
+      "value": "它與西邊的中央山脈分屬兩個板塊，中間的花東縱谷就是縫合線"
+    }
+  ],
+  "curriculum": { "unit": "臺灣的地形與板塊構造" },
+  "sources": ["維基百科", "內政部國土測繪中心"]
+}
