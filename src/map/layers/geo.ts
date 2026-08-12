@@ -1,6 +1,6 @@
 import type { GeoJSONSource, Map as MapLibreMap, MapLayerMouseEvent } from "maplibre-gl";
 import { geoLayerIds, geoSourceId } from "../registry/index.ts";
-import type { LayerRender } from "../registry/types.ts";
+import type { ColorRamp, LayerRender } from "../registry/types.ts";
 
 /**
  * 通用主題圖層 helper（circle / line / fill）。
@@ -75,6 +75,27 @@ const SELECTED = {
   fillOpacity: 0.38,
 } as const;
 
+/**
+ * 級距上色的 maplibre 表達式（目前只有水庫蓄水率用）。
+ *
+ * ⚠️ 外層一定要先問 `["has", prop]`。`["step"]` 拿到 null 會在執行期丟型別錯誤，
+ * 而「這個 feature 沒有這個屬性」是**正常情況**——當天沒回報水情的水庫就是這樣。
+ * 它們畫成 `nodata.color`：資料缺漏不是「蓄水率 0%」，兩者不能混為一談。
+ */
+function rampExpression(ramp: ColorRamp): unknown {
+  // ["step", input, 第一段的色, 界線1, 第二段的色, 界線2, …]——界線來自前一段的
+  // `below`，顏色是後一段的。最後一段的 below 是 null（開放上界），不參與。
+  const stops = ramp.steps
+    .slice(0, -1)
+    .flatMap((step, i) => [step.below as number, ramp.steps[i + 1].color]);
+  return [
+    "case",
+    ["has", ramp.property],
+    ["step", ["get", ramp.property], ramp.steps[0].color, ...stops],
+    ramp.nodata.color,
+  ];
+}
+
 export function addGeoLayer(map: MapLibreMap, spec: GeoLayerSpec) {
   const { instanceId, data, color, render, minzoom, maxzoom, highlightIds } = spec;
   const sourceId = geoSourceId(instanceId);
@@ -96,13 +117,16 @@ export function addGeoLayer(map: MapLibreMap, spec: GeoLayerSpec) {
       radius: whenSelected(highlightIds, ["*", baseRadius, SELECTED.radiusScale], baseRadius),
       stroke: whenSelected(highlightIds, SELECTED.strokeWidth, baseStroke),
       opacity: whenSelected(highlightIds, SELECTED.opacity, baseOpacity),
+      // 級距上色的圖層（水庫蓄水率）用表達式取代單一色；`color` 仍然是圖層的
+      // 身分色，圖例與抽屜色塊照樣用它。**選取狀態一樣不碰顏色**，見 whenSelected。
+      color: (render.colorRamp ? rampExpression(render.colorRamp) : color) as string,
     };
 
     if (map.getLayer(id)) {
       // 顏色可能會變（特有種依勾選順序指派色票，取消勾選其中一個會讓後面的遞補），
       // 所以既有圖層要更新 paint，不能像舊版那樣只在不存在時才處理。
       // 選取狀態同理——換一筆選取不該把整個圖層拆掉重加。
-      map.setPaintProperty(id, "circle-color", color);
+      map.setPaintProperty(id, "circle-color", paint.color);
       map.setPaintProperty(id, "circle-radius", paint.radius);
       map.setPaintProperty(id, "circle-stroke-width", paint.stroke);
       map.setPaintProperty(id, "circle-opacity", paint.opacity);
@@ -114,7 +138,7 @@ export function addGeoLayer(map: MapLibreMap, spec: GeoLayerSpec) {
         ...zoom,
         paint: {
           "circle-radius": paint.radius,
-          "circle-color": color,
+          "circle-color": paint.color,
           // 大量點位（例如上千筆地震）要能把白框關掉，否則會糊成一片
           "circle-stroke-width": paint.stroke,
           "circle-stroke-color": "#fff",

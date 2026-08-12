@@ -3,6 +3,7 @@ import type {
   GeoFeature,
   IndigenousGroup,
   Place,
+  ReservoirLive,
   Species,
   SpeciesOccurrence,
 } from "../lib/schema";
@@ -92,6 +93,24 @@ const geoFeatureByKey = new Map(
 
 export function getGeoFeature(collection: string, id: string): GeoFeature | undefined {
   return geoFeatureByKey.get(`${collection}/${id}`);
+}
+
+/**
+ * 水庫即時水情由 build:reservoirs 產生成靜態 JSON，執行期只讀本地檔案。
+ *
+ * **不能在執行期打水利署的 API**：那個端點沒有 CORS 標頭（瀏覽器直接被擋），
+ * 前面還掛著 bot 防護。比照氣候與物種資料的既有做法。
+ *
+ * 抓失敗回 null——呼叫端（registry/resolve.ts 的 tw-reservoirs）要能只用靜態
+ * 幾何把圖層畫出來，水情缺就顯示「暫無資料」，不是整層消失。
+ */
+let reservoirLivePromise: Promise<ReservoirLive | null> | null = null;
+
+export function loadReservoirLive(): Promise<ReservoirLive | null> {
+  reservoirLivePromise ??= fetch(`${import.meta.env.BASE_URL}data/reservoirs-live.json`)
+    .then((res) => (res.ok ? (res.json() as Promise<ReservoirLive>) : null))
+    .catch(() => null);
+  return reservoirLivePromise;
 }
 
 /**

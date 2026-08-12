@@ -60,7 +60,18 @@ export type GeneratorId = "latitude-lines";
  * 兩邊都是既有的單一事實來源，join 出來就不必把座標或對應關係抄第二份
  * ——抄第二份遲早會跟母資料漂開。
  */
-export type DerivedId = "tw-range-peaks";
+export type DerivedId =
+  | "tw-range-peaks"
+  /**
+   * 水庫＝**靜態幾何 + 即時水情**兩份資料 join 起來。
+   *
+   * `data/geo/tw-reservoirs.geojson` 一年才變一次（位置、容量、壩高），
+   * `data/reservoirs-live.json` 每次部署重抓（蓄水量、水位、進出流量）。
+   * 分成兩個檔案是刻意的：把會變的那一半混進 geojson，等於每小時都要重新
+   * commit 一份 20 KB 的幾何。兩份都以**本站的水庫 id** 為 key（`zengwen`…），
+   * 由 `scripts/lib/reservoirs.mjs` 的 `RESERVOIR_IDS` 對照表統一決定。
+   */
+  | "tw-reservoirs";
 
 /**
  * 圖層的資料來源。
@@ -79,6 +90,18 @@ export type LayerSource =
 type NumberValue = DataDrivenPropertyValueSpecification<number>;
 
 /**
+ * 數值屬性 → 級距顏色。實例定義在 `../thematicColors.ts`（那裡有驗證紀錄）。
+ *
+ * `steps` 由小到大，最後一段的 `below` 是 `null`（開放上界）。
+ */
+export interface ColorRamp {
+  property: string;
+  steps: readonly { readonly below: number | null; readonly color: string; readonly label: string }[];
+  /** 沒有這個屬性的 feature（例如當天沒回報水情的水庫） */
+  nodata: { readonly color: string; readonly label: string };
+}
+
+/**
  * 幾何種類與該種類的算繪參數。
  *
  * 所有預設值都刻意設成「維持既有三個圓點圖層的外觀完全不變」——
@@ -93,6 +116,17 @@ export type LayerRender =
       strokeWidth?: NumberValue;
       /** 預設 0.85 */
       opacity?: number;
+      /**
+       * 依 feature 的某個數值屬性分級上色，取代圖層的單一 `colorRole` 顏色。
+       *
+       * ⚠️ 這是**例外**，不是通則。一般圖層的顏色代表圖層身分（見 layers/geo.ts
+       * 開頭的說明），只有「圖層本身就是為了呈現某個量」的時候才用得上——目前
+       * 只有水庫蓄水率。色階必須是通過 `validate_palette.js --ordinal` 的單一
+       * 色相 ramp，定義寫在 thematicColors.ts，這裡只放引用。
+       *
+       * 沒有這個屬性的 feature 畫成 `nodata.color`（資料缺漏 ≠ 數值很低）。
+       */
+      colorRamp?: ColorRamp;
     }
   | {
       kind: "line";
@@ -142,6 +176,12 @@ export type DetailSpec =
    * description/sources——22 個縣市不必每個都先寫好內容檔才能上線。
    */
   | { type: "geo"; collection: string; fallbackNameProperty?: string }
+  /**
+   * 水庫。卡片的內容**全部來自 geojson 的 properties**（基本資料 + join 進來的
+   * 即時水情），不是 `src/content/` 底下的手寫檔案——水情每小時都在變，寫成
+   * 內容檔一定會過期。所以它不能走 `geo`，那條路徑找的是內容檔。
+   */
+  | { type: "reservoir" }
   | { type: "none" };
 
 /** 為這個圖層列出可點清單（點了飛過去並開詳情卡），長在圖層抽屜裡（見 components/ThemeBrowse.tsx）。 */

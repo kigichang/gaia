@@ -4,6 +4,14 @@ on:
   push:
     branches: [main]
   workflow_dispatch:
+  # 水庫即時水情是建置期抓的（純靜態站沒辦法在執行期打水利署 API，見
+  # src/content/index.ts），所以「即時」的更新頻率＝重新部署的頻率。每 6 小時
+  # 重跑一次，水情最多落後 6 小時，卡片上也會照實顯示觀測時間。
+  #
+  # 為什麼不更密：每次都是一次完整的 build + Pages 部署，而水庫水位是以天為
+  # 尺度在變的東西——課堂上要的是「現在大概還有多少水」，不是分鐘級的即時值。
+  schedule:
+    - cron: "17 */6 * * *"
 
 permissions:
   contents: read
@@ -37,6 +45,16 @@ jobs:
           cache: npm
 
       - run: npm ci
+
+      # 水庫即時水情：唯一一個會在 CI 打外部 API 的步驟。
+      #
+      # ⚠️ `continue-on-error` 是刻意的，不是偷懶。repo 裡已經 commit 了一份
+      # reservoirs-live.json 當 fallback，所以上游掛掉（或 bot 防護擋下來）時，
+      # 正確的行為是**沿用舊快照繼續部署**，而不是讓整個網站發不出去。
+      # 使用者看得到觀測時間，知道自己在看多舊的資料。
+      - name: 重抓水庫即時水情（失敗則沿用 repo 裡的快照）
+        continue-on-error: true
+        run: npm run build:reservoirs
 
       # build 內含 validate（內容 schema）、typecheck、vite build
       # 以及 postbuild（產生 404.html、確認 CNAME 與 .nojekyll）

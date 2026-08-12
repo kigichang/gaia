@@ -3,7 +3,13 @@
 import { taiwanTheme } from "./themes/taiwan.ts";
 import { worldTheme } from "./themes/world.ts";
 import { globalTheme } from "./themes/global.ts";
-import type { GeometryKind, LayerDefinition, LayerRender, ThemeDefinition } from "./types.ts";
+import type {
+  DerivedId,
+  GeometryKind,
+  LayerDefinition,
+  LayerRender,
+  ThemeDefinition,
+} from "./types.ts";
 
 /**
  * 主題圖層註冊表的入口。
@@ -24,6 +30,21 @@ export const DEFAULT_THEME_ID = THEMES[0].id;
 export function getTheme(id: string | undefined): ThemeDefinition | undefined {
   return THEMES.find((t) => t.id === id);
 }
+
+/**
+ * `derived` 來源實際會去抓的靜態檔案（相對於 `import.meta.env.BASE_URL`）。
+ *
+ * 放在這裡而不是 `resolve.ts`，是為了讓 `validate-content.mjs`（Node，載入不了
+ * resolve.ts）也能檢查這些檔案存不存在。`remote` 來源本來就有這個檢查，derived
+ * 少了它就會漏掉同一個坑：檔案不在 → fetch 404 → 圖層靜默消失。
+ *
+ * ⚠️ 這是**單一事實來源**：`resolve.ts` 的 derived loader 一律從這裡取路徑，
+ * 不要在那邊另外寫一份字串。
+ */
+export const DERIVED_FILES: Record<DerivedId, readonly string[]> = {
+  "tw-range-peaks": ["data/geo-manual/tw-ranges.geojson"],
+  "tw-reservoirs": ["data/geo/tw-reservoirs.geojson", "data/reservoirs-live.json"],
+};
 
 /** 全站所有圖層（含 planned），給驗證器與圖層 id 唯一性檢查用。 */
 export function allLayers(): { theme: ThemeDefinition; layer: LayerDefinition }[] {

@@ -17,9 +17,19 @@
 import { writeFile, mkdir, access } from "node:fs/promises";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
+import { fetchWithRetry } from "./lib/fetch-retry.mjs";
 import { simplifyGeometry, slugify } from "./lib/simplify.mjs";
 import { parseNlscGml, ringArea } from "./lib/gml.mjs";
+import { parseReservoirKml, ringsCentroid } from "./lib/kml.mjs";
 import { readZipText } from "./lib/unzip.mjs";
+import {
+  EXTENT_KML_URL,
+  LICENSE as WRA_LICENSE,
+  RESERVOIR_IDS,
+  SOURCE_LABEL as WRA_SOURCE_LABEL,
+  fetchReservoirBasics,
+  formatCapacity,
+} from "./lib/reservoirs.mjs";
 
 const exists = (p) => access(p).then(() => true).catch(() => false);
 
@@ -291,6 +301,84 @@ const SOURCES = [
         })),
   },
   {
+    id: "tw-reservoirs",
+    label: "臺灣主要水庫",
+    /**
+     * 位置來自「水庫蓄水範圍」KML，屬性來自「水庫基本資料」CSV——**兩份都要**，
+     * 因為它們各缺一半：基本資料有容量、壩高、集水面積，就是沒有座標；KML 有幾何，
+     * 屬性卻只有一個中文名。
+     *
+     * 產出的是**點**不是面。蓄水範圍的原始幾何是 38 MB 的狹長樹枝狀多邊形，而這一層
+     * 在教學上會用的 zoom（8–12）下，多數水庫小於幾個像素——簡化到能塞進大小預算時
+     * 形狀早就沒了。點配上「依容量縮放的半徑」反而在每個 zoom 都讀得出來。
+     */
+    url: EXTENT_KML_URL,
+    license: WRA_LICENSE,
+    sourceLabel: WRA_SOURCE_LABEL,
+    /**
+     * 收錄範圍是**「水庫基本資料」的 40 座公告水庫**，不是「今天查得到即時水情的
+     * 那幾座」。這件事踩過一次：以水情當篩選條件時產出 33 筆，白河、虎頭埤、谷關
+     * 這些課本會提到的水庫剛好當天沒有回報就整座消失了——而一份 commit 進 repo 的
+     * 靜態檔案，內容不該取決於產生它的那一小時上游剛好回了什麼。
+     *
+     * 沒有即時水情的水庫照樣有壩型、容量、集水面積可以教；水情缺漏由前端顯示成
+     * 「暫無即時資料」（見 components/ReservoirCard.tsx），不是把整座水庫藏起來。
+     */
+    parse: async (res) => ({
+      placemarks: parseReservoirKml(await res.text()),
+      basics: await fetchReservoirBasics(fetchWithRetry),
+    }),
+    // 點不需要簡化；5 位小數 ≈ 1 公尺，形心本來就沒有更高的精度可言
+    tolerance: 0,
+    digits: 5,
+    transform: ({ placemarks, basics }) => {
+      const byName = new Map(placemarks.map((p) => [p.name, p]));
+      const features = [];
+      /** 配不到幾何的水庫。靜默跳過會讓「少了一座」永遠沒有人發現。 */
+      const skipped = [];
+      for (const [code, b] of basics) {
+        const id = RESERVOIR_IDS[b.name];
+        if (!id) {
+          throw new Error(`水庫「${b.name}」不在 RESERVOIR_IDS 對照表裡，請先決定它的 id`);
+        }
+        const placemark = byName.get(b.name);
+        const centroid = placemark && ringsCentroid(placemark.rings);
+        if (!centroid) {
+          skipped.push(b.name);
+          continue;
+        }
+        features.push({
+          type: "Feature",
+          geometry: { type: "Point", coordinates: centroid },
+          properties: {
+            id,
+            name: b.name,
+            // 即時水情靠這個代碼 join（見 registry/resolve.ts 的 tw-reservoirs）
+            code,
+            capacity: b.effectiveCapacity_10k_m3,
+            /** 給人看的容量字串。格式化只做一次，前端不必重寫一份同樣的邏輯。 */
+            capacityLabel: formatCapacity(b.effectiveCapacity_10k_m3),
+            damType: b.damType,
+            damHeight_m: b.damHeight_m,
+            catchment_ha: b.catchment_ha,
+            surface_ha: b.surface_ha,
+            river: b.river,
+            town: b.town,
+            authority: b.authority,
+            purpose: b.purpose,
+            meta: `${b.town}・有效容量 ${formatCapacity(b.effectiveCapacity_10k_m3)}`,
+          },
+        });
+      }
+      if (skipped.length) {
+        console.warn(`\n  ⚠ 有水情但蓄水範圍 KML 裡找不到幾何：${skipped.join("、")}`);
+      }
+      // ⚠️ feature 順序就是圖層抽屜裡可點清單的順序（LayerBrowseList 不排序）。
+      // 依有效容量由大到小，清單開頭就是曾文、翡翠、石門這些課本會點名的水庫。
+      return features.sort((a, b) => b.properties.capacity - a.properties.capacity);
+    },
+  },
+  {
     id: "quakes",
     label: "全球地震帶",
     // 免金鑰、ACAO: *。單次上限 20000 筆；抓之前先打 /count 確認沒超過。
@@ -326,20 +414,6 @@ const SOURCES = [
         })),
   },
 ];
-
-/** 比照 build-species.mjs 的指數退避。上游是 CDN／公家服務，偶爾會 429 或 5xx。 */
-async function fetchWithRetry(url, attempts = 5) {
-  for (let i = 0; i < attempts; i++) {
-    const res = await fetch(url);
-    if (res.ok) return res;
-    const retriable = res.status === 429 || res.status >= 500;
-    if (!retriable || i === attempts - 1) throw new Error(`${url} → HTTP ${res.status}`);
-    const waitMs = 5000 * 2 ** i;
-    process.stdout.write(`（${res.status}，${waitMs / 1000}s 後重試）`);
-    await new Promise((r) => setTimeout(r, waitMs));
-  }
-  throw new Error("unreachable");
-}
 
 /**
  * 從政府資料開放平臺查出某個資料集當下的下載網址。

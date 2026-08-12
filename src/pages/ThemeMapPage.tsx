@@ -431,6 +431,8 @@ function ThemeMapView({ theme, chrome }: { theme: ThemeDefinition; chrome: Chrom
               color: colorOf(layer.colorRole),
               kind: layer.render.kind,
               schematic: layer.schematic,
+              // 依數值分級上色的圖層要把級距一起畫進圖例（見 MapLegend.tsx）
+              ramp: layer.render.kind === "circle" ? layer.render.colorRamp : undefined,
             },
           ];
         }),

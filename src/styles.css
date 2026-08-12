@@ -1260,6 +1260,77 @@ input {
   color: var(--text-secondary);
 }
 
+/* ---------- 水庫即時水情 ---------- */
+
+/*
+ * 蓄水百分比的長條。
+ *
+ * 只有一個數值、而且要跟地圖上那顆圓點對得起來，所以長條的顏色直接取自
+ * thematicColors 的同一組級距色（在 ReservoirCard 以行內樣式指定），
+ * 這裡只負責幾何。長條本身**不是**唯一的線索——右邊永遠有數字，
+ * 顏色只是輔助編碼。
+ */
+.reservoir-live {
+  margin: 0 0 10px;
+}
+
+.reservoir-meter {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.reservoir-meter-track {
+  flex: 1;
+  height: 10px;
+  border-radius: 5px;
+  background: var(--surface-sunken);
+  border: 1px solid var(--border);
+  overflow: hidden;
+}
+
+.reservoir-meter-fill {
+  height: 100%;
+  border-radius: 5px 0 0 5px;
+}
+
+.reservoir-percent {
+  flex: none;
+  font-size: 16px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-primary);
+}
+
+.reservoir-volume {
+  margin: 0 0 8px;
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-secondary);
+}
+
+.reservoir-volume strong {
+  color: var(--text-primary);
+}
+
+.reservoir-observed {
+  margin: 6px 0 0;
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-muted);
+}
+
+.reservoir-nodata {
+  margin: 0;
+  padding: 8px 10px;
+  border-radius: 8px;
+  background: var(--surface-sunken);
+  font-size: 12px;
+  line-height: 1.6;
+  color: var(--text-secondary);
+}
+
 .detail-empty {
   margin: 0;
   padding: 12px;
@@ -1355,6 +1426,25 @@ input {
   gap: 6px;
   padding: 2px 0;
   color: var(--text-secondary);
+}
+
+/*
+ * 依數值分級上色的圖層（水庫蓄水率）的級距說明，縮排排在圖層那一列底下。
+ * 沒有這一段，深淺不同的藍點在圖上就只是看不懂的雜訊。
+ */
+.map-legend-ramp {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  margin: 0 0 4px 10px;
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.map-legend-ramp-step {
+  display: flex;
+  align-items: center;
+  gap: 6px;
 }
 
 /* ---------- 行動裝置 ---------- */

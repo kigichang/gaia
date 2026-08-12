@@ -17,6 +17,7 @@
     "preview": "vite preview",
     "build:climate": "node scripts/build-climate.mjs",
     "build:species": "node scripts/build-species.mjs",
+    "build:reservoirs": "node scripts/build-reservoirs.mjs",
     "build:geodata": "node scripts/build-geodata.mjs"
   },
   "dependencies": {

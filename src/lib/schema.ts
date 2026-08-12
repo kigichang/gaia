@@ -224,3 +224,44 @@ export const GeoCollectionSchema = z.object({
 });
 
 export type GeoCollection = z.infer<typeof GeoCollectionSchema>;
+
+/**
+ * `public/data/reservoirs-live.json`（由 build-reservoirs.mjs 產生）。
+ *
+ * 為什麼要驗：這份檔案是**每次部署重抓**的，上游欄位改名或回傳挑戰頁時，
+ * 最糟的情況是它變成一份結構正確但空的 JSON——那在執行期完全靜默（水庫還在，
+ * 只是每一座都顯示「暫無資料」）。建置期擋下來比較好。
+ *
+ * 數值一律 `nullable`：上游很多欄位是空的（例如沒有進流量計的水庫），
+ * 空值必須保持空值，**不能當成 0**——0 是「完全沒有進流」的意思，那是謊報。
+ */
+export const ReservoirLiveSchema = z.object({
+  metadata: z.object({
+    source: z.string(),
+    license: z.string(),
+    generatedAt: z.string(),
+    observedFrom: z.string().nullable(),
+    observedTo: z.string().nullable(),
+    count: z.number(),
+  }),
+  reservoirs: z.record(
+    z.string(),
+    z.object({
+      code: z.string(),
+      /** 上游給的是不帶時區的臺灣時間字串（`2026-08-12T19:00:00`），原樣保留 */
+      observedAt: z.string(),
+      /** 有效蓄水量 ÷ 目前有效容量。滿庫溢流時會略高於 100，**不夾** */
+      percent: z.number().nullable(),
+      /** 萬立方公尺 */
+      storage: z.number().nullable(),
+      capacity: z.number().nullable(),
+      waterLevel_m: z.number().nullable(),
+      inflow_cms: z.number().nullable(),
+      outflow_cms: z.number().nullable(),
+      rainfall_mm: z.number().nullable(),
+    }),
+  ),
+});
+
+export type ReservoirLive = z.infer<typeof ReservoirLiveSchema>;
+export type ReservoirStatus = ReservoirLive["reservoirs"][string];

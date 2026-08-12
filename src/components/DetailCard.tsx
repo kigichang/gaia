@@ -2,6 +2,7 @@ import { PlaceCard } from "./PlaceCard";
 import { IndigenousCard } from "./IndigenousCard";
 import { SpeciesCard } from "./SpeciesCard";
 import { FeatureCard } from "./FeatureCard";
+import { ReservoirCard } from "./ReservoirCard";
 import { getGeoFeature, getIndigenousGroup, getPlace, getSpecies } from "../content";
 import type { DetailSpec, ThemeDefinition } from "../map/registry/types";
 import type { GeoLayerInstance } from "../map/useGeoLayers";
@@ -54,6 +55,14 @@ export function DetailCard({
         }}
       />
     );
+  }
+  if (detail.type === "reservoir") {
+    // 水庫沒有內容檔，卡片的資料就在圖層的 geojson 裡（基本資料 + join 進來的
+    // 即時水情）。找不到 instance 代表圖層剛好還沒載完，這時不要算繪空卡。
+    const owner = theme.layers.find((l) => l.detail.type === "reservoir");
+    const fc = instances.find((i) => i.instanceId === owner?.id)?.data;
+    const props = fc?.features.find((f) => f.properties?.id === featureId)?.properties;
+    return props ? <ReservoirCard properties={props} /> : null;
   }
   if (detail.type === "place") {
     const place = getPlace(featureId);

@@ -14,10 +14,11 @@ import {
   SpeciesOccurrenceSchema,
   GeoFeatureSchema,
   GeoCollectionSchema,
+  ReservoirLiveSchema,
 } from "../src/lib/schema.ts";
 // 圖層註冊表是刻意設計成純資料的，就是為了能在這裡被 Node 直接載入做交叉檢查。
 // 見 src/map/registry/types.ts 的說明。
-import { THEMES, allLayers } from "../src/map/registry/index.ts";
+import { DERIVED_FILES, THEMES, allLayers } from "../src/map/registry/index.ts";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 const PLACES_DIR = join(ROOT, "src/content/places");
@@ -164,6 +165,43 @@ for (const relDir of GEO_DATA_DIRS) {
   if (files.length) console.log(`${relDir}: ${files.length} 個 geojson 通過驗證`);
 }
 
+// ── 水庫即時水情（public/data/reservoirs-live.json）─────────────────────
+//
+// 這份檔案是**每次部署重抓**的（見 .github/workflows/deploy.yml），所以它是全站
+// 唯一一份「內容會在沒有人改程式的情況下變動」的資料。上游欄位改名時最糟的結果
+// 是它變成結構正確但空的 JSON——執行期完全靜默（水庫都還在，只是每一座都顯示
+// 「暫無資料」）。在這裡擋下來。
+{
+  const livePath = join(ROOT, "public/data/reservoirs-live.json");
+  try {
+    const raw = JSON.parse(await readFile(livePath, "utf8"));
+    const result = ReservoirLiveSchema.safeParse(raw);
+    if (!result.success) {
+      for (const issue of result.error.issues) {
+        errors.push(`reservoirs-live.json → ${issue.path.join(".")}: ${issue.message}`);
+      }
+    } else {
+      const ids = result.data.reservoirs;
+      const geojsonIds = geoCollectionIds.get("data/geo/tw-reservoirs.geojson");
+      // id 對不起來就代表兩份檔案是不同版本產生的，join 會靜默失敗（水情永遠是空的）
+      const orphans = geojsonIds
+        ? Object.keys(ids).filter((id) => !geojsonIds.has(id))
+        : [];
+      if (orphans.length) {
+        errors.push(
+          `reservoirs-live.json → ${orphans.join("、")} 在 tw-reservoirs.geojson 裡沒有對應的水庫，` +
+            `請重跑 npm run build:geodata -- --force --only=tw-reservoirs`,
+        );
+      }
+      console.log(`reservoirs-live: ${Object.keys(ids).length} 座水庫有即時水情`);
+    }
+  } catch (err) {
+    errors.push(
+      `public/data/reservoirs-live.json 讀不到或不是合法 JSON（${err.message}）——請執行 npm run build:reservoirs`,
+    );
+  }
+}
+
 // ── 圖層註冊表交叉檢查 ──────────────────────────────────────────────────
 //
 // 這是把註冊表寫成純資料所換來的東西。少了這一段，一個打錯的 remote path 在
@@ -231,10 +269,15 @@ for (const relDir of GEO_DATA_DIRS) {
       }
     }
 
-    // remote 來源指到的檔案必須真的存在
+    // remote 與 derived 來源指到的檔案必須真的存在。
+    // derived 也要查：它一樣是 fetch，檔案不在就一樣是「圖層靜默消失」。
     const remotePaths = [];
-    if (layer.source?.type === "remote") remotePaths.push(layer.source.path);
-    if (layer.attach?.source.type === "remote") remotePaths.push(layer.attach.source.path);
+    const collectPaths = (source) => {
+      if (source?.type === "remote") remotePaths.push(source.path);
+      if (source?.type === "derived") remotePaths.push(...DERIVED_FILES[source.derived]);
+    };
+    collectPaths(layer.source);
+    collectPaths(layer.attach?.source);
     if (layer.items?.from.type === "inline") {
       for (const item of layer.items.from.list) {
         if (item.source?.type === "remote") remotePaths.push(item.source.path);

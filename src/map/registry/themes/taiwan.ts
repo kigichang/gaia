@@ -1,5 +1,9 @@
 // .ts 副檔名是必要的：Node 直接載入註冊表時不會自己補副檔名（見 ../types.ts）
-import { MAX_SIMULTANEOUS_SPECIES, SPECIES_COLORS } from "../../thematicColors.ts";
+import {
+  MAX_SIMULTANEOUS_SPECIES,
+  RESERVOIR_FILL_RAMP,
+  SPECIES_COLORS,
+} from "../../thematicColors.ts";
 import type { ThemeDefinition } from "../types.ts";
 
 /**
@@ -223,12 +227,47 @@ export const taiwanTheme: ThemeDefinition = {
     },
     {
       id: "tw-reservoirs",
-      label: "主要水庫",
+      label: "主要水庫與即時水情",
       group: "水系",
-      status: "planned",
-      render: { kind: "circle" },
-      detail: { type: "none" },
-      description: "石門、曾文、翡翠等主要水庫的位置與蓄水規模。",
+      status: "ready",
+      // 靜態幾何 + 即時水情兩份資料 join（見 registry/types.ts 的 DerivedId）
+      source: { type: "derived", derived: "tw-reservoirs" },
+      /**
+       * 兩個量各佔一個視覺通道：**半徑＝有效容量**（固定的規模），
+       * **顏色＝目前蓄水率**（每小時在變的水情）。
+       *
+       * 半徑刻意**不是**嚴格的面積正比。真的照 `14/√50479 × √c` 畫，小池水庫
+       * （17.9 萬 m³）會是 0.26 px——等於看不見，而它是澎湖唯一的水庫，課本講
+       * 離島缺水時會用到。所以改成「√容量 線性內插到 3.5–14 px」：大小關係仍然
+       * 單調（曾文最大、澎湖那幾座最小），但最小的那幾座保有可點擊的下限。
+       * 讀者要精確數字時卡片上就有，圓點負責的是「一眼看出量級差距」。
+       */
+      render: {
+        kind: "circle",
+        radius: [
+          "interpolate",
+          ["linear"],
+          ["sqrt", ["coalesce", ["get", "capacity"], 0]],
+          0,
+          3.5,
+          225,
+          14,
+        ],
+        colorRamp: RESERVOIR_FILL_RAMP,
+      },
+      // 顏色雖然由 ramp 決定，圖層身分色仍然是水系藍——圖例與抽屜色塊要用它，
+      // 而且水庫本來就該留在「藍色＝水」這個家族裡
+      colorRole: "hydrology",
+      detail: { type: "reservoir" },
+      browse: { zoom: 12 },
+      // 全臺 40 座水庫擠在一座島上，小比例尺會糊成一團藍點。zoom 6 大約是
+      // 整個臺灣剛好填滿畫面的尺度。
+      minzoom: 6,
+      description:
+        "經濟部水利署公告的 40 座水庫。圓點大小是有效容量、顏色是目前蓄水率，" +
+        "點選可看水位、進出流量與集水區降雨。" +
+        "⚠️ 集集攔河堰、石岡壩、直潭壩是引水與調節設施，不是蓄水設施，蓄水率天生偏低；" +
+        "阿公店水庫等水庫在排砂或清淤期間也會刻意維持低水位——低不一定代表缺水。",
       sources: ["經濟部水利署"],
     },
     {

@@ -1,5 +1,6 @@
 import {
   indigenousGroups,
+  loadReservoirLive,
   loadSpeciesOccurrence,
   places,
   speciesList,
@@ -8,7 +9,7 @@ import { formatLatitude } from "../../compare/LatitudeSlider";
 import { toFeatureCollection } from "../layers/geo";
 import { LAYER_COLORS } from "../thematicColors";
 import type { GeoLayerInstance } from "../useGeoLayers";
-import { layerInstanceId } from "./index.ts";
+import { DERIVED_FILES, layerInstanceId } from "./index.ts";
 import { generateLayer } from "./generators.ts";
 import type {
   ColorRole,
@@ -61,10 +62,10 @@ const BUNDLED_LOADERS = {
     ),
 };
 
-const RANGES_SOURCE: LayerSource = {
-  type: "remote",
-  path: "data/geo-manual/tw-ranges.geojson",
-};
+/** derived 來源依賴的檔案路徑一律取自 `DERIVED_FILES`（驗證器也讀同一份）。 */
+const remote = (path: string): LayerSource => ({ type: "remote", path });
+
+const RANGES_SOURCE = remote(DERIVED_FILES["tw-range-peaks"][0]);
 
 /**
  * 主峰 id → 所屬山脈 id，取自 `tw-ranges.geojson` 的 `peakId`。
@@ -96,6 +97,54 @@ const DERIVED_LOADERS: Record<
       (p) => peakToRange.has(p.id),
       (p) => ({ rangeId: peakToRange.get(p.id)! }),
     );
+  },
+
+  /**
+   * 水庫＝靜態幾何（位置、容量、壩高）＋ 即時水情（蓄水量、水位、進出流量）。
+   *
+   * 兩份資料的更新頻率差了四個數量級，所以分成兩個檔案、在這裡 join。
+   *
+   * ⚠️ **水情抓不到時仍然要回傳圖層**（只是每一座都沒有 `percent`）：
+   * 圓點會畫成 ramp 的 nodata 灰、詳情卡顯示「暫無即時資料」。整層消失是最糟的
+   * 失敗模式——使用者只會看到「水庫圖層壞了」，而基本資料其實好端端的。
+   */
+  "tw-reservoirs": async () => {
+    const [fc, live] = await Promise.all([
+      resolveLayerData(remote(DERIVED_FILES["tw-reservoirs"][0])),
+      loadReservoirLive(),
+    ]);
+    if (!fc) return null;
+
+    return {
+      ...fc,
+      features: fc.features.map((f) => {
+        const props = f.properties ?? {};
+        const status = typeof props.id === "string" ? live?.reservoirs[props.id] : undefined;
+        return {
+          ...f,
+          properties: {
+            ...props,
+            // ⚠️ `percent` 只在真的有值時才寫進去。寫成 null 會讓算繪用的
+            // `["has", "percent"]` 判成 true，於是「暫無資料」被畫成 0%——
+            // 那是把資料缺漏謊報成水庫見底。
+            ...(status?.percent != null && { percent: status.percent }),
+            ...(status && {
+              observedAt: status.observedAt,
+              storage: status.storage,
+              waterLevel_m: status.waterLevel_m,
+              inflow_cms: status.inflow_cms,
+              outflow_cms: status.outflow_cms,
+              rainfall_mm: status.rainfall_mm,
+            }),
+            // 清單次標改成以水情為主——這一層的重點就是「現在還有多少水」
+            meta:
+              status?.percent != null
+                ? `蓄水 ${status.percent}%・有效容量 ${props.capacityLabel}`
+                : `暫無即時水情・有效容量 ${props.capacityLabel}`,
+          },
+        };
+      }),
+    };
   },
 };
 

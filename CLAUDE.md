@@ -58,6 +58,8 @@ Node ≥ 22.12（vite 8 要求）。開發機與 CI 都用 Node 24。
 | 臺灣縣市界線 | `data.gov.tw/api/v2/rest/dataset/7442` → TGOS 的 GML zip（內政部國土測繪中心） | **只在建置期呼叫**，政府資料開放授權條款第 1 版 |
 | 世界行政區／河流幾何 | `raw.githubusercontent.com/nvkelso/natural-earth-vector`（Natural Earth） | **只在建置期呼叫**，public domain |
 | 地震目錄 | `earthquake.usgs.gov/fdsnws/event/1/query`（USGS） | **只在建置期呼叫**，免金鑰、`ACAO: *` |
+| 水庫基本資料／水庫水情 | `opendata.wra.gov.tw/api/v2/…?format=CSV`（經濟部水利署） | **只在建置期呼叫**。⚠️ **沒有 CORS 標頭**（瀏覽器一定抓不到），而且掛著 bot 防護，見下 |
+| 水庫蓄水範圍 | `gic.wra.gov.tw/gis/gic/API/Google/DownLoad.aspx?fname=ressub&filetype=KML` | **只在建置期呼叫**，約 38 MB 的 KML，只用來算形心 |
 | 基本地理事實（山脈走向、主峰高度、河川分界…） | `zh.wikipedia.org` 各條目 | **程式完全不呼叫**，人工查閱後寫進 `src/content/`。次級來源，用法見「內容撰寫規範」，CC BY-SA |
 
 ### ⚠️ NLSC 的路徑順序陷阱
@@ -80,6 +82,33 @@ NLSC WMTS 是 `{z}/{y}/{x}`——**y 在 x 前面**，跟絕大多數 XYZ 服務
 
 **已知資料限制**：GBIF 觀測點反映的是「歷史觀測熱點」，受賞鳥／採集活動的地點偏好影響，不是嚴謹的族群密度普查。教學呈現與 UI 文案都不要暗示這是完整、精確的分布範圍（`SpeciesCard` 已經在來源說明裡註記這件事，新增文案時比照辦理）。
 
+### 水庫資料為什麼拆成兩個檔案
+
+水庫有兩種更新頻率差了四個數量級的資料，所以拆開：
+
+| 檔案 | 內容 | 誰產生 | 多久變一次 |
+|---|---|---|---|
+| `public/data/geo/tw-reservoirs.geojson` | 位置、有效容量、壩型、壩高、集水面積 | `npm run build:geodata` | 一年 |
+| `public/data/reservoirs-live.json` | 蓄水量、水位、進出流量、集水區降雨 | `npm run build:reservoirs` | 一小時 |
+
+兩份都 commit 進 repo，由 `registry/resolve.ts` 的 `derived: "tw-reservoirs"` 在瀏覽器端 join（key 是本站的水庫 id）。把會變的那一半混進 geojson，等於每小時要重新 commit 一份 20 KB 的幾何。
+
+**「即時」的實際更新頻率＝重新部署的頻率。** 純靜態站不能在執行期打水利署 API（沒有 CORS），所以 `.github/workflows/deploy.yml` 加了 `schedule: cron "17 */6 * * *"`，每 6 小時重新抓一次並重新部署。那個步驟是 `continue-on-error: true`：repo 裡已經有一份快照當 fallback，上游掛掉時正確的行為是沿用舊資料繼續部署，而不是讓整個網站發不出去。**因此 `ReservoirCard` 一定要顯示觀測時間**，使用者才看得出自己在看多舊的東西——比照 GBIF 與 ERA5 的既有承諾。
+
+#### ⚠️ 上游的 bot 防護會回 HTTP 200
+
+`opendata.wra.gov.tw` 前面掛著 F5 的 JS 挑戰。被攔下來時回的是一頁 `bobcmn`/`TSPD` 的 HTML，**狀態碼仍然是 200**，所以只看狀態碼的退避重試完全不會重試，而 CSV 剖析器會把那頁 HTML 當成一欄叫 `<!DOCTYPE html>` 的資料表安靜吃下去、產出 0 筆水庫。`lib/reservoirs.mjs` 因此做了兩件事：只用 `format=CSV`（`format=JSON` 幾乎必中挑戰），以及把 `assertNotChallenge()` **包在重試迴圈裡面**。
+
+#### 其他實測過的坑
+
+- **收錄範圍是「基本資料」的 40 座公告水庫，不是「今天查得到水情的那幾座」。** 以水情當篩選條件時產出 33 筆，白河、虎頭埤、谷關這些課本會提到的水庫剛好當天沒回報就整座消失了——一份 commit 進 repo 的靜態檔案，內容不該取決於產生它的那一小時上游剛好回了什麼。缺水情的水庫在卡片上顯示「暫無即時資料」。
+- **`percent` 缺值時不可以寫成 `null` 塞進 properties**：算繪用的 `["has", "percent"]` 會判成 true，於是「暫無資料」被畫成 0%——把資料缺漏謊報成水庫見底。`resolve.ts` 只在真的有值時才寫這個屬性。
+- **蓄水率不夾在 100% 以下。** 滿庫溢流時上游本來就會給出 100 以上的值（實測寶山第二 105.9%）。夾住等於竄改資料；要夾的是長條的寬度與顏色級距，不是數字本身。
+- **集集攔河堰、石岡壩、直潭壩是引水設施不是蓄水設施**，蓄水率天生偏低（實測 19.9%／24.2%）。`ReservoirCard` 依**名稱結尾是不是「壩」或「堰」**顯示警語——那是官方命名本身的線索，比另外維護一份清單可靠。阿公店水庫排砂期間也會刻意維持低水位（實測 0.7%），圖層說明有交代「低不一定代表缺水」。
+- **上游的文字欄位內含換行**（石門的鄉鎮是 `"桃園市龍潭區、\n大溪區、復興區"`），那是排版斷行不是剖析錯誤，`lib/reservoirs.mjs` 的 `clean()` 會整個刪掉空白（不是併成空格——這些欄位全是中文，頓號後面多一格很醜）。
+- **KML 的座標高度是科學記號**（`…,-1.599837560206652e-005`），數字的正規表示式少了 `[eE][-+]?\d+` 會讓**每一個** token 都判成格式錯誤（實測 491/491）。
+- **形心用面積加權（shoelace），不是 bbox 中心**：水庫是狹長的樹枝狀，bbox 中心經常落在水體外面的山坡上（實測石門、曾文都是），而那個點會被拿去當「點一下飛過去」的目標。
+
 ---
 
 ## 硬性禁止事項
@@ -94,7 +123,9 @@ NLSC WMTS 是 `{z}/{y}/{x}`——**y 在 x 前面**，跟絕大多數 XYZ 服務
 8. **不得在執行期呼叫 GBIF。** 特有種觀測點一律走 build-time 產製。
 9. **不得手動編輯 `public/data/species/*.geojson`。** 由 `npm run build:species` 產生。
 10. **不得手動編輯 `public/data/geo/*.geojson`。** 由 `npm run build:geodata` 產生。手繪的教學示意幾何放 `public/data/geo-manual/`，那個目錄腳本永遠不會碰。
-11. **不得憑感覺挑主題圖層的顏色。** 改動或新增 `src/map/thematicColors.ts` 的顏色前，必須重新用 dataviz skill 的 `scripts/validate_palette.js`（`--pairs all`，因為主題圖層是可任意複選的核取方塊，不能只驗證清單裡「相鄰」的顏色）驗證明暗兩模式，理由與已驗證過的組合見該檔案的註解。
+11. **不得在執行期呼叫水利署的 API。** 那個端點沒有 CORS 標頭，瀏覽器一定抓不到；水庫資料一律走 build-time 產製。
+12. **不得手動編輯 `public/data/reservoirs-live.json` 與 `public/data/geo/tw-reservoirs.geojson`。** 由 `npm run build:reservoirs` 與 `npm run build:geodata` 產生。
+13. **不得憑感覺挑主題圖層的顏色。** 改動或新增 `src/map/thematicColors.ts` 的顏色前，必須重新用 dataviz skill 的 `scripts/validate_palette.js`（`--pairs all`，因為主題圖層是可任意複選的核取方塊，不能只驗證清單裡「相鄰」的顏色）驗證明暗兩模式，理由與已驗證過的組合見該檔案的註解。
 
 ---
 
@@ -123,6 +154,7 @@ ID 常數定義在 `src/map/layers/*.ts`，**一律 import 常數，不要寫死
 | `world-places-points` | circle |
 | `latitude-lines-line` / `latitude-lines-label` | line + symbol |
 | `quakes-points` | circle |
+| `tw-reservoirs-points` | circle（顏色是**依蓄水率分級的表達式**，不是單一色，見下） |
 
 `dem` 與 `dem-terrain` 是兩個來源但都指向同一個 shared DEM protocol：maplibre 會警告 hillshade 與 terrain 共用來源會降低算繪品質，拆開可消除警告，而底層圖磚快取仍然共用、不會重複下載。
 
@@ -155,7 +187,7 @@ maplibre-contour 把 worker 以 Blob URL 內嵌，**不需要額外部署 worker
 
 | 主題 | 路由 | 內容 |
 |---|---|---|
-| 臺灣地理 | `/theme/taiwan` | 行政區、地形、水系、人文（原住民族）、植被生態（特有種）、農業物產 |
+| 臺灣地理 | `/theme/taiwan` | 行政區、地形、水系（含水庫即時水情）、人文（原住民族）、植被生態（特有種）、農業物產 |
 | 世界地理 | `/theme/world` | 世界重要城市、國界與大洲、地形水系、人文專題 |
 | 全球地理形貌 | `/theme/global` | 緯度參考線、氣候與生物群系、洋流、板塊與地震帶 |
 
@@ -286,6 +318,21 @@ fill   → `${instanceId}-fill` + `${instanceId}-outline`
 行政區橘刻意用 `#d95926` 而不是色票的 light step `#eb6834`：後者在 **dark 模式的亮度帶檢查會 FAIL**。地圖是 WebGL 畫布只能有一組固定色，所以必須挑「兩個模式都過」的值。
 
 山脈（`relief`）同理選 `#c23f8f` 而不是製圖上更常見的紫 `#7a3fa6`——紫在 **dark 模式的對比只有 2.56:1（WARN）**，`#6d3f9e` 與物種紫 `#4a3aa7` 則直接在 dark 模式亮度帶 FAIL。**棕色與綠色是被排除的**，不是沒想到：等高線 `rgba(120,78,42,.55)` 與地形陰影 `#5a4632` 都是棕的，而 NLSC 通用電子地圖的山區底色是綠的——山脈線畫成那兩種顏色，等於畫在它自己要說明的那片地形上看不見。
+
+#### 唯一一個「顏色跟著數值走」的圖層：水庫蓄水率
+
+一般規則是顏色代表**圖層身分**，狀態只准動尺寸與外框。水庫是明確的例外，理由跟地震用震級驅動半徑相同：`percent` 是圖徵**自己的資料屬性**，不是 UI 狀態，而且這一層存在的理由就是即時水情——全部畫成同一顆藍點，「哪幾座快見底了」就得一顆一顆點開。
+
+色階是 `RESERVOIR_FILL_RAMP`（`thematicColors.ts`）：dataviz 參考色票的藍 ramp step 250／400／500／600，**單一色相由淺到深**（sequential／ordinal 的規則，不是紅→綠那種 status 配色）。驗證用的是 **`--ordinal` 模式**，不是分類色的 `--pairs all`：
+
+```bash
+node scripts/validate_palette.js "#86b6ef,#3987e5,#256abf,#184f95" --ordinal --mode light|dark
+# → 兩模式各四項全數 PASS（單一色相、亮度單調、步階間距 ≥ 0.06、淺端 2.06:1）
+```
+
+⚠️ 用分類色的 `--pairs all` 去驗一條正確的 ramp **會 FAIL，那是設計如此**（它本來就橫跨整個亮度帶、相鄰步階刻意相近），不要為了讓它過而去改壞色階。**兩端不要再往外延伸**：step 200 `#9ec5f4` 在淺色模式只有 1.74:1、step 700 `#0d366b` 在深色模式只有 1.46:1，都低於 2:1 下限。
+
+「暫無資料」的灰 `#7d7c76` 刻意**不在 ramp 裡**——資料缺漏不是「蓄水率很低」，混進色階等於謊報。有 ramp 的圖層，`MapLegend` 必須把級距一起畫出來（只給一個代表色的圖例會讓深淺不同的圓點變成看不懂的雜訊）。
 
 `reference`（緯度參考線）與 `hazard`（地震帶）是**非分類的固定角色**，比照 hillshade 的棕色，刻意排除在色票驗證之外。地震帶尤其不該給分類色相：2800 個依震級縮放的點是**密度場**，教學內容是「地震帶沿板塊邊緣浮現」，不是「這個色相代表地震」；給它色相不但擠爆色票驗證，2800 個不透明白框圓點在投影機上也只是一坨糊的（所以 `strokeWidth: 0` 必須是可設定的）。
 
@@ -551,7 +598,8 @@ npm run build:climate   # 產生氣候 JSON（已存在會跳過）
 npm run build:climate -- --force   # 全部重抓
 npm run build:species   # 產生特有種觀測點 geojson（已存在會跳過）
 npm run build:species -- --force   # 全部重抓
-npm run build:geodata   # 產生行政區/河流/地震 geojson（已存在會跳過）
+npm run build:reservoirs # 產生水庫即時水情（每次都重抓，CI 也會跑，見「部署」）
+npm run build:geodata   # 產生行政區/河流/地震/水庫 geojson（已存在會跳過）
 npm run build:geodata -- --force --only=quakes   # 只重抓一個資料集
 ```
 
@@ -671,7 +719,7 @@ m.isSourceLoaded('contour-source')
     - 跨主題（在世界地理搜「阿美族」）→ 路由變 `/theme/taiwan`、圖層勾上、詳情開卡，而且**只飛一次**（掛 `movestart` 數，應為 1）
     - `detail.type === "none"`（搜「北回歸線」）→ 飛到 lat 23.44、圖層勾上，`data-detail-open` 是 **false**（不開空卡，也不能殘留上一個主題的詳情卡）
     - 圖層本身（搜「河流」）→ 勾選 + fitBounds，`data-detail-open` 是 **false**
-    - Network 只多抓 `tw-counties.geojson` 與 `world-rivers.geojson`，**沒有 `quakes.geojson`**：
+    - Network 只多抓 `tw-counties.geojson`、`world-rivers.geojson` 與水庫那兩份，**沒有 `quakes.geojson`**：
       ```js
       performance.getEntriesByType('resource').filter(r => /geojson/.test(r.name)).map(r => r.name.split('/').pop())
       ```
@@ -714,6 +762,25 @@ m.isSourceLoaded('contour-source')
 
     ⚠️ **`src/content/places/` 新增一筆地點，就會同時改動三個地方**：地形景點圖層、`/compare` 的兩個下拉選單、主題頁搜尋索引。所以新增後 `npm run build:climate` 是必須的——`/compare` 選到一個沒有氣候 JSON 的地點會得到空圖表，而 `npm run validate` **不會**擋（climate 驗證只檢查「有 JSON 的必須對得到地點」，反向不檢查）。
 
+15. **水庫即時水情**（`/theme/taiwan`，勾「主要水庫與即時水情」）：
+    ```js
+    const m = window.__gaiaMaps.at(-1);
+    m.jumpTo({ center: [120.9, 23.6], zoom: 7.3 });
+    m.queryRenderedFeatures({ layers: ['tw-reservoirs-points'] }).length   // 40（不是 33）
+    // 顏色一定要是「先問 has、再 step」的表達式，缺水情的水庫走 nodata 灰
+    m.getPaintProperty('tw-reservoirs-points', 'circle-color')
+    // 缺水情的 7 座：percent 必須是 undefined，不能是 null
+    m.queryRenderedFeatures({ layers: ['tw-reservoirs-points'] })
+      .filter(f => f.properties.percent === undefined).map(f => f.properties.name)
+    ```
+    - 點曾文水庫 → 卡片有蓄水率長條、蓄水量／容量、水位、進出流量、**觀測時間**
+    - 點白河水庫（常態缺水情）→ 卡片顯示「暫無即時資料」而不是 0%
+    - 點集集攔河堰 → 卡片底部出現「這是攔河堰／壩」的警語
+    - 圖例底下要有四段色階 + 「暫無資料」灰：`document.querySelectorAll('.map-legend-ramp-step').length // 5`
+    - 切底圖之後重驗一次（ramp 表達式是 `reapply` 時重建的）
+    - ⚠️ 搜尋索引現在會多抓 `tw-reservoirs.geojson`(20 KB) 與 `reservoirs-live.json`(8 KB)，
+      驗第 12 項的 Network 期望值時要把這兩個算進去
+
 ### ⚠️ 用瀏覽器自動化點 UI 的三個陷阱
 
 - **主題頁的底圖選單藏在左下角「圖層」彈出層裡**，必須先 `document.querySelector('.map-tile').click()` 才找得到 `<select>`；`/compare` 的仍然直接在頁首。
@@ -739,7 +806,11 @@ curl -s https://gaia.kigi.tw/compare | grep -c '<div id="root">'   # 應為 1
 
 ## 部署
 
-`.github/workflows/deploy.yml`：push 到 `main` → `npm ci` → `npm run build` → `upload-pages-artifact`（`dist`）→ `deploy-pages`。
+`.github/workflows/deploy.yml`：push 到 `main`（或每 6 小時的 `schedule`）→ `npm ci` → `npm run build:reservoirs` → `npm run build` → `upload-pages-artifact`（`dist`）→ `deploy-pages`。
+
+**`build:reservoirs` 是唯一一個會在 CI 打外部 API 的步驟，而且是 `continue-on-error: true`。** 這不是偷懶：repo 裡已經 commit 了一份 `reservoirs-live.json` 當 fallback，上游掛掉或被 bot 防護攔下時，正確的行為是沿用舊快照繼續部署，而不是讓整個網站發不出去。其餘的 `build:*` 腳本（geodata／climate／species）**CI 永遠不會執行**，產物一律 commit 進 repo。
+
+那個 `schedule` 存在的唯一理由是水庫水情：純靜態站沒辦法在執行期抓資料，所以「即時」的更新頻率就等於重新部署的頻率。
 
 `scripts/postbuild.mjs` 會把 `dist/index.html` 複製成 `dist/404.html`。GitHub Pages 沒有 SPA rewrite，直接開 `gaia.kigi.tw/compare` 會 404；Pages 找不到路徑時會回站台根目錄的 404.html，React Router 就能接手。同一支腳本也會確認 `CNAME` 與 `.nojekyll` 有被複製到 `dist/`。
 
@@ -796,8 +867,10 @@ src/
    ├─ MapDetailPanel.tsx  # 左側詳情面板外框（≤860px 變底部卡）
    ├─ DetailCard.tsx      # 選取 → 對應詳情卡的分派
    ├─ ThemeBrowse.tsx     # 圖層抽屜裡的可點清單（browseLayerExtra）
+   ├─ ReservoirCard.tsx   # 水庫詳情卡（即時水情長條 + 基本資料，資料全來自 geojson）
    └─ PlaceCard/IndigenousCard/SpeciesCard/FeatureCard/LayerPanel/MapLegend…
 public/data/
+├─ reservoirs-live.json   # build:reservoirs 產生（禁止手改，每次部署重抓）
 ├─ climate/*.json         # build:climate 產生
 ├─ species/*.geojson      # build:species 產生
 ├─ geo/*.geojson          # build:geodata 產生（禁止手改）
@@ -805,10 +878,14 @@ public/data/
 scripts/
 ├─ build-climate.mjs      # Open-Meteo → public/data/climate
 ├─ build-species.mjs      # GBIF → public/data/species
-├─ build-geodata.mjs      # NLSC / Natural Earth / USGS → public/data/geo
+├─ build-geodata.mjs      # NLSC / Natural Earth / USGS / 水利署 → public/data/geo
+├─ build-reservoirs.mjs   # 水利署水庫水情 → public/data/reservoirs-live.json
 ├─ lib/simplify.mjs       # 自帶的 Douglas–Peucker（刻意不加依賴）
 ├─ lib/unzip.mjs          # 自帶的 ZIP 讀取器（zlib.inflateRaw，同樣不加依賴）
 ├─ lib/gml.mjs            # NLSC 行政區界線 GML 的剖析器（只認得那一種形狀）
+├─ lib/kml.mjs            # 水利署水庫蓄水範圍 KML 的剖析器（同樣只認得那一種）
+├─ lib/reservoirs.mjs     # 水利署開放資料的共用存取層（CSV 剖析、bot 防護、id 對照表）
+├─ lib/fetch-retry.mjs    # 指數退避的 fetch，兩支 build 腳本共用
 ├─ validate-content.mjs   # 建置前 schema 驗證 + 註冊表交叉檢查
 └─ postbuild.mjs          # 404.html + CNAME 確認
 ```
