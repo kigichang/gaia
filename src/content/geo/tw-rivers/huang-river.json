@@ -1,0 +1,48 @@
+{
+  "id": "huang-river",
+  "collection": "tw-rivers",
+  "name": {
+    "zh": "磺溪",
+    "en": "Huang River"
+  },
+  "subtitle": "跨省市河川・北部（淡水河支流）",
+  "stats": [
+    {
+      "label": "幹流長度",
+      "value": "13.5 km"
+    },
+    {
+      "label": "流域面積",
+      "value": "49 km²"
+    },
+    {
+      "label": "分類",
+      "value": "跨省市河川"
+    }
+  ],
+  "facts": [
+    {
+      "label": "發源地",
+      "value": "大屯火山群（七星山、大屯山一帶）"
+    },
+    {
+      "label": "出海口",
+      "value": "北投關渡一帶匯入淡水河"
+    },
+    {
+      "label": "流經",
+      "value": "臺北市北投區"
+    },
+    {
+      "label": "特色",
+      "value": "流經北投溫泉區，因溪水含硫磺得名，是全臺主要河川中最短的一條"
+    }
+  ],
+  "curriculum": {
+    "unit": "臺灣的水文"
+  },
+  "sources": [
+    "維基百科",
+    "經濟部水利署"
+  ]
+}

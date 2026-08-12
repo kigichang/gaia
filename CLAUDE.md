@@ -60,6 +60,8 @@ Node ≥ 22.12（vite 8 要求）。開發機與 CI 都用 Node 24。
 | 地震目錄 | `earthquake.usgs.gov/fdsnws/event/1/query`（USGS） | **只在建置期呼叫**，免金鑰、`ACAO: *` |
 | 水庫基本資料／水庫水情 | `opendata.wra.gov.tw/api/v2/…?format=CSV`（經濟部水利署） | **只在建置期呼叫**。⚠️ **沒有 CORS 標頭**（瀏覽器一定抓不到），而且掛著 bot 防護，見下 |
 | 水庫蓄水範圍 | `gic.wra.gov.tw/gis/gic/API/Google/DownLoad.aspx?fname=ressub&filetype=KML` | **只在建置期呼叫**，約 38 MB 的 KML，只用來算形心 |
+| 河川(支流) 幾何 | `gic.wra.gov.tw/gis/gic/API/Google/DownLoad.aspx?fname=RIVERLIN&filetype=SHP` | **只在建置期呼叫**，SHP（zip 包 .shp+.dbf），座標系統 TWD97/TM2 zone 121，見下 |
+| 河川長度／流域面積 | `www.wra.gov.tw/cp.aspx?n=3163&dn=3164`（經濟部水利署） | 沒有開放資料 API，人工抄錄進 `scripts/lib/rivers.mjs` 的 `RIVER_FACTS` |
 | 基本地理事實（山脈走向、主峰高度、河川分界…） | `zh.wikipedia.org` 各條目 | **程式完全不呼叫**，人工查閱後寫進 `src/content/`。次級來源，用法見「內容撰寫規範」，CC BY-SA |
 
 ### ⚠️ NLSC 的路徑順序陷阱
@@ -109,6 +111,27 @@ NLSC WMTS 是 `{z}/{y}/{x}`——**y 在 x 前面**，跟絕大多數 XYZ 服務
 - **KML 的座標高度是科學記號**（`…,-1.599837560206652e-005`），數字的正規表示式少了 `[eE][-+]?\d+` 會讓**每一個** token 都判成格式錯誤（實測 491/491）。
 - **形心用面積加權（shoelace），不是 bbox 中心**：水庫是狹長的樹枝狀，bbox 中心經常落在水體外面的山坡上（實測石門、曾文都是），而那個點會被拿去當「點一下飛過去」的目標。
 
+### 河川資料：SHP、投影，以及「同名不同河」的坑
+
+臺灣主要河川（24 條中央管河川 + 淡水河、磺溪共 26 條，水利署官方定義）的幾何跟水庫一樣拆成兩份互不相干的來源，理由也一樣——各缺一半：
+
+- **幾何**：水利地理資訊服務平台「河川(支流)」SHP（`RIVERLIN`），只有中文名，沒有長度／流域面積。
+- **長度／流域面積**：水利署官網〈河川長度〉頁面的官方表格，沒有開放資料 API，人工抄進 `scripts/lib/rivers.mjs` 的 `RIVER_FACTS`（比照 `RESERVOIR_IDS`／`COUNTY_IDS` 寫死對照表的既有作法）。
+
+#### ⚠️ 這份 SHP 沒有 GML／KML，得自己讀二進位格式
+
+水利地理資訊服務平台對「河川(支流)」只給 SHP，沒有 GML 或 KML 可以走正規表示式（開發機也沒有 GDAL）。`scripts/lib/shp.mjs` 因此自己刻了最小的 `.shp`（PolyLine，type 3）與 `.dbf`（dBase III，只認 Character 欄位）讀取器，比照 `lib/gml.mjs`／`lib/kml.mjs`／`lib/unzip.mjs` 一貫的免依賴原則。
+
+**座標系統也跟以前不一樣**：這份 SHP 的 `.prj` 寫的是 `TWD97_TM2_zone_121`（EPSG:3826）——**投影坐標**，單位是公尺，不是縣市界／水庫那份 TWD97 地理坐標（EPSG:3824，度，可以直接當 WGS84 用）。`scripts/lib/twd97.mjs` 因此另外實作了反算橫麥卡托（inverse Transverse Mercator，GRS80 橢球），已用 round-trip 測試驗證（正算已知座標再反算回來，四個測試點誤差在 1e-8 度以下），並用 RIVERLIN 自己的 bbox 四角反算出北緯 21.9°–25.3°、東經 120.05°–122.0° 做過合理性檢查——跟臺灣本島＋周邊離島的實際範圍相符。**升級或更換這份圖資時要重新用同一組測試點驗證投影公式沒有錯位**（座標系統選錯不會報錯，只會讓河川全部畫到海裡）。
+
+#### ⚠️ RIVERLIN 是依「名稱字串」分筆，不是依「實際河川」分筆
+
+實測踩過最大的坑：這份 2000–2008 年數化的圖資裡，同一個河川名稱在全國各地被獨立當成地名重複使用（例如「頭前溪」在新竹是知名大河，但其他鄉鎮的小溝渠也叫這個名字），這些互不相連、有時相隔上百公里的線段全部塞進同一筆 record 的 parts 裡——「北港溪」一筆記錄的所有 parts 疊起來，bounding box 對角線量到超過 200 公里，而北港溪本身只有 82 公里長。**直接把一筆 record 的幾何當成一條河川畫出來，會畫出一條從新竹跳到南投再跳到屏東的假河川，而且沒有任何錯誤訊息。**
+
+解法是 `lib/shp.mjs` 的 `clusterParts()`：把同一筆 record 的 parts 依空間鄰近程度分群（bounding box 重疊 + 2 公里緩衝——這個距離夠橋接同一條河在交會點附近的數化斷點，又不會誤併相隔數公里以上的不相關同名小溪），`build-geodata.mjs` 的 transform 再取總長度最長的那一群，視為這個名稱底下真正的主要河川。比對階段除了精確符合官方名稱，也會把 RIVERLIN 裡「名稱(別名)」的括號變體（例如「烏溪(大肚溪)」「和平溪(大濁水溪)」）一併收進來源池再分群，因為官方河川常常在下游改稱別名。
+
+**⚠️ 即使做了以上兩步，仍有約 11 條河川（烏溪、高屏溪、淡水河、濁水溪、中港溪、後龍溪、大安溪、朴子溪、急水溪、鹽水溪、阿公店溪）的圖徵只涵蓋官方幹流長度的 10–50%。** 原因是這幾條河的官方「幹流長度」是沿著**上游改稱其他歷史／支流名稱的河段**去量的（例如淡水河的 158.7 公里實際上是沿大漢溪／新店溪這類另外命名的支流量出來的），不是簡單的名稱別名能自動接上。這是這份免費資料本身的完整度限制，不是分群邏輯的 bug——曾經評估過人工逐條研究上游別名鏈，但這是需要跨多個資料源驗證的水文研究工作，範圍遠超過「畫一張教學地圖」。目前的做法是**如實標註**：`scripts/build-geodata.mjs` 建置時會印出這份清單，對應河川的內容檔（`src/content/geo/tw-rivers/<id>.json`）多一筆「資料涵蓋」fact 說明圖上的線只是下游一小段，長度／流域面積數字仍然是官方全流域數字。**新增或替換河川圖資後要重新量測涵蓋率並更新這份清單**，不要假設分群邏輯永遠夠用。
+
 ---
 
 ## 硬性禁止事項
@@ -155,6 +178,7 @@ ID 常數定義在 `src/map/layers/*.ts`，**一律 import 常數，不要寫死
 | `latitude-lines-line` / `latitude-lines-label` | line + symbol |
 | `quakes-points` | circle |
 | `tw-reservoirs-points` | circle（顏色是**依蓄水率分級的表達式**，不是單一色，見下） |
+| `tw-rivers-line` / `tw-rivers-label` | line + symbol |
 
 `dem` 與 `dem-terrain` 是兩個來源但都指向同一個 shared DEM protocol：maplibre 會警告 hillshade 與 terrain 共用來源會降低算繪品質，拆開可消除警告，而底層圖磚快取仍然共用、不會重複下載。
 
@@ -780,6 +804,19 @@ m.isSourceLoaded('contour-source')
     - 切底圖之後重驗一次（ramp 表達式是 `reapply` 時重建的）
     - ⚠️ 搜尋索引現在會多抓 `tw-reservoirs.geojson`(20 KB) 與 `reservoirs-live.json`(8 KB)，
       驗第 12 項的 Network 期望值時要把這兩個算進去
+16. **主要河川**（`/theme/taiwan`，勾「主要河川」）：
+    ```js
+    const m = window.__gaiaMaps.at(-1);
+    m.jumpTo({ center: [120.9, 23.6], zoom: 7.3 });
+    new Set(m.queryRenderedFeatures({ layers: ['tw-rivers-line'] }).map(f => f.properties.id)).size  // 26
+    m.getPaintProperty('tw-rivers-line', 'line-color')   // 水系藍 #2a78d6（colorRole: hydrology）
+    ```
+    - 點濁水溪（或任一河川）→ 卡片有幹流長度／流域面積／分類、發源地、出海口
+    - 點烏溪／高屏溪／淡水河這類「資料涵蓋」不完整的河川 → 卡片多一筆說明圖上只是下游一小段
+    - 切底圖之後重驗一次存在與排序（見上面關鍵坑二那組指令，把 `tw-rivers-line` 也加進 `at()` 檢查）
+    - ⚠️ 這份圖資是**依名稱字串分筆，不是依實際河川分筆**（見 CLAUDE.md「河川資料」那節）：
+      如果重新用 `--force` 重抓 RIVERLIN，一定要重新量測每條河川的 `coverageRatio`，
+      不能假設 `clusterParts()` 的 2 公里緩衝永遠選得到正確的那一群
 
 ### ⚠️ 用瀏覽器自動化點 UI 的三個陷阱
 
@@ -884,7 +921,10 @@ scripts/
 ├─ lib/unzip.mjs          # 自帶的 ZIP 讀取器（zlib.inflateRaw，同樣不加依賴）
 ├─ lib/gml.mjs            # NLSC 行政區界線 GML 的剖析器（只認得那一種形狀）
 ├─ lib/kml.mjs            # 水利署水庫蓄水範圍 KML 的剖析器（同樣只認得那一種）
+├─ lib/shp.mjs            # RIVERLIN 的 SHP/DBF 讀取器 + 同名河川的空間分群 clusterParts()
+├─ lib/twd97.mjs          # TWD97/TM2 zone 121（EPSG:3826）→ WGS84 的反算橫麥卡托
 ├─ lib/reservoirs.mjs     # 水利署開放資料的共用存取層（CSV 剖析、bot 防護、id 對照表）
+├─ lib/rivers.mjs         # 河川 id 對照表 + 官方長度／流域面積（RIVER_FACTS）
 ├─ lib/fetch-retry.mjs    # 指數退避的 fetch，兩支 build 腳本共用
 ├─ validate-content.mjs   # 建置前 schema 驗證 + 註冊表交叉檢查
 └─ postbuild.mjs          # 404.html + CNAME 確認

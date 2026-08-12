@@ -1,0 +1,48 @@
+{
+  "id": "touqian-river",
+  "collection": "tw-rivers",
+  "name": {
+    "zh": "頭前溪",
+    "en": "Toucian River"
+  },
+  "subtitle": "中央管河川・西部",
+  "stats": [
+    {
+      "label": "幹流長度",
+      "value": "63 km"
+    },
+    {
+      "label": "流域面積",
+      "value": "566 km²"
+    },
+    {
+      "label": "分類",
+      "value": "中央管河川"
+    }
+  ],
+  "facts": [
+    {
+      "label": "發源地",
+      "value": "雪山山脈加里山系（新竹縣尖石鄉一帶）"
+    },
+    {
+      "label": "出海口",
+      "value": "新竹市南寮附近注入臺灣海峽"
+    },
+    {
+      "label": "流經",
+      "value": "新竹縣、新竹市"
+    },
+    {
+      "label": "特色",
+      "value": "與支流鳳山溪共同構成新竹平原的灌溉水源"
+    }
+  ],
+  "curriculum": {
+    "unit": "臺灣的水文"
+  },
+  "sources": [
+    "維基百科",
+    "經濟部水利署"
+  ]
+}

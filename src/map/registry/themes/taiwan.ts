@@ -207,12 +207,21 @@ export const taiwanTheme: ThemeDefinition = {
       id: "tw-rivers",
       label: "主要河川",
       group: "水系",
-      status: "planned",
-      render: { kind: "line" },
-      detail: { type: "none" },
-      // Natural Earth 10m 的臺灣河川覆蓋太薄，不能拿世界資料集充數，
-      // 要走水利署或國土測繪中心的開放資料。
-      description: "濁水溪、高屏溪、淡水河等主要河川，看中央山脈如何分東西水系。",
+      status: "ready",
+      // 幾何來自水利地理資訊服務平台的「河川(支流)」SHP（RIVERLIN，2000–2008 年
+      // 數化），屬性（長度／流域面積）來自水利署官網人工整理的表格——
+      // 見 scripts/lib/rivers.mjs 與 scripts/build-geodata.mjs 的 tw-rivers 資料源。
+      source: { type: "remote", path: "data/geo/tw-rivers.geojson" },
+      render: { kind: "line", width: 2, label: { property: "name" } },
+      colorRole: "hydrology",
+      detail: { type: "geo", collection: "tw-rivers" },
+      browse: {},
+      description:
+        "24 條中央管河川與 2 條跨省市河川（淡水河、磺溪），水利署官方認定的主要河川。" +
+        "濁水溪、高屏溪、淡水河等大河，可以看出中央山脈如何分東西水系。" +
+        "⚠️ 圖上的線取自 2000–2008 年的舊測圖資，部分河川（例如烏溪、高屏溪、淡水河）" +
+        "只有下游被標記為該名稱的河段收錄在內，上游河段在原始資料裡另外標了別的名稱、" +
+        "未一併呈現；長度與流域面積仍是水利署現行官方數字，點進個別河川的說明會註明。",
       sources: ["經濟部水利署"],
     },
     {

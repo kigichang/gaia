@@ -21,7 +21,9 @@ import { fetchWithRetry } from "./lib/fetch-retry.mjs";
 import { simplifyGeometry, slugify } from "./lib/simplify.mjs";
 import { parseNlscGml, ringArea } from "./lib/gml.mjs";
 import { parseReservoirKml, ringsCentroid } from "./lib/kml.mjs";
-import { readZipText } from "./lib/unzip.mjs";
+import { readZip, readZipText } from "./lib/unzip.mjs";
+import { parseShpPolylines, parseDbf, partLength, clusterParts } from "./lib/shp.mjs";
+import { tm2ToWgs84 } from "./lib/twd97.mjs";
 import {
   EXTENT_KML_URL,
   LICENSE as WRA_LICENSE,
@@ -30,6 +32,7 @@ import {
   fetchReservoirBasics,
   formatCapacity,
 } from "./lib/reservoirs.mjs";
+import { RIVERLIN_URL, RIVER_IDS, RIVER_FACTS } from "./lib/rivers.mjs";
 
 const exists = (p) => access(p).then(() => true).catch(() => false);
 
@@ -376,6 +379,134 @@ const SOURCES = [
       // ⚠️ feature 順序就是圖層抽屜裡可點清單的順序（LayerBrowseList 不排序）。
       // 依有效容量由大到小，清單開頭就是曾文、翡翠、石門這些課本會點名的水庫。
       return features.sort((a, b) => b.properties.capacity - a.properties.capacity);
+    },
+  },
+  {
+    id: "tw-rivers",
+    label: "臺灣主要河川",
+    /**
+     * 24 條中央管河川 + 2 條跨省市河川（淡水河、磺溪），這是水利署官方對「主要
+     * 河川」的定義（見 lib/rivers.mjs 的 RIVER_FACTS）。
+     *
+     * 幾何來自「河川(支流)」SHP（RIVERLIN），屬性（長度／流域面積）來自水利署
+     * 官網人工整理的表格——兩者跟水庫一樣是分開的兩份資料，各缺一半。
+     *
+     * ⚠️ 座標系統是 TWD97/TM2 zone 121（EPSG:3826，公尺），**不是**縣市界／水庫
+     * 用的 TWD97 地理坐標（EPSG:3824，度）。SHP 只提供投影坐標，要用
+     * lib/twd97.mjs 的反算橫麥卡托轉成經緯度才能當 GeoJSON 用（見該檔案的
+     * round-trip 驗證說明）。
+     */
+    url: RIVERLIN_URL,
+    license: WRA_LICENSE,
+    sourceLabel: WRA_SOURCE_LABEL,
+    // 下載回來的是 zip 包 SHP（.shp 幾何 + .dbf 屬性），不是 JSON
+    parse: async (res) => {
+      const buf = Buffer.from(await res.arrayBuffer());
+      const entries = readZip(buf);
+      const shpEntry = entries.find((e) => e.name.toLowerCase().endsWith(".shp"));
+      const dbfEntry = entries.find((e) => e.name.toLowerCase().endsWith(".dbf"));
+      if (!shpEntry || !dbfEntry) {
+        throw new Error(`RIVERLIN.zip 裡找不到 .shp／.dbf（內容：${entries.map((e) => e.name).join("、")}）`);
+      }
+      return {
+        polylines: parseShpPolylines(shpEntry.read()),
+        rows: parseDbf(dbfEntry.read()),
+      };
+    },
+    // 0.0004° ≈ 44 公尺，跟縣市界（0.0008°）同一個量級但更細——河道本身是這個
+    // 圖層唯一的內容（沒有面積可以靠色塊撐場面），太粗會讓彎道被拉直到失真
+    tolerance: 0.0004,
+    digits: 5,
+    /**
+     * ⚠️ RIVERLIN 是**依名稱字串**分筆，不是依實際河川分筆。
+     *
+     * 實測踩過：同一個河川名稱在全國各地被獨立當成地名使用（例如「頭前溪」在
+     * 新竹是知名大河，但其他鄉鎮也有同名小溝渠），這些互不相連、有時相隔上百
+     * 公里的線段全部塞進同一筆 record 的 parts 裡——「北港溪」一筆記錄的 parts
+     * bounding box 對角線一度量到超過 200 公里，而北港溪本身只有 82 公里長。
+     *
+     * 解法是 lib/shp.mjs 的 `clusterParts()`：把同一筆 record 的 parts 依空間
+     * 鄰近程度分群（bounding box 重疊 + 2 公里緩衝——這個距離夠橋接同一條河
+     * 在交會點附近的數化斷點，又不會誤併相隔數公里以上的不相關同名小溪），
+     * 再取總長度最長的那一群，視為這個名稱底下真正的主要河川。
+     *
+     * 另外，有些河川的官方幹流長度是沿著**上游改稱別名的河段**去量的（例如
+     * 「烏溪」下游另有「烏溪(大肚溪)」的別名記錄），所以比對階段除了精確符合，
+     * 也會把 RIVERLIN 裡「名稱(別名)」的括號變體一併收進來源池，分群前先合併。
+     */
+    transform: ({ polylines, rows }) => {
+      const byExactName = new Map();
+      const byPrefixName = new Map();
+      rows.forEach((r, i) => {
+        byExactName.set(r.NAME, i);
+        const paren = r.NAME.indexOf("(");
+        if (paren > 0) {
+          const base = r.NAME.slice(0, paren);
+          if (!byPrefixName.has(base)) byPrefixName.set(base, []);
+          byPrefixName.get(base).push(i);
+        }
+      });
+
+      const features = [];
+      /** 官方表格裡有、但 RIVERLIN 裡對不到任何幾何的河川。靜默跳過會讓「少一條」永遠沒人發現。 */
+      const missing = [];
+      /** 分群後最長那一群仍明顯短於官方幹流長度的河川，需要在內容檔標註資料缺口。 */
+      const partialCoverage = [];
+
+      for (const [officialName, facts] of Object.entries(RIVER_FACTS)) {
+        const id = RIVER_IDS[officialName];
+        if (!id) {
+          throw new Error(`河川「${officialName}」不在 RIVER_IDS 對照表裡，請先決定它的 id`);
+        }
+
+        const candidateIdx = [byExactName.get(officialName), ...(byPrefixName.get(officialName) ?? [])].filter(
+          (i) => i != null,
+        );
+        const pool = candidateIdx.flatMap((i) => polylines[i]?.parts ?? []).filter((part) => part.length >= 2);
+        if (pool.length === 0) {
+          missing.push(officialName);
+          continue;
+        }
+
+        const clusters = clusterParts(pool, 2000);
+        const winner = clusters
+          .map((parts) => ({ parts, lengthM: parts.reduce((sum, p) => sum + partLength(p), 0) }))
+          .sort((a, b) => b.lengthM - a.lengthM)[0];
+
+        const coverageRatio = winner.lengthM / 1000 / facts.length_km;
+        if (coverageRatio < 0.6) partialCoverage.push(officialName);
+
+        const projected = winner.parts.map((part) => part.map(([x, y]) => tm2ToWgs84(x, y)));
+        const geometry =
+          projected.length === 1
+            ? { type: "LineString", coordinates: projected[0] }
+            : { type: "MultiLineString", coordinates: projected };
+
+        features.push({
+          type: "Feature",
+          geometry,
+          properties: {
+            id,
+            name: officialName,
+            length_km: facts.length_km,
+            area_km2: facts.area_km2,
+            category: facts.category,
+            meta: `幹流長度 ${facts.length_km} km`,
+          },
+        });
+      }
+
+      if (missing.length) {
+        throw new Error(`RIVERLIN 裡找不到幾何：${missing.join("、")}`);
+      }
+      if (partialCoverage.length) {
+        console.warn(
+          `\n  ⚠ 這幾條河川的圖徵只涵蓋官方幹流長度的一小部分（見 src/content/geo/tw-rivers 的內容檔caveat）：${partialCoverage.join("、")}`,
+        );
+      }
+      // ⚠️ feature 順序就是圖層抽屜裡可點清單的順序（LayerBrowseList 不排序）。
+      // 依幹流長度由長到短，清單開頭就是淡水河、濁水溪、高屏溪這些課本會點名的河川。
+      return features.sort((a, b) => b.properties.length_km - a.properties.length_km);
     },
   },
   {

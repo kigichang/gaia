@@ -1,0 +1,48 @@
+{
+  "id": "donggang-river",
+  "collection": "tw-rivers",
+  "name": {
+    "zh": "東港溪",
+    "en": "Donggang River"
+  },
+  "subtitle": "中央管河川・西部",
+  "stats": [
+    {
+      "label": "幹流長度",
+      "value": "44 km"
+    },
+    {
+      "label": "流域面積",
+      "value": "472 km²"
+    },
+    {
+      "label": "分類",
+      "value": "中央管河川"
+    }
+  ],
+  "facts": [
+    {
+      "label": "發源地",
+      "value": "大武山西麓（屏東縣三地門一帶）"
+    },
+    {
+      "label": "出海口",
+      "value": "屏東縣東港鎮注入臺灣海峽"
+    },
+    {
+      "label": "流經",
+      "value": "屏東縣"
+    },
+    {
+      "label": "特色",
+      "value": "流貫屏東平原南段，下游東港是重要漁港"
+    }
+  ],
+  "curriculum": {
+    "unit": "臺灣的水文"
+  },
+  "sources": [
+    "維基百科",
+    "經濟部水利署"
+  ]
+}
