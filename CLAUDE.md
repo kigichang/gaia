@@ -58,6 +58,7 @@ Node ≥ 22.12（vite 8 要求）。開發機與 CI 都用 Node 24。
 | 臺灣縣市界線 | `data.gov.tw/api/v2/rest/dataset/7442` → TGOS 的 GML zip（內政部國土測繪中心） | **只在建置期呼叫**，政府資料開放授權條款第 1 版 |
 | 世界行政區／河流幾何 | `raw.githubusercontent.com/nvkelso/natural-earth-vector`（Natural Earth） | **只在建置期呼叫**，public domain |
 | 地震目錄 | `earthquake.usgs.gov/fdsnws/event/1/query`（USGS） | **只在建置期呼叫**，免金鑰、`ACAO: *` |
+| 交通軸線幾何（高鐵／國道／臺鐵幹線） | `overpass-api.de/api/interpreter`（OpenStreetMap Overpass） | **只在建置期呼叫**，ODbL 1.0。⚠️ **沒有 User-Agent 一律回 HTTP 406**，見下 |
 | 水庫基本資料／水庫水情 | `opendata.wra.gov.tw/api/v2/…?format=CSV`（經濟部水利署） | **只在建置期呼叫**。⚠️ **沒有 CORS 標頭**（瀏覽器一定抓不到），而且掛著 bot 防護，見下 |
 | 水庫蓄水範圍 | `gic.wra.gov.tw/gis/gic/API/Google/DownLoad.aspx?fname=ressub&filetype=KML` | **只在建置期呼叫**，約 38 MB 的 KML，只用來算形心 |
 | 基本地理事實（山脈走向、主峰高度、河川分界…） | `zh.wikipedia.org` 各條目 | **程式完全不呼叫**，人工查閱後寫進 `src/content/`。次級來源，用法見「內容撰寫規範」，CC BY-SA |
@@ -111,6 +112,39 @@ NLSC WMTS 是 `{z}/{y}/{x}`——**y 在 x 前面**，跟絕大多數 XYZ 服務
 
 ---
 
+### 交通軸線為什麼只能走 OpenStreetMap
+
+這是全站唯一一個資料來自 OSM 的圖層。其他圖層的順序都是「先找官方開放資料，找不到才手繪」，交通軸線兩條路都走不通：
+
+- **Natural Earth**：10m 的 `roads`／`railroads` 確實涵蓋臺灣（實測臺灣範圍內 79 條路），但**每一條的 `name` 都是 `null`**，而且被切成互不相連的碎段。一個「點了要開詳情卡」的圖層，圖徵沒有名字就等於不能用。
+- **交通部 TDX**：有完整的路線圖資，但**要申請 API key**，直接撞上硬性禁止事項 #1。政府資料開放平臺上的公路圖資多半是 SHP，也沒有「國道一號是哪一條線」這種路線級的幾何。
+- **手繪**（比照五大山脈）在這裡特別不誠實：山脈的走向本來就沒有官方界線圖資，而高鐵與國道的線位是精確且公開的事實，畫成示意線等於把可查證的東西降級。
+
+OSM 免金鑰、路線關聯原生帶中文名，是唯一同時滿足「精確」「有名字」「不需要金鑰」的來源。授權 ODbL 1.0 要求標示「© OpenStreetMap 貢獻者」，而本站的世界底圖 OpenFreeMap 本來就是 OSM 衍生的，這個署名義務不是新增的。
+
+#### ⚠️ 沒有 User-Agent 一律回 HTTP 406
+
+Overpass 對沒有識別的 client 直接回 **406**（實測 Node 預設 UA 每一次都被擋，curl 卻正常——很容易誤判成程式邏輯錯誤）。406 不是暫時性錯誤，退避重試永遠救不回來。`lib/overpass.mjs` 因此固定帶 UA，並準備了**三個端點依序輪替**：主站流量最大、429 與 504 是日常，鏡像站反而穩定，所以失敗就換下一台而不是死等同一台。
+
+#### ⚠️ way 一定要先串接再簡化
+
+Overpass 回來的是 OSM 的 way，一條國道會被切成好幾百段（實測國道三號 **716 段**）。串接不是為了省檔案，是兩件事的前提：
+
+- **沿線標註**：`symbol-placement: line` 是**逐一 LineString** 放置的。幾百段各長數百公尺的碎線，要嘛每段都擠一個標註、要嘛因為線段太短而一個都放不出來。
+- **簡化**：Douglas–Peucker 永遠保留每條線的頭尾兩點，對著 716 條六個點的碎線做簡化幾乎砍不掉任何東西。
+
+`stitchWays()` 用貪婪串接：路線上有匝道與雙線區間，本來就不保證是單一連通路徑，串不起來的段落各自留成獨立的線。**兩個方向都要走**——起點 way 可能落在路線中段，只往一個方向接的話起點以前那半條路線會全部散成碎段。
+
+⚠️ **往前接與往後接的「要不要反轉」條件是相反的，共用同一個條件式會靜默地接出鋸齒狀的錯誤幾何**：線還是畫得出來，只是長度膨脹、大部分 way 接不起來（實測國道三號 432 km 變成 **560 km**、716 段只串成 358 條）。這個坑在畫面上不明顯，**核對方式是看建置日誌印出來的公里數對不對得上官方數字**（高鐵 351／官方約 350，國道一號 375／官方 374.3，國道三號 432／官方 431.5）。
+
+#### 選擇器必須剛好選中一個關聯
+
+OSM 是眾人編輯的資料庫，關聯被拆開、改名或重建都可能發生，所以每個選擇器都比照 `resolveDataGovTwUrl()` **選中數量不等於 1 就讓建置失敗**。
+
+而且**每個選擇器都刻意只取單一方向**（北向／北上／順行）：OSM 把上下行分成兩個關聯，兩個都抓會畫出相距數十公尺的雙線——在教學會用的縮放尺度下那只是一條變粗、邊緣毛躁的線，還讓檔案大一倍。選錯方向不影響教學（走廊位置相同），但**必須固定一個**，否則每次重抓的產物都不一樣。
+
+幾條臺鐵幹線在 OSM 裡是依「線名」拆開的（縱貫線、臺中線、海岸線、屏東線各一個關聯），但課本講的是「西部幹線」這一整條，所以註冊表用 `parts` 把它們併成一個圖徵。
+
 ## 硬性禁止事項
 
 1. **不得引入任何需要 API key、token 或付費金鑰的服務。** MapTiler、Mapbox、Google Maps 一律不用。純靜態站沒有地方藏金鑰。
@@ -155,6 +189,7 @@ ID 常數定義在 `src/map/layers/*.ts`，**一律 import 常數，不要寫死
 | `latitude-lines-line` / `latitude-lines-label` | line + symbol |
 | `quakes-points` | circle |
 | `tw-reservoirs-points` | circle（顏色是**依蓄水率分級的表達式**，不是單一色，見下） |
+| `tw-transport-line` / `tw-transport-label` | line + symbol（標註用 `shortName`，不是 `name`） |
 
 `dem` 與 `dem-terrain` 是兩個來源但都指向同一個 shared DEM protocol：maplibre 會警告 hillshade 與 terrain 共用來源會降低算繪品質，拆開可消除警告，而底層圖磚快取仍然共用、不會重複下載。
 
@@ -187,7 +222,7 @@ maplibre-contour 把 worker 以 Blob URL 內嵌，**不需要額外部署 worker
 
 | 主題 | 路由 | 內容 |
 |---|---|---|
-| 臺灣地理 | `/theme/taiwan` | 行政區、地形、水系（含水庫即時水情）、人文（原住民族）、植被生態（特有種）、農業物產 |
+| 臺灣地理 | `/theme/taiwan` | 行政區、地形、水系（含水庫即時水情）、人文（原住民族、交通軸線）、植被生態（特有種）、農業物產 |
 | 世界地理 | `/theme/world` | 世界重要城市、國界與大洲、地形水系、人文專題 |
 | 全球地理形貌 | `/theme/global` | 緯度參考線、氣候與生物群系、洋流、板塊與地震帶 |
 
@@ -313,7 +348,15 @@ fill   → `${instanceId}-fill` + `${instanceId}-outline`
 
 `src/map/thematicColors.ts` 是唯一的顏色來源。策略是**三組獨立色票**（`POINT` / `LINE` / `FILL`），各自**組內** all-pairs 驗證即可——形狀本身就在區辨（18% 透明度的面染跟 6px 圓點是不同的視覺通道），跨幾何的配對不需要驗證。每組再用 `MAX_ACTIVE_BY_KIND`（circle 4 / line 3 / fill 2）封頂，需求才維持在可解範圍。
 
-已驗證：地形景點藍 `#2a78d6` + 原住民族紅 `#e34948`；物種三色青／黃／紫；線／面三色 水系藍 `#2a78d6` + 行政區橘 `#d95926` + 山脈洋紅 `#c23f8f`（`--pairs all`，明暗兩模式全數 PASS，CVD 最差 ΔE 12.3、一般視覺最差 ΔE 16.7）。
+已驗證：地形景點藍 `#2a78d6` + 原住民族紅 `#e34948`；物種三色青／黃／紫；線／面**四色** 水系藍 `#2a78d6` + 行政區橘 `#d95926` + 山脈洋紅 `#c23f8f` + 交通翠綠 `#2da26d`（`--pairs all`，明暗兩模式全數 PASS，CVD 最差 ΔE 8.3、一般視覺最差 ΔE 16.7）。
+
+#### 交通翠綠 `#2da26d` 是掃出來的，不是挑出來的
+
+前三色已經把色相空間佔掉大半，第四色的可行區間非常窄。用 OKLCH 掃過整個色域（色相每 2.5°、L 0.44–0.78、C 0.10–0.30，逐點跑明暗兩模式的 all-pairs），**零 WARN 的候選只剩 21 個**，集中在色相 150–162° 的一段綠，外加兩個彩度低到當地圖線太虛的淡紫。直覺會先想到的選擇全部不合格：紫 `#7a3fa6`／`#8335c3` 在 dark 模式對比只有 2.56–2.77:1（WARN，與當初 relief 拒絕紫色**同一個**原因）、青綠 `#00857a` 直接 FAIL、綠 `#009e73` 對洋紅的 deutan ΔE 只有 6.2。
+
+**要換色請重跑掃描，不要憑感覺往旁邊挪**——這一格四周就是 WARN。
+
+綠色在 relief 被禁、在這裡可以，理由是處境相反：山脈線整條走在 NLSC 的綠色山區底色上，交通軸線絕大部分走西部平原（NLSC 是白／灰底），而且這一層的教學重點正是「路線**繞開**山地」。
 
 行政區橘刻意用 `#d95926` 而不是色票的 light step `#eb6834`：後者在 **dark 模式的亮度帶檢查會 FAIL**。地圖是 WebGL 畫布只能有一組固定色，所以必須挑「兩個模式都過」的值。
 
@@ -483,7 +526,7 @@ maplibre 的四個角落容器是 map container 內的 `position: absolute; z-in
 - **圖層本身**：所有 ready 圖層的名稱（搜「河流」要找得到「世界主要河流」這個圖層）。`planned` 的不列，因為勾不動。
 - 沒有 `properties.id` 或沒有 `properties.name` 的圖徵一律跳過——前者選不了、後者搜不到。
 
-索引是 **lazy 的**：搜尋框第一次獲得焦點才 `buildSearchIndex()`，因為它要抓 `tw-counties.geojson`(35 KB) 與 `world-rivers.geojson`(146 KB)。一個班 30 個學生同時開站時，這 181 KB 不該是每個人無條件付的成本。資料一律走 `resolveLayerData()`，與圖層顯示共用同一份快取，不會抓兩次。
+索引是 **lazy 的**：搜尋框第一次獲得焦點才 `buildSearchIndex()`，因為它要抓 `tw-counties.geojson`(35 KB)、`world-rivers.geojson`(146 KB) 與 `tw-transport.geojson`(36 KB)。一個班 30 個學生同時開站時，這 200 多 KB 不該是每個人無條件付的成本。資料一律走 `resolveLayerData()`，與圖層顯示共用同一份快取，不會抓兩次。
 
 ### 選了一筆結果之後（`ThemeMapPage` 的 `pendingHit` 狀態機）
 
@@ -780,6 +823,24 @@ m.isSourceLoaded('contour-source')
     - 切底圖之後重驗一次（ramp 表達式是 `reapply` 時重建的）
     - ⚠️ 搜尋索引現在會多抓 `tw-reservoirs.geojson`(20 KB) 與 `reservoirs-live.json`(8 KB)，
       驗第 12 項的 Network 期望值時要把這兩個算進去
+16. **主要交通軸線**（`/theme/taiwan`，勾「主要交通軸線」）：
+    ```js
+    const m = window.__gaiaMaps.at(-1);
+    m.jumpTo({ center: [120.9, 23.6], zoom: 7.3 });
+    // 7 條軸線都要出現（distinct id，不是 feature 數——一條軸線是 MultiLineString）
+    [...new Set(m.queryRenderedFeatures({ layers: ['tw-transport-line'] }).map(f => f.properties.id))]
+    // 沿線標註用 shortName（「國道1」），用 name 會因為字串太長而放置數歸零
+    m.queryRenderedFeatures({ layers: ['tw-transport-label'] }).map(f => f.properties.shortName)
+    ```
+    - 標註**數量要實測**，不能只確認圖層存在（見「沿線標註很脆弱」）。實測值（跟視窗大小相依）：
+      全島視角 `jumpTo([120.9,23.6], 7.3)` 在 1500×723 下是 **4** 個；
+      `jumpTo([121.6,24.75], 9.5)` 在 1440×703 下是 **10** 個、涵蓋 6 條軸線。
+      ⚠️ 重點是**同一條軸線不會在同一段路上重複冒出來**——`spacing` 是 400 就是為了這件事，
+      臺鐵幹線在 OSM 裡是十幾條分段折線，用預設的 120 會讓「西部幹線」四個字連續出現一整排
+    - 點線或點標註都要開卡（`geoHitLayerIds` 對有標註的線會回傳兩層）
+    - 抽屜可點清單 7 筆，順序是高鐵 → 國道1／3／5 → 西部幹線 → 東部幹線 → 南迴線
+    - 搜「高鐵」「國道」「南迴」都要找得到；跨主題搜尋會多抓 `tw-transport.geojson`
+    - 切底圖之後重驗一次
 
 ### ⚠️ 用瀏覽器自動化點 UI 的三個陷阱
 
@@ -878,13 +939,14 @@ public/data/
 scripts/
 ├─ build-climate.mjs      # Open-Meteo → public/data/climate
 ├─ build-species.mjs      # GBIF → public/data/species
-├─ build-geodata.mjs      # NLSC / Natural Earth / USGS / 水利署 → public/data/geo
+├─ build-geodata.mjs      # NLSC / Natural Earth / USGS / 水利署 / OSM → public/data/geo
 ├─ build-reservoirs.mjs   # 水利署水庫水情 → public/data/reservoirs-live.json
 ├─ lib/simplify.mjs       # 自帶的 Douglas–Peucker（刻意不加依賴）
 ├─ lib/unzip.mjs          # 自帶的 ZIP 讀取器（zlib.inflateRaw，同樣不加依賴）
 ├─ lib/gml.mjs            # NLSC 行政區界線 GML 的剖析器（只認得那一種形狀）
 ├─ lib/kml.mjs            # 水利署水庫蓄水範圍 KML 的剖析器（同樣只認得那一種）
 ├─ lib/reservoirs.mjs     # 水利署開放資料的共用存取層（CSV 剖析、bot 防護、id 對照表）
+├─ lib/overpass.mjs       # OSM Overpass 存取層（端點輪替、路線關聯查詢、way 串接）
 ├─ lib/fetch-retry.mjs    # 指數退避的 fetch，兩支 build 腳本共用
 ├─ validate-content.mjs   # 建置前 schema 驗證 + 註冊表交叉檢查
 └─ postbuild.mjs          # 404.html + CNAME 確認

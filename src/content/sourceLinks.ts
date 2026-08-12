@@ -66,6 +66,12 @@ export const SOURCE_LINKS: Record<string, string> = {
   澎湖縣政府: "https://www.penghu.gov.tw",
   "GBIF Global Biodiversity Information Facility": "https://www.gbif.org/",
   "Natural Earth": "https://www.naturalearthdata.com/",
+  // 交通軸線的線位來源。ODbL 1.0 要求標示「© OpenStreetMap 貢獻者」，
+  // 這個署名義務不是新增的——世界底圖 OpenFreeMap 本來就是 OSM 衍生的。
+  OpenStreetMap: "https://www.openstreetmap.org/copyright",
+  交通部高速公路局: "https://www.freeway.gov.tw/",
+  臺灣鐵路公司: "https://www.railway.gov.tw/",
+  台灣高鐵: "https://www.thsrc.com.tw/",
   "Open-Meteo ERA5 再分析資料": "https://open-meteo.com/en/docs/historical-weather-api",
   USGS: "https://www.usgs.gov/",
 };

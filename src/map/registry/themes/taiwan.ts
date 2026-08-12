@@ -284,11 +284,35 @@ export const taiwanTheme: ThemeDefinition = {
       id: "tw-transport",
       label: "主要交通軸線",
       group: "人文",
-      status: "planned",
-      render: { kind: "line" },
-      detail: { type: "none" },
-      description: "高鐵、國道與東部幹線，對照地形如何決定交通路線。",
-      sources: ["交通部"],
+      status: "ready",
+      source: { type: "remote", path: "data/geo/tw-transport.geojson" },
+      /**
+       * 沿線標註用 `shortName`（「國道1」「西部幹線」）而不是 `name`。
+       *
+       * 這不是排版偏好：`name` 是「國道一號（中山高速公路）」這種 11 個字的字串，
+       * 而放置演算法要求越長的字串就要越平直的線段，長字串配上交流道一帶的彎道
+       * 會被**整個靜默拒絕**、標註數直接歸零（見 CLAUDE.md「沿線標註很脆弱」）。
+       * 詳情卡與可點清單顯示的仍然是全名。
+       */
+      /**
+       * `spacing` 調到 400（預設 120）：臺鐵幹線在 OSM 裡是好幾條平行或分段的
+       * 折線（西部幹線 13 條），而 maplibre 是**逐一 LineString** 放置標註的，
+       * 沿用等高線那組密集參數會讓「西部幹線」四個字在同一段路上重複好幾次。
+       * 這跟緯度參考線要調高 spacing 是同一類問題（見 CLAUDE.md）。
+       */
+      render: {
+        kind: "line",
+        width: 2.2,
+        label: { property: "shortName", spacing: 400 },
+      },
+      colorRole: "transport",
+      detail: { type: "geo", collection: "tw-transport" },
+      browse: {},
+      description:
+        "高鐵、三條主要國道與臺鐵三大幹線。這一層要對照的是地形：西部走廊上五條路線幾乎重疊，" +
+        "而東部只有一條鐵路沿海岸擠在山與海之間，南迴線是唯一從南端把兩側接起來的鐵路。" +
+        "線位取自 OpenStreetMap 的路線關聯，上下行只取單一方向。",
+      sources: ["OpenStreetMap"],
     },
     {
       id: "tw-vegetation-belts",
