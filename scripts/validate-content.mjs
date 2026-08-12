@@ -211,6 +211,26 @@ for (const relDir of GEO_DATA_DIRS) {
       );
     }
 
+    // browse.zoom 必須落在圖層畫得出來的縮放範圍內。
+    //
+    // maplibre 的規則是 minzoom <= z < maxzoom，超出範圍圖層就是不畫。點清單「飛過去」
+    // 卻飛到一個畫不出來的 zoom，畫面會是一片空白，而詳情卡、相機、paint 表達式全都
+    // 正常——完全靜默。踩過一次：縣市政府繼承了縣市界的 maxzoom 11，browse.zoom 卻是 14。
+    for (const [what, cfg] of [
+      [`圖層「${layer.id}」`, layer],
+      ...(layer.attach ? [[`圖層「${layer.id}」的 attach`, layer.attach]] : []),
+    ]) {
+      const z = cfg.browse?.zoom;
+      if (z == null) continue;
+      const lo = cfg.minzoom ?? 0;
+      const hi = cfg.maxzoom ?? 24;
+      if (z < lo || z >= hi) {
+        errors.push(
+          `registry/${theme.id} → ${what} 的 browse.zoom（${z}）落在算繪範圍 [${lo}, ${hi}) 之外，點清單會飛到一片空白`,
+        );
+      }
+    }
+
     // remote 來源指到的檔案必須真的存在
     const remotePaths = [];
     if (layer.source?.type === "remote") remotePaths.push(layer.source.path);

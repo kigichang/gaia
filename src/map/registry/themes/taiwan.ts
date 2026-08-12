@@ -41,7 +41,12 @@ export const taiwanTheme: ThemeDefinition = {
        * 它跟原住民族紅 `#e34948` 的一般視覺 ΔE 只有 **5.1**（CVD 更只有 2.7），比洋紅
        * 那次還糟。藍在語意上是一致的——「藍點＝地圖上一個有詳情卡的地點」。
        *
-       * `zoom: 14` 而不是主峰那個 12：政府大樓是街廓尺度的目標，飛過去要看得到街道。
+       * `browse.zoom` 是 **10**：這一層的教學重點是「政府設在這個縣市的哪裡」，所以
+       * 取景必須讓政府點**與所屬縣市的面同時看得見**，而縣市面的 `maxzoom` 是 11。
+       * 曾經設成 14（街廓尺度），結果飛過去兩者都在 maxzoom 之外，畫面完全空白。
+       *
+       * 這個附屬圖層**不設 maxzoom**：一個點沒有縣市面那種簡化縫隙的問題，使用者
+       * 手動再放大時政府點應該還在（消失的只有縣市面，那是它自己的設計）。
        */
       attach: {
         id: "tw-county-halls",
@@ -51,7 +56,7 @@ export const taiwanTheme: ThemeDefinition = {
         colorRole: "place",
         detail: { type: "geo", collection: "tw-county-halls" },
         parentProperty: "countyId",
-        browse: { zoom: 14 },
+        browse: { zoom: 10 },
         description:
           "各縣市政府的辦公廳舍位置。臺南、高雄、臺中、苗栗有兩處辦公中心，這裡標的是主要那一處，另一處寫在說明裡。",
         sources: ["維基百科"],

@@ -248,8 +248,9 @@ export function expandActive(
         instanceId: layer.attach.id,
         render: layer.attach.render,
         color: COLORS[layer.attach.colorRole],
-        minzoom: layer.minzoom,
-        maxzoom: layer.maxzoom,
+        // ⚠️ 縮放範圍刻意**不繼承**母圖層，見 types.ts 的 LayerAttachment
+        minzoom: layer.attach.minzoom,
+        maxzoom: layer.attach.maxzoom,
         data: take(layer.attach.source),
         detail: layer.attach.detail,
       });

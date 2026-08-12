@@ -179,6 +179,21 @@ export interface LayerAttachment {
   detail: DetailSpec;
   parentProperty: string;
   browse?: LayerBrowse;
+  /**
+   * ⚠️ 縮放範圍**不會**從母圖層繼承，附屬圖層要自己宣告。
+   *
+   * 母圖層的 min/maxzoom 講的是**母圖層那份幾何**的限制，跟附屬圖徵無關。縣市界的
+   * `maxzoom: 11` 是因為相鄰的面各自簡化會開出次像素縫隙——那條理由對「政府大樓的
+   * 一個點」完全不成立，繼承下來只會讓點在 zoom 11 以上憑空消失。
+   *
+   * 這裡踩過：政府點繼承了 maxzoom 11，而清單的 `browse.zoom` 是 14，於是點一下
+   * 縣市政府就飛到一片**完全空白**的畫面（政府點與縣市面同時都在 maxzoom 之外），
+   * 而詳情卡、相機、paint 表達式全都正常——只驗 `getPaintProperty` 是抓不到的，
+   * 一定要在**飛完之後**用 `queryRenderedFeatures` 數實際算繪的數量。
+   * 驗證器現在會擋住 `browse.zoom` 落在圖層畫不出來的範圍這件事。
+   */
+  minzoom?: number;
+  maxzoom?: number;
   /** 沒填就沿用母圖層的——同一個勾選項底下的東西，說明與來源多半一致 */
   description?: string;
   sources?: string[];
