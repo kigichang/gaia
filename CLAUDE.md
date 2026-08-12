@@ -55,7 +55,8 @@ Node ≥ 22.12（vite 8 要求）。開發機與 CI 都用 Node 24。
 | 臺灣正射影像 | 同上，`EMAP` → `PHOTO2` | |
 | 氣候正常值 | `archive-api.open-meteo.com/v1/archive`（ERA5） | **只在建置期呼叫** |
 | 特有種觀測紀錄 | `api.gbif.org/v1/occurrence/search`（GBIF） | **只在建置期呼叫**，`ACAO: *` |
-| 行政區／河流幾何 | `raw.githubusercontent.com/nvkelso/natural-earth-vector`（Natural Earth） | **只在建置期呼叫**，public domain |
+| 臺灣縣市界線 | `data.gov.tw/api/v2/rest/dataset/7442` → TGOS 的 GML zip（內政部國土測繪中心） | **只在建置期呼叫**，政府資料開放授權條款第 1 版 |
+| 世界行政區／河流幾何 | `raw.githubusercontent.com/nvkelso/natural-earth-vector`（Natural Earth） | **只在建置期呼叫**，public domain |
 | 地震目錄 | `earthquake.usgs.gov/fdsnws/event/1/query`（USGS） | **只在建置期呼叫**，免金鑰、`ACAO: *` |
 | 基本地理事實（山脈走向、主峰高度、河川分界…） | `zh.wikipedia.org` 各條目 | **程式完全不呼叫**，人工查閱後寫進 `src/content/`。次級來源，用法見「內容撰寫規範」，CC BY-SA |
 
@@ -292,7 +293,21 @@ fill   → `${instanceId}-fill` + `${instanceId}-outline`
 
 ### 已知資料限制
 
-- **臺灣縣市界只有 21 個，缺連江縣（馬祖）。** 已確認 Natural Earth 10m 整份資料集裡都沒有它，不是篩選寫錯。要補齊 22 個縣市得改用政府資料開放平臺的 shapefile（需要 `ogr2ogr`）。圖層的 `description` 有向使用者明講。
+- **⚠️ 臺灣縣市界不要改回 Natural Earth。** NE 10m 整份資料集裡都沒有連江縣（馬祖），只有 21 個縣市——而馬祖正是課本講離島時一定會點名的地方。現在改用內政部國土測繪中心的實測界線（政府資料開放平臺 dataset **7442**），22 個縣市齊全、中文名原生就是課綱用的「臺」字寫法、每半年更新。
+
+  代價是格式：政府資料開放平臺只提供 **SHP 與 GML**，沒有 GeoJSON。SHP 要 `ogr2ogr`（得先裝 GDAL），所以走 GML——它是純文字 XML，`scripts/lib/unzip.mjs`（zlib.inflateRaw 自幹的 ZIP 讀取器）+ `scripts/lib/gml.mjs`（只認得 NLSC 那一種 GML 2 形狀的剖析器）兩個免依賴小模組就處理完了，比照 `lib/simplify.mjs` 不加依賴的既有作法。
+
+  **下載網址是查出來的，不是寫死的**：TGOS 的檔名帶發布日期（`COUNTY_MOI_1140318_.zip`），改版後舊網址會消失，所以 `resolveDataGovTwUrl()` 先打 data.gov.tw 的 metadata API 拿當下的網址。
+
+- **縣市 id 由 `COUNTY_IDS` 對照表寫死，不是 slugify 出來的。** NLSC 的 GML 只有「名稱」一個屬性（COUNTYCODE 只在 SHP 版裡），而這些 id（`tw-tpe`／`tw-lie`…，ISO 3166-2:TW）是內容檔的檔名與圖徵強調用的 key，必須跨資料源改版保持穩定。對不到就讓建置失敗——縣市改名是重大行政變更，該由人決定新 id。
+
+- **官方界線包含遠洋離島，這是對的，不要當成髒資料刪掉。** 東沙群島與南沙太平島屬高雄市、釣魚臺列嶼屬宜蘭縣、烏坵屬金門縣、彭佳嶼屬基隆市——都是課綱會提到的行政事實，已實測五個都有算繪出來。
+
+  但它們會**撐爆 `fitBounds`**：高雄市的外接矩形從 1.0° 變成 **13.1°**，點一下「高雄市」相機會飛到整個南海。解法在 `bboxOf()`（`src/map/layers/geo.ts`）的 `MIN_FRAMED_PART_RATIO`：取景時忽略面積小於同圖徵最大塊 **1%** 的 polygon，**幾何本身完整保留**。用相對比例而不是絕對面積，才不會拆掉本來就由許多小島組成的縣市——實測 1% 之下澎湖 21 島、連江 11 島、雲林外傘頂洲、臺東蘭嶼全數保留，而 **2% 就會開始吃掉外傘頂洲與蘭嶼**。只對 MultiPolygon 生效，線與點不受影響。
+
+- **面積小於 0.11 km² 的礁岩在建置期就濾掉了**（`MIN_ISLAND_AREA`）。NLSC 收了每一塊礁岩——澎湖 296 個、連江 183 個 polygon，佔掉檔案六成，而它們在 `maxzoom: 11` 之下全都小於一個像素。⚠️ 這個過濾**必須在簡化之前**做：Douglas–Peucker 不會刪掉整個環（少於 4 點就還原成原始環），指望容差幫忙是沒有用的。
+
+- **縣市界的簡化容差是 0.0008°（≈89 公尺），不是別的圖層那個 0.0005°。** NLSC 原始資料有 33 萬個點，不簡化是 570 KB；0.0008 落在 192 KB，在 maxzoom 11 約 1.3 px、在實際教學會用的 zoom 7–10 都是次像素。這個檔案會被搜尋索引 lazy 抓取，一個班 30 個學生同時開站時的成本是選它的主要理由。
 - **Natural Earth 的河流沒有中文名欄位**，中文名靠 `build-geodata.mjs` 裡的 `RIVER_NAMES_ZH` 對照表。對不到就沿用原名。注意 NE 把黃河的 name 寫成 `"Huang"`（不是 `"Huang He"`）。
 - **相鄰的面各自簡化會在共用邊界開出次像素縫隙**（Douglas–Peucker 不保拓樸）。免依賴的緩解方式是設 `maxzoom`（縣市界設 11），讓它在縫隙變得可解析之前就停止繪製。
 - **五大山脈的稜線是手繪示意幾何**（`public/data/geo-manual/tw-ranges.geojson`）。山脈沒有像行政區那樣的官方界線圖資，Natural Earth 也沒收錄，所以走向與端點是依維基百科各條目與地形圖描繪的。圖層與五份內容檔都標了 `schematic: true`，UI 會顯示警語。**不要把它當成精確稜線**；要真的精確得改用 DEM 推導分水嶺。（已離線量過五座主峰到所屬稜線的最短距離：0～2.2 km，走向本身站得住腳。）
@@ -713,8 +728,10 @@ public/data/
 scripts/
 ├─ build-climate.mjs      # Open-Meteo → public/data/climate
 ├─ build-species.mjs      # GBIF → public/data/species
-├─ build-geodata.mjs      # Natural Earth / USGS → public/data/geo
+├─ build-geodata.mjs      # NLSC / Natural Earth / USGS → public/data/geo
 ├─ lib/simplify.mjs       # 自帶的 Douglas–Peucker（刻意不加依賴）
+├─ lib/unzip.mjs          # 自帶的 ZIP 讀取器（zlib.inflateRaw，同樣不加依賴）
+├─ lib/gml.mjs            # NLSC 行政區界線 GML 的剖析器（只認得那一種形狀）
 ├─ validate-content.mjs   # 建置前 schema 驗證 + 註冊表交叉檢查
 └─ postbuild.mjs          # 404.html + CNAME 確認
 ```

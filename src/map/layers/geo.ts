@@ -336,6 +336,40 @@ export function bindGeoLayerInteractions(
   };
 }
 
+/**
+ * 取景時要忽略的離散小塊：面積小於同一個圖徵最大那一塊 1% 的 polygon。
+ *
+ * 為什麼需要這條規則：官方行政區界線是**忠實的**，高雄市含東沙島與南沙太平島、
+ * 宜蘭縣含釣魚臺列嶼、金門縣含烏坵、基隆市含彭佳嶼。這些島在圖層可見的縮放範圍
+ * 全都小於一個像素（畫面上幾乎看不到），卻會把 fitBounds 的外接矩形撐開——高雄市
+ * 實測從 1.0° 變成 **13.1°**，點一下「高雄市」相機會飛到整個南海，高雄本身縮成
+ * 角落一小塊。取景排除它們，**幾何本身完整保留**（那是課綱會提到的行政事實）。
+ *
+ * 用「相對於最大塊的比例」而不是絕對面積，才不會把本來就由許多小島組成的縣市
+ * 拆掉：實測 1% 之下澎湖 21 島、連江 11 島、雲林外傘頂洲、臺東蘭嶼全數保留，
+ * 而 2% 就會開始吃掉外傘頂洲與蘭嶼。只對 polygon 生效，線與點不受影響。
+ */
+const MIN_FRAMED_PART_RATIO = 0.01;
+
+/** 環的面積（度²，shoelace）。只用於相對比較，不需要投影修正。 */
+function ringArea(ring: GeoJSON.Position[]): number {
+  let sum = 0;
+  for (let i = 0, j = ring.length - 1; i < ring.length; j = i++) {
+    sum += (ring[j][0] + ring[i][0]) * (ring[j][1] - ring[i][1]);
+  }
+  return Math.abs(sum / 2);
+}
+
+/** MultiPolygon 只留下值得取景的那幾塊；其他幾何原樣回傳。 */
+function framedCoordinates(geometry: GeoJSON.Geometry): unknown {
+  if (!("coordinates" in geometry)) return null;
+  if (geometry.type !== "MultiPolygon") return geometry.coordinates;
+
+  const areas = geometry.coordinates.map((polygon) => ringArea(polygon[0]));
+  const largest = Math.max(...areas);
+  return geometry.coordinates.filter((_, i) => areas[i] >= largest * MIN_FRAMED_PART_RATIO);
+}
+
 /** 整份 FeatureCollection 的外接矩形，給 fitBounds 用。空集合回 null。 */
 export function bboxOf(
   data: GeoJSON.FeatureCollection,
@@ -359,7 +393,7 @@ export function bboxOf(
   };
 
   for (const f of data.features) {
-    if (f.geometry && "coordinates" in f.geometry) visit(f.geometry.coordinates);
+    if (f.geometry) visit(framedCoordinates(f.geometry));
   }
 
   return Number.isFinite(minLng)

@@ -38,8 +38,10 @@ export const taiwanTheme: ThemeDefinition = {
       // 縣市界的面染是小比例尺的教學裝置，不是 zoom 14 的圖層。
       maxzoom: 11,
       description:
-        "直轄市與縣市界線。資料來自 Natural Earth，只有 21 個縣市，缺連江縣（馬祖）。",
-      sources: ["Natural Earth"],
+        "六個直轄市與十六個縣市，共 22 個。界線取自內政部國土測繪中心的實測圖資，" +
+        "離島依行政歸屬繪出：東沙群島與南沙太平島屬高雄市、烏坵屬金門縣、釣魚臺列嶼屬宜蘭縣。" +
+        "面積小於 0.1 平方公里的礁岩已略去。",
+      sources: ["內政部國土測繪中心"],
     },
     {
       id: "places",

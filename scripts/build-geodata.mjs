@@ -18,6 +18,8 @@ import { writeFile, mkdir, access } from "node:fs/promises";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import { simplifyGeometry, slugify } from "./lib/simplify.mjs";
+import { parseNlscGml, ringArea } from "./lib/gml.mjs";
+import { readZipText } from "./lib/unzip.mjs";
 
 const exists = (p) => access(p).then(() => true).catch(() => false);
 
@@ -39,6 +41,62 @@ const SOFT_LIMIT = 500 * 1024;
 const HARD_LIMIT = 1024 * 1024;
 
 const NE = "https://raw.githubusercontent.com/nvkelso/natural-earth-vector/master/geojson";
+
+/**
+ * 政府資料開放平臺的資料集 metadata API（免金鑰、回 JSON）。
+ * 7442 =「直轄市、縣市界線(TWD97經緯度)」，發布機關是內政部國土測繪中心——
+ * 跟本站底圖用的 NLSC WMTS 同一個來源。
+ */
+const DATA_GOV_TW_DATASET = (id) => `https://data.gov.tw/api/v2/rest/dataset/${id}`;
+
+/**
+ * 縣市中文名 → ISO 3166-2:TW 代碼的 id。
+ *
+ * 為什麼是寫死的對照表而不是 slugify：NLSC 的 GML **只有「名稱」一個屬性**，沒有
+ * COUNTYCODE（那在 SHP 版才有）。而這些 id 是內容檔的檔名（src/content/geo/
+ * tw-counties/<id>.json）與圖徵強調用的 key，必須跨資料源改版保持穩定——原本從
+ * Natural Earth 的 iso_3166_2 產生的就是這一組，換資料源不能讓它們全部變號。
+ *
+ * 對不到就讓建置失敗（見 transform）：縣市改名／新增是重大行政變更，應該由人來
+ * 決定新 id，而不是靜默地生出一個沒有內容檔對應的新代碼。
+ */
+const COUNTY_IDS = {
+  臺北市: "tw-tpe",
+  新北市: "tw-tpq",
+  桃園市: "tw-tao",
+  臺中市: "tw-txg",
+  臺南市: "tw-tnn",
+  高雄市: "tw-khh",
+  基隆市: "tw-kee",
+  新竹市: "tw-hsz",
+  嘉義市: "tw-cyi",
+  新竹縣: "tw-hsq",
+  苗栗縣: "tw-mia",
+  彰化縣: "tw-cha",
+  南投縣: "tw-nan",
+  雲林縣: "tw-yun",
+  嘉義縣: "tw-cyq",
+  屏東縣: "tw-pif",
+  宜蘭縣: "tw-ila",
+  花蓮縣: "tw-hua",
+  臺東縣: "tw-ttt",
+  澎湖縣: "tw-pen",
+  金門縣: "tw-kin",
+  連江縣: "tw-lie",
+};
+
+/**
+ * 離島的面積下限（度²）。
+ *
+ * NLSC 是實測界線，把每一塊礁岩都收了進來——澎湖 296 個、連江 183 個、金門 43 個
+ * polygon，光是這些就佔掉檔案的六成，而它們在這個圖層可見的縮放範圍（maxzoom 11）
+ * 全都小於一個像素。1e-5 度² ≈ 0.11 km²，實測留下澎湖 21、連江 11、金門 7 個島，
+ * 課本會提到的東引（4.4 km²）、七美（7.4 km²）、小琉球（6.9 km²）都在門檻之上。
+ *
+ * ⚠️ Douglas–Peucker 不會刪掉整個環（環少於 4 點就還原成原始環），所以這個過濾
+ * **必須在簡化之前**做，不能指望容差幫忙。
+ */
+const MIN_ISLAND_AREA = 1e-5;
 
 /**
  * 世界主要河流的中文名對照。
@@ -123,33 +181,52 @@ const SOURCES = [
   {
     id: "tw-counties",
     label: "臺灣縣市界",
-    url: `${NE}/ne_10m_admin_1_states_provinces.geojson`,
-    license: "Natural Earth（public domain）",
-    sourceLabel: "Natural Earth",
+    /**
+     * 資料源是內政部國土測繪中心，不是 Natural Earth。
+     *
+     * ⚠️ **不要改回 Natural Earth**：NE 10m 的 TWN 只有 **21** 個一級行政區，
+     * 整份資料集裡都沒有連江縣（馬祖），而馬祖正是課本講「臺灣的離島」時一定會
+     * 點名的地方。NLSC 這份是實測界線、22 個縣市齊全、中文名原生就是課綱用的
+     * 「臺」字寫法，而且每半年更新。
+     *
+     * 代價是格式：政府資料開放平臺只提供 SHP 與 GML，沒有 GeoJSON。SHP 要 ogr2ogr
+     * （得先裝 GDAL），所以走 GML——它是純文字 XML，用 lib/unzip.mjs + lib/gml.mjs
+     * 兩個免依賴的小模組就能處理完。
+     */
+    resolveUrl: () => resolveDataGovTwUrl(7442, /GML/),
+    license: "政府資料開放授權條款第 1 版",
+    sourceLabel: "內政部國土測繪中心",
+    // 下載回來的是 zip 包一個 12 MB 的 GML，不是 JSON
+    parse: async (res) => {
+      const buf = Buffer.from(await res.arrayBuffer());
+      return parseNlscGml(readZipText(buf, (name) => name.toLowerCase().endsWith(".gml")));
+    },
     // 相鄰面各自簡化會在共用邊界開出次像素縫隙（見 lib/simplify.mjs），
     // 所以這個圖層在註冊表裡設了 maxzoom，讓它在縫隙可解析之前就停止繪製。
-    tolerance: 0.0005,
+    //
+    // 0.0008° ≈ 89 公尺，在圖層的 maxzoom 11 約 1.3 px、在實際教學會用的 zoom 7–10
+    // 都是次像素。NLSC 原始資料有 33 萬個點，不簡化是 570 KB；這個容差落在 192 KB。
+    tolerance: 0.0008,
     digits: 4,
-    // ⚠️ 已知資料限制：Natural Earth 10m 的 TWN 只有 **21** 個一級行政區，
-    // **沒有連江縣（馬祖）**——已確認上游整份資料集裡都找不到它，不是這裡的
-    // 篩選寫錯。要補齊 22 個縣市得改用政府資料開放平臺的 shapefile（需要
-    // ogr2ogr，摩擦較大）。圖層的 description 有向使用者明講這件事。
-    transform: (raw) =>
-      raw.features
-        .filter((f) => f.properties.adm0_a3 === "TWN")
-        .map((f) => ({
+    transform: (features) =>
+      features.map((f) => {
+        const name = f.properties.名稱;
+        const id = COUNTY_IDS[name];
+        if (!id) {
+          throw new Error(`縣市「${name}」不在 COUNTY_IDS 對照表裡，請先決定它的 id`);
+        }
+        return {
           type: "Feature",
-          geometry: f.geometry,
-          properties: {
-            id: slugify(f.properties.iso_3166_2 || f.properties.name_en || f.properties.name),
-            // 上游的中文名混用「台」與「臺」（台中市 vs 臺南市）。
-            // 教學網站用課綱的正式寫法統一成「臺」。
-            name: (f.properties.name_zht || f.properties.name_zh || f.properties.name).replace(
-              /^台/,
-              "臺",
+          geometry: {
+            type: "MultiPolygon",
+            // 次像素的礁岩在簡化階段刪不掉，只能在這裡先濾（見 MIN_ISLAND_AREA）
+            coordinates: f.geometry.coordinates.filter(
+              (polygon) => ringArea(polygon[0]) >= MIN_ISLAND_AREA,
             ),
           },
-        })),
+          properties: { id, name },
+        };
+      }),
   },
   {
     id: "world-rivers",
@@ -227,6 +304,26 @@ async function fetchWithRetry(url, attempts = 5) {
   throw new Error("unreachable");
 }
 
+/**
+ * 從政府資料開放平臺查出某個資料集當下的下載網址。
+ *
+ * 為什麼不寫死網址：TGOS 的檔名帶著發布日期（`COUNTY_MOI_1140318_.zip`），每次改版
+ * 都是一個新網址、舊的會消失。寫死等於把腳本綁在某一版資料上，半年後 `--force`
+ * 重跑就 404。查 API 只多一次請求，換來的是「重跑就會拿到最新的界線」。
+ */
+async function resolveDataGovTwUrl(datasetId, descriptionPattern) {
+  const meta = await (await fetchWithRetry(DATA_GOV_TW_DATASET(datasetId))).json();
+  const distributions = meta?.result?.distribution ?? [];
+  const match = distributions.filter((d) => descriptionPattern.test(d.resourceDescription ?? ""));
+  if (match.length !== 1) {
+    const listed = distributions.map((d) => d.resourceDescription).join("、") || "（空）";
+    throw new Error(
+      `資料集 ${datasetId} 符合 ${descriptionPattern} 的資源有 ${match.length} 個（現有：${listed}）`,
+    );
+  }
+  return match[0].resourceDownloadUrl;
+}
+
 async function build(source) {
   const outPath = join(OUT_DIR, `${source.id}.geojson`);
   if (!FORCE && (await exists(outPath))) {
@@ -243,8 +340,12 @@ async function build(source) {
     }
   }
 
-  process.stdout.write(`- ${source.id}：下載中…`);
-  const raw = await (await fetchWithRetry(source.url)).json();
+  process.stdout.write(`- ${source.id}：`);
+  const url = source.resolveUrl ? await source.resolveUrl() : source.url;
+  process.stdout.write("下載中…");
+  const res = await fetchWithRetry(url);
+  // 預設是 GeoJSON；需要先解壓／換格式的資料源自己提供 parse（見 tw-counties）
+  const raw = source.parse ? await source.parse(res) : await res.json();
   process.stdout.write("轉換中…");
 
   const features = source
@@ -273,7 +374,7 @@ async function build(source) {
     // 也讓 commit 進 repo 的 diff 自我解釋。
     metadata: {
       collection: source.id,
-      source: source.url,
+      source: url,
       license: source.license,
       generatedAt: new Date().toISOString(),
       ...(source.tolerance ? { simplifyTolerance: source.tolerance } : {}),
