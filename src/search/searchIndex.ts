@@ -50,6 +50,11 @@ export interface SearchHit {
   featureId?: string;
   /** 子項目圖層（特有種）才有 */
   itemId?: string;
+  /**
+   * 附屬圖層（五大山脈 → 主峰）才有，值是附屬圖層的 instanceId。
+   * 有它就代表這一筆的資料與詳情卡都在 `layer.attach` 上，不在圖層本身。
+   */
+  attachedId?: string;
   /** 已轉小寫的比對字串 */
   haystack: string;
 }
@@ -67,8 +72,12 @@ function push(parts: (string | undefined)[]): string {
 }
 
 /** 內容檔裡的別名（英文名、學名、分布地…），讓搜尋不只比對得到中文主名。 */
-function contentKeywords(layer: LayerDefinition, id: string): (string | undefined)[] {
-  switch (layer.detail.type) {
+function contentKeywords(
+  layer: LayerDefinition,
+  id: string,
+  detail = layer.detail,
+): (string | undefined)[] {
+  switch (detail.type) {
     case "place": {
       const p = getPlace(id);
       return p ? [p.name.en, p.landform, p.koppen, p.curriculum.unit] : [];
@@ -112,6 +121,34 @@ async function featureHits(
   if (!fc) return [];
 
   const hits: SearchHit[] = [];
+
+  // 附屬圖徵（五大山脈 → 主峰）也要搜得到：主峰以前在「地形景點」圖層裡、本來就
+  // 進得了索引，搬家之後不補這一段，搜「玉山」就會突然找不到。
+  if (layer.attach) {
+    const attachFc = await resolveLayerData(layer.attach.source);
+    for (const feature of attachFc?.features ?? []) {
+      const props = feature.properties ?? {};
+      if (typeof props.id !== "string" || typeof props.name !== "string") continue;
+      hits.push({
+        key: `${theme.id}:${layer.attach.id}:${props.id}`,
+        kind: "feature",
+        title: props.name,
+        // 副標寫「五大山脈・主峰」，使用者才知道搜到的東西住在哪個勾選項底下
+        subtitle: `${layer.label}・${layer.attach.label}`,
+        themeId: theme.id,
+        themeLabel: theme.label,
+        layerId: layer.id,
+        featureId: props.id,
+        attachedId: layer.attach.id,
+        haystack: push([
+          props.name,
+          typeof props.meta === "string" ? props.meta : undefined,
+          ...contentKeywords(layer, props.id, layer.attach.detail),
+        ]),
+      });
+    }
+  }
+
   const seenNames = new Set<string>();
   for (const feature of fc.features) {
     const props = feature.properties ?? {};
@@ -225,5 +262,6 @@ export function searchHits(
 
 /** 給 ThemeMapPage 用：把 hit 換算成 maplibre instance id。 */
 export function hitInstanceId(hit: SearchHit): string {
-  return layerInstanceId(hit.layerId, hit.itemId);
+  // 附屬圖徵的資料在附屬圖層那個 instance 上，不在母圖層的
+  return hit.attachedId ?? layerInstanceId(hit.layerId, hit.itemId);
 }

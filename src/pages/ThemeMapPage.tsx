@@ -111,18 +111,26 @@ function ThemeMapView({ theme, chrome }: { theme: ThemeDefinition; chrome: Chrom
   /**
    * 要在地圖上強調的圖徵：選取的那一筆，加上它「順帶指名」的關聯圖徵。
    *
-   * 目前唯一的關聯是山脈 → 主峰（geojson 的 `peakId`）：選了中央山脈，秀姑巒山
-   * 那顆點也要一起標出來，否則使用者只看得到一條線、不知道最高點在哪。主峰屬於
-   * 「地形景點」圖層，跟山脈不同層，但強調是各圖層拿同一份 id 清單去比對的，
-   * 所以這裡不需要知道它在哪一層——那一層沒開就自然不會有東西被標，也合理。
+   * 關聯是山脈 ↔ 主峰，而且**兩個方向都成立**：
+   *
+   * - `peakId`（寫在 `tw-ranges.geojson` 的線上）：選了中央山脈，秀姑巒山那顆點也要
+   *   一起標出來，否則使用者只看得到一條線、不知道最高點在哪。
+   * - `rangeId`（由 `resolve.ts` join 出來、掛在主峰點上，也是 `attach.parentProperty`）：
+   *   選了主峰，所屬山脈那條線也要一起加粗——這就是「選子類視同也選父類」。
+   *   （早期版本刻意只做單向，現在雙向都要。）
+   *
+   * 強調是各圖層拿**同一份 id 清單**去比對的，所以這裡不需要知道對方在哪一層；
+   * 那一層沒開就自然不會有東西被標，也合理。
    */
   const highlightIds = useMemo(() => {
     if (!selected) return [];
     const ids = [selected.featureId];
     for (const inst of instances) {
       const f = inst.data?.features.find((x) => x.properties?.id === selected.featureId);
-      const peakId = f?.properties?.peakId;
-      if (typeof peakId === "string") ids.push(peakId);
+      for (const key of ["peakId", "rangeId"]) {
+        const related = f?.properties?.[key];
+        if (typeof related === "string" && !ids.includes(related)) ids.push(related);
+      }
     }
     return ids;
   }, [selected, instances]);
@@ -177,16 +185,27 @@ function ThemeMapView({ theme, chrome }: { theme: ThemeDefinition; chrome: Chrom
     });
   }, []);
 
-  /** 飛到某個圖徵：點的用 flyTo，線／面用 fitBounds。 */
+  /**
+   * 飛到某個圖徵：點的用 flyTo，線／面用 fitBounds。
+   *
+   * `attached` 時目標在附屬圖層（五大山脈 → 主峰），它的資料與 browse 設定都在
+   * `layer.attach` 上而不是圖層自己身上。
+   */
   const flyToFeature = useCallback(
-    (layer: LayerDefinition, featureId: string) => {
+    (layer: LayerDefinition, featureId: string, attached = false) => {
       if (!map) return;
-      const instanceId = layer.items ? layerInstanceId(layer.id, featureId) : layer.id;
+      const attach = layer.attach;
+      const browse = attached ? attach?.browse : layer.browse;
+      const instanceId = attached
+        ? attach?.id
+        : layer.items
+          ? layerInstanceId(layer.id, featureId)
+          : layer.id;
       const inst = instances.find((i) => i.instanceId === instanceId);
       const fc = inst?.data;
       if (!fc) return;
 
-      if (layer.items) {
+      if (layer.items && !attached) {
         // 子項目整份就是一個圖層（例如一個物種的所有觀測點），框住全部
         const bounds = bboxOf(fc);
         if (bounds) map.fitBounds(bounds, { padding: 48, duration: 1200, maxZoom: 12 });
@@ -198,7 +217,7 @@ function ThemeMapView({ theme, chrome }: { theme: ThemeDefinition; chrome: Chrom
 
       if (feature.geometry.type === "Point") {
         const [lng, lat] = feature.geometry.coordinates;
-        const zoom = Number(feature.properties?.zoom) || layer.browse?.zoom || 11;
+        const zoom = Number(feature.properties?.zoom) || browse?.zoom || 11;
         map.flyTo({ center: [lng, lat], zoom, duration: 1200 });
       } else {
         const bounds = bboxOf({ type: "FeatureCollection", features: [feature] });
@@ -213,6 +232,23 @@ function ThemeMapView({ theme, chrome }: { theme: ThemeDefinition; chrome: Chrom
       setSelected({ detail: layer.detail, featureId });
       closeTransient();
       flyToFeature(layer, featureId);
+    },
+    [flyToFeature, closeTransient],
+  );
+
+  /**
+   * 點清單裡的附屬圖徵（五大山脈底下的主峰）。
+   *
+   * 開的是**主峰自己的** `PlaceCard`（有海拔與氣候圖表），不是山脈的卡片——所屬山脈
+   * 則由 `highlightIds` 一起在地圖上加粗，這就是「選子類視同也選父類」。
+   */
+  const handleBrowseSelectAttached = useCallback(
+    (layer: LayerDefinition, featureId: string) => {
+      const attach = layer.attach;
+      if (!attach) return;
+      setSelected({ detail: attach.detail, featureId });
+      closeTransient();
+      flyToFeature(layer, featureId, true);
     },
     [flyToFeature, closeTransient],
   );
@@ -311,12 +347,15 @@ function ThemeMapView({ theme, chrome }: { theme: ThemeDefinition; chrome: Chrom
     if (!inst?.data) return; // 資料還沒到
 
     if (pendingHit.kind === "feature") {
+      // 附屬圖徵（主峰）的詳情卡與 zoom 都在 attach 上，不是母圖層的
+      const attached = Boolean(pendingHit.attachedId);
+      const detail = attached ? layer.attach?.detail : layer.detail;
       // detail.type === "none" 的圖層（緯度參考線）飛過去就好——
       // 開一張沒有內容的詳情卡什麼都沒教到
-      if (layer.detail.type !== "none") {
-        setSelected({ detail: layer.detail, featureId: pendingHit.featureId });
+      if (detail && detail.type !== "none") {
+        setSelected({ detail, featureId: pendingHit.featureId });
       }
-      flyToFeature(layer, pendingHit.featureId);
+      flyToFeature(layer, pendingHit.featureId, attached);
     } else {
       const bounds = bboxOf(inst.data);
       if (bounds) map.fitBounds(bounds, { padding: 48, duration: 1200, maxZoom: 12 });
@@ -394,6 +433,7 @@ function ThemeMapView({ theme, chrome }: { theme: ThemeDefinition; chrome: Chrom
     dataOf,
     selected,
     onSelect: handleBrowseSelect,
+    onSelectAttached: handleBrowseSelectAttached,
   });
 
   const detailOpen = Boolean(selected);

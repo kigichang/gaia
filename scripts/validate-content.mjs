@@ -180,6 +180,21 @@ for (const relDir of GEO_DATA_DIRS) {
     }
     seenLayerIds.set(layer.id, theme.id);
 
+    // 附屬圖層（五大山脈 → 主峰）也是 maplibre id 的前綴，一樣要參與撞名檢查
+    if (layer.attach) {
+      if (seenLayerIds.has(layer.attach.id)) {
+        errors.push(
+          `registry → 圖層 id「${layer.attach.id}」重複（${seenLayerIds.get(layer.attach.id)} 與 ${theme.id} 的 attach）`,
+        );
+      }
+      seenLayerIds.set(layer.attach.id, theme.id);
+      if (!layer.attach.parentProperty) {
+        errors.push(
+          `registry/${theme.id} → 圖層「${layer.id}」的 attach 缺 parentProperty，清單巢狀與連動強調都會失效`,
+        );
+      }
+    }
+
     if (!theme.groups.includes(layer.group)) {
       errors.push(
         `registry/${theme.id} → 圖層「${layer.id}」的 group「${layer.group}」不在 theme.groups 裡，側欄會顯示不出來`,
@@ -199,6 +214,7 @@ for (const relDir of GEO_DATA_DIRS) {
     // remote 來源指到的檔案必須真的存在
     const remotePaths = [];
     if (layer.source?.type === "remote") remotePaths.push(layer.source.path);
+    if (layer.attach?.source.type === "remote") remotePaths.push(layer.attach.source.path);
     if (layer.items?.from.type === "inline") {
       for (const item of layer.items.from.list) {
         if (item.source?.type === "remote") remotePaths.push(item.source.path);

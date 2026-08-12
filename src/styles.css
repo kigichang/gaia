@@ -1062,6 +1062,15 @@ input {
   gap: 4px;
 }
 
+/* 巢狀的附屬圖徵（五大山脈 → 主峰）。左邊那條線是「這幾筆從屬於上一列」的視覺
+   線索，比純縮排更明確；縮排本身則保證即使清單捲動也看得出層級。 */
+.place-list-children {
+  margin: 4px 0 0;
+  padding-left: 10px;
+  border-left: 2px solid var(--border);
+  margin-left: 10px;
+}
+
 .place-btn {
   width: 100%;
   display: flex;

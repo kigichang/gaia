@@ -12,6 +12,7 @@ import { layerInstanceId } from "./index.ts";
 import { generateLayer } from "./generators.ts";
 import type {
   ColorRole,
+  DerivedId,
   LayerDefinition,
   LayerItem,
   LayerSource,
@@ -35,9 +36,15 @@ const COLORS: Record<ColorRole, string> = LAYER_COLORS;
 // 有了它，一個通用的清單元件就能取代 ExplorePage 裡兩份寫死的清單。
 
 const BUNDLED_LOADERS = {
-  "places-taiwan": () => placesCollection("taiwan"),
-  "places-world": () => placesCollection("world"),
-  indigenous: () =>
+  "places-taiwan": async () => {
+    // 主峰已經移到「五大山脈」底下當附屬圖徵，不再重複出現在地形景點裡。
+    // 排除清單從 tw-ranges.geojson 現查而不是寫死：那份檔案的 peakId 是
+    // 「哪座山峰屬於哪條山脈」的唯一事實來源，寫死一份就會有兩份會漂開。
+    const peaks = await rangePeakIds();
+    return placesCollection("taiwan", (p) => !peaks.has(p.id));
+  },
+  "places-world": async () => placesCollection("world"),
+  indigenous: async () =>
     toFeatureCollection(
       indigenousGroups,
       (g) => [g.representativeCoord.lng, g.representativeCoord.lat],
@@ -46,15 +53,60 @@ const BUNDLED_LOADERS = {
     ),
 };
 
-function placesCollection(region: "taiwan" | "world") {
+const RANGES_SOURCE: LayerSource = {
+  type: "remote",
+  path: "data/geo-manual/tw-ranges.geojson",
+};
+
+/**
+ * 主峰 id → 所屬山脈 id，取自 `tw-ranges.geojson` 的 `peakId`。
+ *
+ * 走 `resolveLayerData` 是刻意的：它跟「五大山脈」線圖層**共用同一個快取項目**，
+ * 所以這裡不會多抓一次檔案（3.6 KB）。抓失敗回空 Map——那會讓地形景點退回顯示
+ * 全部地點（含主峰），比整層消失好。
+ */
+async function rangePeakToRange(): Promise<Map<string, string>> {
+  const fc = await resolveLayerData(RANGES_SOURCE);
+  const map = new Map<string, string>();
+  for (const f of fc?.features ?? []) {
+    const peakId = f.properties?.peakId;
+    const rangeId = f.properties?.id;
+    if (typeof peakId === "string" && typeof rangeId === "string") map.set(peakId, rangeId);
+  }
+  return map;
+}
+
+const rangePeakIds = async () => new Set((await rangePeakToRange()).keys());
+
+const DERIVED_LOADERS: Record<
+  DerivedId,
+  () => Promise<GeoJSON.FeatureCollection | null>
+> = {
+  "tw-range-peaks": async () => {
+    const peakToRange = await rangePeakToRange();
+    if (peakToRange.size === 0) return null;
+    return placesCollection(
+      "taiwan",
+      (p) => peakToRange.has(p.id),
+      (p) => ({ rangeId: peakToRange.get(p.id)! }),
+    );
+  },
+};
+
+function placesCollection(
+  region: "taiwan" | "world",
+  keep: (p: (typeof places)[number]) => boolean = () => true,
+  extra: (p: (typeof places)[number]) => Record<string, unknown> = () => ({}),
+) {
   return toFeatureCollection(
-    places.filter((p) => p.region === region),
+    places.filter((p) => p.region === region && keep(p)),
     (p) => [p.coord.lng, p.coord.lat],
     (p) => p.id,
     (p) => ({
       name: p.name.zh,
       meta: `${formatLatitude(p.coord.lat)}・${p.landform}`,
       zoom: p.defaultZoom ?? 11,
+      ...extra(p),
     }),
   );
 }
@@ -88,7 +140,9 @@ const cacheKey = (source: LayerSource) =>
     ? `remote:${source.path}`
     : source.type === "bundled"
       ? `bundled:${source.content}`
-      : `generated:${source.generator}`;
+      : source.type === "derived"
+        ? `derived:${source.derived}`
+        : `generated:${source.generator}`;
 
 /**
  * 三種來源一律回傳 Promise，即使 bundled/generated 其實是同步的。
@@ -106,7 +160,9 @@ export function resolveLayerData(
 
   let promise: Promise<GeoJSON.FeatureCollection | null>;
   if (source.type === "bundled") {
-    promise = Promise.resolve(BUNDLED_LOADERS[source.content]());
+    promise = BUNDLED_LOADERS[source.content]();
+  } else if (source.type === "derived") {
+    promise = DERIVED_LOADERS[source.derived]();
   } else if (source.type === "generated") {
     promise = Promise.resolve(generateLayer(source.generator));
   } else if (source.path.startsWith("data/species/")) {
@@ -191,6 +247,19 @@ export function expandActive(
       data: take(layer.source),
       detail: layer.detail,
     });
+
+    // 附屬圖徵沒有自己的核取方塊，母圖層勾了就一起上（見 types.ts 的 LayerAttachment）
+    if (layer.attach) {
+      instances.push({
+        instanceId: layer.attach.id,
+        render: layer.attach.render,
+        color: COLORS[layer.attach.colorRole],
+        minzoom: layer.minzoom,
+        maxzoom: layer.maxzoom,
+        data: take(layer.attach.source),
+        detail: layer.attach.detail,
+      });
+    }
   }
 
   return { instances, pending };

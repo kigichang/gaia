@@ -187,6 +187,16 @@ registry/
 
 子項目（`items`）是「一個勾選項展開成 N 個子圖層」的第一級概念，目前只有特有種用到。清單來源寫成 `{ type: "content", collection: "species" }` 而不是硬編，這樣**新增一個物種 JSON 就會自動出現在 UI**。
 
+### 附屬圖層（`attach`）：跟 `items` 不是同一件事
+
+`attach` 是「這個圖層還有一種**不同幾何**的附屬圖徵」——五大山脈的稜線是線、主峰是點，一條線配一顆點。它**沒有自己的核取方塊**，跟母圖層一起開關、一起移除，並在可點清單裡巢狀排在各自的母圖徵底下。
+
+不要跟 `items` 搞混：`items` 是 N 個**平行**的子圖層（各自有色票與 `maxActive` 上限），`attach` 是一個母子關係。也不要退回成兩個獨立圖層：主峰離開稜線就沒有意義，分成兩個核取方塊會讓人勾了山脈卻看不到最高點在哪。也不要把點塞進 `tw-ranges.geojson` 混合幾何——`LayerRender` 一個圖層只能一種幾何，而且主峰的詳情卡是 `PlaceCard`（有海拔與氣候圖表），跟山脈的 `FeatureCard` 不同，`detail` 必須分開。
+
+**資料是 join 出來的，不是抄的。** `{ type: "derived", derived: "tw-range-peaks" }` 由 `resolve.ts` 把兩份既有的單一事實來源接起來：座標取自 `src/content/places`、「哪座山峰屬於哪條山脈」取自 `tw-ranges.geojson` 的 `peakId`。同一份 `peakId` 也用來把主峰**排除在「地形景點」之外**（`places-taiwan` 因此改成 async）。所以 5 座主峰的座標與歸屬各自只有一份，不會漂開。三個用途共用 `resolveLayerData` 的同一個快取項目，實測 `tw-ranges.geojson` 只抓一次。
+
+**主峰的顏色沿用 `place` 藍，不是山脈的洋紅——這是被色票驗證逼出來的，不是隨手選。** POINT 色票（藍／紅／青／黃／紫）已經是 all-pairs 全過的飽和狀態，把山脈洋紅 `#c23f8f` 加進去，它跟原住民族紅 `#e34948` 的**一般視覺 ΔE 只有 13.0（hard FAIL）**，而驗證器明講這一項不能用次要編碼豁免；紫 `#7a3fa6`、棕 `#8a5a2b`、青綠 `#00857a`、橘褐 `#b06a00` 也全部 FAIL（撞紫／撞紅／彩度不足）。藍在語意上也站得住：主峰開的是 `PlaceCard`，本來就是地點。**要動這個顏色請先重跑 `validate_palette.js --pairs all` 明暗兩模式。**
+
 ### 圖層 id 的組合方式
 
 ```
@@ -652,13 +662,25 @@ m.isSourceLoaded('contour-source')
     // 關掉詳情面板 → 回到單純的 7，沒有 case
     ```
     三種幾何各驗一次（`indigenous-points` 點／`tw-ranges-line` 線／`tw-counties-fill` 面），**而且切底圖之後要再驗一次**——`setStyle` 會清光圖層，強調是靠 `highlightIdsRef` 在 `reapply` 時重建的。
-    選山脈時清單要有**兩筆**（山脈 + 主峰），而且兩個圖層的表達式都要帶到：
+    山脈 ↔ 主峰的連動強調是**雙向**的，清單一定是**兩筆**，兩個圖層的表達式都要帶到：
     ```js
-    // 選中央山脈後
-    m.getPaintProperty('tw-ranges-line','line-width')   // …["literal",["central-range","xiuguluan"]]…
-    m.getPaintProperty('places-points','circle-radius') // 同一份清單
+    // 選玉山山脈（父）或玉山主峰（子）都一樣
+    m.getPaintProperty('tw-ranges-line','line-width')          // …["literal",["yushan-range","yushan"]]…
+    m.getPaintProperty('tw-range-peaks-points','circle-radius') // 同一份清單
     ```
-    反向不成立是對的：直接選主峰只強調主峰，不會把山脈一起加粗。關掉「地形景點」圖層也不得出錯（主峰 id 比不到東西而已）。
+    ⚠️ 早期版本刻意只做單向（選山脈才連主峰），**現在兩個方向都要成立**——「選子類視同也選父類」是明確的需求，不是可有可無。點主峰開的是主峰自己的 `PlaceCard`（有海拔與氣候圖表），不是山脈的卡片。
+14. **附屬圖層（五大山脈 → 主峰）**：
+    ```js
+    // 五大山脈沒勾時，主峰圖層不存在；勾了就一起出現（沒有自己的核取方塊）
+    !!m.getLayer('tw-range-peaks-points')
+    // 主峰身上要有 join 出來的 rangeId
+    m.queryRenderedFeatures({layers:['tw-range-peaks-points']}).map(f=>f.properties.name+'@'+f.properties.rangeId)
+    // 主峰已經不在「地形景點」裡了（該層在臺灣主題只剩臺北）
+    m.queryRenderedFeatures({layers:['places-points']}).map(f=>f.properties.name)
+    // tw-ranges.geojson 只能被抓一次（三個用途共用 resolveLayerData 的快取）
+    performance.getEntriesByType('resource').filter(r=>/tw-ranges/.test(r.name)).length  // 1
+    ```
+    抽屜清單要有 5 組巢狀（`.place-list-children`），各含 1 座主峰；搜「雪山」要同時搜得到「雪山（五大山脈・主峰）」與「雪山山脈」，選前者會開主峰卡並把山脈一起加粗。
 
 ### ⚠️ 用瀏覽器自動化點 UI 的三個陷阱
 

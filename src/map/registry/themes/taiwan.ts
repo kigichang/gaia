@@ -50,6 +50,10 @@ export const taiwanTheme: ThemeDefinition = {
       status: "ready",
       // places 內容同時包含臺灣與世界地點，這裡一定要切分，
       // 否則臺灣地理主題會冒出開羅、塔曼拉塞特。
+      //
+      // 五大山脈的主峰也已經從這裡移出去，改當「五大山脈」的附屬圖徵
+      // （見那個圖層的 attach）。排除是在 resolve.ts 依 tw-ranges.geojson 的
+      // peakId 現查的，不是寫死清單。
       source: { type: "bundled", content: "places-taiwan" },
       // radius 不填 → 預設 6，與重構前的 places-points 完全一致
       render: { kind: "circle" },
@@ -118,9 +122,28 @@ export const taiwanTheme: ThemeDefinition = {
       colorRole: "relief",
       detail: { type: "geo", collection: "tw-ranges" },
       browse: {},
+      /**
+       * 主峰跟著這個核取方塊一起出現，並在可點清單裡巢狀排在各自的山脈底下。
+       *
+       * 顏色沿用 `place` 藍而不是山脈的洋紅，**這是被色票驗證逼出來的**，不是隨手選：
+       * POINT 色票（藍／紅／青／黃／紫）已經是 all-pairs 全過的飽和狀態，把洋紅
+       * `#c23f8f` 加進去，它跟原住民族紅 `#e34948` 的一般視覺 ΔE 只有 13.0，直接
+       * FAIL（驗證器明講這一項不能用次要編碼豁免）。紫、棕、青綠等候選也全部 FAIL。
+       * 藍在語意上也站得住：主峰開的是 `PlaceCard`（有海拔與氣候圖表），本來就是地點。
+       */
+      attach: {
+        id: "tw-range-peaks",
+        label: "主峰",
+        source: { type: "derived", derived: "tw-range-peaks" },
+        render: { kind: "circle" },
+        colorRole: "place",
+        detail: { type: "place" },
+        parentProperty: "rangeId",
+        browse: { zoom: 12 },
+      },
       schematic: true,
       description:
-        "中央、雪山、玉山、阿里山、海岸五大山脈的走向與分界。搭配等高線一起看，可以對照稜線位置與高程分布。",
+        "中央、雪山、玉山、阿里山、海岸五大山脈的走向與分界，以及各自的主峰。搭配等高線一起看，可以對照稜線位置與高程分布。",
       sources: ["維基百科", "內政部國土測繪中心"],
     },
     {

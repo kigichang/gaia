@@ -53,6 +53,16 @@ export type BundledContentId =
 export type GeneratorId = "latitude-lines";
 
 /**
+ * 由**兩份既有資料 join 出來**的幾何，本身沒有檔案。
+ *
+ * `tw-range-peaks`＝五大山脈的主峰點：座標取自 `src/content/places`，
+ * 「哪座山峰屬於哪條山脈」取自 `tw-ranges.geojson` 的 `peakId`。
+ * 兩邊都是既有的單一事實來源，join 出來就不必把座標或對應關係抄第二份
+ * ——抄第二份遲早會跟母資料漂開。
+ */
+export type DerivedId = "tw-range-peaks";
+
+/**
  * 圖層的資料來源。
  *
  * `remote` 的 path 相對於 `import.meta.env.BASE_URL`：
@@ -63,7 +73,8 @@ export type GeneratorId = "latitude-lines";
 export type LayerSource =
   | { type: "bundled"; content: BundledContentId }
   | { type: "generated"; generator: GeneratorId }
-  | { type: "remote"; path: string };
+  | { type: "remote"; path: string }
+  | { type: "derived"; derived: DerivedId };
 
 type NumberValue = DataDrivenPropertyValueSpecification<number>;
 
@@ -141,6 +152,33 @@ export interface LayerBrowse {
   secondary?: string;
   /** 點的圖層飛過去用的 zoom；線／面改用 fitBounds，會忽略這個值 */
   zoom?: number;
+}
+
+/**
+ * 附屬圖層：**沒有自己的核取方塊**，跟著母圖層一起開關、一起移除。
+ *
+ * 跟 `items` 不一樣，不要混淆：`items` 是「一個勾選項展開成 N 個**平行的**子圖層」
+ * （特有種，各自有色票與 `maxActive` 上限）；`attach` 是「這個圖層還有一種**不同
+ * 幾何**的附屬圖徵」——五大山脈的稜線是線，主峰是點，一條線配一顆點。
+ *
+ * 為什麼不是兩個獨立圖層：主峰離開稜線就沒有意義，分成兩個核取方塊會讓人勾了
+ * 山脈卻看不到最高點在哪（那正是當初加 `peakId` 連動強調的理由）。也不是把點塞進
+ * `tw-ranges.geojson` 混合幾何：`LayerRender` 一個圖層只能一種幾何，而且主峰的詳情卡
+ * 是 `PlaceCard`（有海拔與氣候圖表），跟山脈的 `FeatureCard` 不同，`detail` 必須分開。
+ *
+ * `parentProperty` 指的是**附屬圖徵**身上那個指回母圖徵 id 的屬性；清單巢狀與
+ * 「選子類等於也選父類」的連動強調都靠它。
+ */
+export interface LayerAttachment {
+  /** maplibre id 前綴，全站唯一（驗證器會連同一般圖層一起檢查撞名） */
+  id: string;
+  label: string;
+  source: LayerSource;
+  render: LayerRender;
+  colorRole: ColorRole;
+  detail: DetailSpec;
+  parentProperty: string;
+  browse?: LayerBrowse;
 }
 
 export interface LayerItem {
@@ -226,18 +264,23 @@ export type LayerDefinition =
       colorRole?: ColorRole;
       source?: never;
       items?: never;
+      attach?: never;
     })
   | (LayerBase & {
       status: "ready";
       colorRole: ColorRole;
       source: LayerSource;
       items?: never;
+      /** 跟著這個圖層一起開關的附屬圖徵（五大山脈 → 主峰） */
+      attach?: LayerAttachment;
     })
   | (LayerBase & {
       status: "ready";
       /** items 有自己的 palette，母圖層不需要 colorRole */
       colorRole?: never;
       source?: never;
+      /** items 與 attach 是兩種不同的展開方式，不同時使用（見 LayerAttachment） */
+      attach?: never;
       items: LayerItems;
     });
 
