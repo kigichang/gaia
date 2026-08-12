@@ -24,6 +24,37 @@ export const SOURCE_LINKS: Record<string, string> = {
   雪霸國家公園管理處: "https://www.spnp.gov.tw/",
   農業部林業及自然保育署: "https://www.forest.gov.tw/",
   維基百科: "https://zh.wikipedia.org/",
+
+  // 22 個縣市政府的官方網站。它們同時是「這筆資料的出處」與「使用者想點進去的
+  // 官方連結」，所以走既有的 sources 機制而不是另外加一個欄位——SourceLinks
+  // 本來就會把認得的來源名稱渲染成連結。
+  //
+  // 全部實測過：19 個直接回 200；新北、桃園要帶瀏覽器 User-Agent 才回 200
+  // （WAF 擋 curl，真人瀏覽器沒問題）；雲林在 Cloudflare 的人機驗證後面，
+  // 自動化一律拿到 403，網址本身是對的。維基百科的資訊框沒填南投縣政府的網站，
+  // 那一筆是另外補的官方網域。
+  基隆市政府: "https://www.klcg.gov.tw",
+  臺北市政府: "https://www.gov.taipei",
+  新北市政府: "https://www.ntpc.gov.tw",
+  桃園市政府: "https://www.tycg.gov.tw",
+  新竹市政府: "https://www.hccg.gov.tw",
+  新竹縣政府: "https://www.hsinchu.gov.tw",
+  宜蘭縣政府: "https://www.e-land.gov.tw",
+  苗栗縣政府: "https://www.miaoli.gov.tw",
+  臺中市政府: "https://www.taichung.gov.tw",
+  彰化縣政府: "https://www.chcg.gov.tw",
+  南投縣政府: "https://www.nantou.gov.tw",
+  花蓮縣政府: "https://www.hl.gov.tw",
+  雲林縣政府: "https://www.yunlin.gov.tw",
+  嘉義市政府: "https://www.chiayi.gov.tw",
+  嘉義縣政府: "https://www.cyhg.gov.tw",
+  臺南市政府: "https://www.tainan.gov.tw",
+  高雄市政府: "https://www.kcg.gov.tw",
+  臺東縣政府: "https://www.taitung.gov.tw",
+  屏東縣政府: "https://www.pthg.gov.tw",
+  連江縣政府: "https://www.matsu.gov.tw",
+  金門縣政府: "https://www.kinmen.gov.tw",
+  澎湖縣政府: "https://www.penghu.gov.tw",
   "GBIF Global Biodiversity Information Facility": "https://www.gbif.org/",
   "Natural Earth": "https://www.naturalearthdata.com/",
   "Open-Meteo ERA5 再分析資料": "https://open-meteo.com/en/docs/historical-weather-api",
