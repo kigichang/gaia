@@ -193,7 +193,7 @@ registry/
 
 不要跟 `items` 搞混：`items` 是 N 個**平行**的子圖層（各自有色票與 `maxActive` 上限），`attach` 是一個母子關係。也不要退回成兩個獨立圖層：主峰離開稜線就沒有意義，分成兩個核取方塊會讓人勾了山脈卻看不到最高點在哪。也不要把點塞進 `tw-ranges.geojson` 混合幾何——`LayerRender` 一個圖層只能一種幾何，而且主峰的詳情卡是 `PlaceCard`（有海拔與氣候圖表），跟山脈的 `FeatureCard` 不同，`detail` 必須分開。
 
-**資料是 join 出來的，不是抄的。** `{ type: "derived", derived: "tw-range-peaks" }` 由 `resolve.ts` 把兩份既有的單一事實來源接起來：座標取自 `src/content/places`、「哪座山峰屬於哪條山脈」取自 `tw-ranges.geojson` 的 `peakId`。同一份 `peakId` 也用來把主峰**排除在「地形景點」之外**（`places-taiwan` 因此改成 async）。所以 5 座主峰的座標與歸屬各自只有一份，不會漂開。三個用途共用 `resolveLayerData` 的同一個快取項目，實測 `tw-ranges.geojson` 只抓一次。
+**資料是 join 出來的，不是抄的。** `{ type: "derived", derived: "tw-range-peaks" }` 由 `resolve.ts` 把兩份既有的單一事實來源接起來：座標取自 `src/content/places`、「哪座山峰屬於哪條山脈」取自 `tw-ranges.geojson` 的 `peakId`。所以 5 座主峰的座標與歸屬各自只有一份，不會漂開。它跟山脈線圖層共用 `resolveLayerData` 的同一個快取項目，實測 `tw-ranges.geojson` 只抓一次。
 
 **主峰的顏色沿用 `place` 藍，不是山脈的洋紅——這是被色票驗證逼出來的，不是隨手選。** POINT 色票（藍／紅／青／黃／紫）已經是 all-pairs 全過的飽和狀態，把山脈洋紅 `#c23f8f` 加進去，它跟原住民族紅 `#e34948` 的**一般視覺 ΔE 只有 13.0（hard FAIL）**，而驗證器明講這一項不能用次要編碼豁免；紫 `#7a3fa6`、棕 `#8a5a2b`、青綠 `#00857a`、橘褐 `#b06a00` 也全部 FAIL（撞紫／撞紅／彩度不足）。藍在語意上也站得住：主峰開的是 `PlaceCard`，本來就是地點。**要動這個顏色請先重跑 `validate_palette.js --pairs all` 明暗兩模式。**
 
@@ -301,7 +301,7 @@ fill   → `${instanceId}-fill` + `${instanceId}-outline`
 
 關聯寫在資料裡——`tw-ranges.geojson` 每個 feature 有 `peakId`，指向 `src/content/places` 的主峰 id。`ThemeMapPage` 的 `highlightIds` memo 會在選取的圖徵上找這個屬性並把它加進清單。
 
-兩個圖層**互相不需要知道對方**：山脈在 `tw-ranges`、主峰在 `places`，各自拿同一份清單去比對即可。所以「地形景點」被關掉時不會壞——那個 id 只是比不到任何圖徵，山脈照樣強調（已實測無錯誤）。要再加別的關聯（例如流域 → 出海口）只要在 geojson 補一個同名屬性，不必動算繪程式。
+兩個圖層**互相不需要知道對方**：山脈在 `tw-ranges`、主峰在 `tw-range-peaks`，各自拿同一份清單去比對即可。要再加別的關聯（例如流域 → 出海口）只要在 geojson 補一個同名屬性，不必動算繪程式。
 
 ### 新增資料
 
@@ -675,12 +675,16 @@ m.isSourceLoaded('contour-source')
     !!m.getLayer('tw-range-peaks-points')
     // 主峰身上要有 join 出來的 rangeId
     m.queryRenderedFeatures({layers:['tw-range-peaks-points']}).map(f=>f.properties.name+'@'+f.properties.rangeId)
-    // 主峰已經不在「地形景點」裡了（該層在臺灣主題只剩臺北）
-    m.queryRenderedFeatures({layers:['places-points']}).map(f=>f.properties.name)
+    // 「地形景點」在臺灣主題是 planned，圖層根本不存在（不是空集合）
+    !!m.getLayer('places-points')  // false
     // tw-ranges.geojson 只能被抓一次（三個用途共用 resolveLayerData 的快取）
     performance.getEntriesByType('resource').filter(r=>/tw-ranges/.test(r.name)).length  // 1
     ```
     抽屜清單要有 5 組巢狀（`.place-list-children`），各含 1 座主峰；搜「雪山」要同時搜得到「雪山（五大山脈・主峰）」與「雪山山脈」，選前者會開主峰卡並把山脈一起加粗。
+
+    ⚠️ **臺灣主題的 `defaultOn` 是「五大山脈」，不是「地形景點」。** 這個主題的 `initialSelection` 是玉山主峰、`camera` 也開在玉山，主峰現在住在五大山脈底下——換掉預設開啟的圖層，進站第一眼就會變成「詳情卡在講玉山主峰，地圖上卻沒有任何圖徵」。
+
+    ⚠️ **「地形景點」是 `planned`，而 `src/content/places/taipei.json` 不可以刪。** 那一層下線的只是「地圖上那顆點」，臺北的地點資料本身還被 `/compare` 的「臺北 ↔ 開羅」預設組合使用，刪掉會讓比較頁那一組壞掉。改動這一帶之後要順手開 `/compare` 點一次那個組合確認（下拉選單要顯示「臺北（25.0°N）」與「開羅（30.0°N）」、四張圖表都在）。
 
 ### ⚠️ 用瀏覽器自動化點 UI 的三個陷阱
 
