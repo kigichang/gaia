@@ -1,0 +1,19 @@
+{
+  "id": "chianan-plain",
+  "name": { "zh": "嘉南平原", "en": "Chianan Plain" },
+  "coord": { "lat": 23.35, "lng": 120.28 },
+  "elevation_m": 10,
+  "region": "taiwan",
+  "topics": ["landform", "hydrology", "human"],
+  "koppen": "Cwa",
+  "landform": "沖積平原",
+  "defaultZoom": 10,
+  "facts": [
+    { "label": "範圍", "value": "面積約 4,550 平方公里，跨彰化、雲林、嘉義、臺南到高雄，是臺灣最大的平原" },
+    { "label": "成因", "value": "濁水溪、北港溪、八掌溪、曾文溪等河川帶出泥沙堆積而成，地勢由東向西緩降入海" },
+    { "label": "水利", "value": "1930 年嘉南大圳完工前多為靠雨水耕作的看天田，通水後才成為全臺穀倉" },
+    { "label": "海岸", "value": "西側外海發育出沙洲與潟湖，是臺灣沙岸地形最典型的一段" }
+  ],
+  "curriculum": { "unit": "臺灣的地形" },
+  "sources": ["維基百科", "農業部農田水利署"]
+}

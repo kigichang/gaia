@@ -1,0 +1,19 @@
+{
+  "id": "lanyang-plain",
+  "name": { "zh": "蘭陽平原", "en": "Lanyang Plain" },
+  "coord": { "lat": 24.72, "lng": 121.75 },
+  "elevation_m": 10,
+  "region": "taiwan",
+  "topics": ["landform", "hydrology", "climate"],
+  "koppen": "Cfa",
+  "landform": "沖積扇平原",
+  "defaultZoom": 11,
+  "facts": [
+    { "label": "範圍", "value": "面積約 330 平方公里，是臺灣東部最大的平原" },
+    { "label": "形狀", "value": "近似三角形，頂點在蘭陽溪出山口，底邊是面向太平洋的海岸線" },
+    { "label": "成因", "value": "蘭陽溪自雪山山脈與中央山脈之間帶出泥沙堆積，屬沖積扇平原" },
+    { "label": "氣候", "value": "秋冬迎東北季風，在山地抬升成地形雨，是臺灣冬半年最多雨的平原" }
+  ],
+  "curriculum": { "unit": "臺灣的地形" },
+  "sources": ["維基百科", "交通部中央氣象署"]
+}

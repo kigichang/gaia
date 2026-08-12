@@ -1,0 +1,19 @@
+{
+  "id": "taoyuan-tableland",
+  "name": { "zh": "桃園台地", "en": "Taoyuan Tableland" },
+  "coord": { "lat": 24.95, "lng": 121.22 },
+  "elevation_m": 145,
+  "region": "taiwan",
+  "topics": ["landform", "hydrology", "human"],
+  "koppen": "Cfa",
+  "landform": "紅土礫石台地",
+  "defaultZoom": 11,
+  "facts": [
+    { "label": "成因", "value": "古石門溪的合成沖積扇被地殼抬升、切割而成，表層覆蓋紅土與礫石" },
+    { "label": "埤塘", "value": "台地上缺少大河，先民開挖埤塘蓄水灌溉，最多時曾達 8,846 口" },
+    { "label": "水利", "value": "日治時期的桃園大圳與戰後的石門水庫完工後，缺水問題才真正解決" },
+    { "label": "地形面", "value": "由中壢、平鎮等多段台地面組成，最高約 250 公尺，向海岸方向降到約 100 公尺" }
+  ],
+  "curriculum": { "unit": "臺灣的地形" },
+  "sources": ["維基百科", "農業部農田水利署"]
+}

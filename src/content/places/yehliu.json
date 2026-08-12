@@ -1,0 +1,19 @@
+{
+  "id": "yehliu",
+  "name": { "zh": "野柳", "en": "Yehliu" },
+  "coord": { "lat": 25.2056, "lng": 121.6904 },
+  "elevation_m": 10,
+  "region": "taiwan",
+  "topics": ["landform"],
+  "koppen": "Cfa",
+  "landform": "海蝕岬角",
+  "defaultZoom": 15,
+  "facts": [
+    { "label": "範圍", "value": "深入海中的狹長岬角，全區長約 1,700 公尺、寬約 250 公尺" },
+    { "label": "地質", "value": "2,500 萬～1,000 萬年前沉積的大寮層厚層砂岩" },
+    { "label": "成因", "value": "岩層軟硬相間，海蝕與風化造成差異侵蝕，留下蕈狀岩、燭臺石與薑石" },
+    { "label": "對照重點", "value": "北部岬灣岩岸的代表，與西部平直的沙岸恰成對比" }
+  ],
+  "curriculum": { "unit": "臺灣的海岸地形" },
+  "sources": ["維基百科", "北海岸及觀音山國家風景區管理處"]
+}

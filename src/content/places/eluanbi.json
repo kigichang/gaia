@@ -1,0 +1,19 @@
+{
+  "id": "eluanbi",
+  "name": { "zh": "鵝鑾鼻", "en": "Cape Eluanbi" },
+  "coord": { "lat": 21.9033, "lng": 120.8528 },
+  "elevation_m": 40,
+  "region": "taiwan",
+  "topics": ["landform", "climate"],
+  "koppen": "Aw",
+  "landform": "珊瑚礁台地",
+  "defaultZoom": 14,
+  "facts": [
+    { "label": "位置", "value": "中央山脈最南端沒入海中之處，也是臺灣本島最南端的岬角" },
+    { "label": "地質", "value": "隆起的珊瑚礁石灰岩台地，三面環海，發育出崩崖、洞穴與礁柱" },
+    { "label": "航路", "value": "鵝鑾鼻燈塔扼守巴士海峽與太平洋間的航道" },
+    { "label": "氣候", "value": "位於北回歸線以南約 170 公里，全年高溫、冬季乾旱，屬熱帶莽原氣候" }
+  ],
+  "curriculum": { "unit": "臺灣的海岸地形" },
+  "sources": ["維基百科", "墾丁國家公園管理處"]
+}

@@ -75,30 +75,29 @@ export const taiwanTheme: ThemeDefinition = {
       id: "places",
       label: "地形景點",
       group: "地形",
+      status: "ready",
       /**
-       * 分類保留、資料重新整理中。
+       * 五座主峰**不在**這一層——它們是「五大山脈」的附屬圖徵。排除的邏輯在
+       * `resolve.ts` 的 `places-taiwan` loader，理由見那裡的說明。
        *
-       * 五座主峰已經移到「五大山脈」底下當附屬圖徵（見那個圖層的 attach），臺北也
-       * 移出這一層，於是這裡暫時沒有圖徵——`status: "ready"` 配一份空集合會是一個
-       * 勾了沒反應也沒有任何說明的核取方塊，`planned` 才是註冊表為這種狀態設計的
-       * 表現方式（停用的核取方塊 + 「資料整理中」+ 說明文字）。
-       *
-       * ⚠️ **臺北的內容檔（`src/content/places/taipei.json`）不可以刪。**
-       * `/compare` 的「臺北 ↔ 開羅」預設組合還在用它，刪掉會讓比較頁的那一組壞掉。
-       * 這一層下線的只是「地圖上那顆點」，不是那筆地點資料本身。
-       *
-       * 要重新上線：把 status 改回 ready、補上
-       * `source: { type: "bundled", content: "places-taiwan" }`（loader 在 resolve.ts
-       * 一併移除了，要跟著加回來）、`colorRole: "place"`、`detail: { type: "place" }`、
-       * `browse: { zoom: 11 }`，並確認 places-taiwan 有排除已經歸到山脈底下的主峰。
+       * ⚠️ **`src/content/places/taipei.json` 不可以刪。** 它同時被 `/compare` 的
+       * 「臺北 ↔ 開羅」預設組合使用，刪掉會讓比較頁那一組壞掉。
        */
-      status: "planned",
+      source: { type: "bundled", content: "places-taiwan" },
       // radius 不填 → 預設 6，與重構前的 places-points 完全一致
       render: { kind: "circle" },
-      detail: { type: "none" },
+      colorRole: "place",
+      detail: { type: "place" },
+      /**
+       * `browse.zoom` 只是 fallback：每個地點的 `defaultZoom` 會覆寫它
+       * （`placesCollection()` 把它寫進 feature 的 `zoom` 屬性）。這一層的尺度差距
+       * 很大——嘉南平原要 zoom 10 才框得住，桶盤嶼要 15 才看得到石柱——所以取景
+       * 交給各筆資料自己決定，這裡只留一個中間值。
+       */
+      browse: { zoom: 11 },
       description:
-        "課本提到的臺灣代表性地形與都市。原本的五座主峰已改列在「五大山脈」各山脈底下，這一層正在重新整理平原、盆地、台地與潟湖等代表地點。",
-      sources: ["交通部中央氣象署", "內政部國土測繪中心"],
+        "課本提到的臺灣代表性地形：平原、盆地、台地、惡地、峽谷、火山，以及岩岸、沙洲潟湖、斷層海岸、珊瑚礁海岸四種海岸。五座主峰改列在「五大山脈」各山脈底下。",
+      sources: ["內政部國土測繪中心", "交通部觀光署", "農業部林業及自然保育署"],
     },
     {
       id: "indigenous",

@@ -1,0 +1,19 @@
+{
+  "id": "huoyanshan",
+  "name": { "zh": "三義火炎山", "en": "Huoyanshan, Sanyi" },
+  "coord": { "lat": 24.3777, "lng": 120.7316 },
+  "elevation_m": 596,
+  "region": "taiwan",
+  "topics": ["landform"],
+  "koppen": "Cwa",
+  "landform": "礫岩惡地",
+  "defaultZoom": 13,
+  "facts": [
+    { "label": "地質", "value": "頭嵙山層火炎山相的厚層礫石夾薄層砂岩，膠結鬆散、一遇大雨就崩落" },
+    { "label": "地形", "value": "風化與雨水侵蝕切出一排排尖銳山峰，谷地內堆滿沖刷下來的礫石" },
+    { "label": "保育", "value": "1986 年公告為苗栗三義火炎山自然保留區，面積 221.66 公頃" },
+    { "label": "對照重點", "value": "與高雄田寮的泥岩惡地並列，是臺灣兩種不同岩性造出的惡地" }
+  ],
+  "curriculum": { "unit": "臺灣的地形" },
+  "sources": ["維基百科", "農業部林業及自然保育署"]
+}

@@ -509,6 +509,14 @@ Node 24 原生支援 TypeScript type stripping，所以 `.mjs` 腳本可以直�
 - `facts` 控制在 4 筆左右，每筆一行講完；長篇說明放課文
 - 比較用的地點，`facts` 裡建議放一筆「對照重點」，明講這組配對要讓學生看見什麼
 
+#### ⚠️ `koppen` 不可以拿 ERA5 自己算
+
+很自然會想到「反正 `public/data/climate/` 就有月均溫與月雨量，直接套柯本公式算一遍最一致」。**實測會算錯，而且錯的方向很固定**：ERA5 是 25 km 網格，冬季雨量被大幅平滑，於是「冬乾」判不出來——嘉南平原、臺中盆地、八卦台地、埔里盆地、桶盤嶼算出來全變成 `Cf*`，而中央氣象署的分區是 `Cwa`（西部 苗栗以南至嘉南平原的平原地帶＋澎湖群島）。同理 `Aw` 會被算成 `Am`／`Cwa`（屏東平原、田寮月世界、鵝鑾鼻），因為最冷月均溫被拉低到 18 °C 以下。
+
+所以 `koppen` 一律照**中央氣象署的臺灣氣候分區**填：北部與東北部平原丘陵 `Cfa`、苗栗以南至嘉南平原的平原地帶與澎湖 `Cwa`、高雄屏東平原 `Aw`、東部全年有雨 `Cfa`、高山依海拔 `Cfb`／`ET`。ERA5 只拿來當**方向性的**交叉檢查，不當判準。
+
+唯一由 ERA5 定案的是大屯火山群（七星山，1,120 m）：它正好卡在 `Cfa`／`Cfb` 的最暖月 22 °C 門檻上（ERA5 21.6 °C，由鞍部測站 825 m 依環境減率外推約 22.1 °C），兩邊都在誤差內，因此取站上自己那份資料看得到的值 `Cfb`。**這是刻意的，不是漏改。**
+
 ### 預設比較組合
 
 `src/compare/presets.ts`。每一組都要挑「緯度接近、地理條件差很多」的配對，並在 `hint` 寫清楚教學意圖。例如臺北與塔曼拉塞特年均溫都是 22.3 °C，年雨量卻是 2078 mm 對 24 mm。
@@ -689,9 +697,11 @@ m.isSourceLoaded('contour-source')
     !!m.getLayer('tw-range-peaks-points')
     // 主峰身上要有 join 出來的 rangeId
     m.queryRenderedFeatures({layers:['tw-range-peaks-points']}).map(f=>f.properties.name+'@'+f.properties.rangeId)
-    // 「地形景點」在臺灣主題是 planned，圖層根本不存在（不是空集合）
-    !!m.getLayer('places-points')  // false
-    // tw-ranges.geojson 只能被抓一次（三個用途共用 resolveLayerData 的快取）
+    // 五座主峰**只能出現在主峰圖層**：勾了「地形景點」也不會在同一個座標上再長一顆
+    m.queryRenderedFeatures({layers:['places-points']})
+      .filter(f=>/玉山主峰|雪山|秀姑巒山|大塔山|新港山/.test(f.properties.name))  // []
+    // tw-ranges.geojson 只能被抓一次（三個用途共用 resolveLayerData 的快取：
+    // 山脈線本身、tw-range-peaks 的 join、places-taiwan 排除主峰）
     performance.getEntriesByType('resource').filter(r=>/tw-ranges/.test(r.name)).length  // 1
     ```
     抽屜清單要有 5 組巢狀（`.place-list-children`），各含 1 座主峰；搜「雪山」要同時搜得到「雪山（五大山脈・主峰）」與「雪山山脈」，選前者會開主峰卡並把山脈一起加粗。
@@ -700,7 +710,9 @@ m.isSourceLoaded('contour-source')
 
     ⚠️ **臺灣主題的 `defaultOn` 是「五大山脈」，不是「地形景點」。** 這個主題的 `initialSelection` 是玉山主峰、`camera` 也開在玉山，主峰現在住在五大山脈底下——換掉預設開啟的圖層，進站第一眼就會變成「詳情卡在講玉山主峰，地圖上卻沒有任何圖徵」。
 
-    ⚠️ **「地形景點」是 `planned`，而 `src/content/places/taipei.json` 不可以刪。** 那一層下線的只是「地圖上那顆點」，臺北的地點資料本身還被 `/compare` 的「臺北 ↔ 開羅」預設組合使用，刪掉會讓比較頁那一組壞掉。改動這一帶之後要順手開 `/compare` 點一次那個組合確認（下拉選單要顯示「臺北（25.0°N）」與「開羅（30.0°N）」、四張圖表都在）。
+    ⚠️ **`src/content/places/taipei.json` 不可以刪。** 它同時被 `/compare` 的「臺北 ↔ 開羅」預設組合使用，刪掉會讓比較頁那一組壞掉。改動 `src/content/places/` 之後要順手開 `/compare` 點一次那個組合確認（下拉選單要顯示「臺北（25.0°N）」與「開羅（30.0°N）」、四張圖表都在）。
+
+    ⚠️ **`src/content/places/` 新增一筆地點，就會同時改動三個地方**：地形景點圖層、`/compare` 的兩個下拉選單、主題頁搜尋索引。所以新增後 `npm run build:climate` 是必須的——`/compare` 選到一個沒有氣候 JSON 的地點會得到空圖表，而 `npm run validate` **不會**擋（climate 驗證只檢查「有 JSON 的必須對得到地點」，反向不檢查）。
 
 ### ⚠️ 用瀏覽器自動化點 UI 的三個陷阱
 

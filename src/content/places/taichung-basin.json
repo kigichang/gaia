@@ -1,0 +1,19 @@
+{
+  "id": "taichung-basin",
+  "name": { "zh": "臺中盆地", "en": "Taichung Basin" },
+  "coord": { "lat": 24.15, "lng": 120.68 },
+  "elevation_m": 95,
+  "region": "taiwan",
+  "topics": ["landform", "human"],
+  "koppen": "Cwa",
+  "landform": "盆地",
+  "defaultZoom": 11,
+  "facts": [
+    { "label": "範圍", "value": "面積約 370 平方公里，南北長約 40 公里，盆底海拔約 25～95 公尺" },
+    { "label": "成因", "value": "東側車籠埔斷層、西側彰化斷層之間的地層下陷，再由河川沖積填平" },
+    { "label": "界線", "value": "西以大肚台地與八卦台地為屏，東接霧峰山地與南投丘陵" },
+    { "label": "人文", "value": "臺中市區座落其中，是臺灣中部最大的都會區" }
+  ],
+  "curriculum": { "unit": "臺灣的地形與都市" },
+  "sources": ["維基百科", "內政部國土測繪中心"]
+}

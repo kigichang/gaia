@@ -1,0 +1,19 @@
+{
+  "id": "puli-basin",
+  "name": { "zh": "埔里盆地", "en": "Puli Basin" },
+  "coord": { "lat": 23.965, "lng": 120.965 },
+  "elevation_m": 450,
+  "region": "taiwan",
+  "topics": ["landform"],
+  "koppen": "Cwa",
+  "landform": "山間盆地",
+  "defaultZoom": 13,
+  "facts": [
+    { "label": "範圍", "value": "面積約 42 平方公里，海拔 380～700 公尺，是埔里盆地群中最大的一座" },
+    { "label": "盆地群", "value": "周圍散布 17 座大小盆地，日月潭、魚池、頭社都屬同一群" },
+    { "label": "成因", "value": "學界尚無定論，斷層拉張、地塹與背負型盆地等說法並存" },
+    { "label": "位置", "value": "眉溪與南港溪在此匯流，鎮郊虎子山立有臺灣地理中心碑" }
+  ],
+  "curriculum": { "unit": "臺灣的地形" },
+  "sources": ["維基百科", "內政部國土測繪中心"]
+}

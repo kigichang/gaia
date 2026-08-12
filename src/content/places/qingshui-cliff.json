@@ -1,0 +1,19 @@
+{
+  "id": "qingshui-cliff",
+  "name": { "zh": "清水斷崖", "en": "Qingshui Cliff" },
+  "coord": { "lat": 24.217, "lng": 121.683 },
+  "elevation_m": 490,
+  "region": "taiwan",
+  "topics": ["landform"],
+  "koppen": "Cfa",
+  "landform": "斷層海岸",
+  "defaultZoom": 12,
+  "facts": [
+    { "label": "範圍", "value": "沿蘇花公路綿延約 12 公里，崖頂的清水山海拔 2,408 公尺" },
+    { "label": "地質", "value": "由大理岩、片麻岩與綠色片岩構成，岩性堅硬才撐得住近乎垂直的崖面" },
+    { "label": "成因", "value": "板塊碰撞持續抬升形成斷層線崖，崖腳再被太平洋海浪不斷侵蝕" },
+    { "label": "對照重點", "value": "東部海岸山高水深、缺少平原，與西部寬廣的沖積海岸形成強烈對比" }
+  ],
+  "curriculum": { "unit": "臺灣的海岸地形" },
+  "sources": ["維基百科", "交通部觀光署"]
+}

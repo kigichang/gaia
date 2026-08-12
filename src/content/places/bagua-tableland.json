@@ -1,0 +1,19 @@
+{
+  "id": "bagua-tableland",
+  "name": { "zh": "八卦台地", "en": "Bagua Tableland" },
+  "coord": { "lat": 23.95, "lng": 120.625 },
+  "elevation_m": 315,
+  "region": "taiwan",
+  "topics": ["landform"],
+  "koppen": "Cwa",
+  "landform": "紅土礫石台地",
+  "defaultZoom": 11,
+  "facts": [
+    { "label": "範圍", "value": "北起大肚溪、南至濁水溪，面積約 210 平方公里，最高點橫山海拔 443 公尺" },
+    { "label": "位置", "value": "隔開西側的彰化平原與東側的臺中盆地，最窄處約 4 公里、最寬約 10 公里" },
+    { "label": "地質", "value": "北段為砂岩夾礫石層，南段為厚層礫岩，表層同樣覆蓋紅土" },
+    { "label": "對照重點", "value": "台地抬升、臺中盆地下陷，兩者隔彰化斷層相望，是同一次地殼變動的兩面" }
+  ],
+  "curriculum": { "unit": "臺灣的地形" },
+  "sources": ["維基百科", "內政部國土測繪中心"]
+}

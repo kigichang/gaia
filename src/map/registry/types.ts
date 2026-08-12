@@ -45,7 +45,7 @@ export type ColorRole =
 
 /** `src/content` 底下用 import.meta.glob 載入、已經打包進 bundle 的內容集合。 */
 export type BundledContentId =
-  // "places-taiwan" 曾經在這裡，現在沒有圖層在用（見 themes/taiwan.ts 的 places）
+  | "places-taiwan"
   | "places-world"
   | "indigenous";
 

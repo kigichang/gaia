@@ -1,0 +1,19 @@
+{
+  "id": "waisanding",
+  "name": { "zh": "外傘頂洲", "en": "Waisanding Sandbar" },
+  "coord": { "lat": 23.4892, "lng": 120.0785 },
+  "elevation_m": 0,
+  "region": "taiwan",
+  "topics": ["landform", "hydrology"],
+  "koppen": "Cwa",
+  "landform": "離岸沙洲",
+  "defaultZoom": 13,
+  "facts": [
+    { "label": "位置", "value": "行政上屬雲林縣口湖鄉，實際卻漂到嘉義縣東石鄉外海十餘公里處" },
+    { "label": "漂移", "value": "平均每年往西南漂移 60～70 公尺，因此被稱為「移動的國土」" },
+    { "label": "成因", "value": "沙源主要來自濁水溪；濁水溪整治後輸沙減少，沙洲只退不進" },
+    { "label": "縮小", "value": "1962 至 2002 的四十年間流失逾 1,000 公頃，退潮面積已剩約 1,000 餘公頃" }
+  ],
+  "curriculum": { "unit": "臺灣的海岸地形" },
+  "sources": ["維基百科", "經濟部水利署"]
+}

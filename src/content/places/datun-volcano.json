@@ -1,0 +1,19 @@
+{
+  "id": "datun-volcano",
+  "name": { "zh": "大屯火山群", "en": "Datun Volcano Group" },
+  "coord": { "lat": 25.1706, "lng": 121.5534 },
+  "elevation_m": 1120,
+  "region": "taiwan",
+  "topics": ["landform"],
+  "koppen": "Cfb",
+  "landform": "複式火山群",
+  "defaultZoom": 12,
+  "facts": [
+    { "label": "主峰", "value": "最高峰七星山海拔 1,120 公尺，是一座複式火山" },
+    { "label": "噴發", "value": "最後一次噴發約在 5,000～6,000 年前，已符合國際上活火山的定義" },
+    { "label": "岩性", "value": "以安山岩為主；金山、萬里一帶地下約 20 公里處仍有岩漿庫存在" },
+    { "label": "後火山活動", "value": "小油坑的噴氣孔與北投、金山的溫泉，都是岩漿餘熱的證據" }
+  ],
+  "curriculum": { "unit": "臺灣的地形與板塊運動" },
+  "sources": ["維基百科", "陽明山國家公園管理處"]
+}

@@ -1,0 +1,19 @@
+{
+  "id": "tongpan-basalt",
+  "name": { "zh": "桶盤嶼柱狀玄武岩", "en": "Tongpan Islet Basalt Columns" },
+  "coord": { "lat": 23.5112, "lng": 119.5185 },
+  "elevation_m": 15,
+  "region": "taiwan",
+  "topics": ["landform"],
+  "koppen": "Cwa",
+  "landform": "柱狀玄武岩方山",
+  "defaultZoom": 15,
+  "facts": [
+    { "label": "地質", "value": "玄武岩熔岩冷卻收縮裂出六角或多角柱狀節理，柱高約 20 公尺、寬約 1.5 公尺" },
+    { "label": "島嶼", "value": "面積約 0.3 平方公里，全島被石柱環抱，有「澎湖黃石公園」之稱" },
+    { "label": "火山活動", "value": "澎湖群島由 1,740 萬～800 萬年前的裂隙式噴發形成，共 90 座島嶼、總面積約 128 平方公里" },
+    { "label": "保育", "value": "本島於 2008 年劃為桶盤地質公園；東海的錠鉤嶼、雞善嶼、小白沙嶼則在 1992 年公告為澎湖玄武岩自然保留區" }
+  ],
+  "curriculum": { "unit": "臺灣的地形" },
+  "sources": ["維基百科", "澎湖國家風景區管理處"]
+}

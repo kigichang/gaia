@@ -1,0 +1,19 @@
+{
+  "id": "huatung-valley",
+  "name": { "zh": "花東縱谷", "en": "Huatung Valley" },
+  "coord": { "lat": 23.33, "lng": 121.31 },
+  "elevation_m": 135,
+  "region": "taiwan",
+  "topics": ["landform", "hydrology"],
+  "koppen": "Cfa",
+  "landform": "縱谷",
+  "defaultZoom": 10,
+  "facts": [
+    { "label": "範圍", "value": "北起花蓮、南至臺東，長約 180 公里、寬 2～7 公里，海拔 50～250 公尺" },
+    { "label": "成因", "value": "菲律賓海板塊與歐亞板塊擠壓形成，夾在中央山脈與海岸山脈之間" },
+    { "label": "水系", "value": "北段花蓮溪、中段秀姑巒溪、南段卑南溪，分屬三個獨立水系" },
+    { "label": "地質證據", "value": "海岸山脈西緣的利吉層延伸約 70 公里，是板塊碰撞把海底物質推上陸地的紀錄" }
+  ],
+  "curriculum": { "unit": "臺灣的地形與板塊運動" },
+  "sources": ["維基百科", "內政部國土測繪中心"]
+}

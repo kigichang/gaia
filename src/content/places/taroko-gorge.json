@@ -1,0 +1,19 @@
+{
+  "id": "taroko-gorge",
+  "name": { "zh": "太魯閣峽谷", "en": "Taroko Gorge" },
+  "coord": { "lat": 24.172, "lng": 121.545 },
+  "elevation_m": 360,
+  "region": "taiwan",
+  "topics": ["landform", "hydrology"],
+  "koppen": "Cfa",
+  "landform": "大理岩峽谷",
+  "defaultZoom": 13,
+  "facts": [
+    { "label": "地質", "value": "厚達千餘公尺的大理岩，由石灰岩經高溫高壓變質而成" },
+    { "label": "成因", "value": "造山運動快速抬升，立霧溪同步向下切割，切出深逾 1,000 公尺的峽谷" },
+    { "label": "景觀", "value": "燕子口的壺穴與湧泉、九曲洞崖壁上的斷層與褶皺，都可直接看見" },
+    { "label": "保育", "value": "1986 年成立太魯閣國家公園，總面積約 92,000 公頃" }
+  ],
+  "curriculum": { "unit": "臺灣的地形" },
+  "sources": ["維基百科", "太魯閣國家公園管理處"]
+}

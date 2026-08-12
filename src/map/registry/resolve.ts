@@ -35,10 +35,22 @@ const COLORS: Record<ColorRole, string> = LAYER_COLORS;
 // 這裡也是可點清單所需屬性（name／meta／zoom）附加上去的地方——
 // 有了它，一個通用的清單元件就能取代 ExplorePage 裡兩份寫死的清單。
 
-// 「places-taiwan」已經沒有圖層在用：五座主峰移到五大山脈底下當附屬圖徵，臺北也
-// 從地形景點移出，那一層因此改成 planned（見 themes/taiwan.ts 的說明）。要讓它重新
-// 上線就把 loader 加回來，記得排除已經歸到山脈底下的主峰。
 const BUNDLED_LOADERS = {
+  /**
+   * 地形景點（臺灣）。
+   *
+   * **排除五座主峰**：它們已經是「五大山脈」的附屬圖徵（`tw-range-peaks`），
+   * 兩層同時開啟時會在完全相同的座標上疊出兩顆點，而點擊仲裁只會挑中其中一顆。
+   * 歸屬關係讀自 `tw-ranges.geojson` 的 `peakId`——跟 `tw-range-peaks` 是同一份
+   * 單一事實來源，不會漂開，也共用 `resolveLayerData` 的快取，不會多抓一次檔案。
+   *
+   * 抓不到山脈幾何時 `rangePeakToRange()` 回空 Map，於是這裡退回顯示全部地點
+   * （含主峰）——比整層消失好，見那支函式的說明。
+   */
+  "places-taiwan": async () => {
+    const peakToRange = await rangePeakToRange();
+    return placesCollection("taiwan", (p) => !peakToRange.has(p.id));
+  },
   "places-world": async () => placesCollection("world"),
   indigenous: async () =>
     toFeatureCollection(

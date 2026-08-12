@@ -1,0 +1,19 @@
+{
+  "id": "linkou-tableland",
+  "name": { "zh": "林口台地", "en": "Linkou Tableland" },
+  "coord": { "lat": 25.0664, "lng": 121.3644 },
+  "elevation_m": 250,
+  "region": "taiwan",
+  "topics": ["landform"],
+  "koppen": "Cfa",
+  "landform": "紅土礫石台地",
+  "defaultZoom": 12,
+  "facts": [
+    { "label": "範圍", "value": "面積約 210 平方公里，頂部平坦面約 31 平方公里，最高約 250 公尺" },
+    { "label": "地質", "value": "200 萬～80 萬年前堆積的礫石與砂泥層，上覆厚達 12 公尺的紅土" },
+    { "label": "成因", "value": "原是雪山山脈西側的沖積平原，隨造山運動抬升，東側臺北盆地則相對陷落" },
+    { "label": "對照重點", "value": "台地面與相鄰的臺北盆地落差逾 200 公尺，是觀察抬升與陷落並存的好例子" }
+  ],
+  "curriculum": { "unit": "臺灣的地形" },
+  "sources": ["維基百科", "內政部國土測繪中心"]
+}

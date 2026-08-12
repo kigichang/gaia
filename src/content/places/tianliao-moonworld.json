@@ -1,0 +1,19 @@
+{
+  "id": "tianliao-moonworld",
+  "name": { "zh": "田寮月世界", "en": "Tianliao Moon World" },
+  "coord": { "lat": 22.8858, "lng": 120.39 },
+  "elevation_m": 25,
+  "region": "taiwan",
+  "topics": ["landform"],
+  "koppen": "Aw",
+  "landform": "泥岩惡地",
+  "defaultZoom": 14,
+  "facts": [
+    { "label": "地質", "value": "古亭坑層的青灰色泥岩，顆粒細、透水性差，雨水只能在表面沖刷" },
+    { "label": "地形", "value": "密集的雨蝕溝把山坡切成鋸齒狀稜脊，寸草不生，地理學上稱為惡地" },
+    { "label": "植被", "value": "泥岩表面析出鹽粉、環境偏鹼性，只有耐鹽鹼的植物能存活" },
+    { "label": "相關地景", "value": "同一套泥岩層也造就了臺灣分布最密集的泥火山群" }
+  ],
+  "curriculum": { "unit": "臺灣的地形" },
+  "sources": ["維基百科", "交通部觀光署"]
+}

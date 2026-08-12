@@ -1,0 +1,19 @@
+{
+  "id": "qigu-lagoon",
+  "name": { "zh": "七股潟湖", "en": "Qigu Lagoon" },
+  "coord": { "lat": 23.1237, "lng": 120.0783 },
+  "elevation_m": 0,
+  "region": "taiwan",
+  "topics": ["landform", "hydrology"],
+  "koppen": "Cwa",
+  "landform": "潟湖",
+  "defaultZoom": 13,
+  "facts": [
+    { "label": "範圍", "value": "水域面積約 1,600 公頃，外側由青山港汕、網子寮汕、頂頭額汕等沙洲圍成" },
+    { "label": "成因", "value": "曾文溪四次改道帶來大量泥沙，把昔日的台江內海淤積成今日的潟湖" },
+    { "label": "生態", "value": "冬季黑面琵鷺等候鳥的重要棲地，湖內以牡蠣養殖為主" },
+    { "label": "對照重點", "value": "沙洲—潟湖—海埔地是臺灣西南海岸的典型組合，與東部斷層海岸完全不同" }
+  ],
+  "curriculum": { "unit": "臺灣的海岸地形" },
+  "sources": ["維基百科", "臺江國家公園管理處"]
+}
