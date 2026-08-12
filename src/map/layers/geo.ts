@@ -291,11 +291,55 @@ export function toFeatureCollection<T>(
  * - **點擊**：點在字的正中央會同時命中兩層，兩個 handler 都會收到**同一個**
  *   `click` 事件。用 `originalEvent` 的同一性擋掉第二次，避免同一下點擊觸發兩次
  *   選取（結果一樣，但會多一次算繪與一次抽屜收合）。
+ *
+ * ## 跨 instance 的命中仲裁（`competingLayerIds`）
+ *
+ * 上面那個 `originalEvent` 去重只在**同一組**圖層內有效。**不同 instance 之間**
+ * 也會互相蓋到：山峰的圓點畫在縣市面之上，點主峰時兩層都命中，而 maplibre 的
+ * `map.on(type, layerId, …)` 是依**監聽註冊順序**派送的——註冊順序只是「使用者
+ * 先勾了哪個圖層」的意外結果。地形景點預設開啟、縣市界後來才勾，於是縣市的
+ * handler 最後跑、它的 `setSelected` 蓋掉山峰的：**實測點玉山主峰會開出南投縣的
+ * 卡片，五大山脈的主峰等於完全點不到。**
+ *
+ * 所以必須依**算繪順序**仲裁，見 `isTopmostHit`。
  */
+/**
+ * 這一下點擊該不該由 `layerIds` 這一組處理。
+ *
+ * 規則是「**小目標優先，其餘照算繪順序**」：
+ *
+ * 1. **命中的圓點優先。** 圓點半徑只有 6–7 px，沿線標註的命中範圍卻是整個文字方塊，
+ *    面更是一整個縣。重疊時使用者瞄的一定是那顆點——線、標註與面在別的地方都還有
+ *    一大片可以點，那顆點沒有別的地方可以點。實測「阿里山山脈」的標註剛好蓋住大塔山，
+ *    純照算繪順序會讓那座山峰點不到（標註依設計就是畫在點之上，見 layerOrder.ts）。
+ * 2. 否則取 `queryRenderedFeatures` 的第一筆，也就是**畫在最上面**的那一個。這符合
+ *    使用者眼睛看到的堆疊關係，而且完全不受監聽註冊順序影響（見上面的說明）。
+ *
+ * ⚠️ `layers` 裡若混進已經被移除的圖層 id，maplibre 會報錯，所以先用 `getLayer`
+ * 濾一次——切底圖的瞬間圖層是真的不存在的。
+ */
+function isTopmostHit(
+  map: MapLibreMap,
+  e: MapLayerMouseEvent,
+  layerIds: string[],
+  competing: string[],
+): boolean {
+  const layers = competing.filter((id) => map.getLayer(id));
+  if (layers.length === 0) return true;
+
+  const hits = map.queryRenderedFeatures(e.point, { layers });
+  if (hits.length === 0) return true;
+
+  const smallest = hits.find((f) => map.getLayer(f.layer.id)?.type === "circle");
+  return layerIds.includes((smallest ?? hits[0]).layer.id);
+}
+
 export function bindGeoLayerInteractions(
   map: MapLibreMap,
   layerIds: string[],
   onClick: (id: string) => void,
+  /** 目前所有可點主題圖層的 id（跨 instance）。每次點擊現查，不要快照。 */
+  competingLayerIds: () => string[],
 ) {
   const hovered = new Set<string>();
   let handledEvent: unknown = null;
@@ -304,6 +348,7 @@ export function bindGeoLayerInteractions(
   for (const layerId of layerIds) {
     const handleClick = (e: MapLayerMouseEvent) => {
       if (e.originalEvent === handledEvent) return; // 同一下點擊已經被另一層處理過
+      if (!isTopmostHit(map, e, layerIds, competingLayerIds())) return;
       const id = e.features?.[0]?.properties?.id;
       if (typeof id !== "string") return;
       handledEvent = e.originalEvent;

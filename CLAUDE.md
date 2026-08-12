@@ -244,6 +244,19 @@ fill   → `${instanceId}-fill` + `${instanceId}-outline`
 
 兩層在畫面上是重疊的，所以 `bindGeoLayerInteractions()` 收**一組**圖層一起管理，不是一層一組獨立監聽：游標用 `hovered` 集合記住還停在哪幾層上（否則滑鼠從字移到線時，標註層的 `mouseleave` 會把游標重設掉，即使人還停在線上），點擊則用 `originalEvent` 的同一性擋掉第二次（點在字的正中央會同時命中兩層）。`useGeoLayers` 的互動記帳因此以 **instanceId** 為 key，不是 layerId。
 
+### ⚠️ 點擊仲裁不可以交給 maplibre 的派送順序
+
+`originalEvent` 那個去重只在**同一組**圖層內有效。**不同 instance 之間也會互相蓋到**，而 `map.on(type, layerId, …)` 是依**監聽註冊順序**派送的——註冊順序只是「使用者先勾了哪個圖層」的意外結果（`useGeoLayers` 的 Effect 1 只替新出現的 instance 補綁，不會重排既有的）。
+
+實測踩過：地形景點 `defaultOn`、縣市界後來才勾，於是縣市的 handler 最後跑、它的 `setSelected` 蓋掉山峰的——**點玉山主峰開出的是南投縣的卡片，五大山脈的主峰等於完全點不到**。而且圖層堆疊順序是對的（`places-points` 確實在 `tw-counties-fill` 之上），所以查 `layerOrder` 完全查不出問題。
+
+修法是 `geo.ts` 的 `isTopmostHit()`：每次點擊現查 `queryRenderedFeatures`，規則是「**小目標優先，其餘照算繪順序**」。
+
+- **命中的圓點優先**，即使它不是最上面那一層。圓點半徑只有 6–7 px，沿線標註的命中範圍卻是整個文字方塊。實測「阿里山山脈」的標註剛好蓋住大塔山，純照算繪順序那座山峰一樣點不到——而標註畫在點之上是 `layerOrder.ts` 的既定設計，不能為了這件事去動堆疊。線、標註與面在別的地方都還有一大片可以點，那顆點沒有別的地方可以點。
+- 否則取 `queryRenderedFeatures` 的第一筆（畫在最上面的）。
+
+兩個實作細節不要拿掉：**競爭圖層清單要用 ref**（已綁好的 instance 不會重綁，得讀得到之後才勾選的圖層），**查詢前要用 `map.getLayer()` 濾掉不存在的 id**（切底圖的瞬間圖層是真的不存在的，混進去 maplibre 會報錯）。
+
 ### 顏色
 
 `src/map/thematicColors.ts` 是唯一的顏色來源。策略是**三組獨立色票**（`POINT` / `LINE` / `FILL`），各自**組內** all-pairs 驗證即可——形狀本身就在區辨（18% 透明度的面染跟 6px 圓點是不同的視覺通道），跨幾何的配對不需要驗證。每組再用 `MAX_ACTIVE_BY_KIND`（circle 4 / line 3 / fill 2）封頂，需求才維持在可解範圍。

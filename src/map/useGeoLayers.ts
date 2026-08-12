@@ -85,6 +85,13 @@ export function useGeoLayers(
 
   // ── Effect 1：互動綁定 ──────────────────────────────────────────────
   const interactionCleanups = useRef(new Map<string, () => void>());
+  /**
+   * 目前所有可點圖層的 id（跨 instance），給 `bindGeoLayerInteractions` 依算繪順序
+   * 仲裁點擊用。**必須是 ref 而不是 closure 變數**：已經綁好的 instance 不會重綁
+   * （重綁會讓監聽累積），所以它們手上的 getter 得讀得到之後才勾選的圖層。
+   */
+  const hitLayerIds = useRef<string[]>([]);
+  const getHitLayerIds = useCallback(() => hitLayerIds.current, []);
   useEffect(() => {
     if (!map) return;
 
@@ -95,6 +102,7 @@ export function useGeoLayers(
         .filter((i) => i.detail.type !== "none")
         .map((i) => [i.instanceId, geoHitLayerIds(i.instanceId, i.render)]),
     );
+    hitLayerIds.current = [...wanted.values()].flat();
 
     for (const [instanceId, off] of interactionCleanups.current) {
       if (!wanted.has(instanceId)) {
@@ -107,14 +115,19 @@ export function useGeoLayers(
       if (interactionCleanups.current.has(instanceId)) continue;
       interactionCleanups.current.set(
         instanceId,
-        bindGeoLayerInteractions(map, layerIds, (featureId) => {
-          // 從 ref 現查 detail，避免 closure 抓到過期的 DetailSpec
-          const inst = instancesRef.current.find((i) => i.instanceId === instanceId);
-          if (inst) onSelectRef.current(inst.detail, featureId);
-        }),
+        bindGeoLayerInteractions(
+          map,
+          layerIds,
+          (featureId) => {
+            // 從 ref 現查 detail，避免 closure 抓到過期的 DetailSpec
+            const inst = instancesRef.current.find((i) => i.instanceId === instanceId);
+            if (inst) onSelectRef.current(inst.detail, featureId);
+          },
+          getHitLayerIds,
+        ),
       );
     }
-  }, [map, instanceKey]);
+  }, [map, instanceKey, getHitLayerIds]);
 
   // 卸載時解掉所有互動監聽
   useEffect(() => {
