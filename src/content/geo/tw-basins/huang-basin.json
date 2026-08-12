@@ -1,0 +1,43 @@
+{
+  "id": "huang-basin",
+  "collection": "tw-basins",
+  "name": {
+    "zh": "磺溪流域",
+    "en": "Huang River Basin"
+  },
+  "subtitle": "跨省市河川・北部（淡水河支流）",
+  "stats": [
+    {
+      "label": "流域面積",
+      "value": "49 km²"
+    },
+    {
+      "label": "分類",
+      "value": "跨省市河川"
+    },
+    {
+      "label": "對應河川",
+      "value": "磺溪"
+    }
+  ],
+  "facts": [
+    {
+      "label": "涵蓋縣市",
+      "value": "臺北市北投區"
+    },
+    {
+      "label": "分水嶺",
+      "value": "流域的邊界就是分水嶺——雨水落在邊界的哪一側，決定它會匯入這條河還是隔壁的河"
+    },
+    {
+      "label": "河川小檔案",
+      "value": "流經北投溫泉區，因溪水含硫磺得名，是全臺主要河川中最短的一條"
+    }
+  ],
+  "curriculum": {
+    "unit": "臺灣的水文"
+  },
+  "sources": [
+    "經濟部水利署"
+  ]
+}

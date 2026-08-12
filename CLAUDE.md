@@ -61,6 +61,7 @@ Node ≥ 22.12（vite 8 要求）。開發機與 CI 都用 Node 24。
 | 水庫基本資料／水庫水情 | `opendata.wra.gov.tw/api/v2/…?format=CSV`（經濟部水利署） | **只在建置期呼叫**。⚠️ **沒有 CORS 標頭**（瀏覽器一定抓不到），而且掛著 bot 防護，見下 |
 | 水庫蓄水範圍 | `gic.wra.gov.tw/gis/gic/API/Google/DownLoad.aspx?fname=ressub&filetype=KML` | **只在建置期呼叫**，約 38 MB 的 KML，只用來算形心 |
 | 河川(支流) 幾何 | `gic.wra.gov.tw/gis/gic/API/Google/DownLoad.aspx?fname=RIVERLIN&filetype=SHP` | **只在建置期呼叫**，SHP（zip 包 .shp+.dbf），座標系統 TWD97/TM2 zone 121，見下 |
+| 河川流域範圍圖 | `gic.wra.gov.tw/gis/gic/API/Google/DownLoad.aspx?fname=BASIN&filetype=SHP` | **只在建置期呼叫**，SHP（面），同樣 TWD97/TM2 zone 121，見下 |
 | 河川長度／流域面積 | `www.wra.gov.tw/cp.aspx?n=3163&dn=3164`（經濟部水利署） | 沒有開放資料 API，人工抄錄進 `scripts/lib/rivers.mjs` 的 `RIVER_FACTS` |
 | 基本地理事實（山脈走向、主峰高度、河川分界…） | `zh.wikipedia.org` 各條目 | **程式完全不呼叫**，人工查閱後寫進 `src/content/`。次級來源，用法見「內容撰寫規範」，CC BY-SA |
 
@@ -132,6 +133,18 @@ NLSC WMTS 是 `{z}/{y}/{x}`——**y 在 x 前面**，跟絕大多數 XYZ 服務
 
 **⚠️ 即使做了以上兩步，仍有約 11 條河川（烏溪、高屏溪、淡水河、濁水溪、中港溪、後龍溪、大安溪、朴子溪、急水溪、鹽水溪、阿公店溪）的圖徵只涵蓋官方幹流長度的 10–50%。** 原因是這幾條河的官方「幹流長度」是沿著**上游改稱其他歷史／支流名稱的河段**去量的（例如淡水河的 158.7 公里實際上是沿大漢溪／新店溪這類另外命名的支流量出來的），不是簡單的名稱別名能自動接上。這是這份免費資料本身的完整度限制，不是分群邏輯的 bug——曾經評估過人工逐條研究上游別名鏈，但這是需要跨多個資料源驗證的水文研究工作，範圍遠超過「畫一張教學地圖」。目前的做法是**如實標註**：`scripts/build-geodata.mjs` 建置時會印出這份清單，對應河川的內容檔（`src/content/geo/tw-rivers/<id>.json`）多一筆「資料涵蓋」fact 說明圖上的線只是下游一小段，長度／流域面積數字仍然是官方全流域數字。**新增或替換河川圖資後要重新量測涵蓋率並更新這份清單**，不要假設分群邏輯永遠夠用。
 
+### 流域分區：跟河川「共用清單、不共用幾何」
+
+「流域分區」（`tw-basins`，面）是河川的姊妹圖層，回答的問題不一樣——不是「這條河流過哪裡」，是「這片山坡的雨水會流進哪條河」。**幾何完全是另一份資料**（水利地理資訊服務平台的「河川流域範圍圖」，BASIN，面），不是從河川線算出來的：集水區範圍需要真正的水文測繪（分水嶺、地表逕流方向），不是幾何運算能從一條線推出面。
+
+**真正共用的是「這個官方河川叫什麼名字、對應本站哪個 id」這件事**，寫在 `scripts/lib/rivers.mjs` 裡：`tw-basins` 的 id 對照表（`BASIN_IDS`）直接從 `RIVER_IDS` 衍生（把 `-river` 尾綴換成 `-basin`，不是另外手動輸入 26 筆），長度／流域面積的官方數字（`RIVER_FACTS`）也是同一份。這才是使用者問「能不能跟河川資料合併」時真正該合併的部分——兩層各自的幾何抓取／剖析邏輯完全獨立（不同 SHP、不同 shape type），但「26 個官方河川是誰、面積是多少」只維護一份，不會有兩個地方各自對到不同的數字。
+
+**⚠️ 兩層的 id 刻意不共用**（`gaoping-river` vs `gaoping-basin`），即使兩者指的是同一條河。這不是隨手加的尾綴：「主要河川」跟「流域分區」是兩個各自獨立可勾選的圖層，不是像五大山脈→主峰那種父子 `attach` 關係，如果共用同一個 id，選取其中一層會不會意外連動強調另一層（透過 `highlightIds` 的 Set 比對）沒有測過、行為未定義。用不同尾綴把兩個 id 命名空間分開，讓行為可預測——跟 `RIVER_IDS` 當初為了不跟水庫 id 撞名而加 `-river` 尾綴，是同一個理由。
+
+**BASIN 這份資料本身乾淨很多，不需要 RIVERLIN 那套分群邏輯**：143 筆 record 裡，26 個官方河川名稱各自剛好對到一筆**單一環、無孔洞**的多邊形（`build-geodata.mjs` 的 transform 會在遇到多環時直接丟例外，不猜哪個環是洞），面積跟官方數字的誤差多在 10% 以內（濁水溪 3167.5 vs 官方 3157 km²、淡水河 2733.9 vs 2726、卑南溪 1605.2 vs 1603）。精確比對名稱就夠了，沒有 RIVERLIN 那種「同名不同河」的問題。
+
+顏色沿用 `hydrology`（水系藍），跟河川線同色：面／線是已經一起驗證過的色票（見「顏色」一節的「線／面三色」），這裡刻意不挑另一個顏色——半透明面跟細線是不同的視覺通道，同色反而強化「這是同一個水系家族」的語意，跟縣市界橘、山脈洋紅維持區隔。
+
 ---
 
 ## 硬性禁止事項
@@ -179,6 +192,7 @@ ID 常數定義在 `src/map/layers/*.ts`，**一律 import 常數，不要寫死
 | `quakes-points` | circle |
 | `tw-reservoirs-points` | circle（顏色是**依蓄水率分級的表達式**，不是單一色，見下） |
 | `tw-rivers-line` / `tw-rivers-label` | line + symbol |
+| `tw-basins-fill` / `tw-basins-outline` | fill + line |
 
 `dem` 與 `dem-terrain` 是兩個來源但都指向同一個 shared DEM protocol：maplibre 會警告 hillshade 與 terrain 共用來源會降低算繪品質，拆開可消除警告，而底層圖磚快取仍然共用、不會重複下載。
 
@@ -817,6 +831,19 @@ m.isSourceLoaded('contour-source')
     - ⚠️ 這份圖資是**依名稱字串分筆，不是依實際河川分筆**（見 CLAUDE.md「河川資料」那節）：
       如果重新用 `--force` 重抓 RIVERLIN，一定要重新量測每條河川的 `coverageRatio`，
       不能假設 `clusterParts()` 的 2 公里緩衝永遠選得到正確的那一群
+17. **流域分區**（`/theme/taiwan`，勾「流域分區」，可以跟「主要河川」同時勾）：
+    ```js
+    const m = window.__gaiaMaps.at(-1);
+    m.jumpTo({ center: [120.9, 23.6], zoom: 7.3 });
+    new Set(m.queryRenderedFeatures({ layers: ['tw-basins-fill'] }).map(f => f.properties.id)).size  // 26
+    m.getPaintProperty('tw-basins-fill', 'fill-color')   // 水系藍 #2a78d6，跟河川線同色（刻意的，見說明）
+    ```
+    - 點任一流域的面 → 卡片有流域面積／分類／對應河川、涵蓋縣市
+    - 同時勾兩層時，點擊仲裁要照「小目標優先、其餘照算繪順序」：圓點 > 線 > 面，
+      面被同座標的河川線蓋住是正常的，不是 bug
+    - ⚠️ `tw-basins` 跟 `tw-rivers` 的 id **刻意不共用**（`gaoping-basin` vs `gaoping-river`）：
+      選一條河的線，不應該連動強調它的流域面（反之亦然）——這是特意分開 id 命名空間的結果，
+      不要為了「兩個都亮」去改成共用 id，那個行為沒有測過
 
 ### ⚠️ 用瀏覽器自動化點 UI 的三個陷阱
 
@@ -924,7 +951,7 @@ scripts/
 ├─ lib/shp.mjs            # RIVERLIN 的 SHP/DBF 讀取器 + 同名河川的空間分群 clusterParts()
 ├─ lib/twd97.mjs          # TWD97/TM2 zone 121（EPSG:3826）→ WGS84 的反算橫麥卡托
 ├─ lib/reservoirs.mjs     # 水利署開放資料的共用存取層（CSV 剖析、bot 防護、id 對照表）
-├─ lib/rivers.mjs         # 河川 id 對照表 + 官方長度／流域面積（RIVER_FACTS）
+├─ lib/rivers.mjs         # 河川／流域 id 對照表（BASIN_IDS 從 RIVER_IDS 衍生）+ 官方長度／流域面積（RIVER_FACTS）
 ├─ lib/fetch-retry.mjs    # 指數退避的 fetch，兩支 build 腳本共用
 ├─ validate-content.mjs   # 建置前 schema 驗證 + 註冊表交叉檢查
 └─ postbuild.mjs          # 404.html + CNAME 確認

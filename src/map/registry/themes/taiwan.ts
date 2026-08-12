@@ -228,10 +228,22 @@ export const taiwanTheme: ThemeDefinition = {
       id: "tw-basins",
       label: "流域分區",
       group: "水系",
-      status: "planned",
+      status: "ready",
+      // 跟「主要河川」是同一組官方河川清單（見 scripts/lib/rivers.mjs 的
+      // RIVER_FACTS／BASIN_IDS），但幾何來自另一份 SHP（BASIN，面），不是從
+      // 河川線推導出來的——集水區範圍需要真正的水文測繪，不是幾何運算。
+      source: { type: "remote", path: "data/geo/tw-basins.geojson" },
       render: { kind: "fill" },
-      detail: { type: "none" },
-      description: "各主要河川的集水區範圍，說明分水嶺與流域的概念。",
+      // 面／線共用同一組已驗證色票（水系藍／行政區橘／山脈洋紅），fill 目前只有
+      // 縣市界（boundary 橘）用掉一個名額，這裡用 hydrology 藍——跟河川線同色，
+      // 是刻意的：形狀（半透明面 vs 線）已經足夠區辨，藍色維持「水系」的視覺家族。
+      colorRole: "hydrology",
+      detail: { type: "geo", collection: "tw-basins" },
+      browse: {},
+      description:
+        "24 條中央管河川與 2 條跨省市河川的集水區範圍，說明分水嶺與流域的概念——" +
+        "山脈稜線兩側的雨水，會分別匯集到不同的流域裡。跟「主要河川」是同一份官方清單，" +
+        "但這裡的面是另一份水利署圖資，不是從河川線推算出來的。",
       sources: ["經濟部水利署"],
     },
     {

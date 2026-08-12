@@ -22,6 +22,21 @@
  */
 export const RIVERLIN_URL = "https://gic.wra.gov.tw/gis/gic/API/Google/DownLoad.aspx?fname=RIVERLIN&filetype=SHP";
 
+/**
+ * 資料集「河川流域範圍圖」（BASIN），同一個平台。SHP 格式，同樣是 TWD97/TM2
+ * zone 121。跟 RIVERLIN**不是同一份資料**，但可以共用這個檔案的 id／facts
+ * 對照表（見下面 `BASIN_IDS`）——這是水系圖層真正「合併」的地方：幾何各自
+ * 有各自的抓取與剖析邏輯，但「這個官方河川叫什麼名字、對應本站哪個 id」
+ * 只維護一份。
+ *
+ * ⚠️ 這份資料**比 RIVERLIN 乾淨很多**：每個官方河川名稱在 143 筆 record 裡
+ * 剛好對到一筆單一環（無孔洞）多邊形，實測面積與 RIVER_FACTS 的官方流域面積
+ * 誤差多在 10% 以內（濁水溪 3167.5 vs 官方 3157 km²、淡水河 2733.9 vs 2726），
+ * 不需要像 RIVERLIN 那樣分群挑最大連通塊——這也是為什麼 `build-geodata.mjs`
+ * 的 tw-basins transform 直接精確比對名稱，沒有 clusterParts() 那段邏輯。
+ */
+export const BASIN_URL = "https://gic.wra.gov.tw/gis/gic/API/Google/DownLoad.aspx?fname=BASIN&filetype=SHP";
+
 export const LICENSE = "政府資料開放授權條款第 1 版";
 export const SOURCE_LABEL = "經濟部水利署";
 
@@ -66,6 +81,21 @@ export const RIVER_IDS = {
   淡水河: "danshui-river",
   磺溪: "huang-river",
 };
+
+/**
+ * 流域分區（BASIN，面）的 id，從 `RIVER_IDS` 衍生，不是另外維護一份 26 筆的表。
+ *
+ * ⚠️ 刻意換成 `-basin` 尾綴，**不是**跟河川線共用同一個 id。「水系」這個群組
+ * 現在有河川線（`tw-rivers`）跟流域面（`tw-basins`）兩個各自獨立可勾選的圖層，
+ * 兩者是「同一條河的兩種呈現方式」而不是父子關係（不像五大山脈→主峰那種
+ * `attach`），所以沒有走 `parentProperty` 那套連動強調機制。如果兩層共用同一個
+ * id，選取其中一層會不會意外連動強調另一層目前沒有測過、行為未定義——比照
+ * `RIVER_IDS` 當初為了不跟水庫 id 撞名而加 `-river` 尾綴的同一個理由，這裡也
+ * 用尾綴把 id 命名空間分開，讓行為可預測。
+ */
+export const BASIN_IDS = Object.fromEntries(
+  Object.entries(RIVER_IDS).map(([name, id]) => [name, id.replace(/-river$/, "-basin")]),
+);
 
 /**
  * 幹流長度（公里）與流域面積（平方公里）。

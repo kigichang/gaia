@@ -22,7 +22,7 @@ import { simplifyGeometry, slugify } from "./lib/simplify.mjs";
 import { parseNlscGml, ringArea } from "./lib/gml.mjs";
 import { parseReservoirKml, ringsCentroid } from "./lib/kml.mjs";
 import { readZip, readZipText } from "./lib/unzip.mjs";
-import { parseShpPolylines, parseDbf, partLength, clusterParts } from "./lib/shp.mjs";
+import { parseShpPolylines, parseShpPolygons, parseDbf, partLength, clusterParts } from "./lib/shp.mjs";
 import { tm2ToWgs84 } from "./lib/twd97.mjs";
 import {
   EXTENT_KML_URL,
@@ -32,7 +32,7 @@ import {
   fetchReservoirBasics,
   formatCapacity,
 } from "./lib/reservoirs.mjs";
-import { RIVERLIN_URL, RIVER_IDS, RIVER_FACTS } from "./lib/rivers.mjs";
+import { RIVERLIN_URL, BASIN_URL, RIVER_IDS, BASIN_IDS, RIVER_FACTS } from "./lib/rivers.mjs";
 
 const exists = (p) => access(p).then(() => true).catch(() => false);
 
@@ -507,6 +507,84 @@ const SOURCES = [
       // ⚠️ feature 順序就是圖層抽屜裡可點清單的順序（LayerBrowseList 不排序）。
       // 依幹流長度由長到短，清單開頭就是淡水河、濁水溪、高屏溪這些課本會點名的河川。
       return features.sort((a, b) => b.properties.length_km - a.properties.length_km);
+    },
+  },
+  {
+    id: "tw-basins",
+    label: "臺灣河川流域分區",
+    /**
+     * 跟 tw-rivers 是**同一組官方河川清單**（RIVER_FACTS），幾何來源卻是完全
+     * 不同的另一份 SHP（BASIN，面）。id 對照表用 lib/rivers.mjs 的 `BASIN_IDS`
+     * （從 `RIVER_IDS` 衍生），facts（面積）沿用同一份 `RIVER_FACTS`——這是這兩個
+     * 圖層真正共用資料的地方，不是幾何本身可以共用。
+     *
+     * ⚠️ BASIN 比 RIVERLIN 乾淨很多：實測 143 筆 record 裡，26 個官方河川名稱
+     * 各自剛好對到一筆**單一環（無孔洞）**多邊形，面積與官方數字誤差多在 10%
+     * 以內，所以這裡**沒有** tw-rivers 那套 clusterParts() 分群邏輯——精確比對
+     * 名稱就夠了。真的對不到才要懷疑上游改版，不要自己加模糊比對。
+     */
+    url: BASIN_URL,
+    license: WRA_LICENSE,
+    sourceLabel: WRA_SOURCE_LABEL,
+    parse: async (res) => {
+      const buf = Buffer.from(await res.arrayBuffer());
+      const entries = readZip(buf);
+      const shpEntry = entries.find((e) => e.name.toLowerCase().endsWith(".shp"));
+      const dbfEntry = entries.find((e) => e.name.toLowerCase().endsWith(".dbf"));
+      if (!shpEntry || !dbfEntry) {
+        throw new Error(`BASIN.zip 裡找不到 .shp／.dbf（內容：${entries.map((e) => e.name).join("、")}）`);
+      }
+      return {
+        polygons: parseShpPolygons(shpEntry.read()),
+        rows: parseDbf(dbfEntry.read()),
+      };
+    },
+    // 0.0004° 跟 tw-rivers 同一個量級：流域邊界本身就是這個圖層唯一的內容
+    tolerance: 0.0004,
+    digits: 5,
+    transform: ({ polygons, rows }) => {
+      const byName = new Map(rows.map((r, i) => [r.BASIN_NAME, i]));
+      const features = [];
+      /** 官方表格裡有、但 BASIN 裡對不到幾何的河川。靜默跳過會讓「少一條」永遠沒人發現。 */
+      const missing = [];
+
+      for (const [officialName, facts] of Object.entries(RIVER_FACTS)) {
+        const id = BASIN_IDS[officialName];
+        if (!id) {
+          throw new Error(`河川「${officialName}」不在 BASIN_IDS 對照表裡，請先決定它的 id`);
+        }
+
+        const idx = byName.get(officialName);
+        const record = idx == null ? null : polygons[idx];
+        if (!record || record.parts.length === 0) {
+          missing.push(officialName);
+          continue;
+        }
+        if (record.parts.length !== 1) {
+          // 見上面說明：實測全部是單一環，多環代表上游改版，寧可失敗也不要猜哪個環是洞
+          throw new Error(`「${officialName}」的流域是 ${record.parts.length} 環，需要人工確認外環／洞的判斷`);
+        }
+
+        const ring = record.parts[0].map(([x, y]) => tm2ToWgs84(x, y));
+        features.push({
+          type: "Feature",
+          geometry: { type: "Polygon", coordinates: [ring] },
+          properties: {
+            id,
+            name: officialName,
+            area_km2: facts.area_km2,
+            category: facts.category,
+            meta: `流域面積 ${facts.area_km2} km²`,
+          },
+        });
+      }
+
+      if (missing.length) {
+        throw new Error(`BASIN 裡找不到幾何：${missing.join("、")}`);
+      }
+      // ⚠️ feature 順序就是圖層抽屜裡可點清單的順序（LayerBrowseList 不排序）。
+      // 依流域面積由大到小，清單開頭是高屏溪、濁水溪、淡水河這些課本會點名的河川。
+      return features.sort((a, b) => b.properties.area_km2 - a.properties.area_km2);
     },
   },
   {
