@@ -14,6 +14,8 @@ export const SOURCE_LINKS: Record<string, string> = {
   內政部國土測繪中心: "https://www.nlsc.gov.tw/",
   "內政部 114年第6週內政統計通報（113年底原住民人口數）":
     "https://www.moi.gov.tw/News_Content.aspx?n=2905&s=325345",
+  "內政部戶政司 114年各鄉鎮市區人口密度":
+    "https://data.gov.tw/dataset/8410",
   原住民族委員會全球資訊網: "https://www.cip.gov.tw/",
   "原住民族委員會 113年4月原住民族人口數統計資料":
     "https://www.cip.gov.tw/zh-tw/news/data-list/940F9579765AC6A0/index.html?cumid=940F9579765AC6A0",
