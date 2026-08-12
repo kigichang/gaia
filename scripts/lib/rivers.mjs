@@ -1,39 +1,29 @@
 /**
- * 臺灣主要河川的共用常數。
- *
- * 兩份資料源刻意分開，跟水庫（basics CSV + extent KML）是同一個道理——各自缺一半：
- *   - 幾何：水利地理資訊服務平台的「河川(支流)」SHP（RIVERLIN），只有中文名，
- *     沒有長度／流域面積。
- *   - 長度與流域面積：水利署全球資訊網的「河川長度」頁面，是人工整理的官方表格，
- *     沒有 API，所以直接把數字抄進這裡（比照 RESERVOIR_IDS 寫死對照表的既有決定）。
+ * 臺灣主要河川／流域分區的共用常數。
  *
  * 收錄範圍是水利署公告的 **24 條中央管河川 + 2 條跨省市河川**（淡水河、磺溪），
  * 這是官方對「主要河川」的定義，不是隨手挑的知名河川清單。
+ *
+ * 河川線（`tw-rivers`）的**幾何**是手繪教學示意路徑（`public/data/geo-manual/
+ * tw-rivers.geojson`，依維基百科描繪），不從這裡抓——這個檔案只管兩件仍然對得上
+ * 官方資料的事：河川／流域的中文名 → 本站 id 對照表（`RIVER_IDS`／`BASIN_IDS`），
+ * 以及幹流長度與流域面積的官方數字（`RIVER_FACTS`，沒有開放資料 API，人工抄自
+ * 水利署官網表格）。
+ *
+ * 流域分區（`tw-basins`，面）**仍然是抓來的 SHP**（水利地理資訊服務平台「河川
+ * 流域範圍圖」BASIN），跟河川線的手繪路徑是完全不同的兩件事——見 `BASIN_URL`
+ * 與 CLAUDE.md「流域分區」那節。
  */
 
 /**
- * 資料集「河川(支流)」（RIVERLIN），水利地理資訊服務平台。SHP 格式，
- * 座標系統 TWD97/TM2 zone 121（EPSG:3826，見 lib/twd97.mjs）。
+ * 資料集「河川流域範圍圖」（BASIN），水利地理資訊服務平台。SHP 格式，座標系統
+ * TWD97/TM2 zone 121（EPSG:3826，見 lib/twd97.mjs）。這是這個資料夾裡**唯一
+ * 還會被抓取並剖析 SHP** 的幾何來源——河川線已經改用手繪路徑（見上）。
  *
- * ⚠️ 這份圖資的測量／數化時間標記是 **2000–2008 年**，比縣市界（每半年更新）
- * 舊很多。河道本身在教學會用的比例尺下不會有肉眼可辨的改變（除非發生大規模
- * 河川整治工程），所以仍然拿來用；但**長度／流域面積不能從這份幾何反推**，
- * 一律以下面 RIVER_FACTS 的官方數字為準——見 build-geodata.mjs 的說明。
- */
-export const RIVERLIN_URL = "https://gic.wra.gov.tw/gis/gic/API/Google/DownLoad.aspx?fname=RIVERLIN&filetype=SHP";
-
-/**
- * 資料集「河川流域範圍圖」（BASIN），同一個平台。SHP 格式，同樣是 TWD97/TM2
- * zone 121。跟 RIVERLIN**不是同一份資料**，但可以共用這個檔案的 id／facts
- * 對照表（見下面 `BASIN_IDS`）——這是水系圖層真正「合併」的地方：幾何各自
- * 有各自的抓取與剖析邏輯，但「這個官方河川叫什麼名字、對應本站哪個 id」
- * 只維護一份。
- *
- * ⚠️ 這份資料**比 RIVERLIN 乾淨很多**：每個官方河川名稱在 143 筆 record 裡
- * 剛好對到一筆單一環（無孔洞）多邊形，實測面積與 RIVER_FACTS 的官方流域面積
- * 誤差多在 10% 以內（濁水溪 3167.5 vs 官方 3157 km²、淡水河 2733.9 vs 2726），
- * 不需要像 RIVERLIN 那樣分群挑最大連通塊——這也是為什麼 `build-geodata.mjs`
- * 的 tw-basins transform 直接精確比對名稱，沒有 clusterParts() 那段邏輯。
+ * ⚠️ 這份資料很乾淨：每個官方河川名稱在 143 筆 record 裡剛好對到一筆單一環
+ * （無孔洞）多邊形，實測面積與 RIVER_FACTS 的官方流域面積誤差多在 10% 以內
+ * （濁水溪 3167.5 vs 官方 3157 km²、淡水河 2733.9 vs 2726），`build-geodata.mjs`
+ * 的 tw-basins transform 直接精確比對名稱就夠了。
  */
 export const BASIN_URL = "https://gic.wra.gov.tw/gis/gic/API/Google/DownLoad.aspx?fname=BASIN&filetype=SHP";
 
@@ -104,9 +94,8 @@ export const BASIN_IDS = Object.fromEntries(
  * 「中央管河川」24 條與「跨省市河川」2 條兩張表格的官方數字，人工抄錄——這個頁面
  * 沒有開放資料 API，跟 RESERVOIR_IDS／COUNTY_IDS 一樣是寫死對照表的既有作法。
  *
- * ⚠️ key 用**沒有括號別名**的官方正式名稱（二仁溪、和平溪），不是 RIVERLIN 的
- * 圖徵名稱（二仁溪(二層行溪)、和平溪(大濁水溪)）——build-geodata.mjs 的 transform
- * 會把兩邊 join 起來，這裡維持官方表格原本的名稱比較好核對來源。
+ * key 用官方表格原本的正式名稱，跟 `RIVER_IDS`／`BASIN_IDS` 的 key 一致，方便
+ * 三份對照表互相核對。
  */
 export const RIVER_FACTS = {
   蘭陽溪: { length_km: 73.0, area_km2: 978, category: "中央管河川" },
