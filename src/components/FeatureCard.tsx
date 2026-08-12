@@ -8,6 +8,11 @@ interface FeatureCardProps {
   /** fallback：geojson 的 name 屬性 + 圖層自己的說明與來源 */
   fallback: {
     name?: string;
+    /**
+     * geojson 的 `meta` 屬性（清單裡的次標，例如縣市政府的地址）。
+     * 沒有內容檔時它常常是這個圖徵**唯一**的具體資訊，不顯示就浪費掉了。
+     */
+    meta?: string;
     layerLabel: string;
     description: string;
     sources: string[];
@@ -58,7 +63,10 @@ export function FeatureCard({ feature, fallback }: FeatureCardProps) {
         </ul>
       ) : (
         // 還沒寫內容檔：至少把圖層自己的說明交代清楚，不要給一張空卡
-        <p className="feature-fallback">{fallback.description}</p>
+        <>
+          {fallback.meta && <p className="feature-subtitle">{fallback.meta}</p>}
+          <p className="feature-fallback">{fallback.description}</p>
+        </>
       )}
 
       {schematic && (

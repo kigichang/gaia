@@ -1,0 +1,386 @@
+{
+ "type": "FeatureCollection",
+ "metadata": {
+  "collection": "tw-county-halls",
+  "source": "各縣市政府所在地。座標與地址取自維基百科各「○○縣／市政府」條目的資訊框；countyId 對應 public/data/geo/tw-counties.geojson 的縣市 id。已用點在多邊形檢查確認 22 筆全部落在自己所屬縣市的官方界線內。",
+  "license": "CC BY-SA 4.0（座標與地址取自維基百科）",
+  "generatedAt": "2026-08-12",
+  "featureCount": 22
+ },
+ "features": [
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     121.74455,
+     25.13164
+    ]
+   },
+   "properties": {
+    "id": "tw-kee-hall",
+    "name": "基隆市政府",
+    "meta": "基隆市中正區義一路1號",
+    "address": "基隆市中正區義一路1號",
+    "countyId": "tw-kee"
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     121.56378,
+     25.03752
+    ]
+   },
+   "properties": {
+    "id": "tw-tpe-hall",
+    "name": "臺北市政府",
+    "meta": "臺北市信義區市府路1號",
+    "address": "臺北市信義區市府路1號",
+    "countyId": "tw-tpe"
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     121.46554,
+     25.01223
+    ]
+   },
+   "properties": {
+    "id": "tw-tpq-hall",
+    "name": "新北市政府",
+    "meta": "新北市板橋區中山路一段161號",
+    "address": "新北市板橋區中山路一段161號",
+    "countyId": "tw-tpq"
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     121.30102,
+     24.99342
+    ]
+   },
+   "properties": {
+    "id": "tw-tao-hall",
+    "name": "桃園市政府",
+    "meta": "桃園市桃園區縣府路1號",
+    "address": "桃園市桃園區縣府路1號",
+    "countyId": "tw-tao"
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     120.96884,
+     24.80671
+    ]
+   },
+   "properties": {
+    "id": "tw-hsz-hall",
+    "name": "新竹市政府",
+    "meta": "新竹市北區中正路120號",
+    "address": "新竹市北區中正路120號",
+    "countyId": "tw-hsz"
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     121.0129,
+     24.82692
+    ]
+   },
+   "properties": {
+    "id": "tw-hsq-hall",
+    "name": "新竹縣政府",
+    "meta": "新竹縣竹北市光明六路10號",
+    "address": "新竹縣竹北市光明六路10號",
+    "countyId": "tw-hsq"
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     121.76322,
+     24.73092
+    ]
+   },
+   "properties": {
+    "id": "tw-ila-hall",
+    "name": "宜蘭縣政府",
+    "meta": "宜蘭縣宜蘭市縣政北路1號",
+    "address": "宜蘭縣宜蘭市縣政北路1號",
+    "countyId": "tw-ila"
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     120.82074,
+     24.56486
+    ]
+   },
+   "properties": {
+    "id": "tw-mia-hall",
+    "name": "苗栗縣政府",
+    "meta": "第一辦公大樓（另有府前路第二辦公大樓）",
+    "address": "苗栗縣苗栗市縣府路100號（第一辦公大樓）",
+    "countyId": "tw-mia"
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     120.64695,
+     24.16168
+    ]
+   },
+   "properties": {
+    "id": "tw-txg-hall",
+    "name": "臺中市政府",
+    "meta": "臺灣大道市政大樓（另有陽明市政大樓）",
+    "address": "臺中市西屯區臺灣大道三段99號",
+    "countyId": "tw-txg"
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     120.54426,
+     24.07555
+    ]
+   },
+   "properties": {
+    "id": "tw-cha-hall",
+    "name": "彰化縣政府",
+    "meta": "彰化縣彰化市中山路二段416號",
+    "address": "彰化縣彰化市中山路二段416號",
+    "countyId": "tw-cha"
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     120.6905,
+     23.9026
+    ]
+   },
+   "properties": {
+    "id": "tw-nan-hall",
+    "name": "南投縣政府",
+    "meta": "南投縣南投市中興路660號",
+    "address": "南投縣南投市中興路660號",
+    "countyId": "tw-nan"
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     121.61982,
+     23.99133
+    ]
+   },
+   "properties": {
+    "id": "tw-hua-hall",
+    "name": "花蓮縣政府",
+    "meta": "花蓮縣花蓮市府前路17號",
+    "address": "花蓮縣花蓮市府前路17號",
+    "countyId": "tw-hua"
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     120.52633,
+     23.69916
+    ]
+   },
+   "properties": {
+    "id": "tw-yun-hall",
+    "name": "雲林縣政府",
+    "meta": "雲林縣斗六市雲林路二段515號",
+    "address": "雲林縣斗六市雲林路二段515號",
+    "countyId": "tw-yun"
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     120.4536,
+     23.48103
+    ]
+   },
+   "properties": {
+    "id": "tw-cyi-hall",
+    "name": "嘉義市政府",
+    "meta": "嘉義市東區中山路199號",
+    "address": "嘉義市東區中山路199號",
+    "countyId": "tw-cyi"
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     120.29349,
+     23.45903
+    ]
+   },
+   "properties": {
+    "id": "tw-cyq-hall",
+    "name": "嘉義縣政府",
+    "meta": "嘉義縣太保市祥和一路東段1號",
+    "address": "嘉義縣太保市祥和一路東段1號",
+    "countyId": "tw-cyq"
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     120.185,
+     22.99172
+    ]
+   },
+   "properties": {
+    "id": "tw-tnn-hall",
+    "name": "臺南市政府",
+    "meta": "永華市政中心（另有新營民治市政中心）",
+    "address": "臺南市安平區永華路二段6號",
+    "countyId": "tw-tnn"
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     120.31202,
+     22.62084
+    ]
+   },
+   "properties": {
+    "id": "tw-khh-hall",
+    "name": "高雄市政府",
+    "meta": "四維行政中心（另有鳳山行政中心）",
+    "address": "高雄市苓雅區四維三路2號",
+    "countyId": "tw-khh"
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     121.15064,
+     22.75547
+    ]
+   },
+   "properties": {
+    "id": "tw-ttt-hall",
+    "name": "臺東縣政府",
+    "meta": "臺東縣臺東市中山路276號",
+    "address": "臺東縣臺東市中山路276號",
+    "countyId": "tw-ttt"
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     120.48794,
+     22.68328
+    ]
+   },
+   "properties": {
+    "id": "tw-pif-hall",
+    "name": "屏東縣政府",
+    "meta": "屏東縣屏東市自由路527號",
+    "address": "屏東縣屏東市自由路527號",
+    "countyId": "tw-pif"
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     119.95185,
+     26.1579
+    ]
+   },
+   "properties": {
+    "id": "tw-lie-hall",
+    "name": "連江縣政府",
+    "meta": "連江縣南竿鄉介壽村76號",
+    "address": "連江縣南竿鄉介壽村76號",
+    "countyId": "tw-lie"
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     118.31863,
+     24.43679
+    ]
+   },
+   "properties": {
+    "id": "tw-kin-hall",
+    "name": "金門縣政府",
+    "meta": "金門縣金城鎮民生路60號",
+    "address": "金門縣金城鎮民生路60號",
+    "countyId": "tw-kin"
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     119.56647,
+     23.57
+    ]
+   },
+   "properties": {
+    "id": "tw-pen-hall",
+    "name": "澎湖縣政府",
+    "meta": "澎湖縣馬公市治平路32號",
+    "address": "澎湖縣馬公市治平路32號",
+    "countyId": "tw-pen"
+   }
+  }
+ ]
+}

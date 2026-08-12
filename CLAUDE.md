@@ -195,7 +195,11 @@ registry/
 
 **資料是 join 出來的，不是抄的。** `{ type: "derived", derived: "tw-range-peaks" }` 由 `resolve.ts` 把兩份既有的單一事實來源接起來：座標取自 `src/content/places`、「哪座山峰屬於哪條山脈」取自 `tw-ranges.geojson` 的 `peakId`。所以 5 座主峰的座標與歸屬各自只有一份，不會漂開。它跟山脈線圖層共用 `resolveLayerData` 的同一個快取項目，實測 `tw-ranges.geojson` 只抓一次。
 
-**主峰的顏色沿用 `place` 藍，不是山脈的洋紅——這是被色票驗證逼出來的，不是隨手選。** POINT 色票（藍／紅／青／黃／紫）已經是 all-pairs 全過的飽和狀態，把山脈洋紅 `#c23f8f` 加進去，它跟原住民族紅 `#e34948` 的**一般視覺 ΔE 只有 13.0（hard FAIL）**，而驗證器明講這一項不能用次要編碼豁免；紫 `#7a3fa6`、棕 `#8a5a2b`、青綠 `#00857a`、橘褐 `#b06a00` 也全部 FAIL（撞紫／撞紅／彩度不足）。藍在語意上也站得住：主峰開的是 `PlaceCard`，本來就是地點。**要動這個顏色請先重跑 `validate_palette.js --pairs all` 明暗兩模式。**
+目前有兩組：**五大山脈 → 主峰**、**縣市界 → 縣市政府**。
+
+**附屬點一律沿用 `place` 藍，不是母圖層的顏色——這是被色票驗證逼出來的，不是隨手選。** POINT 色票（藍／紅／青／黃／紫）已經是 all-pairs 全過的飽和狀態，把山脈洋紅 `#c23f8f` 加進去，它跟原住民族紅 `#e34948` 的**一般視覺 ΔE 只有 13.0（hard FAIL）**，而驗證器明講這一項不能用次要編碼豁免；紫 `#7a3fa6`、棕 `#8a5a2b`、青綠 `#00857a`、橘褐 `#b06a00` 也全部 FAIL（撞紫／撞紅／彩度不足）。縣市界橘 `#d95926` 更糟，對原住民族紅只有 **5.1**（CVD 2.7）。藍在語意上是一致的：「藍點＝地圖上一個有詳情卡的地點」。**要動這個顏色請先重跑 `validate_palette.js --pairs all` 明暗兩模式。**
+
+⚠️ **母子連動強調的兩個方向都從 `attach.parentProperty` 推，不要寫死屬性名。** 早期版本在 `ThemeMapPage` 寫死 `["peakId", "rangeId"]`，加了縣市政府之後立刻壞掉——`countyId` 不在清單裡，點縣市政府時所屬縣市不會被強調，而卡片與相機都正常，所以這件事在畫面上非常容易被忽略過去。母 → 子的方向也不需要母圖徵身上有任何屬性：反過來找「哪個子項目指向我」就好（`tw-ranges.geojson` 的 `peakId` 現在只用於 resolve.ts 的 join）。
 
 ### 圖層 id 的組合方式
 
@@ -681,6 +685,8 @@ m.isSourceLoaded('contour-source')
     performance.getEntriesByType('resource').filter(r=>/tw-ranges/.test(r.name)).length  // 1
     ```
     抽屜清單要有 5 組巢狀（`.place-list-children`），各含 1 座主峰；搜「雪山」要同時搜得到「雪山（五大山脈・主峰）」與「雪山山脈」，選前者會開主峰卡並把山脈一起加粗。
+
+    縣市界 → 縣市政府同理：勾縣市界會一起出現 22 個政府點（`tw-county-halls-points`），抽屜有 22 組巢狀，搜「縣政府」找得到，點任一個都要讓**所屬縣市的面一起變深**——只看卡片開了不算數，要看 `m.getPaintProperty('tw-counties-fill','fill-opacity')` 的清單裡有兩筆。
 
     ⚠️ **臺灣主題的 `defaultOn` 是「五大山脈」，不是「地形景點」。** 這個主題的 `initialSelection` 是玉山主峰、`camera` 也開在玉山，主峰現在住在五大山脈底下——換掉預設開啟的圖層，進站第一眼就會變成「詳情卡在講玉山主峰，地圖上卻沒有任何圖徵」。
 

@@ -111,29 +111,48 @@ function ThemeMapView({ theme, chrome }: { theme: ThemeDefinition; chrome: Chrom
   /**
    * 要在地圖上強調的圖徵：選取的那一筆，加上它「順帶指名」的關聯圖徵。
    *
-   * 關聯是山脈 ↔ 主峰，而且**兩個方向都成立**：
+   * 母子關聯（五大山脈 ↔ 主峰、縣市界 ↔ 縣市政府）**兩個方向都成立**：選了主峰要
+   * 連所屬山脈一起加粗，選了山脈也要連主峰一起標出來。
    *
-   * - `peakId`（寫在 `tw-ranges.geojson` 的線上）：選了中央山脈，秀姑巒山那顆點也要
-   *   一起標出來，否則使用者只看得到一條線、不知道最高點在哪。
-   * - `rangeId`（由 `resolve.ts` join 出來、掛在主峰點上，也是 `attach.parentProperty`）：
-   *   選了主峰，所屬山脈那條線也要一起加粗——這就是「選子類視同也選父類」。
-   *   （早期版本刻意只做單向，現在雙向都要。）
+   * ⚠️ 唯一的線索是附屬圖徵身上那個 `attach.parentProperty`，**兩個方向都從它推**，
+   * 不要再回頭去寫死屬性名。早期版本寫死 `["peakId", "rangeId"]`，加了縣市政府之後
+   * 立刻壞掉——`countyId` 不在那份清單裡，點縣市政府時所屬縣市不會被強調，而且
+   * 因為卡片與相機都正常，這件事在畫面上很容易被忽略過去。母 → 子的方向也不需要
+   * 母圖徵身上有任何屬性：反過來找「哪個子項目指向我」就好。
    *
    * 強調是各圖層拿**同一份 id 清單**去比對的，所以這裡不需要知道對方在哪一層；
    * 那一層沒開就自然不會有東西被標，也合理。
    */
+  const parentProperties = useMemo(
+    () =>
+      theme.layers
+        .map((l) => l.attach?.parentProperty)
+        .filter((p): p is string => Boolean(p)),
+    [theme],
+  );
+
   const highlightIds = useMemo(() => {
     if (!selected) return [];
     const ids = [selected.featureId];
+    if (parentProperties.length === 0) return ids;
+
+    const add = (v: unknown) => {
+      if (typeof v === "string" && !ids.includes(v)) ids.push(v);
+    };
     for (const inst of instances) {
-      const f = inst.data?.features.find((x) => x.properties?.id === selected.featureId);
-      for (const key of ["peakId", "rangeId"]) {
-        const related = f?.properties?.[key];
-        if (typeof related === "string" && !ids.includes(related)) ids.push(related);
+      for (const f of inst.data?.features ?? []) {
+        const p = f.properties;
+        if (!p) continue;
+        for (const key of parentProperties) {
+          // 子 → 母：選中的就是這個子項目，把它指到的母圖徵加進來
+          if (p.id === selected.featureId) add(p[key]);
+          // 母 → 子：這個子項目指回選中的母圖徵，把它自己加進來
+          if (p[key] === selected.featureId) add(p.id);
+        }
       }
     }
     return ids;
-  }, [selected, instances]);
+  }, [selected, instances, parentProperties]);
 
   // 切底圖之後由 MapView 明確回呼重套主題圖層（見 useGeoLayers 的說明）。
   const reapplyLayers = useGeoLayers(map, instances, handleSelect, highlightIds);

@@ -33,6 +33,29 @@ export const taiwanTheme: ThemeDefinition = {
       colorRole: "boundary",
       detail: { type: "geo", collection: "tw-counties" },
       browse: {},
+      /**
+       * 縣市政府所在地，跟著縣市界一起開關、在可點清單裡巢狀排在各縣市底下。
+       * 比照五大山脈 → 主峰的做法（見 registry/types.ts 的 LayerAttachment）。
+       *
+       * 顏色同樣沿用 `place` 藍：POINT 色票已經飽和，實測把縣市界橘 `#d95926` 加進去，
+       * 它跟原住民族紅 `#e34948` 的一般視覺 ΔE 只有 **5.1**（CVD 更只有 2.7），比洋紅
+       * 那次還糟。藍在語意上是一致的——「藍點＝地圖上一個有詳情卡的地點」。
+       *
+       * `zoom: 14` 而不是主峰那個 12：政府大樓是街廓尺度的目標，飛過去要看得到街道。
+       */
+      attach: {
+        id: "tw-county-halls",
+        label: "縣市政府",
+        source: { type: "remote", path: "data/geo-manual/tw-county-halls.geojson" },
+        render: { kind: "circle" },
+        colorRole: "place",
+        detail: { type: "geo", collection: "tw-county-halls" },
+        parentProperty: "countyId",
+        browse: { zoom: 14 },
+        description:
+          "各縣市政府的辦公廳舍位置。臺南、高雄、臺中、苗栗有兩處辦公中心，這裡標的是主要那一處，另一處寫在說明裡。",
+        sources: ["維基百科"],
+      },
       // 相鄰面各自簡化會在共用邊界留下次像素縫隙（見 scripts/lib/simplify.mjs）。
       // maxzoom 讓它在縫隙變得可解析之前就停止繪製——這同時也是正確的製圖判斷：
       // 縣市界的面染是小比例尺的教學裝置，不是 zoom 14 的圖層。

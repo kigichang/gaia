@@ -179,6 +179,9 @@ export interface LayerAttachment {
   detail: DetailSpec;
   parentProperty: string;
   browse?: LayerBrowse;
+  /** 沒填就沿用母圖層的——同一個勾選項底下的東西，說明與來源多半一致 */
+  description?: string;
+  sources?: string[];
 }
 
 export interface LayerItem {
