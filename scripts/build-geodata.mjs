@@ -99,6 +99,36 @@ const COUNTY_IDS = {
 const MIN_ISLAND_AREA = 1e-5;
 
 /**
+ * 離島縣。清單排序時整組排在本島各縣市之後。
+ *
+ * 純粹依緯度排的話，連江縣（26.2°N）會跳到基隆市前面、金門縣會插在苗栗與臺中之間——
+ * 但它們跟本島根本不相鄰，夾在中間只會讓「由北到南」這條線索斷掉。離島自己內部
+ * 仍然由北到南（連江 → 金門 → 澎湖）。
+ */
+const OFFSHORE_COUNTIES = new Set(["連江縣", "金門縣", "澎湖縣"]);
+
+/**
+ * 圖徵主體（面積最大那一塊）的形心緯度，用來決定清單的南北順序。
+ *
+ * 用形心而不是最北端：高雄市一路往北延伸到那瑪夏（23.47°N），比臺南市的最北端還北，
+ * 依最北端排會排出「高雄在臺南前面」這種一看就錯的順序。
+ *
+ * 用面形心（shoelace）而不是頂點平均：海岸線曲折的地方頂點特別密，頂點平均會被拉過去。
+ * （實測這份資料兩種算法排出來的順序相同，選面形心只是不想依賴那個巧合。）
+ */
+function mainPartCentroidLatitude(polygons) {
+  const outer = polygons.reduce((best, p) => (ringArea(p[0]) > ringArea(best[0]) ? p : best))[0];
+  let area2 = 0;
+  let cy = 0;
+  for (let i = 0, j = outer.length - 1; i < outer.length; j = i++) {
+    const cross = outer[j][0] * outer[i][1] - outer[i][0] * outer[j][1];
+    area2 += cross;
+    cy += (outer[j][1] + outer[i][1]) * cross;
+  }
+  return cy / (3 * area2);
+}
+
+/**
  * 世界主要河流的中文名對照。
  *
  * Natural Earth 的 50m 河流資料**完全沒有中文名欄位**（只有 name / name_en /
@@ -209,24 +239,31 @@ const SOURCES = [
     tolerance: 0.0008,
     digits: 4,
     transform: (features) =>
-      features.map((f) => {
-        const name = f.properties.名稱;
-        const id = COUNTY_IDS[name];
-        if (!id) {
-          throw new Error(`縣市「${name}」不在 COUNTY_IDS 對照表裡，請先決定它的 id`);
-        }
-        return {
-          type: "Feature",
-          geometry: {
-            type: "MultiPolygon",
-            // 次像素的礁岩在簡化階段刪不掉，只能在這裡先濾（見 MIN_ISLAND_AREA）
-            coordinates: f.geometry.coordinates.filter(
-              (polygon) => ringArea(polygon[0]) >= MIN_ISLAND_AREA,
-            ),
-          },
-          properties: { id, name },
-        };
-      }),
+      features
+        .map((f) => {
+          const name = f.properties.名稱;
+          const id = COUNTY_IDS[name];
+          if (!id) {
+            throw new Error(`縣市「${name}」不在 COUNTY_IDS 對照表裡，請先決定它的 id`);
+          }
+          // 次像素的礁岩在簡化階段刪不掉，只能在這裡先濾（見 MIN_ISLAND_AREA）
+          const coordinates = f.geometry.coordinates.filter(
+            (polygon) => ringArea(polygon[0]) >= MIN_ISLAND_AREA,
+          );
+          return {
+            type: "Feature",
+            geometry: { type: "MultiPolygon", coordinates },
+            properties: { id, name },
+            // 排序用，不寫進產物
+            _lat: mainPartCentroidLatitude(coordinates),
+            _offshore: OFFSHORE_COUNTIES.has(name) ? 1 : 0,
+          };
+        })
+        // ⚠️ **feature 的順序就是圖層抽屜裡可點清單的顯示順序**（LayerBrowseList
+        // 直接照 data.features 算繪）。上游 GML 的順序是任意的，排成由北到南、
+        // 離島最後，清單才跟課本講臺灣的方式一致。
+        .sort((a, b) => a._offshore - b._offshore || b._lat - a._lat)
+        .map(({ _lat, _offshore, ...feature }) => feature),
   },
   {
     id: "world-rivers",
