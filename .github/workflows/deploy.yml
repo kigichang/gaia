@@ -16,13 +16,22 @@ concurrency:
   group: pages
   cancel-in-progress: false
 
+# ⚠️ action 版本要一起往上升，不要只升一兩個。
+#
+# runner 從 2025-09 起淘汰 Node.js 20：還在 target Node 20 的 action 會被強制跑在
+# Node 24 上，並在每次執行留下 deprecation annotation。下面這組是各 action 目前的
+# 最新 major，全部原生 target Node 24，annotation 因此消失。
+#
+# 這裡刻意用浮動的 major 標籤（`@v7`）而不是釘死 SHA：這個 workflow 只用到最基本的
+# 輸入（node-version／cache／path），跟著 major 走可以自動收到修補，而 major 不會有
+# 破壞性變更。要改成釘 SHA 是另一個決定（供應鏈強化），不要順手混進來。
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7
         with:
           node-version: 24
           cache: npm
@@ -33,9 +42,9 @@ jobs:
       # 以及 postbuild（產生 404.html、確認 CNAME 與 .nojekyll）
       - run: npm run build
 
-      - uses: actions/configure-pages@v5
+      - uses: actions/configure-pages@v6
 
-      - uses: actions/upload-pages-artifact@v3
+      - uses: actions/upload-pages-artifact@v5
         with:
           path: dist
 
@@ -47,4 +56,4 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - id: deployment
-        uses: actions/deploy-pages@v4
+        uses: actions/deploy-pages@v5
