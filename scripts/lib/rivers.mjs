@@ -13,15 +13,33 @@
  * 結尾為 000 的關聯共 150 個，比列管水系多 32 個）。要放寬到那些水道，要改的是
  * 這份表加上圖層說明，不是偷偷多抓幾條。
  *
- * 這個檔案管一件事：**118 個水系的官方身分**——中文名、本站 id、水利署河川代碼、
- * 管理等級、流經縣市，以及 26 條中央管／跨省市河川才有的官方長度與流域面積。
+ * ## 另外 26 條主要支流（`category: "主要支流"`）
+ *
+ * 支流依公告定義**屬於母水系**（「每一水系……含其主、支流全部」），所以基隆河、
+ * 新店溪、大漢溪這些課本必講的河一條都不在那 118 裡。水利署的河川代碼是階層式的
+ * ——`114000` 淡水河、`114010` 大漢溪、`114020` 新店溪、`114030` 基隆河——所以
+ * 「代碼結尾 000」這條規則會把支流全部排除掉，那是規則的必然結果，不是漏掉。
+ *
+ * 但一張地理教學地圖沒有基隆河是說不過去的，所以另外收了 26 條**編者挑選**的
+ * 主要支流。⚠️ **這一組跟前四組的性質不同**：前四組的範圍由主管機關決定，這一組
+ * 是依教學價值挑的（比照五大山脈的先例——沒有官方清單時由編者挑，但要在圖層說明
+ * 講明白）。挑選依據寫在每一條的註解裡。
+ *
+ * ⚠️ **不要無腦擴充成「全部第一級支流」**：OSM 上帶代碼的支流有 451 條、第一級
+ * 246 條，裡面有大量的旱溝、三崁坑、同安厝排水、舊港圳導水線——那些不是課本會講
+ * 的河川，加進來只會把清單淹掉。
+ *
+ * ## 這個檔案管一件事
+ *
+ * **144 條河川的身分**——中文名、本站 id、水利署河川代碼、管理等級（或「主要支流」
+ * 與它的母水系）、流經縣市，以及 26 條中央管／跨省市河川才有的官方長度與流域面積。
  *
  * 兩個圖層的**幾何來源不同、精確度同一等級**：
  * - `tw-rivers`（線）＝ OpenStreetMap 的 `waterway=river` 關聯，用 `ref`
- *   （水利署河川代碼）選取，見下面的 `ref` 欄與 `RIVER_OSM_REFS`。
+ *   （水利署河川代碼）選取，見下面的 `ref` 欄與 `RIVER_OSM_REFS`。全部 144 條。
  * - `tw-basins`（面）＝ 水利地理資訊服務平台的「河川流域範圍圖」SHP，見 `BASIN_URL`。
- *   **只涵蓋 26 條中央管／跨省市河川**（BASIN 那份資料只有這些），所以
- *   `BASIN_IDS` 是從有官方面積的那 26 筆衍生的，不是全部 118 筆。
+ *   **只有獨立水系有流域面**（`ref` 結尾 000），支流沒有，所以 `BASIN_IDS` 只從
+ *   那 118 筆衍生；而那 118 筆裡上游也只發布了 72 筆，見 `BASIN_IDS` 的說明。
  */
 
 /**
@@ -50,6 +68,9 @@ export const RIVER_CATEGORY_ORDER = [
   "跨省市河川",
   "直轄市管河川",
   "縣(市)管河川",
+  // ⚠️ 前四組是公告的管理等級，第五組不是——支流依公告定義屬於母水系，
+  // 沒有自己的等級。放在最後是因為它是編者挑的清單，不是官方範圍（見 RIVERS）。
+  "主要支流",
 ];
 
 /**
@@ -73,7 +94,21 @@ export const RIVER_CATEGORY_ORDER = [
  *   同名不同河，濁水溪、頭前溪、北港溪也各有好幾條同名的小溪流散落全國），
  *   這正是當初讓水利署 RIVERLIN SHP 無法使用的同一個問題。
  *
- * - `category`：公告的管理等級，同時是可點清單的分組依據。
+ * - `category`：公告的管理等級，同時是可點清單的分組依據。支流一律是 `"主要支流"`
+ *   ——那不是一種管理等級，見上面的說明。
+ * - `parent`（支流才有）：母水系的中文名。會寫進 geojson 的 `meta`（「淡水河水系」），
+ *   所以清單副標看得到、搜尋也搜得到。
+ *
+ * - `upstream`（選填，只有 5 條幹流有）：**這條幹流的上游河段在地圖上叫什麼名字。**
+ *   OSM 的 `main_stream` 把上游改稱其他名稱的河段收在同一個關聯裡，所以淡水河那條
+ *   線的上游其實走的是大漢溪的河道（實測通過石門水庫與大溪）。實測有 5 組這樣的
+ *   關係：淡水河←大漢溪、頭前溪←油羅溪、北港溪←虎尾溪、中港溪←南庄溪、
+ *   高屏溪←荖濃溪（前四條的重疊度實測 76–93%，荖濃溪在 OSM 上沒有代碼）。
+ *
+ *   ⚠️ **這 5 條不可以再當成獨立的支流加進來**：幾何會跟母幹流完全重疊，畫出兩條
+ *   一模一樣的藍線，點擊仲裁的結果未定義、沿線標註也會互相碰撞。改成把名字寫進
+ *   母幹流的 `meta`，搜「大漢溪」一樣找得到淡水河並飛過去——這是同一件事的誠實
+ *   說法：那條河道就是它。
  * - `counties`：公告表上的「流經直轄市、縣(市)」。中央管與跨省市取自表 1／表 4，
  *   直轄市管與縣(市)管取自表 2／表 3 的分縣市小標。
  *
@@ -106,14 +141,14 @@ export const RIVERS = {
   // ── 中央管河川 24 水系（表 1）─────────────────────────────
   蘭陽溪: { id: "lanyang-river", ref: "256000", category: "中央管河川", counties: ["宜蘭縣"], length_km: 73.0, area_km2: 978 },
   鳳山溪: { id: "fengshan-river", ref: "129000", category: "中央管河川", counties: ["桃園市", "新竹縣"], length_km: 45.4, area_km2: 250 },
-  頭前溪: { id: "touqian-river", ref: "130000", category: "中央管河川", counties: ["新竹縣", "新竹市"], length_km: 63.0, area_km2: 566 },
-  中港溪: { id: "zhonggang-river", ref: "134000", category: "中央管河川", counties: ["新竹縣", "苗栗縣"], length_km: 54.0, area_km2: 446 },
+  頭前溪: { id: "touqian-river", ref: "130000", category: "中央管河川", counties: ["新竹縣", "新竹市"], upstream: "油羅溪", length_km: 63.0, area_km2: 566 },
+  中港溪: { id: "zhonggang-river", ref: "134000", category: "中央管河川", counties: ["新竹縣", "苗栗縣"], upstream: "南庄溪", length_km: 54.0, area_km2: 446 },
   後龍溪: { id: "houlong-river", ref: "135000", category: "中央管河川", counties: ["苗栗縣"], length_km: 58.3, area_km2: 537 },
   大安溪: { id: "daan-river", ref: "140000", category: "中央管河川", counties: ["苗栗縣", "臺中市"], length_km: 95.8, area_km2: 758 },
   大甲溪: { id: "dajia-river", ref: "142000", category: "中央管河川", counties: ["臺中市"], length_km: 124.2, area_km2: 1236 },
   烏溪: { id: "wu-river", ref: "143000", category: "中央管河川", counties: ["臺中市", "彰化縣", "南投縣"], length_km: 119.1, area_km2: 2026 },
   濁水溪: { id: "zhuoshui-river", ref: "151000", category: "中央管河川", counties: ["彰化縣", "南投縣", "雲林縣", "嘉義縣"], length_km: 186.6, area_km2: 3157 },
-  北港溪: { id: "beigang-river", ref: "154000", category: "中央管河川", counties: ["雲林縣", "嘉義縣"], length_km: 82.0, area_km2: 645 },
+  北港溪: { id: "beigang-river", ref: "154000", category: "中央管河川", counties: ["雲林縣", "嘉義縣"], upstream: "虎尾溪", length_km: 82.0, area_km2: 645 },
   朴子溪: { id: "puzi-river", ref: "155000", category: "中央管河川", counties: ["嘉義縣", "嘉義市"], length_km: 75.9, area_km2: 427 },
   八掌溪: { id: "bazhang-river", ref: "158000", category: "中央管河川", counties: ["嘉義縣", "嘉義市", "臺南市"], length_km: 80.9, area_km2: 475 },
   急水溪: { id: "jishui-river", ref: "159000", category: "中央管河川", counties: ["嘉義縣", "臺南市"], length_km: 65.0, area_km2: 379 },
@@ -121,7 +156,7 @@ export const RIVERS = {
   鹽水溪: { id: "yanshui-river", ref: "165000", category: "中央管河川", counties: ["臺南市"], length_km: 41.3, area_km2: 343 },
   二仁溪: { id: "erren-river", ref: "166000", category: "中央管河川", counties: ["臺南市", "高雄市"], length_km: 63.2, area_km2: 350 },
   阿公店溪: { id: "agongdian-river", ref: "167000", category: "中央管河川", counties: ["高雄市"], length_km: 38.0, area_km2: 137 },
-  高屏溪: { id: "gaoping-river", ref: "173000", category: "中央管河川", counties: ["高雄市", "屏東縣"], length_km: 171.0, area_km2: 3257 },
+  高屏溪: { id: "gaoping-river", ref: "173000", category: "中央管河川", counties: ["高雄市", "屏東縣"], upstream: "荖濃溪", length_km: 171.0, area_km2: 3257 },
   東港溪: { id: "donggang-river", ref: "174000", category: "中央管河川", counties: ["屏東縣"], length_km: 44.0, area_km2: 472 },
   四重溪: { id: "sichong-river", ref: "185000", category: "中央管河川", counties: ["屏東縣"], length_km: 31.9, area_km2: 125 },
   卑南溪: { id: "beinan-river", ref: "220000", category: "中央管河川", counties: ["臺東縣"], length_km: 84.4, area_km2: 1603 },
@@ -130,7 +165,7 @@ export const RIVERS = {
   和平溪: { id: "heping-river", ref: "250000", category: "中央管河川", counties: ["花蓮縣", "宜蘭縣"], length_km: 50.7, area_km2: 561 },
 
   // ── 跨省市河川 2 水系（表 4）─────────────────────────────
-  淡水河: { id: "danshui-river", ref: "114000", category: "跨省市河川", counties: ["基隆市", "臺北市", "新北市", "桃園市", "新竹縣"], length_km: 158.7, area_km2: 2726 },
+  淡水河: { id: "danshui-river", ref: "114000", category: "跨省市河川", counties: ["基隆市", "臺北市", "新北市", "桃園市", "新竹縣"], upstream: "大漢溪", length_km: 158.7, area_km2: 2726 },
   磺溪: { id: "huang-river", ref: "101000", category: "跨省市河川", counties: ["臺北市", "新北市"], length_km: 13.5, area_km2: 49 },
 
   // ── 直轄市管河川 27 水系（表 2）───────────────────────────
@@ -228,7 +263,49 @@ export const RIVERS = {
   新城溪: { id: "xincheng-river", ref: "254000", category: "縣(市)管河川", counties: ["宜蘭縣"] },
   得子口溪: { id: "dezikou-river", ref: "257000", category: "縣(市)管河川", counties: ["宜蘭縣"] },
   大溪川: { id: "daxi-river", ref: "261000", category: "縣(市)管河川", counties: ["宜蘭縣"] },
+  // ── 主要支流 26 條（不在公告的 118 個水系裡，見上面的說明）─────────
+  // 淡水河水系：臺北盆地的三條河，課本講盆地與都市發展一定會點名
+  基隆河: { id: "jilong-river", ref: "114030", category: "主要支流", parent: "淡水河" },
+  新店溪: { id: "xindian-river", ref: "114020", category: "主要支流", parent: "淡水河" },
+  景美溪: { id: "jingmei-river", ref: "114023", category: "主要支流", parent: "淡水河" },
+  北勢溪: { id: "beishi-river", ref: "114022", category: "主要支流", parent: "淡水河" },
+  南勢溪: { id: "nanshi-river", ref: "114021", category: "主要支流", parent: "淡水河" },
+  // 頭前溪水系
+  上坪溪: { id: "shangping-river", ref: "130010", category: "主要支流", parent: "頭前溪" },
+  // 中港溪水系（南庄溪與母幹流重疊，見上）
+  // 後龍溪水系
+  汶水溪: { id: "wenshui-river", ref: "135030", category: "主要支流", parent: "後龍溪" },
+  老田寮溪: { id: "laotianliao-river", ref: "135070", category: "主要支流", parent: "後龍溪" },
+  // 大安溪水系
+  景山溪: { id: "jingshan-river", ref: "140070", category: "主要支流", parent: "大安溪" },
+  // 大甲溪水系：七家灣溪是櫻花鉤吻鮭唯一的原生棲地，站上有這個物種
+  七家灣溪: { id: "qijiawan-river", ref: "142010", category: "主要支流", parent: "大甲溪" },
+  // 烏溪水系
+  貓羅溪: { id: "maoluo-river", ref: "143040", category: "主要支流", parent: "烏溪" },
+  大里溪: { id: "dali-river", ref: "143050", category: "主要支流", parent: "烏溪" },
+  // 濁水溪水系
+  陳有蘭溪: { id: "chenyoulan-river", ref: "151010", category: "主要支流", parent: "濁水溪" },
+  清水溪: { id: "qingshui-river", ref: "151020", category: "主要支流", parent: "濁水溪" },
+  // 曾文溪水系
+  菜寮溪: { id: "cailiao-river", ref: "163020", category: "主要支流", parent: "曾文溪" },
+  官田溪: { id: "guantian-river", ref: "163060", category: "主要支流", parent: "曾文溪" },
+  // 高屏溪水系（荖濃溪與母幹流重疊，見上）
+  隘寮溪: { id: "ailiao-river", ref: "173020", category: "主要支流", parent: "高屏溪" },
+  旗山溪: { id: "qishan-river", ref: "173030", category: "主要支流", parent: "高屏溪", alias: "楠梓仙溪" },
+  // 卑南溪水系
+  新武呂溪: { id: "xinwulu-river", ref: "220010", category: "主要支流", parent: "卑南溪" },
+  鹿野溪: { id: "luye-river", ref: "220030", category: "主要支流", parent: "卑南溪" },
+  // 秀姑巒溪水系
+  樂樂溪: { id: "lele-river", ref: "237020", category: "主要支流", parent: "秀姑巒溪" },
+  紅葉溪: { id: "hongye-river", ref: "237050", category: "主要支流", parent: "秀姑巒溪" },
+  // 花蓮溪水系
+  馬太鞍溪: { id: "mataian-river", ref: "242020", category: "主要支流", parent: "花蓮溪" },
+  壽豐溪: { id: "shoufeng-river", ref: "242040", category: "主要支流", parent: "花蓮溪", alias: "知亞干溪" },
+  木瓜溪: { id: "mugua-river", ref: "242050", category: "主要支流", parent: "花蓮溪" },
+  // 蘭陽溪水系
+  宜蘭河: { id: "yilan-river", ref: "256020", category: "主要支流", parent: "蘭陽溪" },
 };
+
 
 /** 河川中文名 → 本站 id。從 `RIVERS` 衍生，不要另外維護。 */
 export const RIVER_IDS = Object.fromEntries(
@@ -315,5 +392,8 @@ export const RIVER_FACTS = Object.fromEntries(
  * 用尾綴把 id 命名空間分開，讓行為可預測。
  */
 export const BASIN_IDS = Object.fromEntries(
-  Object.entries(RIVERS).map(([name, r]) => [name, r.id.replace(/-river$/, "-basin")]),
+  Object.entries(RIVERS)
+    // 支流沒有自己的流域面——集水區是依水系劃的，支流的集水區本來就包在母水系裡
+    .filter(([, r]) => r.ref.endsWith("000"))
+    .map(([name, r]) => [name, r.id.replace(/-river$/, "-basin")]),
 );

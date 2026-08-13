@@ -800,22 +800,33 @@ const SOURCES = [
             area_km2: river.area_km2,
             // 可點清單的分組依據（browse.groupBy），也是詳情卡上的公告等級
             category: river.category,
+            // 支流才有：母水系的中文名，卡片與清單都靠它說明「這條河屬於誰」
+            parent: river.parent,
             /**
              * 清單副標、搜尋副標與（沒有內容檔時）詳情卡的次標。
              *
-             * 26 條有官方長度的照舊顯示長度——那是這一層最有教學價值的一個數字。
-             * 其餘 92 條顯示「常用別名・流經縣市」：
-             * - **別名一定要在這裡**，`meta` 是 `searchIndex` 唯一會收進 haystack 的
-             *   額外欄位。少了它，學生對著底圖上的「阿里磅溪」搜不到我們標的
-             *   「乾華溪」，而畫面上沒有任何線索解釋為什麼。
-             * - 流經縣市讓 65 筆「縣(市)管河川」在清單裡分得出彼此。
+             * ⚠️ **`meta` 是 `searchIndex` 唯一會收進 haystack 的額外欄位**，所以
+             * 凡是「使用者可能拿來搜的別名」都得塞進這裡，少一個就等於那個詞搜不到，
+             * 而畫面上沒有任何線索解釋為什麼。三種情況：
+             *
+             * - **有官方長度的 26 條**：顯示長度（這一層最有教學價值的數字）。其中
+             *   5 條再加上「上游稱大漢溪」——OSM 的 main_stream 把上游改名的河段
+             *   收在同一個關聯裡，所以淡水河那條線的上游走的就是大漢溪的河道。
+             *   學生搜「大漢溪」會找到淡水河並飛過去，那是誠實的答案；把大漢溪
+             *   另外畫一條會得到兩條完全重疊的線（見 lib/rivers.mjs 的 `upstream`）。
+             * - **26 條支流**：顯示「常用別名・母水系水系」。
+             * - **其餘 92 條**：顯示「常用別名・流經縣市」，讓 65 筆縣(市)管河川
+             *   在清單裡分得出彼此。
              */
             meta:
               river.length_km != null
-                ? `幹流長度 ${river.length_km} km`
-                : [river.alias, river.counties.join("、")].filter(Boolean).join("・"),
-            // FeatureCard 的 fallback 專用（92 條都沒有內容檔）：`meta` 已經被
-            // 別名與縣市佔滿，公告等級改由這一行交代
+                ? `幹流長度 ${river.length_km} km` +
+                  (river.upstream ? `・上游稱${river.upstream}` : "")
+                : [river.alias, river.parent ? `${river.parent}水系` : river.counties.join("、")]
+                    .filter(Boolean)
+                    .join("・"),
+            // FeatureCard 的 fallback 專用（118 條裡的 92 條與 26 條支流都沒有
+            // 內容檔）：`meta` 已經被別名與縣市／母水系佔滿，等級改由這一行交代
             detail: river.length_km != null ? undefined : river.category,
           },
         }))
@@ -913,6 +924,9 @@ const SOURCES = [
       const missing = [];
 
       for (const [officialName, river] of Object.entries(RIVERS)) {
+        // 支流沒有自己的流域面——集水區是依水系劃的，支流的集水區本來就包在
+        // 母水系那一片裡。`BASIN_IDS` 也是這樣過濾的，兩邊要一致。
+        if (!river.ref.endsWith("000")) continue;
         const id = BASIN_IDS[officialName];
         if (!id) {
           throw new Error(`河川「${officialName}」不在 BASIN_IDS 對照表裡，請先決定它的 id`);
@@ -957,8 +971,9 @@ const SOURCES = [
       }
 
       if (missing.length) {
+        const systems = Object.values(RIVERS).filter((r) => r.ref.endsWith("000")).length;
         console.log(
-          `\n  ⓘ 對到 ${features.length}／${Object.keys(RIVERS).length} 條，` +
+          `\n  ⓘ 對到 ${features.length}／${systems} 個獨立水系，` +
             `以下 ${missing.length} 條上游沒有發布個別流域面：${missing.join("、")}`,
         );
       }

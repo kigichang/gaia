@@ -176,9 +176,33 @@ NLSC WMTS 是 `{z}/{y}/{x}`——**y 在 x 前面**，跟絕大多數 XYZ 服務
 
 ### 河川路徑走 OpenStreetMap，關鍵是「用 ref 選、只取 main_stream」
 
-收錄範圍是**經濟部公告的全部 118 個列管水系**（民國 112 年 2 月公告「河川區分為中央管河川、跨省市河川、直轄市管河川及縣(市)管河川」）：中央管 24 + 跨省市 2（淡水河、磺溪）+ 直轄市管 27 + 縣(市)管 65。清單、id、河川代碼、管理等級、流經縣市全部在 `scripts/lib/rivers.mjs` 的 `RIVERS`——**那是唯一的一份**，`RIVER_IDS`／`RIVER_OSM_REFS`／`RIVER_FACTS`／`BASIN_IDS` 都從它衍生。
+收錄範圍是**經濟部公告的全部 118 個列管水系，外加 26 條編者挑選的主要支流，合計 144 條**。前 118 條的依據是民國 112 年 2 月公告「河川區分為中央管河川、跨省市河川、直轄市管河川及縣(市)管河川」）：中央管 24 + 跨省市 2（淡水河、磺溪）+ 直轄市管 27 + 縣(市)管 65。清單、id、河川代碼、管理等級、流經縣市全部在 `scripts/lib/rivers.mjs` 的 `RIVERS`——**那是唯一的一份**，`RIVER_IDS`／`RIVER_OSM_REFS`／`RIVER_FACTS`／`BASIN_IDS` 都從它衍生。
 
 路徑（`public/data/geo/tw-rivers.geojson`）來自 OpenStreetMap 的 `waterway=river` 關聯。長度／流域面積仍是水利署官網〈河川長度〉頁面的官方數字（人工抄進 `RIVERS`）——**圖上的線與卡片上的數字是兩個不同來源**，這件事在下面的「長度對不上」那段很重要。
+
+#### 另外 26 條主要支流：範圍是編者挑的，這件事要講明白
+
+⚠️ **基隆河、新店溪、大漢溪一條都不在那 118 裡**，而且那是規則的必然結果，不是漏掉：支流依公告定義**屬於母水系**（「每一水系……含其主、支流全部」），而水利署的河川代碼是階層式的——`114000` 淡水河、`114010` 大漢溪、`114020` 新店溪、`114030` 基隆河——所以「代碼結尾 000」這條規則會把支流全部排除。
+
+但一張地理教學地圖沒有基隆河是說不過去的，所以另外收了 **26 條編者挑選**的主要支流，`category` 是 `"主要支流"`（**那不是一種管理等級**，所以排在四個公告等級之後）。這比照五大山脈的先例：沒有官方清單時由編者挑，但要在圖層說明講明白。
+
+⚠️ **不要無腦擴充成「全部第一級支流」**：OSM 上帶代碼的支流有 **451 條**、第一級 **246 條**，裡面有大量的旱溝、三崁坑、同安厝排水、舊港圳導水線——那些不是課本會講的河川，加進來只會把清單淹掉。
+
+#### ⚠️ 有 5 條支流不能加，因為河道跟母幹流完全重疊
+
+OSM 的 `main_stream` 把上游改稱其他名稱的河段收在同一個關聯裡，所以**大漢溪的河道其實早就畫在「淡水河」那條線上了**（實測那條線通過石門水庫與大溪，南端到北緯 24.447）。把大漢溪再當成獨立圖徵加進來，會得到兩條逐點重疊的藍線：點擊仲裁的結果未定義、沿線標註互相碰撞、清單裡出現兩個看起來一樣的東西。
+
+**重疊是量出來的，不是猜的**——把候選支流的每個點拿去比對母幹流那條線 250 公尺內的比例，實測 5 組：
+
+| 支流 | 母幹流 | 重疊 |
+|---|---|---|
+| 大漢溪 | 淡水河 | 93% |
+| 南庄溪 | 中港溪 | 92% |
+| 油羅溪 | 頭前溪 | 87% |
+| 虎尾溪 | 北港溪 | 76% |
+| 荖濃溪 | 高屏溪 | （OSM 上沒有代碼，但線通過六龜與桃源） |
+
+其餘 26 條的重疊都在 8% 以下。解法是把名字寫進**母幹流的 `meta`**（`upstream` 欄位 → 「幹流長度 158.7 km・上游稱大漢溪」），搜「大漢溪」一樣找得到淡水河並飛過去——那是同一件事的誠實說法：那條河道就是它。**新增支流前一定要重跑這個重疊檢查。**
 
 **⚠️ 範圍不是「所有畫得出來的河」，是那份公告。** 公告本文另有一條界線：「凡屬排水管理辦法第 4 條規定之排水非屬河川」。OSM 上帶六位河川代碼、代碼結尾為 `000` 的關聯實測有 **150 個**，比列管水系多 32 個——愛河、後勁溪、東螺溪、將軍溪、冬山河、客雅溪這些都在多出來的那一批裡，其中員林大排、番雅溝排水、牛埔疏洪道連名字都寫著排水。**多抓很容易，但那會讓「這一層收錄什麼」失去可說明的界線**；要放寬就改 `RIVERS` 加上圖層說明，不要偷偷多抓幾條。
 
@@ -945,7 +969,7 @@ maplibre 的四個角落容器是 map container 內的 `position: absolute; z-in
 
 **而且撞名時要把 `meta` 補進副標**，否則畫面上是兩列一模一樣的字。這件事**只對真的撞名的標題做**：水庫的 `meta` 是「蓄水 62%・有效容量 …」這種長字串，沒撞名還硬加只會把副標塞爆。實測搜「東區」會得到四列，各自標著新竹市／臺中市／嘉義市／臺南市。
 
-索引是 **lazy 的**：搜尋框第一次獲得焦點才 `buildSearchIndex()`。目前它會抓十六份檔案，合計約 **2.30 MB**：
+索引是 **lazy 的**：搜尋框第一次獲得焦點才 `buildSearchIndex()`。目前它會抓十六份檔案，合計約 **2.35 MB**：
 
 | 檔案 | 大小 |
 |---|---|
@@ -959,13 +983,13 @@ maplibre 的四個角落容器是 map container 內的 `position: absolute; z-in
 | `tw-monuments-county.geojson` | 192 KB |
 | `tw-protected-areas.geojson` | 182 KB |
 | `world-rivers.geojson` | 146 KB |
-| `tw-rivers.geojson` | 174 KB |
+| `tw-rivers.geojson` | 226 KB |
 | `tw-monuments-national.geojson` | 50 KB |
 | `tw-transport.geojson` | 34 KB |
 | `tw-reservoirs.geojson` + `reservoirs-live.json` | 20 + 7 KB |
 | `tw-county-halls.geojson` | 7 KB |
 
-一個班 30 個學生同時開站時，這 2.30 MB 不該是每個人無條件付的成本。資料一律走 `resolveLayerData()`，與圖層顯示共用同一份快取，不會抓兩次。
+一個班 30 個學生同時開站時，這 2.35 MB 不該是每個人無條件付的成本。資料一律走 `resolveLayerData()`，與圖層顯示共用同一份快取，不會抓兩次。
 
 ⚠️ **古蹟那三份（483 KB）是子項目圖層唯一會進索引的例子，而且必須明確開啟。**
 `items` 圖層預設**只索引子項目本身**（三筆「國定古蹟／直轄市定古蹟／縣(市)定古蹟」），
@@ -1338,7 +1362,7 @@ m.isSourceLoaded('contour-source')
     ```js
     const m = window.__gaiaMaps.at(-1);
     m.jumpTo({ center: [120.9, 23.6], zoom: 7.3 });
-    new Set(m.queryRenderedFeatures({ layers: ['tw-rivers-line'] }).map(f => f.properties.id)).size  // 118
+    new Set(m.queryRenderedFeatures({ layers: ['tw-rivers-line'] }).map(f => f.properties.id)).size  // 144
     m.getPaintProperty('tw-rivers-line', 'line-color')   // 水系藍 #2a78d6（colorRole: hydrology）
     ```
     - **可點清單依公告等級分四組**，順序與筆數不可變（`browse.groupBy: "category"`
@@ -1346,8 +1370,9 @@ m.isSourceLoaded('contour-source')
       ```js
       [...document.querySelectorAll('.layer-drawer .place-group')].map(g =>
         g.textContent + ':' + g.nextElementSibling.querySelectorAll('.place-btn').length)
-      // ["中央管河川:24","跨省市河川:2","直轄市管河川:27","縣(市)管河川:65"]
+      // ["中央管河川:24","跨省市河川:2","直轄市管河川:27","縣(市)管河川:65","主要支流:26"]
       ```
+      ⚠️ **第五組不是管理等級**（支流依公告屬於母水系），所以一定排在最後
       中央管與跨省市那兩組**由長到短**（開頭是濁水溪、高屏溪），另外兩組依河川代碼
       （＝沿海岸逆時針的地理順序，開頭是新北的小坑溪、新竹的新豐溪）
     - 點濁水溪（有內容檔）→ 卡片有幹流長度／流域面積／分類、發源地、出海口，
@@ -1381,7 +1406,15 @@ m.isSourceLoaded('contour-source')
       若**其他**河川冒出 >15% 的提醒，才代表上游關聯被改動了。
       另外 92 條沒有官方長度可比對，日誌印的公里數只是合理性線索——但**明顯不合理的
       要追**（實測最短的水連溪只有 0.8 km，那是 OSM 只數化了下游河段）
-    - 118 條河川的 `id`／代碼／等級全部在 `scripts/lib/rivers.mjs` 的 `RIVERS`，
+    - **支流要搜得到、而且大漢溪不能有獨立圖徵**：
+      ```js
+      const fc = await fetch('/data/geo/tw-rivers.geojson').then(r => r.json());
+      fc.features.some(f => f.properties.name === '大漢溪')   // false（河道在淡水河那條線上）
+      fc.features.find(f => f.properties.id === 'danshui-river').properties.meta
+      // "幹流長度 158.7 km・上游稱大漢溪" → 搜「大漢溪」會找到淡水河
+      ```
+      搜「基隆河」要開出卡片（副標「淡水河水系」）、搜「大漢溪」要飛到淡水河
+    - 144 條河川的 `id`／代碼／等級全部在 `scripts/lib/rivers.mjs` 的 `RIVERS`，
       其中 26 條要對得上內容檔（`src/content/geo/tw-rivers/`）——`npm run validate` 會交叉檢查
 19. **流域分區**（`/theme/taiwan`，勾「流域分區」，可以跟「臺灣河川」同時勾）：
     ```js
