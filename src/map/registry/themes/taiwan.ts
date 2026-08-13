@@ -1,6 +1,7 @@
 // .ts 副檔名是必要的：Node 直接載入註冊表時不會自己補副檔名（見 ../types.ts）
 import {
   MAX_SIMULTANEOUS_SPECIES,
+  MONUMENT_LEVEL_COLORS,
   RESERVOIR_FILL_RAMP,
   SPECIES_COLORS,
 } from "../../thematicColors.ts";
@@ -134,6 +135,63 @@ export const taiwanTheme: ThemeDefinition = {
       description:
         "GBIF 的歷史觀測紀錄。反映的是賞鳥與採集活動的熱點，不是族群密度普查。",
       sources: ["GBIF Global Biodiversity Information Facility"],
+    },
+    {
+      id: "tw-monuments",
+      label: "古蹟",
+      group: "人文",
+      status: "ready",
+      // 半徑 4（比照特有種）而不是預設的 6：全臺 1,064 處，在市區會非常密集，
+      // 6px 的點在臺北、臺南舊城區會糊成一片連不出個別位置。
+      render: { kind: "circle", radius: 4 },
+      detail: { type: "monument" },
+      items: {
+        /**
+         * 三級各一個檔，不是一個檔加 filter。**只勾「國定古蹟」就只抓 50 KB**，
+         * 而不是整包 477 KB——一個班 30 個學生同時開站時，這就是這一層開不開得起來
+         * 的差別。（`LayerItem.filter` 那條路目前全站沒有實作，見 types.ts。）
+         *
+         * 順序＝級別由高到低，勾選清單第一個就是課本最常提到的國定古蹟。
+         */
+        from: {
+          type: "inline",
+          list: [
+            {
+              id: "national",
+              label: "國定古蹟",
+              source: { type: "remote", path: "data/geo/tw-monuments-national.geojson" },
+              color: MONUMENT_LEVEL_COLORS["國定古蹟"],
+            },
+            {
+              id: "municipal",
+              label: "直轄市定古蹟",
+              source: { type: "remote", path: "data/geo/tw-monuments-municipal.geojson" },
+              color: MONUMENT_LEVEL_COLORS["直轄市定古蹟"],
+            },
+            {
+              id: "county",
+              label: "縣(市)定古蹟",
+              source: { type: "remote", path: "data/geo/tw-monuments-county.geojson" },
+              color: MONUMENT_LEVEL_COLORS["縣(市)定古蹟"],
+            },
+          ],
+        },
+        maxActive: 3,
+        // 三級都有固定色（見 MONUMENT_LEVEL_COLORS），palette 只是型別上的備援，
+        // 實際不會被用到——勾選順序不該影響哪一級是哪個顏色。
+        palette: Object.values(MONUMENT_LEVEL_COLORS),
+        // items 圖層沒有可點清單，搜尋是這一層唯一的檢索入口（見 types.ts）
+        indexFeatures: true,
+      },
+      // 1,064 處大多在市區，縮到全島尺度只會是一團色點。zoom 9 大約是一個縣市
+      // 填滿畫面的尺度，也是「古蹟聚在舊城區」這件事開始看得出來的地方。
+      minzoom: 9,
+      description:
+        "文化部文化資產局公告的 1,064 處古蹟，依指定級別分成三層。" +
+        "顏色越深代表級別越高（國定 > 直轄市定 > 縣(市)定），這是《文化資產保存法》的三級指定制度。" +
+        "點選可看指定年份、類別與官方的歷史沿革。" +
+        "⚠️ 臺東縣沒有任何古蹟——當地的文化資產是「歷史建築」，屬於另一個類別。",
+      sources: ["文化部文化資產局"],
     },
 
     // ── 以下是還沒有資料的圖層 ────────────────────────────────────────

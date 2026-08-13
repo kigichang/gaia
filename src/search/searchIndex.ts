@@ -99,10 +99,14 @@ async function featureHits(
   theme: ThemeDefinition,
   layer: LayerDefinition,
 ): Promise<SearchHit[]> {
-  // 子項目圖層（特有種）：一個勾選項就是一個搜尋結果，不展開成上千筆觀測點——
-  // 觀測點的 properties 只有日期與紀錄類型，沒有名字可搜。
+  // 子項目圖層：每個勾選項本身就是一個搜尋結果（搜「臺灣黑熊」「國定古蹟」）。
+  //
+  // 預設**不展開**成圖徵：特有種的子項目 source 是觀測點 geojson，properties 只有
+  // 日期與紀錄類型、沒有名字可搜，抓下來（五份共 262 KB）也產不出任何結果。
+  // 需要展開的圖層要明確開 `items.indexFeatures`（目前只有古蹟，見 types.ts）。
   if (layer.items) {
-    return layerItems(layer).map((item) => ({
+    const items = layerItems(layer);
+    const hits: SearchHit[] = items.map((item) => ({
       key: `${theme.id}:${layer.id}:${item.id}`,
       kind: "feature" as const,
       title: item.label,
@@ -114,6 +118,35 @@ async function featureHits(
       itemId: item.id,
       haystack: push([item.label, ...contentKeywords(layer, item.id)]),
     }));
+    if (!layer.items.indexFeatures) return hits;
+
+    for (const item of items) {
+      if (!item.source) continue;
+      const fc = await resolveLayerData(item.source);
+      for (const feature of fc?.features ?? []) {
+        const props = feature.properties ?? {};
+        // 比照下面一般圖層的規則：沒有 id 就選不了、沒有名字就搜不到
+        if (typeof props.id !== "string" || typeof props.name !== "string") continue;
+        hits.push({
+          key: `${theme.id}:${layer.id}:${item.id}:${props.id}`,
+          kind: "feature",
+          title: props.name,
+          // 副標寫「古蹟・國定古蹟」，使用者才知道搜到的東西住在哪個勾選項底下
+          subtitle: `${layer.label}・${item.label}`,
+          themeId: theme.id,
+          themeLabel: theme.label,
+          layerId: layer.id,
+          featureId: props.id,
+          // itemId 一定要帶：hitInstanceId() 靠它算出是哪一個子圖層的 instance
+          itemId: item.id,
+          haystack: push([
+            props.name,
+            typeof props.meta === "string" ? props.meta : undefined,
+          ]),
+        });
+      }
+    }
+    return hits;
   }
 
   if (!layer.source) return [];

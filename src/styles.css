@@ -1331,6 +1331,40 @@ input {
   color: var(--text-secondary);
 }
 
+/* 古蹟的歷史沿革。官方全文中位數 409 字、最長 6,600 字，所以這一段是卡片裡
+   唯一會很長的內容——給它自己的捲動區，不要把整張卡片撐成一條長軸。 */
+.monument-history {
+  max-height: 260px;
+  overflow-y: auto;
+  margin: 8px 0 0;
+}
+
+.monument-history-title {
+  margin: 10px 0 4px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.monument-history-title:first-child {
+  margin-top: 0;
+}
+
+.monument-history-text {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.7;
+  color: var(--text-secondary);
+  /* 官方全文沒有分段標記，是一整段長文字；兩端對齊會出現大片河流狀空白 */
+  text-align: left;
+}
+
+.monument-history-loading {
+  margin: 0;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
 .detail-empty {
   margin: 0;
   padding: 12px;

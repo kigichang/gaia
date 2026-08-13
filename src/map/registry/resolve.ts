@@ -282,8 +282,9 @@ export function expandActive(
         instances.push({
           instanceId: layerInstanceId(layer.id, item.id),
           render: layer.render,
-          // 依勾選順序指派色票，這是多物種疊圖時分辨物種的唯一線索
-          color: layer.items!.palette[index % layer.items!.palette.length],
+          // 依勾選順序指派色票，這是多物種疊圖時分辨物種的唯一線索。
+          // 子項目之間有序位時（古蹟三級）改用固定色，見 itemColorOf。
+          color: itemColorOf(layer, item.id, index),
           minzoom: layer.minzoom,
           maxzoom: layer.maxzoom,
           data: take(item.source),
@@ -324,4 +325,17 @@ export function expandActive(
 /** 顏色角色查詢，給圖例與圖層抽屜的色塊用。 */
 export function colorOf(role: ColorRole): string {
   return COLORS[role];
+}
+
+/**
+ * 子項目的顏色：固定色優先，否則依勾選順序取色票。
+ *
+ * ⚠️ **地圖與圖例一定要走同一個函式。** 兩邊各自寫一次 `palette[index % len]`
+ * 的話，任何一邊改了規則（例如加上 `item.color`）就會靜默不一致——圖例顯示一個
+ * 顏色、地圖上畫另一個，而且不會有任何錯誤。
+ */
+export function itemColorOf(layer: LayerDefinition, itemId: string, index: number): string {
+  const palette = layer.items!.palette;
+  const item = layerItems(layer).find((it) => it.id === itemId);
+  return item?.color ?? palette[index % palette.length];
 }

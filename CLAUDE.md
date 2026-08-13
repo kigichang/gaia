@@ -66,6 +66,7 @@ Node ≥ 22.12（vite 8 要求）。開發機與 CI 都用 Node 24。
 | 國家公園範圍 | `data.gov.tw/api/v2/rest/dataset/174421` →（索引 CSV）→ `tgos.tw` 各處的 SHP／KML；陽明山另走 `ogcmap.tgos.tw/…/Ymsnp3PlanBorder/SimpleWFS.aspx` | **只在建置期呼叫**，內政部國家公園署。座標是 **TWD97 TM2 公尺**，見下 |
 | 台江國家公園範圍 | `data.depositar.io`（中研院研究資料寄存所） | **只在建置期呼叫**。官方那兩份包在 7z 裡，見下；**這台主機只講 HTTP/2** |
 | 自然保留區／野生動物保護區／自然保護區 | `data.moa.gov.tw/api/FileToJson.ashx?DataId=157｜162｜350` → SHP zip | **只在建置期呼叫**，農業部林業及自然保育署 |
+| 古蹟（國定／直轄市定／縣市定） | `data.gov.tw` 資料集 **6246** → `data.boch.gov.tw/opendata/v2/assetsCase/1.1.json` | **只在建置期呼叫**（8.1 MB、**沒有 CORS 標頭**），文化部文化資產局。⚠️ 座標有 5 筆經緯度顛倒，見下 |
 | 基本地理事實（山脈走向、主峰高度、河川路徑、河川分界…） | `zh.wikipedia.org` 各條目 | **程式完全不呼叫**，人工查閱後寫進 `src/content/` 與 `public/data/geo-manual/`。次級來源，用法見「內容撰寫規範」，CC BY-SA |
 
 ### ⚠️ NLSC 的路徑順序陷阱
@@ -262,6 +263,64 @@ OSM 是眾人編輯的資料庫，關聯被拆開、改名或重建都可能發�
 
 幾條臺鐵幹線在 OSM 裡是依「線名」拆開的（縱貫線、臺中線、海岸線、屏東線各一個關聯），但課本講的是「西部幹線」這一整條，所以註冊表用 `parts` 把它們併成一個圖徵。
 
+---
+
+### 古蹟：全站唯一一個「一份上游資料產出四個檔」的圖層
+
+`tw-monuments` 是文化部文化資產局公告的 **1,064 處古蹟**，依《文化資產保存法》的三級
+指定制度分成三個各自可勾選的子圖層（國定 112／直轄市定 524／縣(市)定 427）。
+取得邏輯全部關在 `scripts/lib/monuments.mjs`。
+
+**產物是四種、不是一種**：三個 geojson（依級別分檔）＋ 21 份歷史沿革的縣市分片。
+
+#### 為什麼分成三個 geojson 而不是一個加 filter
+
+級別是三個獨立的核取方塊，而**只勾「國定古蹟」就只該付 50 KB**，不是整包 483 KB。
+三筆 SOURCES 共用 `monuments.mjs` 的 module-level 快取，所以上游那 8.1 MB 一個 process
+只下載一次。
+
+⚠️ 直覺上會想用 `LayerItem.filter`（一個檔案 + 三個 filter），**那條路目前不能走**：
+`filter` 只在 `types.ts` 有型別宣告，**全站沒有任何地方實作或使用它**，而 `resolve.ts`
+的 `if (!item?.source) return;` 會把沒有 `source` 的子項目**靜默跳過**——圖層什麼都不會
+出現，也不會報錯。
+
+#### 為什麼歷史沿革不進 geojson
+
+官方的 `pastHistory` 品質很好（中位數 409 字、100% 完整、**沒有 HTML 標籤**），是這一層
+最有教學價值的東西。但 1,064 筆全部塞進 geojson 是 **1.9 MB，直接爆掉 1 MB 硬上限**
+（實測）。所以按縣市切成 21 份分片放 `public/data/monuments/<county-id>.json`
+（14–290 KB），**點開詳情卡才抓那一份**，同縣市的第二處古蹟不會重抓。
+分片抓失敗時只是不顯示沿革，卡片其餘部分照常——沿革是加值，不該擋住基本資料。
+
+#### ⚠️ 上游資料的四個坑（全部實測，`build:geodata` 會把前兩項印在日誌上）
+
+1. **5 筆的經緯度是相反的**（`聖王廟`、`國際無線電話中壢送信所`、`打狗英國領事館及官邸`、
+   `樹林後村圳分汴及十二股圳取入口`、`國父紀念館`）——`latitude` 欄存的是經度。
+   對調後五筆**全部落回正確縣市**（用 `addresses[].cityName` 交叉驗證）。判準是
+   「緯度欄落在 118–122.2 而經度欄落在 21.5–26.5」。**不處理的話這 5 處會掉到海裡，
+   而且不會有任何錯誤訊息。**
+2. **1 筆完全沒有座標**（`原臺北帝國大學校舍文政學部研究室`），比照水庫的 `skipped`
+   印警告再跳過。所以三個檔加起來是 **1,063 而不是 1,064**。
+3. **5 筆的名稱把級別前綴寫進去了**（`國定古蹟-北港朝天宮`、`縣定古蹟永濟義渡碑(名間鄉)`…），
+   要在取得層剝掉，否則卡片標題會變成「國定古蹟・國定古蹟麥寮拱範宮」。
+4. **臺東縣一處古蹟都沒有**（上游只有 21 個縣市出現），所以分片是 **21 份不是 22 份**。
+   任何「對到 22 個縣市」的假設都會失敗——臺東的文化資產是「歷史建築」，不同類別。
+
+**id 用官方的 `caseId`**（`monument-19831228000008`），實測 1,064 筆全部存在且唯一，
+而且 `caseUrl` 的結尾就是它。用名稱 slugify 會撞名——古蹟同名的非常多（兩座「永濟義渡碑」、
+四座「龍山寺」）。
+
+#### ⚠️ 維基百科不要拿來自動比對
+
+實測 112 座國定古蹟按名稱自動比對 zh.wikipedia：80% 有條目（90/112），**但比對「成功」
+的裡面有好幾筆是靜默錯的**——`總統府`→`总统府`（泛論條目，不是中華民國總統府）、
+`開元寺`→`开元寺`（中國的開元寺，不是臺南開元寺）、`臺北機廠`→`富岡機廠`（它的後繼廠，
+不是這座古蹟）、`魯凱族好茶舊社`→`好茶村`（只是近似）。
+
+所以每一處的官方外連一律用 geojson 的 `url`（＝官方 `caseUrl`，100% 有、100% 正確）。
+維基百科只在**人工逐一確認**後才寫進少數知名古蹟的內容檔 `sources`，比照
+「維基百科是次級來源」的既有規範。
+
 ## 硬性禁止事項
 
 1. **不得引入任何需要 API key、token 或付費金鑰的服務。** MapTiler、Mapbox、Google Maps 一律不用。純靜態站沒有地方藏金鑰。
@@ -276,7 +335,8 @@ OSM 是眾人編輯的資料庫，關聯被拆開、改名或重建都可能發�
 10. **不得手動編輯 `public/data/geo/*.geojson`。** 由 `npm run build:geodata` 產生。手繪的教學示意幾何放 `public/data/geo-manual/`，那個目錄腳本永遠不會碰。
 11. **不得在執行期呼叫水利署的 API。** 那個端點沒有 CORS 標頭，瀏覽器一定抓不到；水庫資料一律走 build-time 產製。
 12. **不得手動編輯 `public/data/reservoirs-live.json` 與 `public/data/geo/tw-reservoirs.geojson`。** 由 `npm run build:reservoirs` 與 `npm run build:geodata` 產生。
-13. **不得憑感覺挑主題圖層的顏色。** 改動或新增 `src/map/thematicColors.ts` 的顏色前，必須重新用 dataviz skill 的 `scripts/validate_palette.js`（`--pairs all`，因為主題圖層是可任意複選的核取方塊，不能只驗證清單裡「相鄰」的顏色）驗證明暗兩模式，理由與已驗證過的組合見該檔案的註解。
+13. **不得手動編輯 `public/data/monuments/*.json`。** 古蹟的歷史沿革分片，由 `npm run build:geodata` 產生（跟著三個 `tw-monuments-*` 資料集一起寫出）。
+14. **不得憑感覺挑主題圖層的顏色。** 改動或新增 `src/map/thematicColors.ts` 的顏色前，必須重新用 dataviz skill 的 `scripts/validate_palette.js`（`--pairs all`，因為主題圖層是可任意複選的核取方塊，不能只驗證清單裡「相鄰」的顏色）驗證明暗兩模式，理由與已驗證過的組合見該檔案的註解。序位型的色階（水庫蓄水率、古蹟級別）改用 `--ordinal`。
 
 ---
 
@@ -310,6 +370,7 @@ ID 常數定義在 `src/map/layers/*.ts`，**一律 import 常數，不要寫死
 | `tw-transport-line` / `tw-transport-label` | line + symbol（標註用 `shortName`，不是 `name`） |
 | `tw-rivers-line` / `tw-rivers-label` | line + symbol |
 | `tw-basins-fill` / `tw-basins-outline` | fill + line |
+| `tw-monuments-<level>-points` | circle，三個級別各自一組（`national`／`municipal`／`county`） |
 
 `dem` 與 `dem-terrain` 是兩個來源但都指向同一個 shared DEM protocol：maplibre 會警告 hillshade 與 terrain 共用來源會降低算繪品質，拆開可消除警告，而底層圖磚快取仍然共用、不會重複下載。
 
@@ -342,7 +403,7 @@ maplibre-contour 把 worker 以 Blob URL 內嵌，**不需要額外部署 worker
 
 | 主題 | 路由 | 內容 |
 |---|---|---|
-| 臺灣地理 | `/theme/taiwan` | 行政區、地形、水系（含水庫即時水情、河川流域分區）、人文（原住民族、交通軸線）、植被生態（特有種、國家公園與保護區）、農業物產 |
+| 臺灣地理 | `/theme/taiwan` | 行政區、地形、水系（含水庫即時水情、河川流域分區）、人文（原住民族、交通軸線、古蹟）、植被生態（特有種、國家公園與保護區）、農業物產 |
 | 世界地理 | `/theme/world` | 世界重要城市、國界與大洲、地形水系、人文專題 |
 | 全球地理形貌 | `/theme/global` | 緯度參考線、氣候與生物群系、洋流、板塊與地震帶 |
 
@@ -533,6 +594,38 @@ node scripts/validate_palette.js "#86b6ef,#3987e5,#256abf,#184f95" --ordinal --m
 
 「暫無資料」的灰 `#7d7c76` 刻意**不在 ramp 裡**——資料缺漏不是「蓄水率很低」，混進色階等於謊報。有 ramp 的圖層，`MapLegend` 必須把級距一起畫出來（只給一個代表色的圖例會讓深淺不同的圓點變成看不懂的雜訊）。
 
+#### 第二個「顏色跟著數值走」的圖層：古蹟指定級別
+
+古蹟三級（國定／直轄市定／縣(市)定）是**序位**，不是三個平等的類別，所以跟水庫同一條
+規則——單一色相由淺到深，**不佔用分類點色票**（那份色票 CLAUDE.md 已記錄為飽和）。
+色階是 `MONUMENT_LEVEL_COLORS`（赭紅／磚色，由淺到深＝級別由低到高）：
+
+```bash
+node <dataviz-skill>/scripts/validate_palette.js "#aa604e,#934c3a,#7d3827" --ordinal --mode light|dark
+# → 兩模式各四項全數 PASS
+```
+
+跟水庫不同的是，古蹟三級是三個**各自可勾選的子圖層**，所以色階不是 `colorRamp`，
+而是用 `LayerItem.color` 把顏色**固定綁在各級上**。⚠️ `items` 的預設行為是**依勾選
+順序**從 `palette` 指派（特有種那樣是對的，物種之間沒有序位），古蹟不能這樣：先勾
+「縣(市)定」再勾「國定」的話，國定會拿到中間色，「越深＝級別越高」的圖例當場失效。
+**地圖與圖例一律走 `resolve.ts` 的 `itemColorOf()`**——兩邊各自寫一次
+`palette[index % len]` 的話，任何一邊改規則就會靜默不一致（圖例一個色、地圖另一個色）。
+
+**為什麼是赭紅而不是飽和的棕**：語意上棕色最像古蹟，但真正的判準是**古蹟與原住民族
+同屬「人文」群組、很可能一起勾**，所以色階中間色必須跟原住民族紅 `#e34948` 分得開。
+飽和棕 `#b5793c` 對它的 **deutan ΔE 只有 0.6**（紅綠色盲完全分不出來）、一般視覺也只有
+12.7（低於 15）。掃過整個 OKLCH 色域後，同時通過 `--ordinal` 與
+`validate_palette.js "#2a78d6,#e34948,<中間色>" --pairs all` 的只剩三族：低彩度赭紅／棕
+（h 25–50）、黃綠（h 115–155，撞特有種綠與交通翠綠）、洋紅／紫（h 310–345，撞山脈洋紅
+與物種紫）。赭紅是唯一語意也對的。
+
+⚠️ **棕色系在這個站上有前科**：等高線 `rgba(120,78,42,.55)` 與地形陰影 `#5a4632` 都是
+棕的，山脈線就是因此不能用棕。古蹟能用的理由跟交通軸線能用綠色一樣是**地理分佈相反**
+——古蹟絕大多數在市區與平原（臺北 209、臺南 142、金門 96），NLSC 在那裡是白／灰底，
+而且圓點有白色外框。要改這個顏色、或懷疑山區的古蹟看不清楚時，**先在 NLSC 底圖的
+山區實際疊一次再說**。
+
 `reference`（緯度參考線）與 `hazard`（地震帶）是**非分類的固定角色**，比照 hillshade 的棕色，刻意排除在色票驗證之外。地震帶尤其不該給分類色相：2800 個依震級縮放的點是**密度場**，教學內容是「地震帶沿板塊邊緣浮現」，不是「這個色相代表地震」；給它色相不但擠爆色票驗證，2800 個不透明白框圓點在投影機上也只是一坨糊的（所以 `strokeWidth: 0` 必須是可設定的）。
 
 ### 選取中的圖徵怎麼強調
@@ -683,20 +776,31 @@ maplibre 的四個角落容器是 map container 內的 `position: absolute; z-in
 - 沒有 `properties.id` 或沒有 `properties.name` 的圖徵一律跳過——前者選不了、後者搜不到。
 - 比對的字串是 `name` + `shortName` + `meta` + 內容檔別名。**`shortName` 一定要在裡面**：它是沿線標註在地圖上實際印出來的字（「高鐵」「國道1」），使用者看到什麼就會搜什麼。少了它，搜最常用的俗名「高鐵」只會搜到圖層本身，而圖層結果是不開卡的——「國道」「南迴」剛好是全名的子字串，所以這個洞不會在那兩個字上暴露出來。
 
-索引是 **lazy 的**：搜尋框第一次獲得焦點才 `buildSearchIndex()`。目前它會抓九份檔案，合計約 **890 KB**：
+索引是 **lazy 的**：搜尋框第一次獲得焦點才 `buildSearchIndex()`。目前它會抓十二份檔案，合計約 **1.37 MB**：
 
 | 檔案 | 大小 |
 |---|---|
+| `tw-monuments-municipal.geojson` | 240 KB |
 | `tw-basins.geojson` | 219 KB |
 | `tw-counties.geojson` | 192 KB |
+| `tw-monuments-county.geojson` | 192 KB |
 | `tw-protected-areas.geojson` | 182 KB |
 | `world-rivers.geojson` | 146 KB |
 | `tw-rivers.geojson` | 85 KB |
+| `tw-monuments-national.geojson` | 50 KB |
 | `tw-transport.geojson` | 34 KB |
 | `tw-reservoirs.geojson` + `reservoirs-live.json` | 20 + 7 KB |
 | `tw-county-halls.geojson` | 7 KB |
 
-一個班 30 個學生同時開站時，這 890 多 KB 不該是每個人無條件付的成本。資料一律走 `resolveLayerData()`，與圖層顯示共用同一份快取，不會抓兩次。
+一個班 30 個學生同時開站時，這 1.37 MB 不該是每個人無條件付的成本。資料一律走 `resolveLayerData()`，與圖層顯示共用同一份快取，不會抓兩次。
+
+⚠️ **古蹟那三份（483 KB）是子項目圖層唯一會進索引的例子，而且必須明確開啟。**
+`items` 圖層預設**只索引子項目本身**（三筆「國定古蹟／直轄市定古蹟／縣(市)定古蹟」），
+要展開成圖徵得在 `items.indexFeatures` 明講。這不是可有可無的開關：特有種的子項目
+source 是**觀測點** geojson（五份共 262 KB，properties 只有日期與紀錄類型、**沒有名字**），
+預設展開等於讓每個學生白付那 262 KB 卻一筆結果也搜不到。古蹟相反——1,064 個圖徵全部
+有名字，而 `items` 圖層又**沒有可點清單**（`ThemeMapPage` 的 `!l.items`），
+**搜尋是這一層唯一的檢索入口**。
 
 ⚠️ **這張表上的數字要跟著 `public/data/` 一起維護**，不要照抄舊版：合併兩條分支時發現兩邊各自記的清單都已經過期（其中一邊還把 `tw-counties` 寫成 35 KB，實際是 192 KB）。要重新量就跑
 `for f in public/data/geo/*.geojson; do echo "$(basename $f) $(( $(wc -c < $f) / 1024 ))KB"; done`。
@@ -822,6 +926,8 @@ npm run build:reservoirs # 產生水庫即時水情（每次都重抓，CI 也�
 npm run build:geodata   # 產生行政區/河流/地震/水庫 geojson（已存在會跳過）
 npm run build:geodata -- --force --only=quakes   # 只重抓一個資料集
 npm run build:geodata -- --force --only=tw-protected-areas   # 國家公園與保護區（約 2 分鐘）
+npm run build:geodata -- --force --only=tw-monuments-national   # 古蹟三級要各跑一次
+                                       # （municipal／county 同理；歷史沿革分片會一起寫出）
 ```
 
 `build:climate` 對 Open-Meteo、`build:species` 對 GBIF、`build:geodata` 對 Natural Earth 與 USGS 都有指數退避重試（429/5xx 時等 5s/10s/20s…），連抓多筆被限流是正常的，重跑一次即可補齊。
@@ -1091,6 +1197,32 @@ m.isSourceLoaded('contour-source')
     - ⚠️ `tw-basins` 跟 `tw-rivers` 的 id **刻意不共用**（`gaoping-basin` vs `gaoping-river`）：
       選一條河的線，不應該連動強調它的流域面（反之亦然）——這是特意分開 id 命名空間的結果，
       不要為了「兩個都亮」去改成共用 id，那個行為沒有測過
+20. **古蹟**（`/theme/taiwan`，勾「古蹟」，底下有三個級別的子核取方塊）：
+    ```js
+    const m = window.__gaiaMaps.at(-1);
+    m.jumpTo({ center: [121.52, 25.04], zoom: 12 });   // ⚠️ 這一層 minzoom 是 9
+    m.queryRenderedFeatures({ layers: ['tw-monuments-national-points'] }).length
+    m.getPaintProperty('tw-monuments-national-points', 'circle-color')   // "#7d3827"
+    m.getPaintProperty('tw-monuments-county-points',   'circle-color')   // "#aa604e"
+    ```
+    - **級別的顏色不可以隨勾選順序改變**：先勾「縣(市)定」再勾「國定」，國定仍然要是
+      **最深**的 `#7d3827`（不是 palette 的第二個顏色）。圖例的色塊也要跟地圖一致——
+      兩邊都走 `itemColorOf()`，這一項就是在守那件事：
+      ```js
+      [...document.querySelectorAll('.map-legend .layer-swatch')].map(s => getComputedStyle(s).backgroundColor)
+      ```
+    - 三個檔各自獨立抓：**只勾「國定古蹟」時 Network 只該多 50 KB 那一份**，
+      不是三份全抓
+    - 點艋舺龍山寺 → 卡片有級別／縣市／種類、指定年份、地址、主管機關 +
+      國家文化資產網的個案連結，**歷史沿革稍後才出現**（按縣市延遲載入）；
+      再點同一個縣市的另一處古蹟**不應該重抓分片**（看 Network 只有一次 `tw-tpe.json`）
+    - 點國父紀念館 → 位置要在臺北市信義區，不是海上（＝經緯度顛倒的修正生效）
+    - 搜「龍山寺」→ 四筆（艋舺／鹿港／鳳山／淡水）；搜「赤嵌樓」→ 一筆
+      （官方寫「嵌」不是「崁」）。⚠️ 這一層**沒有可點清單**（`items` 圖層），
+      搜尋是唯一的檢索入口，所以搜不到就等於這一層廢了
+    - **特有種的搜尋結果不可以變多**（`items.indexFeatures` 只開在古蹟上）：
+      搜「台灣黑熊」仍然只有一筆。⚠️ 是「台」不是「臺」——內容檔用的是台
+    - 切底圖之後重驗一次顏色（`reapply` 路徑會重建圖層）
 
 ### ⚠️ 用瀏覽器自動化點 UI 的三個陷阱
 
@@ -1179,17 +1311,19 @@ src/
    ├─ DetailCard.tsx      # 選取 → 對應詳情卡的分派
    ├─ ThemeBrowse.tsx     # 圖層抽屜裡的可點清單（browseLayerExtra）
    ├─ ReservoirCard.tsx   # 水庫詳情卡（即時水情長條 + 基本資料，資料全來自 geojson）
+   ├─ MonumentCard.tsx    # 古蹟詳情卡（基本資料來自 geojson，歷史沿革按縣市延遲載入）
    └─ PlaceCard/IndigenousCard/SpeciesCard/FeatureCard/LayerPanel/MapLegend…
 public/data/
 ├─ reservoirs-live.json   # build:reservoirs 產生（禁止手改，每次部署重抓）
 ├─ climate/*.json         # build:climate 產生
 ├─ species/*.geojson      # build:species 產生
 ├─ geo/*.geojson          # build:geodata 產生（禁止手改）
+├─ monuments/*.json       # 古蹟歷史沿革的縣市分片，21 份（build:geodata 產生，禁止手改）
 └─ geo-manual/*.geojson   # 手繪教學示意幾何（可以手改）
 scripts/
 ├─ build-climate.mjs      # Open-Meteo → public/data/climate
 ├─ build-species.mjs      # GBIF → public/data/species
-├─ build-geodata.mjs      # NLSC / Natural Earth / USGS / 水利署 / OSM → public/data/geo
+├─ build-geodata.mjs      # NLSC / Natural Earth / USGS / 水利署 / OSM / 文資局 → public/data/geo
 ├─ build-reservoirs.mjs   # 水利署水庫水情 → public/data/reservoirs-live.json
 ├─ lib/simplify.mjs       # 自帶的 Douglas–Peucker（刻意不加依賴）
 ├─ lib/unzip.mjs          # 自帶的 ZIP 讀取器（zlib.inflateRaw；檔名會判 Big5，見上）
@@ -1203,6 +1337,7 @@ scripts/
 ├─ lib/csv.mjs            # CSV 剖析器（水庫與國家公園索引共用）
 ├─ lib/protected-areas.mjs # 國家公園與保護區四個資料集的存取層
 ├─ lib/reservoirs.mjs     # 水利署開放資料的共用存取層（CSV 剖析、bot 防護、id 對照表）
+├─ lib/monuments.mjs      # 文資局古蹟的存取層（經緯度顛倒修正、名稱前綴剝除、縣市分片）
 ├─ lib/overpass.mjs       # OSM Overpass 存取層（端點輪替、路線關聯查詢、way 串接）
 ├─ lib/rivers.mjs         # 河川／流域 id 對照表（BASIN_IDS 從 RIVER_IDS 衍生）+ 官方長度／流域面積（RIVER_FACTS）+ 河川的 OSM 選取碼（RIVER_OSM_REFS，水利署河川代碼）
 ├─ lib/fetch-retry.mjs    # 指數退避的 fetch（含 HTTP/2 fallback，見上）

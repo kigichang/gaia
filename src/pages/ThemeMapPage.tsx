@@ -16,6 +16,7 @@ import { DEFAULT_THEME_ID, getTheme, layerInstanceId } from "../map/registry/ind
 import {
   colorOf,
   expandActive,
+  itemColorOf,
   layerItems,
   resolveLayerData,
   type ActiveState,
@@ -418,7 +419,7 @@ function ThemeMapView({ theme, chrome }: { theme: ThemeDefinition; chrome: Chrom
               .map((id, index) => ({
                 key: `${layer.id}-${id}`,
                 label: items.find((it) => it.id === id)?.label ?? id,
-                color: layer.items!.palette[index % layer.items!.palette.length],
+                color: itemColorOf(layer, id, index),
                 kind: layer.render.kind,
                 schematic: layer.schematic,
               }));

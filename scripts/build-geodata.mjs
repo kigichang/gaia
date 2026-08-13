@@ -37,6 +37,15 @@ import {
   fetchProtectedAreas,
 } from "./lib/protected-areas.mjs";
 import {
+  DATASET_ID as MONUMENT_DATASET_ID,
+  LEVELS as MONUMENT_LEVELS,
+  LICENSE as MONUMENT_LICENSE,
+  SOURCE_LABEL as MONUMENT_SOURCE_LABEL,
+  fetchMonuments,
+  historyShards,
+  monumentFeature,
+} from "./lib/monuments.mjs";
+import {
   EXTENT_KML_URL,
   LICENSE as WRA_LICENSE,
   RESERVOIR_IDS,
@@ -50,6 +59,8 @@ const exists = (p) => access(p).then(() => true).catch(() => false);
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 const OUT_DIR = join(ROOT, "public/data/geo");
+/** 古蹟歷史沿革的縣市分片（點開詳情卡才抓，見 lib/monuments.mjs 的檔頭）。 */
+const MONUMENT_DIR = join(ROOT, "public/data/monuments");
 
 const args = process.argv.slice(2);
 const FORCE = args.includes("--force");
@@ -766,7 +777,62 @@ const SOURCES = [
           },
         })),
   },
+
+  /**
+   * 古蹟三級各一筆。
+   *
+   * 三筆共用 `lib/monuments.mjs` 的 module-level 快取，所以上游那 8.1 MB 一個
+   * process 只下載一次；但**產物是三個檔**，因為級別是三個各自可勾選的子圖層，
+   * 只勾「國定古蹟」就只該付 45 KB（見該檔檔頭）。
+   *
+   * feature 順序＝指定年份由早到晚，讓最早公告的（赤嵌樓、淡水紅毛城那一批）
+   * 排在前面；同年再依名稱，避免上游順序變動造成無意義的 diff。
+   */
+  ...Object.entries(MONUMENT_LEVELS).map(([levelName, { slug }]) => ({
+    id: `tw-monuments-${slug}`,
+    label: `臺灣${levelName}`,
+    load: async (fetchWithRetry) => {
+      const { records, warnings } = await fetchMonuments(
+        fetchWithRetry,
+        resolveDataGovTwUrl,
+        COUNTY_IDS,
+      );
+      await writeMonumentShards(records);
+      return { records: records.filter((r) => r.levelName === levelName), warnings };
+    },
+    sourceUrl: `https://data.gov.tw/dataset/${MONUMENT_DATASET_ID}`,
+    license: MONUMENT_LICENSE,
+    sourceLabel: MONUMENT_SOURCE_LABEL,
+    // 點位不需要簡化。5 位小數 ≈ 1 公尺，上游本來就沒有比這更高的精度。
+    tolerance: 0,
+    digits: 5,
+    transform: ({ records }) =>
+      records
+        .sort((a, b) => (a.year ?? 9999) - (b.year ?? 9999) || a.name.localeCompare(b.name, "zh-Hant"))
+        .map(monumentFeature),
+  })),
 ];
+
+/**
+ * 歷史沿革的縣市分片，21 份（**臺東縣沒有古蹟**，見 lib/monuments.mjs）。
+ *
+ * 三筆古蹟 SOURCES 都會呼叫它，但只有第一次真的寫檔——分片的內容與級別無關，
+ * 而且 `--only=tw-monuments-county` 單獨重跑時也必須產出，所以不能只掛在其中一筆上。
+ */
+let shardsWritten = false;
+async function writeMonumentShards(records) {
+  if (shardsWritten) return;
+  shardsWritten = true;
+  const shards = historyShards(records);
+  await mkdir(MONUMENT_DIR, { recursive: true });
+  let bytes = 0;
+  for (const [countyId, entries] of shards) {
+    const json = JSON.stringify(entries);
+    bytes += Buffer.byteLength(json);
+    await writeFile(join(MONUMENT_DIR, `${countyId}.json`), json);
+  }
+  console.log(`  歷史沿革分片：${shards.size} 個縣市／${(bytes / 1024).toFixed(0)} KB`);
+}
 
 /**
  * 從政府資料開放平臺查出某個資料集當下的下載網址。

@@ -3,6 +3,7 @@ import { IndigenousCard } from "./IndigenousCard";
 import { SpeciesCard } from "./SpeciesCard";
 import { FeatureCard } from "./FeatureCard";
 import { ReservoirCard } from "./ReservoirCard";
+import { MonumentCard } from "./MonumentCard";
 import { getGeoFeature, getIndigenousGroup, getPlace, getSpecies } from "../content";
 import type { DetailSpec, ThemeDefinition } from "../map/registry/types";
 import type { GeoLayerInstance } from "../map/useGeoLayers";
@@ -63,6 +64,16 @@ export function DetailCard({
     const fc = instances.find((i) => i.instanceId === owner?.id)?.data;
     const props = fc?.features.find((f) => f.properties?.id === featureId)?.properties;
     return props ? <ReservoirCard properties={props} /> : null;
+  }
+  if (detail.type === "monument") {
+    // 古蹟同樣沒有內容檔，資料在 geojson 裡。但它是 items 圖層，**三個級別各是一個
+    // instance**（tw-monuments-national／-municipal／-county），所以不能像水庫那樣
+    // 用單一 owner.id 去找——要掃過所有古蹟 instance。
+    const props = instances
+      .filter((i) => i.detail.type === "monument")
+      .flatMap((i) => i.data?.features ?? [])
+      .find((f) => f.properties?.id === featureId)?.properties;
+    return props ? <MonumentCard properties={props} /> : null;
   }
   if (detail.type === "place") {
     const place = getPlace(featureId);

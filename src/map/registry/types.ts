@@ -184,6 +184,13 @@ export type DetailSpec =
    * 內容檔一定會過期。所以它不能走 `geo`，那條路徑找的是內容檔。
    */
   | { type: "reservoir" }
+  /**
+   * 古蹟。同樣**全部來自 geojson 的 properties**，理由跟水庫是同一類但不同因：
+   * 1,064 處不可能逐一手寫內容檔，而每一處都該有一張講得出東西的卡片，
+   * 不是 FeatureCard 的 fallback 空卡。官方的歷史沿革太大（全部 2 MB），
+   * 另外按縣市分片、點開卡片才抓（見 components/MonumentCard.tsx）。
+   */
+  | { type: "monument" }
   | { type: "none" };
 
 /** 為這個圖層列出可點清單（點了飛過去並開詳情卡），長在圖層抽屜裡（見 components/ThemeBrowse.tsx）。 */
@@ -247,6 +254,14 @@ export interface LayerItem {
   /** 子項目各自有一份資料（特有種）；沒填就用母圖層的 source 加 filter 切分 */
   source?: LayerSource;
   filter?: FilterSpecification;
+  /**
+   * 固定顏色，覆蓋掉「依勾選順序從 `items.palette` 指派」的預設行為。
+   *
+   * ⚠️ 只有**子項目之間有序位**的圖層才該用它。特有種沒有序位（三個物種誰先誰後
+   * 都無所謂），依勾選順序給色是對的；古蹟三級有序位（國定 > 直轄市定 > 縣市定），
+   * 先勾哪一級都必須是同一個顏色，否則「顏色越深＝級別越高」這個圖例當場失效。
+   */
+  color?: string;
 }
 
 /**
@@ -274,6 +289,18 @@ export interface LayerItems {
   maxActive: number;
   /** 依勾選順序指派的顏色，必須通過 validate_palette.js --pairs all */
   palette: readonly string[];
+  /**
+   * 把子項目的**圖徵**也建進搜尋索引，而不是只索引子項目本身。
+   *
+   * ⚠️ **必須明確開啟，不能預設 true。** 索引圖徵代表建索引時就要把每個子項目的
+   * geojson 抓下來——特有種那五份觀測點合計 262 KB，而它們的 properties 只有日期
+   * 與紀錄類型、**沒有名字**，抓下來也產不出任何搜尋結果。搜尋索引是 lazy 的
+   * （見 search/searchIndex.ts 的檔頭），預設展開等於讓每個學生白付那 262 KB。
+   *
+   * 古蹟要開，因為它的 1,064 個圖徵全部有名字，而 items 圖層又沒有可點清單
+   * （ThemeMapPage 的 `!l.items`），搜尋是這一層唯一的檢索入口。
+   */
+  indexFeatures?: boolean;
 }
 
 interface LayerBase {

@@ -36,6 +36,9 @@ export const SOURCE_LINKS: Record<string, string> = {
   經濟部水利署: "https://www.wra.gov.tw/",
   農業部農田水利署: "https://www.ia.gov.tw/",
   農業部林業及自然保育署: "https://www.forest.gov.tw/",
+  // 古蹟圖層的來源。網站名是「國家文化資產網」，每一處古蹟的官方頁面都在它底下
+  // （MonumentCard 用 geojson 的 url 屬性直接連到個案頁）。
+  文化部文化資產局: "https://nchdb.boch.gov.tw/",
   維基百科: "https://zh.wikipedia.org/",
 
   // 22 個縣市政府的官方網站。它們同時是「這筆資料的出處」與「使用者想點進去的
