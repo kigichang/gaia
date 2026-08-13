@@ -204,7 +204,7 @@ export const taiwanTheme: ThemeDefinition = {
     // ── 以下混著已上線與尚未有資料的圖層 ──────────────────────────────
     // `status: "planned"` 的會顯示成停用的核取方塊，但 description 仍然要寫清楚
     // ——一個沒有文字的停用選項什麼都沒教到。目前還是 planned 的只剩
-    // tw-population、tw-vegetation-belts、tw-agri-zones 三個。
+    // tw-population 與 tw-vegetation-belts 兩個。
     {
       id: "tw-townships",
       label: "鄉鎮市區界",
@@ -523,16 +523,6 @@ export const taiwanTheme: ThemeDefinition = {
         "⚠️ **不含稻米**——農情調查這份鄉鎮級統計不收水稻，官方的稻作統計只到縣市，" +
         "兩種尺度混在一起會讀錯。面積是**年種植面積**（一塊地一年種兩期就算兩次），不是耕地面積。",
       sources: ["農業部農糧署"],
-    },
-    {
-      id: "tw-agri-zones",
-      label: "農業分區",
-      group: "農業物產",
-      status: "planned",
-      render: { kind: "fill" },
-      detail: { type: "none" },
-      description: "依氣候與地形劃分的農業經營型態分區。",
-      sources: ["農業部"],
     },
   ],
 };
