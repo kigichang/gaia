@@ -44,7 +44,7 @@ import {
   fetchReservoirBasics,
   formatCapacity,
 } from "./lib/reservoirs.mjs";
-import { BASIN_URL, BASIN_IDS, RIVER_FACTS } from "./lib/rivers.mjs";
+import { BASIN_URL, BASIN_IDS, RIVER_FACTS, RIVER_IDS, RIVER_OSM_REFS } from "./lib/rivers.mjs";
 
 const exists = (p) => access(p).then(() => true).catch(() => false);
 
@@ -566,12 +566,98 @@ const SOURCES = [
       })),
   },
   {
+    id: "tw-rivers",
+    label: "臺灣主要河川",
+    /**
+     * 幹流河道，來自 OpenStreetMap 的 `waterway=river` 關聯（第二個走 OSM 的圖層，
+     * 另一個是 tw-transport）。
+     *
+     * 為什麼不是官方資料、也不再是手繪：水利署的 RIVERLIN SHP 依「名稱字串」分筆，
+     * 上游改稱其他名稱的河段會變成另一筆記錄（11 條河只涵蓋官方長度的 10–50%）；
+     * OSM 的關聯依**實際河川**建立，改名的上游河段以 `main_stream` 角色收在同一個
+     * 關聯裡，這正是 RIVERLIN 做不到的事。選取用 `ref`（水利署河川代碼）避開同名
+     * 不同河，四條長度偏短的河川為什麼不補接上游，全部寫在 lib/rivers.mjs 的
+     * `RIVER_OSM_REFS`。
+     */
+    url: OVERPASS_ENDPOINTS[0],
+    license: OSM_LICENSE,
+    sourceLabel: OSM_SOURCE_LABEL,
+    // 跟 tw-transport 同樣走 load：Overpass 要 POST 查詢語句，不是下載一個檔案
+    load: async () => {
+      const rivers = [];
+      const warnings = [];
+      for (const [officialName, facts] of Object.entries(RIVER_FACTS)) {
+        const ref = RIVER_OSM_REFS[officialName];
+        if (!ref) {
+          throw new Error(`河川「${officialName}」不在 RIVER_OSM_REFS 對照表裡，請先查出它的水利署河川代碼`);
+        }
+        // 只取 main_stream：side_stream 是支流，一起抓會畫成整個水系而不是幹流
+        const { lines } = await fetchRouteLines(
+          `relation["waterway"="river"]["ref"="${ref}"]`,
+          { role: "main_stream" },
+        );
+        // 串接必須在簡化之前（見 lib/overpass.mjs）：沿線標註是逐一 LineString
+        // 放置的，幾十段碎線放不出標註，DP 也砍不掉東西
+        const stitched = stitchWays(lines);
+        if (stitched.length === 0) {
+          throw new Error(`${officialName}（ref=${ref}）：關聯裡沒有 main_stream 角色的 way`);
+        }
+        const km = totalLengthKm(stitched);
+        const deviation = (km - facts.length_km) / facts.length_km;
+        // 差一個量級＝選到同名的小溪流或抓成整個水系，那是要當場失敗的錯誤；
+        // 上游未數化造成的偏短（實測最多 -50%）只印提醒，理由見 RIVER_OSM_REFS
+        if (Math.abs(deviation) > 0.6) {
+          throw new Error(
+            `${officialName}（ref=${ref}）：實測 ${km.toFixed(1)} km 與官方 ` +
+              `${facts.length_km} km 相差 ${(deviation * 100).toFixed(0)}%，選擇器可能選錯河`,
+          );
+        }
+        const flag = Math.abs(deviation) > 0.15 ? "⚠ " : "";
+        const note =
+          `${flag}${officialName}：${stitched.length} 條／${km.toFixed(1)} km` +
+          `（官方 ${facts.length_km}，${deviation > 0 ? "+" : ""}${(deviation * 100).toFixed(0)}%）`;
+        if (flag) warnings.push(note);
+        else console.log(`\n  ${note}`);
+        rivers.push({ officialName, facts, lines: stitched });
+      }
+      return { rivers, warnings };
+    },
+    // 0.0005° ≈ 55 公尺，跟 tw-transport 同一個量級：這是「河川大致怎麼流」的
+    // 教學圖層，不是水利工程圖資
+    tolerance: 0.0005,
+    digits: 4,
+    transform: ({ rivers }) =>
+      rivers
+        .map(({ officialName, facts, lines }) => {
+          const id = RIVER_IDS[officialName];
+          if (!id) {
+            throw new Error(`河川「${officialName}」不在 RIVER_IDS 對照表裡，請先決定它的 id`);
+          }
+          return {
+            type: "Feature",
+            // 上游未數化的河段會讓幹流斷成兩截，所以一律 MultiLineString
+            geometry: { type: "MultiLineString", coordinates: lines },
+            properties: {
+              id,
+              name: officialName,
+              length_km: facts.length_km,
+              area_km2: facts.area_km2,
+              category: facts.category,
+              meta: `幹流長度 ${facts.length_km} km`,
+            },
+          };
+        })
+        // ⚠️ feature 順序就是圖層抽屜裡可點清單的順序（LayerBrowseList 不排序）。
+        // 依官方幹流長度由長到短，清單開頭是濁水溪、高屏溪、淡水河這些課本會點名的河川。
+        .sort((a, b) => b.properties.length_km - a.properties.length_km),
+  },
+  {
     id: "tw-basins",
     label: "臺灣河川流域分區",
     /**
      * 跟 tw-rivers 是**同一組官方河川清單**（RIVER_FACTS），幾何來源卻完全不同：
-     * tw-rivers 的路徑是手繪教學示意（`public/data/geo-manual/tw-rivers.geojson`，
-     * 見 CLAUDE.md「河川路徑」那節），這裡才是真正抓來的 SHP（BASIN，面）。
+     * tw-rivers 的線來自 OSM 的河川關聯，這裡的面來自水利署的 SHP（BASIN）——
+     * 集水區範圍需要真正的水文測繪，不是從一條線推得出來的。
      * id 對照表用 lib/rivers.mjs 的 `BASIN_IDS`（從 `RIVER_IDS` 衍生），facts
      * （面積）沿用同一份 `RIVER_FACTS`——這是這兩個圖層真正共用資料的地方。
      *

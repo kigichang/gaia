@@ -208,21 +208,26 @@ export const taiwanTheme: ThemeDefinition = {
       label: "主要河川",
       group: "水系",
       status: "ready",
-      // 手繪示意河道：水利署 RIVERLIN 圖資（2000–2008 年數化）依「名稱字串」分筆而
-      // 非依實際河川分筆，同名不同河的問題無法穩定自動修復（見 CLAUDE.md「河川路徑」
-      // 那節）。改用跟五大山脈一樣的手繪路徑，才能讓 26 條河川的呈現一致可信。
-      source: { type: "remote", path: "data/geo-manual/tw-rivers.geojson" },
-      render: { kind: "line", width: 2, label: { property: "name" } },
+      // 河道幾何來自 OpenStreetMap 的 waterway 關聯，用 ref（水利署河川代碼）選取。
+      // 水利署自己的 RIVERLIN SHP 依「名稱字串」分筆而非依實際河川分筆，上游改名的
+      // 河段會斷成另一筆；OSM 的關聯是依實際河川建立的，改名的上游河段收在同一個
+      // 關聯裡（見 scripts/lib/rivers.mjs 的 RIVER_OSM_REFS）。
+      source: { type: "remote", path: "data/geo/tw-rivers.geojson" },
+      // ⚠️ maxAngle 150（預設 60）：真實河道比手繪示意線彎得多，`symbol-placement: line`
+      // 在急彎上會**靜默拒絕**放置。實測全島視角（zoom 7.3、1512×772）預設值只標得出
+      // 1 條，其中不含濁水溪這種課本必講的河；150 標出 9 條、涵蓋所有主要河川。
+      // 140／160 的結果完全相同，180 再多兩條但等於完全不設限，留一點防護比較安全。
+      // 放大到 zoom 10 也不會讓同一條河重複冒出來（spacing 維持預設 120 即可）。
+      render: { kind: "line", width: 2, label: { property: "name", maxAngle: 150 } },
       colorRole: "hydrology",
       detail: { type: "geo", collection: "tw-rivers" },
       browse: {},
-      schematic: true,
       description:
         "24 條中央管河川與 2 條跨省市河川（淡水河、磺溪），水利署官方認定的主要河川。" +
         "濁水溪、高屏溪、淡水河等大河，可以看出中央山脈如何分東西水系。" +
-        "⚠️ 圖上的路徑是依維基百科各河川條目描繪的教學示意幾何，不是精確測量的河道——" +
-        "長度與流域面積仍是水利署現行官方數字，點進個別河川的說明會註明。",
-      sources: ["維基百科", "經濟部水利署"],
+        "河道線位來自 OpenStreetMap（以水利署河川代碼比對），幹流長度與流域面積則是" +
+        "水利署的官方數字；少數河川的最上游河段在 OSM 尚未收錄，線會比官方長度短一些。",
+      sources: ["OpenStreetMap", "經濟部水利署"],
     },
     {
       id: "tw-basins",

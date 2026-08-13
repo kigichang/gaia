@@ -84,8 +84,12 @@ export async function overpassQuery(body, { attempts = 3 } = {}) {
  * `resolveDataGovTwUrl()` 的既有作法。OSM 是眾人編輯的資料庫，關聯被拆開、
  * 改名或重建都可能發生；靜默地少抓一段（或把兩個方向都抓進來畫成雙線）
  * 遠比建置失敗難發現。
+ *
+ * `role` 只在**河川**用得到（傳 `"main_stream"`）：`waterway` 關聯把支流以
+ * `side_stream` 角色一起收進來，全抓會畫出整個水系而不是一條幹流。交通路線的
+ * 關聯沒有這種角色區分，不傳這個參數時行為與過去逐位相同。
  */
-export async function fetchRouteLines(selector) {
+export async function fetchRouteLines(selector, { role } = {}) {
   const json = await overpassQuery(
     `[out:json][timeout:180];(${selector}(${TAIWAN_BBOX}););out geom;`,
   );
@@ -100,9 +104,9 @@ export async function fetchRouteLines(selector) {
   const lines = [];
   for (const member of relations[0].members ?? []) {
     // 路線關聯裡也會有車站節點之類的成員，只取有幾何的 way
-    if (member.type === "way" && member.geometry?.length > 1) {
-      lines.push(member.geometry.map((p) => [p.lon, p.lat]));
-    }
+    if (member.type !== "way" || !(member.geometry?.length > 1)) continue;
+    if (role && member.role !== role) continue;
+    lines.push(member.geometry.map((p) => [p.lon, p.lat]));
   }
   return { lines, name: relations[0].tags?.name ?? "" };
 }

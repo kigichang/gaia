@@ -41,8 +41,8 @@
   "curriculum": {
     "unit": "臺灣的水文"
   },
-  "schematic": true,
   "sources": [
+    "OpenStreetMap",
     "維基百科",
     "經濟部水利署"
   ]
