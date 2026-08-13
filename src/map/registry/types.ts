@@ -201,6 +201,17 @@ export interface LayerBrowse {
   secondary?: string;
   /** 點的圖層飛過去用的 zoom；線／面改用 fitBounds，會忽略這個值 */
   zoom?: number;
+  /**
+   * 依這個 properties 欄位把清單分組，每組前面加一個不可點的組名。
+   *
+   * 鄉鎮市區界（368 筆）用 `county`：一長串平鋪的鄉鎮名裡，縣市層級只出現在每一列
+   * 的次標上，很難看出「這幾個是同一個縣市的」。分組之後縣市名只出現一次、底下的
+   * 鄉鎮縮排，層級一眼就看得出來。
+   *
+   * ⚠️ **依序切、不排序**：feature 順序是資料集刻意排好的（見 build-geodata.mjs），
+   * 這裡重排會毀掉它。所以同一個值必須在資料裡是**連續**的才會併成一組。
+   */
+  groupBy?: string;
 }
 
 /**

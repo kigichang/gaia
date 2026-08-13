@@ -41,20 +41,40 @@ export function LayerBrowseList({
 }: LayerBrowseListProps) {
   const primary = browse.primary ?? "name";
   const secondary = browse.secondary ?? "meta";
+  const groupBy = browse.groupBy;
 
   const childrenOf = (parentId: string) =>
     children?.data.features.filter(
       (f) => f.properties?.[children.parentProperty] === parentId,
     ) ?? [];
 
-  return (
-    <ul className="place-list">
-      {data.features.map((f) => {
+  /**
+   * 依 `groupBy` 屬性把 feature 切成一段一段。
+   *
+   * **依序切，不排序**——feature 順序是資料集刻意排好的（鄉鎮界是縣市由北到南、
+   * 離島最後），這裡重排會把那個順序毀掉。同一個值只要在資料裡是連續的就會併成
+   * 一組；不連續的話會分成兩組，那是資料沒排好的徵兆，不該由這支元件補救。
+   */
+  const groups: { key: string; features: typeof data.features }[] = [];
+  if (groupBy) {
+    for (const f of data.features) {
+      const value = f.properties?.[groupBy];
+      const key = typeof value === "string" ? value : "";
+      const last = groups.at(-1);
+      if (last && last.key === key) last.features.push(f);
+      else groups.push({ key, features: [f] });
+    }
+  }
+
+  const renderItem = (f: GeoJSON.Feature, grouped: boolean) => {
         const props = f.properties ?? {};
         const id = typeof props.id === "string" ? props.id : null;
         if (!id) return null;
 
         const kids = childrenOf(id);
+        // 分組時次標就是組名，每一列再印一次只是雜訊（「中正區／基隆市」）
+        const showSecondary =
+          props[secondary] != null && !(grouped && groupBy && props[secondary] === props[groupBy]);
 
         return (
           <li key={id}>
@@ -64,7 +84,7 @@ export function LayerBrowseList({
               onClick={() => onSelect(id)}
             >
               <span className="place-btn-name">{String(props[primary] ?? id)}</span>
-              {props[secondary] != null && (
+              {showSecondary && (
                 <span className="place-btn-meta">{String(props[secondary])}</span>
               )}
             </button>
@@ -102,7 +122,23 @@ export function LayerBrowseList({
             )}
           </li>
         );
-      })}
-    </ul>
-  );
+  };
+
+  if (groupBy) {
+    return (
+      <ul className="place-list">
+        {groups.map((g) => (
+          <li key={g.key}>
+            {/* 組名不是可點的圖徵——縣市不在這一層的資料裡，做成按鈕會點了沒反應 */}
+            <p className="place-group">{g.key}</p>
+            <ul className="place-list place-list-children">
+              {g.features.map((f) => renderItem(f, true))}
+            </ul>
+          </li>
+        ))}
+      </ul>
+    );
+  }
+
+  return <ul className="place-list">{data.features.map((f) => renderItem(f, false))}</ul>;
 }

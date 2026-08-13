@@ -220,7 +220,8 @@ export const taiwanTheme: ThemeDefinition = {
        */
       colorRole: "boundary",
       detail: { type: "geo", collection: "tw-townships" },
-      browse: {},
+      // 368 筆平鋪很難看出縣市層級，改成「縣市名 + 底下縮排的鄉鎮」（見 LayerBrowse.groupBy）
+      browse: { groupBy: "county" },
       /**
        * 理由與縣市界相同：相鄰的面各自簡化會在共用邊界開出次像素縫隙
        * （Douglas–Peucker 不保拓樸），所以要在縫隙變得可解析之前停止繪製。
@@ -231,7 +232,7 @@ export const taiwanTheme: ThemeDefinition = {
       description:
         "全臺 368 個鄉鎮市區的實測界線，是縣市底下的下一個行政層級。" +
         "⚠️ 鄉鎮名不唯一——中正區、信義區、中山區、東區等 8 個名稱散在不同縣市，" +
-        "清單與搜尋結果要看副標的縣市名才分得出是哪一個。",
+        "所以清單依縣市分組，搜尋結果則在副標標出縣市。",
       sources: ["內政部國土測繪中心"],
     },
     {

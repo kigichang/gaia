@@ -1064,6 +1064,19 @@ input {
 
 /* 巢狀的附屬圖徵（五大山脈 → 主峰）。左邊那條線是「這幾筆從屬於上一列」的視覺
    線索，比純縮排更明確；縮排本身則保證即使清單捲動也看得出層級。 */
+/* 可點清單的分組標題（鄉鎮市區界的縣市名）。不是按鈕——那一層的資料裡沒有縣市，
+   做成可點的會點了沒反應。 */
+.place-group {
+  margin: 8px 0 4px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.place-list > li:first-child > .place-group {
+  margin-top: 0;
+}
+
 .place-list-children {
   margin: 4px 0 0;
   padding-left: 10px;
