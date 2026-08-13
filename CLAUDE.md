@@ -555,6 +555,7 @@ maplibre 的四個角落容器是 map container 內的 `position: absolute; z-in
   ⚠️ 這條規則同時把 `quakes` 擋在外面，這是刻意的：那份 geojson 有 **400 KB**、2831 筆**沒有名稱**的點，它是密度場不是清單。索引它只會多抓一份大檔案再產生 2831 筆搜不到的項目。
 - **圖層本身**：所有 ready 圖層的名稱（搜「河流」要找得到「世界主要河流」這個圖層）。`planned` 的不列，因為勾不動。
 - 沒有 `properties.id` 或沒有 `properties.name` 的圖徵一律跳過——前者選不了、後者搜不到。
+- 比對的字串是 `name` + `shortName` + `meta` + 內容檔別名。**`shortName` 一定要在裡面**：它是沿線標註在地圖上實際印出來的字（「高鐵」「國道1」），使用者看到什麼就會搜什麼。少了它，搜最常用的俗名「高鐵」只會搜到圖層本身，而圖層結果是不開卡的——「國道」「南迴」剛好是全名的子字串，所以這個洞不會在那兩個字上暴露出來。
 
 索引是 **lazy 的**：搜尋框第一次獲得焦點才 `buildSearchIndex()`，因為它要抓 `tw-counties.geojson`(35 KB)、`world-rivers.geojson`(146 KB) 與 `tw-transport.geojson`(36 KB)。一個班 30 個學生同時開站時，這 200 多 KB 不該是每個人無條件付的成本。資料一律走 `resolveLayerData()`，與圖層顯示共用同一份快取，不會抓兩次。
 
