@@ -281,7 +281,7 @@ export const taiwanTheme: ThemeDefinition = {
     },
     {
       id: "tw-rivers",
-      label: "主要河川",
+      label: "臺灣河川",
       group: "水系",
       status: "ready",
       // 河道幾何來自 OpenStreetMap 的 waterway 關聯，用 ref（水利署河川代碼）選取。
@@ -297,12 +297,20 @@ export const taiwanTheme: ThemeDefinition = {
       render: { kind: "line", width: 2, label: { property: "name", maxAngle: 150 } },
       colorRole: "hydrology",
       detail: { type: "geo", collection: "tw-rivers" },
-      browse: {},
+      // 118 筆平鋪太長，改成依公告的管理等級分組（見 LayerBrowse.groupBy）：
+      // 課本會點名的 24 條中央管河川排在最前面，65 條縣(市)管的排在最後。
+      browse: { groupBy: "category" },
       description:
-        "24 條中央管河川與 2 條跨省市河川（淡水河、磺溪），水利署官方認定的主要河川。" +
-        "濁水溪、高屏溪、淡水河等大河，可以看出中央山脈如何分東西水系。" +
-        "河道線位來自 OpenStreetMap（以水利署河川代碼比對），幹流長度與流域面積則是" +
-        "水利署的官方數字；少數河川的最上游河段在 OSM 尚未收錄，線會比官方長度短一些。",
+        "經濟部公告的全部 118 個列管水系：中央管 24、跨省市 2（淡水河、磺溪）、" +
+        "直轄市管 27、縣(市)管 65。等級代表的是「由哪一級政府管理」，" +
+        "大致也對應河川的規模——濁水溪、高屏溪、淡水河這些大河可以看出中央山脈" +
+        "如何分開東西水系，而北海岸與東海岸那一長串短促的小溪，本身就是" +
+        "「分水嶺偏東、河川東短西長」的例子。" +
+        "⚠️ 公告明訂「排水」不屬於河川，所以愛河、東螺溪這類已改列排水的水道不在其中。" +
+        "河道線位來自 OpenStreetMap（以水利署河川代碼比對）；" +
+        "幹流長度與流域面積是水利署的官方數字，但**只有中央管與跨省市河川才有**" +
+        "——其餘河川的界點由地方政府各自訂定，沒有全國一致的長度表。" +
+        "少數河川的最上游河段在 OSM 尚未收錄，線會比官方長度短一些。",
       sources: ["OpenStreetMap", "經濟部水利署"],
     },
     {
@@ -310,9 +318,10 @@ export const taiwanTheme: ThemeDefinition = {
       label: "流域分區",
       group: "水系",
       status: "ready",
-      // 跟「主要河川」是同一組官方河川清單（見 scripts/lib/rivers.mjs 的
-      // RIVER_FACTS／BASIN_IDS），但幾何來自另一份 SHP（BASIN，面），不是從
-      // 河川線推導出來的——集水區範圍需要真正的水文測繪，不是幾何運算。
+      // 跟「臺灣河川」共用 scripts/lib/rivers.mjs 的同一份 118 條官方清單，但
+      // **產物只有 72 筆**：上游 BASIN 圖資只給其中 72 個水系個別的流域代碼。
+      // 幾何也來自另一份 SHP（BASIN，面），不是從河川線推導出來的——集水區範圍
+      // 需要真正的水文測繪，不是幾何運算。
       source: { type: "remote", path: "data/geo/tw-basins.geojson" },
       render: { kind: "fill" },
       // 面／線共用同一組已驗證色票（水系藍／行政區橘／山脈洋紅），fill 目前只有
@@ -320,11 +329,16 @@ export const taiwanTheme: ThemeDefinition = {
       // 是刻意的：形狀（半透明面 vs 線）已經足夠區辨，藍色維持「水系」的視覺家族。
       colorRole: "hydrology",
       detail: { type: "geo", collection: "tw-basins" },
-      browse: {},
+      // 比照「臺灣河川」依公告等級分組（見 LayerBrowse.groupBy）
+      browse: { groupBy: "category" },
       description:
-        "24 條中央管河川與 2 條跨省市河川的集水區範圍，說明分水嶺與流域的概念——" +
-        "山脈稜線兩側的雨水，會分別匯集到不同的流域裡。跟「主要河川」是同一份官方清單，" +
-        "但這裡的面是另一份水利署圖資，不是從河川線推算出來的。",
+        "72 個水系的集水區範圍，說明分水嶺與流域的概念——山脈稜線兩側的雨水，" +
+        "會分別匯集到不同的流域裡。搭配「臺灣河川」一起勾選，可以看出" +
+        "「一條河」與「它收集雨水的那片山坡」是兩件不同的事。" +
+        "⚠️ 比「臺灣河川」少了 46 條：水利署只發布其中 72 個水系的個別流域範圍，" +
+        "其餘小水系被歸在同一個群組代碼底下，沒辦法拆出來對應到單一河川。" +
+        "流域面積只有中央管與跨省市河川有官方數字。" +
+        "這裡的面是另一份水利署圖資，不是從河川線推算出來的。",
       sources: ["經濟部水利署"],
     },
     {

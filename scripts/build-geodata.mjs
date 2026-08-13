@@ -34,6 +34,7 @@ import {
   SOURCE_LABEL as OSM_SOURCE_LABEL,
   OVERPASS_ENDPOINTS,
   fetchRouteLines,
+  fetchWaterwaysByRef,
   stitchWays,
   totalLengthKm,
 } from "./lib/overpass.mjs";
@@ -68,7 +69,7 @@ import {
   fetchReservoirBasics,
   formatCapacity,
 } from "./lib/reservoirs.mjs";
-import { BASIN_URL, BASIN_IDS, RIVER_FACTS, RIVER_IDS, RIVER_OSM_REFS } from "./lib/rivers.mjs";
+import { BASIN_URL, BASIN_IDS, RIVERS, RIVER_CATEGORY_ORDER } from "./lib/rivers.mjs";
 
 const exists = (p) => access(p).then(() => true).catch(() => false);
 
@@ -709,10 +710,12 @@ const SOURCES = [
   },
   {
     id: "tw-rivers",
-    label: "臺灣主要河川",
+    label: "臺灣河川",
     /**
-     * 幹流河道，來自 OpenStreetMap 的 `waterway=river` 關聯（第二個走 OSM 的圖層，
-     * 另一個是 tw-transport）。
+     * **經濟部公告的全部 118 個列管水系**的幹流河道（中央管 24＋跨省市 2＋
+     * 直轄市管 27＋縣(市)管 65，清單見 lib/rivers.mjs 的 `RIVERS`），來自
+     * OpenStreetMap 的 `waterway=river` 關聯（第二個走 OSM 的圖層，另一個是
+     * tw-transport）。
      *
      * 為什麼不是官方資料、也不再是手繪：水利署的 RIVERLIN SHP 依「名稱字串」分筆，
      * 上游改稱其他名稱的河段會變成另一筆記錄（11 條河只涵蓋官方長度的 10–50%）；
@@ -728,39 +731,51 @@ const SOURCES = [
     load: async () => {
       const rivers = [];
       const warnings = [];
-      for (const [officialName, facts] of Object.entries(RIVER_FACTS)) {
-        const ref = RIVER_OSM_REFS[officialName];
-        if (!ref) {
-          throw new Error(`河川「${officialName}」不在 RIVER_OSM_REFS 對照表裡，請先查出它的水利署河川代碼`);
-        }
-        // 只取 main_stream：side_stream 是支流，一起抓會畫成整個水系而不是幹流
-        const { lines } = await fetchRouteLines(
-          `relation["waterway"="river"]["ref"="${ref}"]`,
-          { role: "main_stream" },
-        );
+      // 分批一次問 30 個代碼，不是一條發一次查詢——118 次要跑 40 分鐘，而且
+      // Overpass 有公平使用規範。「每個 ref 必須剛好選中一個關聯」那道防線在
+      // `fetchWaterwaysByRef` 裡逐個 ref 檢查（那是 92 條沒有官方長度可比對的
+      // 河川**唯一**的防線，不要放寬）。
+      // 只取 main_stream：side_stream 是支流，一起抓會畫成整個水系而不是幹流。
+      const byRef = await fetchWaterwaysByRef(
+        Object.values(RIVERS).map((r) => r.ref),
+        { role: "main_stream" },
+      );
+
+      for (const [officialName, river] of Object.entries(RIVERS)) {
+        const { lines } = byRef.get(river.ref);
         // 串接必須在簡化之前（見 lib/overpass.mjs）：沿線標註是逐一 LineString
         // 放置的，幾十段碎線放不出標註，DP 也砍不掉東西
         const stitched = stitchWays(lines);
         if (stitched.length === 0) {
-          throw new Error(`${officialName}（ref=${ref}）：關聯裡沒有 main_stream 角色的 way`);
+          throw new Error(`${officialName}（ref=${river.ref}）：關聯裡沒有 main_stream 角色的 way`);
         }
         const km = totalLengthKm(stitched);
-        const deviation = (km - facts.length_km) / facts.length_km;
+
+        // 只有 26 條中央管／跨省市河川有官方長度可以核對。其餘 92 條的界點由地方
+        // 政府各自公告、沒有全國一致的長度表，所以這裡只把量到的公里數印出來當
+        // 眼睛可以掃過去的合理性線索，不做門檻判斷、也不寫進產物。
+        if (river.length_km == null) {
+          console.log(`\n  ${officialName}：${stitched.length} 條／${km.toFixed(1)} km（無官方長度）`);
+          rivers.push({ officialName, river, lines: stitched });
+          continue;
+        }
+
+        const deviation = (km - river.length_km) / river.length_km;
         // 差一個量級＝選到同名的小溪流或抓成整個水系，那是要當場失敗的錯誤；
         // 上游未數化造成的偏短（實測最多 -50%）只印提醒，理由見 RIVER_OSM_REFS
         if (Math.abs(deviation) > 0.6) {
           throw new Error(
-            `${officialName}（ref=${ref}）：實測 ${km.toFixed(1)} km 與官方 ` +
-              `${facts.length_km} km 相差 ${(deviation * 100).toFixed(0)}%，選擇器可能選錯河`,
+            `${officialName}（ref=${river.ref}）：實測 ${km.toFixed(1)} km 與官方 ` +
+              `${river.length_km} km 相差 ${(deviation * 100).toFixed(0)}%，選擇器可能選錯河`,
           );
         }
         const flag = Math.abs(deviation) > 0.15 ? "⚠ " : "";
         const note =
           `${flag}${officialName}：${stitched.length} 條／${km.toFixed(1)} km` +
-          `（官方 ${facts.length_km}，${deviation > 0 ? "+" : ""}${(deviation * 100).toFixed(0)}%）`;
+          `（官方 ${river.length_km}，${deviation > 0 ? "+" : ""}${(deviation * 100).toFixed(0)}%）`;
         if (flag) warnings.push(note);
         else console.log(`\n  ${note}`);
-        rivers.push({ officialName, facts, lines: stitched });
+        rivers.push({ officialName, river, lines: stitched });
       }
       return { rivers, warnings };
     },
@@ -770,43 +785,77 @@ const SOURCES = [
     digits: 4,
     transform: ({ rivers }) =>
       rivers
-        .map(({ officialName, facts, lines }) => {
-          const id = RIVER_IDS[officialName];
-          if (!id) {
-            throw new Error(`河川「${officialName}」不在 RIVER_IDS 對照表裡，請先決定它的 id`);
+        .map(({ officialName, river, lines }) => ({
+          type: "Feature",
+          // 上游未數化的河段會讓幹流斷成兩截，所以一律 MultiLineString
+          geometry: { type: "MultiLineString", coordinates: lines },
+          properties: {
+            id: river.id,
+            // `name` 一律用公告名稱（這一層的收錄範圍就是那份公告）。地圖與路牌上
+            // 常見的另一個寫法放進 `meta`，見下。
+            name: officialName,
+            // 只有 26 條中央管／跨省市河川有官方數字，其餘留 undefined ——
+            // JSON.stringify 會整個省掉那個 key，不會寫出 null
+            length_km: river.length_km,
+            area_km2: river.area_km2,
+            // 可點清單的分組依據（browse.groupBy），也是詳情卡上的公告等級
+            category: river.category,
+            /**
+             * 清單副標、搜尋副標與（沒有內容檔時）詳情卡的次標。
+             *
+             * 26 條有官方長度的照舊顯示長度——那是這一層最有教學價值的一個數字。
+             * 其餘 92 條顯示「常用別名・流經縣市」：
+             * - **別名一定要在這裡**，`meta` 是 `searchIndex` 唯一會收進 haystack 的
+             *   額外欄位。少了它，學生對著底圖上的「阿里磅溪」搜不到我們標的
+             *   「乾華溪」，而畫面上沒有任何線索解釋為什麼。
+             * - 流經縣市讓 65 筆「縣(市)管河川」在清單裡分得出彼此。
+             */
+            meta:
+              river.length_km != null
+                ? `幹流長度 ${river.length_km} km`
+                : [river.alias, river.counties.join("、")].filter(Boolean).join("・"),
+            // FeatureCard 的 fallback 專用（92 條都沒有內容檔）：`meta` 已經被
+            // 別名與縣市佔滿，公告等級改由這一行交代
+            detail: river.length_km != null ? undefined : river.category,
+          },
+        }))
+        /**
+         * ⚠️ feature 順序就是圖層抽屜裡可點清單的順序（`LayerBrowseList` 不排序，
+         * 而且 `groupBy` 是**依序切**的——同一個等級的河川必須連續，否則會被切成
+         * 兩組）。所以先照 `RIVER_CATEGORY_ORDER` 分群，群內再排：
+         *
+         * - 有官方長度的（中央管、跨省市）**由長到短**，維持既有行為：清單開頭是
+         *   濁水溪、高屏溪這些課本會點名的河川。
+         * - 沒有官方長度的（直轄市管、縣市管）依**水利署河川代碼**，那是沿海岸
+         *   逆時針編的，於是清單順序就是地理順序（新北由北海岸往西、屏東由西往東
+         *   繞過恆春、臺東由南往北）。沒有長度可排的情況下，這比字典序有意義得多。
+         */
+        .sort((a, b) => {
+          const ca = RIVER_CATEGORY_ORDER.indexOf(a.properties.category);
+          const cb = RIVER_CATEGORY_ORDER.indexOf(b.properties.category);
+          if (ca !== cb) return ca - cb;
+          if (a.properties.length_km != null && b.properties.length_km != null) {
+            return b.properties.length_km - a.properties.length_km;
           }
-          return {
-            type: "Feature",
-            // 上游未數化的河段會讓幹流斷成兩截，所以一律 MultiLineString
-            geometry: { type: "MultiLineString", coordinates: lines },
-            properties: {
-              id,
-              name: officialName,
-              length_km: facts.length_km,
-              area_km2: facts.area_km2,
-              category: facts.category,
-              meta: `幹流長度 ${facts.length_km} km`,
-            },
-          };
-        })
-        // ⚠️ feature 順序就是圖層抽屜裡可點清單的順序（LayerBrowseList 不排序）。
-        // 依官方幹流長度由長到短，清單開頭是濁水溪、高屏溪、淡水河這些課本會點名的河川。
-        .sort((a, b) => b.properties.length_km - a.properties.length_km),
+          return RIVERS[a.properties.name].ref.localeCompare(RIVERS[b.properties.name].ref);
+        }),
   },
   {
     id: "tw-basins",
     label: "臺灣河川流域分區",
     /**
-     * 跟 tw-rivers 是**同一組官方河川清單**（RIVER_FACTS），幾何來源卻完全不同：
-     * tw-rivers 的線來自 OSM 的河川關聯，這裡的面來自水利署的 SHP（BASIN）——
-     * 集水區範圍需要真正的水文測繪，不是從一條線推得出來的。
-     * id 對照表用 lib/rivers.mjs 的 `BASIN_IDS`（從 `RIVER_IDS` 衍生），facts
-     * （面積）沿用同一份 `RIVER_FACTS`——這是這兩個圖層真正共用資料的地方。
+     * 跟 tw-rivers 共用 lib/rivers.mjs 的同一份 118 條官方清單，但**產物只有 72
+     * 筆**：上游的 BASIN 圖資只給其中 72 個水系個別的流域代碼，其餘 46 條的集水區
+     * 被歸在「沒有個別代碼的小水系」群組碼底下，沒辦法無歧義地拆出來。缺漏是預期
+     * 中的資料範圍差異，transform 會把清單印出來（不是丟例外）。
      *
-     * ⚠️ BASIN 這份資料乾淨很多：實測 143 筆 record 裡，26 個官方河川名稱各自
-     * 剛好對到一筆**單一環（無孔洞）**多邊形，面積與官方數字誤差多在 10% 以內，
-     * 精確比對名稱就夠了，不需要空間分群。真的對不到才要懷疑上游改版，不要自己
-     * 加模糊比對。
+     * 幾何來源也完全不同：tw-rivers 的線來自 OSM 的河川關聯，這裡的面來自水利署
+     * 的 SHP（BASIN）——集水區範圍需要真正的水文測繪，不是從一條線推得出來的。
+     *
+     * ⚠️ **join 用 `BASIN_NO`（＝河川代碼去掉末位），不是 `BASIN_NAME`。**
+     * 上游名稱有錯字（`老梅j溪`）、異體字（`後州溪`／`通宵溪`／`安溯溪`）與同名
+     * 不同河（`新港溪`），名稱比對會安靜地漏掉或接錯——理由與 RIVERLIN 報廢時
+     * 完全相同，詳見 transform 裡的說明。實測 72 筆全部是**單一環（無孔洞）**。
      */
     url: BASIN_URL,
     license: WRA_LICENSE,
@@ -828,25 +877,59 @@ const SOURCES = [
     tolerance: 0.0004,
     digits: 5,
     transform: ({ polygons, rows }) => {
-      const byName = new Map(rows.map((r, i) => [r.BASIN_NAME, i]));
+      /**
+       * ⚠️ **用 `BASIN_NO` join，不要用 `BASIN_NAME`。**
+       *
+       * `BASIN_NO` 就是水利署河川代碼**去掉末位**（官方 110000 → `1100`），所以
+       * 它跟 `RIVERS` 的 `ref` 是同一個識別碼系統，join 完全沒有歧義。
+       *
+       * 名稱 join 會出事，而且是安靜地出事：
+       * - 上游有錯字與異體字（`後州溪`／後洲溪、`通宵溪`／通霄溪、`安溯溪`／安朔溪、
+       *   `水仙溪`／紅水仙溪、`老梅j溪` 那個 j 是真的印在資料裡的）——名稱比對會
+       *   直接漏掉這幾條。
+       * - **同名不同河**：BASIN 裡的 `新港溪` 到底是臺東成功鎮那條（224000）還是
+       *   苗栗冷水坑溪的別名（133000），名稱看不出來。這正是 RIVERLIN 當初報廢的
+       *   同一個坑（見 CLAUDE.md），不要再走一次。
+       *
+       * 一個 `BASIN_NO` 對到多筆時**一律跳過**：那是上游用來歸類「沒有個別代碼的
+       * 小水系」的群組碼（實測 2803 底下有 5 條北海岸小溪），拿群組裡任一條當成
+       * 某條官方河川的流域是猜的。
+       */
+      const byNo = new Map();
+      rows.forEach((r, i) => {
+        const key = String(r.BASIN_NO);
+        byNo.set(key, [...(byNo.get(key) ?? []), i]);
+      });
+
       const features = [];
-      /** 官方表格裡有、但 BASIN 裡對不到幾何的河川。靜默跳過會讓「少一條」永遠沒人發現。 */
+      /**
+       * 官方 118 個水系裡，BASIN 沒有發布個別流域面的那些。
+       *
+       * ⚠️ 這裡**不能像以前那樣丟例外**——以前清單只有 26 條中央管／跨省市河川，
+       * 上游每一條都有面，缺一條就是真的出事；現在清單是 118 條，而上游本來就
+       * 只給其中 72 條個別的流域代碼。缺漏是預期中的資料範圍差異，不是錯誤，
+       * 所以改成印出來讓人看得到。
+       */
       const missing = [];
 
-      for (const [officialName, facts] of Object.entries(RIVER_FACTS)) {
+      for (const [officialName, river] of Object.entries(RIVERS)) {
         const id = BASIN_IDS[officialName];
         if (!id) {
           throw new Error(`河川「${officialName}」不在 BASIN_IDS 對照表裡，請先決定它的 id`);
         }
 
-        const idx = byName.get(officialName);
-        const record = idx == null ? null : polygons[idx];
+        const cand = byNo.get(river.ref.slice(0, 4)) ?? [];
+        if (cand.length !== 1) {
+          missing.push(officialName);
+          continue;
+        }
+        const record = polygons[cand[0]];
         if (!record || record.parts.length === 0) {
           missing.push(officialName);
           continue;
         }
         if (record.parts.length !== 1) {
-          // 見上面說明：實測全部是單一環，多環代表上游改版，寧可失敗也不要猜哪個環是洞
+          // 實測 72 筆全部是單一環，多環代表上游改版，寧可失敗也不要猜哪個環是洞
           throw new Error(`「${officialName}」的流域是 ${record.parts.length} 環，需要人工確認外環／洞的判斷`);
         }
 
@@ -858,19 +941,42 @@ const SOURCES = [
           properties: {
             id,
             name: officialName,
-            area_km2: facts.area_km2,
-            category: facts.category,
-            meta: `流域面積 ${facts.area_km2} km²`,
+            // 只有 26 條中央管／跨省市河川有官方流域面積。
+            // ⚠️ **不要拿上游 dbf 的 `AREA` 欄位補**：那是數化多邊形的面積，跟公告
+            // 數字最大差 17.9%（鹽水溪 404.5 vs 343），兩者混在同一個欄位會讓
+            // 讀者以為是同一種數字——比照河川長度不混用 OSM 量測值的同一條規則。
+            area_km2: river.area_km2,
+            category: river.category,
+            meta:
+              river.area_km2 != null
+                ? `流域面積 ${river.area_km2} km²`
+                : [river.alias, river.counties.join("、")].filter(Boolean).join("・"),
+            detail: river.area_km2 != null ? undefined : river.category,
           },
         });
       }
 
       if (missing.length) {
-        throw new Error(`BASIN 裡找不到幾何：${missing.join("、")}`);
+        console.log(
+          `\n  ⓘ 對到 ${features.length}／${Object.keys(RIVERS).length} 條，` +
+            `以下 ${missing.length} 條上游沒有發布個別流域面：${missing.join("、")}`,
+        );
       }
-      // ⚠️ feature 順序就是圖層抽屜裡可點清單的順序（LayerBrowseList 不排序）。
-      // 依流域面積由大到小，清單開頭是高屏溪、濁水溪、淡水河這些課本會點名的河川。
-      return features.sort((a, b) => b.properties.area_km2 - a.properties.area_km2);
+      /**
+       * ⚠️ feature 順序就是可點清單的順序，而清單依 `category` 分組（`groupBy` 是
+       * **依序切**的，同一等級必須連續）。規則與 tw-rivers 逐字相同：先照
+       * `RIVER_CATEGORY_ORDER` 分群，有官方面積的群內由大到小（開頭是高屏溪、
+       * 濁水溪），沒有的依河川代碼（＝沿海岸逆時針的地理順序）。
+       */
+      return features.sort((a, b) => {
+        const ca = RIVER_CATEGORY_ORDER.indexOf(a.properties.category);
+        const cb = RIVER_CATEGORY_ORDER.indexOf(b.properties.category);
+        if (ca !== cb) return ca - cb;
+        if (a.properties.area_km2 != null && b.properties.area_km2 != null) {
+          return b.properties.area_km2 - a.properties.area_km2;
+        }
+        return RIVERS[a.properties.name].ref.localeCompare(RIVERS[b.properties.name].ref);
+      });
     },
   },
   {

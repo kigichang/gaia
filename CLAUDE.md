@@ -60,11 +60,11 @@ Node ≥ 22.12（vite 8 要求）。開發機與 CI 都用 Node 24。
 | 臺灣鄉鎮市區界線 | `data.gov.tw/api/v2/rest/dataset/**7441**` → TGOS 的 **SHP** zip（同一個單位） | **只在建置期呼叫**。⚠️ 這份**沒有 GML 只有 SHP**，而且 zip 裡有兩份 shapefile，見下 |
 | 世界行政區／河流幾何 | `raw.githubusercontent.com/nvkelso/natural-earth-vector`（Natural Earth） | **只在建置期呼叫**，public domain |
 | 地震目錄 | `earthquake.usgs.gov/fdsnws/event/1/query`（USGS） | **只在建置期呼叫**，免金鑰、`ACAO: *` |
-| 交通軸線幾何（高鐵／國道／臺鐵幹線）、河川幹流河道 | `overpass-api.de/api/interpreter`（OpenStreetMap Overpass） | **只在建置期呼叫**，ODbL 1.0。⚠️ **沒有 User-Agent 一律回 HTTP 406**，見下 |
+| 交通軸線幾何（高鐵／國道／臺鐵幹線）、河川幹流河道 | `overpass-api.de/api/interpreter`（OpenStreetMap Overpass） | **只在建置期呼叫**，ODbL 1.0。⚠️ **沒有 User-Agent 一律回 HTTP 406**；河川的選擇器**不能寫 `waterway=river`**（一半以上是 `stream`），要用 `type=waterway`＋`ref`，見下 |
 | 水庫基本資料／水庫水情 | `opendata.wra.gov.tw/api/v2/…?format=CSV`（經濟部水利署） | **只在建置期呼叫**。⚠️ **沒有 CORS 標頭**（瀏覽器一定抓不到），而且掛著 bot 防護，見下 |
 | 水庫蓄水範圍 | `gic.wra.gov.tw/gis/gic/API/Google/DownLoad.aspx?fname=ressub&filetype=KML` | **只在建置期呼叫**，約 38 MB 的 KML，只用來算形心 |
-| 河川流域範圍圖 | `gic.wra.gov.tw/gis/gic/API/Google/DownLoad.aspx?fname=BASIN&filetype=SHP` | **只在建置期呼叫**，SHP（面），座標系統 TWD97/TM2 zone 121，見下 |
-| 河川長度／流域面積 | `www.wra.gov.tw/cp.aspx?n=3163&dn=3164`（經濟部水利署） | 沒有開放資料 API，人工抄錄進 `scripts/lib/rivers.mjs` 的 `RIVER_FACTS` |
+| 河川流域範圍圖 | `gic.wra.gov.tw/gis/gic/API/Google/DownLoad.aspx?fname=BASIN&filetype=SHP` | **只在建置期呼叫**，SHP（面），座標系統 TWD97/TM2 zone 121。⚠️ join 用 `BASIN_NO`（＝河川代碼去掉末位）**不要用名稱**，且只涵蓋 118 個水系裡的 72 個，見下 |
+| 河川長度／流域面積 | `www.wra.gov.tw/cp.aspx?n=3163&dn=3164`（經濟部水利署） | 沒有開放資料 API，人工抄錄進 `scripts/lib/rivers.mjs` 的 `RIVERS`。⚠️ **只有 24 條中央管與 2 條跨省市河川有**，其餘 92 條的界點由地方政府各自公告 |
 | 國家公園範圍 | `data.gov.tw/api/v2/rest/dataset/174421` →（索引 CSV）→ `tgos.tw` 各處的 SHP／KML；陽明山另走 `ogcmap.tgos.tw/…/Ymsnp3PlanBorder/SimpleWFS.aspx` | **只在建置期呼叫**，內政部國家公園署。座標是 **TWD97 TM2 公尺**，見下 |
 | 台江國家公園範圍 | `data.depositar.io`（中研院研究資料寄存所） | **只在建置期呼叫**。官方那兩份包在 7z 裡，見下；**這台主機只講 HTTP/2** |
 | 自然保留區／野生動物保護區／自然保護區 | `data.moa.gov.tw/api/FileToJson.ashx?DataId=157｜162｜350` → SHP zip | **只在建置期呼叫**，農業部林業及自然保育署 |
@@ -176,21 +176,40 @@ NLSC WMTS 是 `{z}/{y}/{x}`——**y 在 x 前面**，跟絕大多數 XYZ 服務
 
 ### 河川路徑走 OpenStreetMap，關鍵是「用 ref 選、只取 main_stream」
 
-臺灣主要河川（24 條中央管河川 + 淡水河、磺溪共 26 條，水利署官方定義）的**路徑**（`public/data/geo/tw-rivers.geojson`）來自 OpenStreetMap 的 `waterway=river` 關聯。長度／流域面積仍是水利署官網〈河川長度〉頁面的官方數字（人工抄進 `scripts/lib/rivers.mjs` 的 `RIVER_FACTS`）——**圖上的線與卡片上的數字是兩個不同來源**，這件事在下面的「長度對不上」那段很重要。
+收錄範圍是**經濟部公告的全部 118 個列管水系**（民國 112 年 2 月公告「河川區分為中央管河川、跨省市河川、直轄市管河川及縣(市)管河川」）：中央管 24 + 跨省市 2（淡水河、磺溪）+ 直轄市管 27 + 縣(市)管 65。清單、id、河川代碼、管理等級、流經縣市全部在 `scripts/lib/rivers.mjs` 的 `RIVERS`——**那是唯一的一份**，`RIVER_IDS`／`RIVER_OSM_REFS`／`RIVER_FACTS`／`BASIN_IDS` 都從它衍生。
 
-兩個取得規則都不可省略，寫在 `RIVER_OSM_REFS`：
+路徑（`public/data/geo/tw-rivers.geojson`）來自 OpenStreetMap 的 `waterway=river` 關聯。長度／流域面積仍是水利署官網〈河川長度〉頁面的官方數字（人工抄進 `RIVERS`）——**圖上的線與卡片上的數字是兩個不同來源**，這件事在下面的「長度對不上」那段很重要。
 
-- **用 `ref`（水利署河川代碼）選取，不要用名稱。** 河川名在臺灣不唯一：新竹的鳳山溪（129000）與高雄的鳳山溪（171000，舊稱前鎮河）同名不同河，濁水溪、頭前溪、北港溪也各有好幾條同名的小溪流散落全國。這正是下面 RIVERLIN 那節講的同一個坑，而 OSM 的臺灣河川關聯帶了官方代碼，用它選就沒有歧義。比照 `fetchRouteLines()` 的既有行為，選中數不等於 1 就讓建置失敗。
-- **只取 `main_stream` 角色**（`fetchRouteLines()` 的 `role` 選項）。`waterway` 關聯把支流以 `side_stream` 一起收進來，全抓會畫出整個水系而不是一條幹流。
+**⚠️ 範圍不是「所有畫得出來的河」，是那份公告。** 公告本文另有一條界線：「凡屬排水管理辦法第 4 條規定之排水非屬河川」。OSM 上帶六位河川代碼、代碼結尾為 `000` 的關聯實測有 **150 個**，比列管水系多 32 個——愛河、後勁溪、東螺溪、將軍溪、冬山河、客雅溪這些都在多出來的那一批裡，其中員林大排、番雅溝排水、牛埔疏洪道連名字都寫著排水。**多抓很容易，但那會讓「這一層收錄什麼」失去可說明的界線**；要放寬就改 `RIVERS` 加上圖層說明，不要偷偷多抓幾條。
+
+三個取得規則都不可省略，寫在 `fetchWaterwaysByRef()`：
+
+- **用 `ref`（水利署河川代碼）選取，不要用名稱。** 河川名在臺灣不唯一：新竹的鳳山溪（129000）與高雄的鳳山溪（171000，舊稱前鎮河）同名不同河，濁水溪、頭前溪、北港溪也各有好幾條同名的小溪流散落全國。這正是下面 RIVERLIN 那節講的同一個坑，而 OSM 的臺灣河川關聯帶了官方代碼，用它選就沒有歧義。比照 `fetchRouteLines()` 的既有行為，**每個 ref 選中數不等於 1 就讓建置失敗**（批次查詢要**逐個 ref** 檢查，不能只看總數——兩個 ref 一個少一個多時總數是對的）。
+- **⚠️ 選擇器不可以寫 `["waterway"="river"]`。** 118 條裡有一大半的小溪在 OSM 上是 **`waterway=stream`**（也有 `drain`、`canal`），寫死 river 會在第一條小溪（小坑溪，102000）就選中 0 個而讓建置失敗。共通的標籤是 **`type=waterway`**（實測 150 個帶六位代碼的關聯全部都有），河川的種類交給 `ref` 去分辨。這個坑是擴充到 118 條時才踩到的——原本那 26 條剛好全是 `river`。
+- **只取 `main_stream` 角色**。`waterway` 關聯把支流以 `side_stream` 一起收進來，全抓會畫出整個水系而不是一條幹流。實測 118 個關聯**全部**都有 `main_stream` 成員，沒有例外——OSM 的臺灣河川資料整理得比預期完整，所以這一層不需要任何手繪或補點的 fallback。
+
+**⚠️ 河川用 `fetchWaterwaysByRef()` 分批查，不是交通軸線那支 `fetchRouteLines()`。** 交通軸線只有 7 條，一條一次很合理；河川有 118 條，一條一次實測要跑 **40 分鐘**，絕大部分時間耗在撞限流後的退避等待上。改成一次問 30 個代碼之後只要幾分鐘——而且 Overpass 有明確的公平使用規範，發 118 次查詢去拿一次拿得完的東西，慢只是其中一個問題。
+
+#### ⚠️ 官方名稱與 OSM 名稱有 25 條對不上，靠 `alt_name` 解，不要靠語感
+
+92 條新增的河川裡有 25 條的**公告名稱在 OSM 上不是 `name`**。其中 20 條由 OSM 的 `alt_name` 唯一命中（實測沒有任何一條 alt_name 對到兩個關聯），另外 5 條（瑪鍊溪＝瑪鋉溪、八蓮溪＝八連溪、津林溪＝加津林溪、薯寮溪＝蕃薯寮溪、水連溪＝水璉溪）是一字之差的異體寫法，且各自的代碼正好是該縣市代碼序列裡唯一剩下的空缺。
+
+**望文生義會錯，而且不會報錯**：花蓮的「大富溪」是 OSM 的 `小清水溪`（248000）、「大清水溪」是 OSM 的 `良里溪`（249000）——照字面猜正好對調，畫出來兩條線都在、只是名字互換。對照結果固定寫在 `RIVERS` 的 `ref` 欄，不做執行期的模糊比對。
+
+`name` 一律用**公告名稱**（這一層的收錄範圍就是那份公告），OSM／地圖上的常用名放在 `alias`，由 build 寫進 geojson 的 `meta`。**別名一定要進 `meta`**：那是 `searchIndex` 唯一會收進 haystack 的額外欄位，少了它，學生對著 NLSC 底圖上的「阿里磅溪」搜不到我們標的「乾華溪」，而畫面上沒有任何線索解釋為什麼。
 
 #### ⚠️ 五條河的長度對不上官方數字，這是量測基準差異，不是選錯河
 
-實測（2026-08）21 條在 ±15% 內（其中 17 條在 ±5% 內），另外五條——阿公店溪 -50%、後龍溪 -31%、花蓮溪 -21%、北港溪 -19%、**卑南溪 +17%**。偏長與偏短是兩件不同的事：
+實測（2026-08）**中央管／跨省市那 26 條**裡 21 條在 ±15% 內（其中 17 條在 ±5% 內），另外五條——阿公店溪 -50%、後龍溪 -31%、花蓮溪 -21%、北港溪 -19%、**卑南溪 +17%**。偏長與偏短是兩件不同的事：
 
 - **偏長**（卑南溪）是 OSM 把上游改名的河段完整收進 `main_stream`，而官方長度從另一個界點起算。幾何是完整的，這個方向不需要處理。
 - **偏短**的四條是上游河段在 OSM 尚未數化。四條都試過補接上游關聯，結論是**不補**：北港溪的虎尾溪、花蓮溪的光復溪，它們的 way **已經在母關聯裡**（逐條比對，去重後總長一公尺都沒變），補接是空操作；後龍溪補上汶水溪後長度確實回到 -5%，但兩段之間**有 4.26 公里的缺口**（那段在 OSM 裡沒有任何以這兩個名字命名的 way），畫出來是中間斷開的兩截線——**一條在地圖上斷掉的河，比一條短了三成的河更容易讓人誤解**；阿公店溪補上濁水溪（167010）後仍是 -33%。
 
 所以 `build-geodata.mjs` 只在差距 >15% 時印提醒、**>60% 才讓建置失敗**——那個量級代表選到同名的小溪流或抓成整個水系，是真的選錯。⚠️ 這也表示**唯一的核對方式是看建置日誌印出來的長度對照**，跟交通軸線一樣：線照樣渲染、卡片照樣開，只有公里數不對。
+
+⚠️ **另外 92 條沒有官方長度，所以那道防線在它們身上不成立。** 公告明訂直轄市管與縣(市)管河川的「河川界點由主管機關訂定公告之」——界點不同、量到的長度就不同，全國沒有一致的長度表。它們唯一的防線是「`ref` 精確比對且**選中數必須剛好是 1**」（`fetchRouteLines()`），**不要為了讓某條河抓得到而放寬那個條件**。建置日誌照樣印出它們的公里數，但那只是給眼睛掃過去的合理性線索，不做門檻判斷、也不寫進產物。
+
+**也不要把 OSM 量到的長度填進 `length_km`。** 那會讓兩種不同基準的數字在卡片上長得一模一樣，正是本站一路在避免的事（比照 ERA5 氣候值不當觀測值、GBIF 觀測點不當分布範圍）。這 92 條的卡片改為呈現公告等級與流經縣市。
 
 #### ⚠️ 為什麼不用水利署自己的 RIVERLIN SHP
 
@@ -204,7 +223,7 @@ NLSC WMTS 是 `{z}/{y}/{x}`——**y 在 x 前面**，跟絕大多數 XYZ 服務
 
 #### 授權：疊在 NLSC 底圖上是「並列疊圖」，不是資料融合
 
-河川線（OSM，ODbL）畫在臺灣通用電子地圖（NLSC，政府資料開放授權條款第 1 版）的圖磚上，兩份資料**各自獨立並存、未經融合**，屬 ODbL 的「集合資料庫（Collective Database）」，只需各自標示，不會觸發「衍生資料庫須以 ODbL 免費提供」的義務。因此 `tw-rivers` 的 26 份內容檔都把 `OpenStreetMap` 加進 `sources`——`FeatureCard` 有內容檔時顯示的是內容檔的 `sources`（`feature?.sources ?? fallback.sources`），只寫在圖層定義上是**看不到的**。
+河川線（OSM，ODbL）畫在臺灣通用電子地圖（NLSC，政府資料開放授權條款第 1 版）的圖磚上，兩份資料**各自獨立並存、未經融合**，屬 ODbL 的「集合資料庫（Collective Database）」，只需各自標示，不會觸發「衍生資料庫須以 ODbL 免費提供」的義務。因此 `tw-rivers` 的 26 份內容檔都把 `OpenStreetMap` 加進 `sources`——`FeatureCard` 有內容檔時顯示的是內容檔的 `sources`（`feature?.sources ?? fallback.sources`），只寫在圖層定義上是**看不到的**。另外 92 條沒有內容檔，走 fallback 顯示圖層自己的 `sources`，那一份本來就有 `OpenStreetMap`；**之後替它們補內容檔時要記得一起帶上這一筆**，否則那張卡片的署名會憑空消失。
 
 ⚠️ 真正的紅線是反方向：**不要拿需申請版的 NLSC 圖磚（`wmts.nlsc.gov.tw/wmts/EMAP5/…`）去描繪 OSM**，那與 ODbL 不相容，台灣社群自 2025 年起會直接回退。「免申請」不等於「開放授權」。
 
@@ -214,11 +233,27 @@ NLSC WMTS 是 `{z}/{y}/{x}`——**y 在 x 前面**，跟絕大多數 XYZ 服務
 
 **⚠️ 這是水系群組裡唯一還會抓取並剖析 SHP 的圖層**（`tw-rivers` 走 OSM，見上；站上另一個吃 SHP 的是國家公園與保護區，走的是另一組剖析器，見上一節）。這份 SHP 的 `.prj` 寫的是 `TWD97_TM2_zone_121`（EPSG:3826）——**投影坐標**，單位是公尺，不是縣市界／水庫那份 TWD97 地理坐標（EPSG:3824，度，可以直接當 WGS84 用）。`scripts/lib/twd97.mjs` 因此實作了反算橫麥卡托（inverse Transverse Mercator，GRS80 橢球），已用 round-trip 測試驗證（正算已知座標再反算回來，四個測試點誤差在 1e-8 度以下），並用 BASIN 自己的 bbox 四角反算出北緯 21.9°–25.3°、東經 120.0°–122.0° 做過合理性檢查——跟臺灣本島＋周邊離島的實際範圍相符。**升級或更換這份圖資時要重新用同一組測試點驗證投影公式沒有錯位**（座標系統選錯不會報錯，只會讓流域全部畫到海裡）。
 
-**真正共用的是「這個官方河川叫什麼名字、對應本站哪個 id」這件事**，寫在 `scripts/lib/rivers.mjs` 裡：`tw-basins` 的 id 對照表（`BASIN_IDS`）直接從 `RIVER_IDS` 衍生（把 `-river` 尾綴換成 `-basin`，不是另外手動輸入 26 筆），長度／流域面積的官方數字（`RIVER_FACTS`）也是同一份。這才是使用者問「能不能跟河川資料合併」時真正該合併的部分。
+**真正共用的是「這個官方河川叫什麼名字、對應本站哪個 id」這件事**，寫在 `scripts/lib/rivers.mjs` 裡：`tw-basins` 的 id 對照表（`BASIN_IDS`）直接從 `RIVERS` 衍生（把 `-river` 尾綴換成 `-basin`，不是另外手動輸入 26 筆），長度／流域面積的官方數字也是同一份。這才是使用者問「能不能跟河川資料合併」時真正該合併的部分。
 
-**兩層現在都是實測資料，但來源不同、缺漏的方式也不同。** `tw-rivers`（線）是 OSM 的河川關聯，走向精確、少數河川的最上游河段尚未數化（見上）；`tw-basins`（面）是水利署 BASIN SHP，143 筆 record 裡 26 個官方河川名稱各自剛好對到一筆**單一環、無孔洞**的多邊形（`build-geodata.mjs` 的 transform 會在遇到多環時直接丟例外，不猜哪個環是洞），面積跟官方數字的誤差多在 10% 以內（濁水溪 3167.5 vs 官方 3157 km²、淡水河 2733.9 vs 2726、卑南溪 1605.2 vs 1603）。**兩層都沒有 `schematic` 標記**——站上還標著這個旗標的只剩五大山脈。
+#### ⚠️ join 用 `BASIN_NO`，不是 `BASIN_NAME`
 
-**⚠️ 兩層的 id 刻意不共用**（`gaoping-river` vs `gaoping-basin`），即使兩者指的是同一條河。這不是隨手加的尾綴：「主要河川」跟「流域分區」是兩個各自獨立可勾選的圖層，不是像五大山脈→主峰那種父子 `attach` 關係，如果共用同一個 id，選取其中一層會不會意外連動強調另一層（透過 `highlightIds` 的 Set 比對）沒有測過、行為未定義。用不同尾綴把兩個 id 命名空間分開，讓行為可預測——跟 `RIVER_IDS` 當初為了不跟水庫 id 撞名而加 `-river` 尾綴，是同一個理由。
+`BASIN_NO` 就是**水利署河川代碼去掉末位**（官方 110000 → `1100`），也就是說它跟 `RIVERS` 的 `ref` 是同一個識別碼系統，join 完全沒有歧義。
+
+名稱 join 會安靜地出事，實測有三種：
+
+- **上游有錯字與異體字**：`後州溪`（後洲溪）、`通宵溪`（通霄溪）、`安溯溪`（安朔溪）、`水仙溪`（紅水仙溪），還有 `老梅j溪` 那個 j 是真的印在 dbf 裡的。純名稱比對會直接漏掉這四條，而且**不會有任何錯誤訊息**。
+- **同名不同河**：BASIN 裡有一筆 `新港溪`，它到底是臺東成功鎮那條（224000）還是苗栗冷水坑溪的別名（133000）？名稱看不出來。這正是 RIVERLIN 當初報廢的同一個坑（見上一節），不要再走一次。
+- **一個 `BASIN_NO` 對到多筆時一律跳過**：那是上游用來歸類「沒有個別代碼的小水系」的群組碼（實測 `2803` 底下有 5 條北海岸小溪）。從群組裡挑一條當成某條官方河川的流域是猜的。
+
+⚠️ **兩層的筆數刻意不一樣：`tw-rivers` 是 118、`tw-basins` 是 72。** `BASIN_IDS` 涵蓋全部 118 筆，但上游只給其中 72 個水系個別的流域代碼，所以 transform 對不到就**跳過並印出那 46 條的清單**——那是預期中的資料範圍差異，**不是錯誤，不要改成丟例外**（清單只有 26 條的時代確實是丟例外的，因為那時上游每一條都有面）。也不要為了湊滿 118 而退回名稱比對。
+
+缺的 46 條全是短促的海岸小溪（北海岸的小坑溪、乾華溪、老梅溪，臺東海岸的八里溪、都威溪…），課本會點名的河川一條都沒少。
+
+**兩層現在都是實測資料，但來源不同、缺漏的方式也不同。** `tw-rivers`（線）是 OSM 的河川關聯，走向精確、少數河川的最上游河段尚未數化（見上）；`tw-basins`（面）是水利署 BASIN SHP，143 筆 record 裡有 72 筆的 `BASIN_NO` 對得到官方河川代碼，而且**每一筆都是單一環、無孔洞**的多邊形（`build-geodata.mjs` 的 transform 會在遇到多環時直接丟例外，不猜哪個環是洞），面積跟官方數字的誤差多在 10% 以內（濁水溪 3167.5 vs 官方 3157 km²、淡水河 2733.9 vs 2726、卑南溪 1605.2 vs 1603）。
+
+⚠️ **不要拿 dbf 的 `AREA` 欄位當流域面積**：那是數化多邊形的面積，跟公告數字最大差 **17.9%**（鹽水溪 404.5 vs 343，中位數 1.9%）。所以只有 26 條中央管／跨省市河川的卡片有面積數字，另外 46 條比照河川長度的處理，改為呈現公告等級與流經縣市——兩種基準的數字不放進同一個欄位。**兩層都沒有 `schematic` 標記**——站上還標著這個旗標的只剩五大山脈。
+
+**⚠️ 兩層的 id 刻意不共用**（`gaoping-river` vs `gaoping-basin`），即使兩者指的是同一條河。這不是隨手加的尾綴：「臺灣河川」跟「流域分區」是兩個各自獨立可勾選的圖層，不是像五大山脈→主峰那種父子 `attach` 關係，如果共用同一個 id，選取其中一層會不會意外連動強調另一層（透過 `highlightIds` 的 Set 比對）沒有測過、行為未定義。用不同尾綴把兩個 id 命名空間分開，讓行為可預測——跟 `RIVER_IDS` 當初為了不跟水庫 id 撞名而加 `-river` 尾綴，是同一個理由。
 
 顏色沿用 `hydrology`（水系藍），跟河川線同色：面／線是已經一起驗證過的色票（見「顏色」一節的線／面色票），這裡刻意不挑另一個顏色——半透明面跟細線是不同的視覺通道，同色反而強化「這是同一個水系家族」的語意，跟縣市界橘、山脈洋紅維持區隔。
 
@@ -452,7 +487,7 @@ maplibre-contour 把 worker 以 Blob URL 內嵌，**不需要額外部署 worker
 
 | 主題 | 路由 | 內容 |
 |---|---|---|
-| 臺灣地理 | `/theme/taiwan` | 行政區（縣市、鄉鎮市區）、地形、水系（含水庫即時水情、河川流域分區）、人文（原住民族、交通軸線、古蹟）、植被生態（特有種、國家公園與保護區）、農業物產（主要作物分布） |
+| 臺灣地理 | `/theme/taiwan` | 行政區（縣市、鄉鎮市區）、地形、水系（118 個列管水系、水庫即時水情、河川流域分區）、人文（原住民族、交通軸線、古蹟）、植被生態（特有種、國家公園與保護區）、農業物產（主要作物分布） |
 | 世界地理 | `/theme/world` | 世界重要城市、國界與大洲、地形水系、人文專題 |
 | 全球地理形貌 | `/theme/global` | 緯度參考線、氣候與生物群系、洋流、板塊與地震帶 |
 
@@ -910,7 +945,7 @@ maplibre 的四個角落容器是 map container 內的 `position: absolute; z-in
 
 **而且撞名時要把 `meta` 補進副標**，否則畫面上是兩列一模一樣的字。這件事**只對真的撞名的標題做**：水庫的 `meta` 是「蓄水 62%・有效容量 …」這種長字串，沒撞名還硬加只會把副標塞爆。實測搜「東區」會得到四列，各自標著新竹市／臺中市／嘉義市／臺南市。
 
-索引是 **lazy 的**：搜尋框第一次獲得焦點才 `buildSearchIndex()`。目前它會抓十六份檔案，合計約 **2.13 MB**：
+索引是 **lazy 的**：搜尋框第一次獲得焦點才 `buildSearchIndex()`。目前它會抓十六份檔案，合計約 **2.30 MB**：
 
 | 檔案 | 大小 |
 |---|---|
@@ -919,18 +954,18 @@ maplibre 的四個角落容器是 map container 內的 `position: absolute; z-in
 | `tw-crops-fruit.geojson` | 107 KB |
 | `tw-crops-tea.geojson` | 26 KB |
 | `tw-monuments-municipal.geojson` | 240 KB |
-| `tw-basins.geojson` | 219 KB |
+| `tw-basins.geojson` | 346 KB |
 | `tw-counties.geojson` | 192 KB |
 | `tw-monuments-county.geojson` | 192 KB |
 | `tw-protected-areas.geojson` | 182 KB |
 | `world-rivers.geojson` | 146 KB |
-| `tw-rivers.geojson` | 85 KB |
+| `tw-rivers.geojson` | 174 KB |
 | `tw-monuments-national.geojson` | 50 KB |
 | `tw-transport.geojson` | 34 KB |
 | `tw-reservoirs.geojson` + `reservoirs-live.json` | 20 + 7 KB |
 | `tw-county-halls.geojson` | 7 KB |
 
-一個班 30 個學生同時開站時，這 2.13 MB 不該是每個人無條件付的成本。資料一律走 `resolveLayerData()`，與圖層顯示共用同一份快取，不會抓兩次。
+一個班 30 個學生同時開站時，這 2.30 MB 不該是每個人無條件付的成本。資料一律走 `resolveLayerData()`，與圖層顯示共用同一份快取，不會抓兩次。
 
 ⚠️ **古蹟那三份（483 KB）是子項目圖層唯一會進索引的例子，而且必須明確開啟。**
 `items` 圖層預設**只索引子項目本身**（三筆「國定古蹟／直轄市定古蹟／縣(市)定古蹟」），
@@ -1065,6 +1100,9 @@ npm run build:geodata   # 產生行政區/河流/地震/水庫 geojson（已存�
 npm run build:geodata -- --force --only=quakes   # 只重抓一個資料集
 npm run build:geodata -- --force --only=tw-protected-areas   # 國家公園與保護區（約 2 分鐘）
 npm run build:geodata -- --force --only=tw-townships          # 368 個鄉鎮市區（下載 12.8 MB）
+npm run build:geodata -- --force --only=tw-rivers             # 118 個列管水系，⚠️ 約 40 分鐘
+                                       # （每條河一次 Overpass 查詢，且會撞到限流而退避重試，
+                                       #   這是正常的，不要以為卡住了。跑背景並看日誌的長度對照）
 npm run build:geodata -- --force --only=tw-crops-fruit        # 作物三種要各跑一次（需先有鄉鎮界）
 npm run build:geodata -- --force --only=tw-monuments-national   # 古蹟三級要各跑一次
                                        # （municipal／county 同理；歷史沿革分片會一起寫出）
@@ -1296,44 +1334,79 @@ m.isSourceLoaded('contour-source')
     - 抽屜可點清單 7 筆，順序是高鐵 → 國道1／3／5 → 西部幹線 → 東部幹線 → 南迴線
     - 搜「高鐵」「國道」「南迴」都要找得到；跨主題搜尋會多抓 `tw-transport.geojson`
     - 切底圖之後重驗一次
-18. **主要河川**（`/theme/taiwan`，勾「主要河川」）：
+18. **臺灣河川**（`/theme/taiwan`，勾「臺灣河川」）：
     ```js
     const m = window.__gaiaMaps.at(-1);
     m.jumpTo({ center: [120.9, 23.6], zoom: 7.3 });
-    new Set(m.queryRenderedFeatures({ layers: ['tw-rivers-line'] }).map(f => f.properties.id)).size  // 26
+    new Set(m.queryRenderedFeatures({ layers: ['tw-rivers-line'] }).map(f => f.properties.id)).size  // 118
     m.getPaintProperty('tw-rivers-line', 'line-color')   // 水系藍 #2a78d6（colorRole: hydrology）
     ```
-    - 點濁水溪（或任一河川）→ 卡片有幹流長度／流域面積／分類、發源地、出海口，
+    - **可點清單依公告等級分四組**，順序與筆數不可變（`browse.groupBy: "category"`
+      是**依序切、不排序**的，所以 geojson 的 feature 必須讓同一等級連續）：
+      ```js
+      [...document.querySelectorAll('.layer-drawer .place-group')].map(g =>
+        g.textContent + ':' + g.nextElementSibling.querySelectorAll('.place-btn').length)
+      // ["中央管河川:24","跨省市河川:2","直轄市管河川:27","縣(市)管河川:65"]
+      ```
+      中央管與跨省市那兩組**由長到短**（開頭是濁水溪、高屏溪），另外兩組依河川代碼
+      （＝沿海岸逆時針的地理順序，開頭是新北的小坑溪、新竹的新豐溪）
+    - 點濁水溪（有內容檔）→ 卡片有幹流長度／流域面積／分類、發源地、出海口，
       資料來源要看得到 **OpenStreetMap**（ODbL 的署名義務；`FeatureCard` 有內容檔時
       顯示的是內容檔的 `sources`，所以 26 份內容檔都必須帶這一筆）
-    - ⚠️ **不該再有任何示意警語**（這一層已改用 OSM 實測河道）：
+    - 點乾華溪（**沒有內容檔**，走 fallback）→ 標題「乾華溪」、次標「阿里磅溪・新北市」、
+      再一行「直轄市管河川」，然後是圖層說明。⚠️ **次標少了別名就是 `meta` 沒組好**，
+      那會連帶讓搜尋也搜不到常用名
+    - ⚠️ **不該有任何示意警語**（這一層是 OSM 實測河道）：
       `document.querySelector('.feature-schematic')` 是 **null**、圖層抽屜那一列沒有
       `.layer-schematic` 附註、圖例也沒有「（示意）」徽章
     - **線位要貼合底圖河道**：切到 NLSC 通用電子地圖、`jumpTo([120.5,23.85], 10)` 看濁水溪，
-      藍線應該落在底圖畫的河道上——這是這一層改用 OSM 的**主要目的**，只數圖徵數量驗不到
+      藍線應該落在底圖畫的河道上——這是這一層用 OSM 的**主要目的**，只數圖徵數量驗不到。
+      新增的 92 條也要抽驗，`jumpTo([121.55,25.22], 10.2)` 看北海岸（實測 28 條），
+      那 19 條新北的小溪應該各自從大屯火山群流向海岸、與底圖的河道重合
     - 沿線標註要實測數量（`maxAngle: 150` 是為此調的，見「沿線標註很脆弱」）。
-      全島視角 `jumpTo([120.9,23.6], 7.3)`、1512×772 畫布下是 **9** 個，**必須包含濁水溪**：
+      ⚠️ **線從 26 條變 118 條並沒有把標註擠掉**——maplibre 的碰撞偵測會留下長的那些，
+      而長的正好就是課本要講的。實測 1920×873 畫布：`jumpTo([120.9,23.6], 7.3)` 是
+      **9** 個、`jumpTo([120.98,23.7], 7.0)` 是 **8** 個，兩者都**必須包含濁水溪**：
       ```js
       m.queryRenderedFeatures({ layers: ['tw-rivers-label'] }).map(f => f.properties.name)
       ```
+    - **別名要搜得到**（這是 92 條公告名稱與地圖常用名不同時唯一的補救）：
+      搜「阿里磅溪」要出現乾華溪、搜「貓公溪」要出現豐濱溪，而且**相機要真的飛過去**
+      （選豐濱溪應落在約 121.48E／23.58N，`movestart` 只觸發 1 次）
     - 切底圖之後重驗一次存在與排序（見上面關鍵坑二那組指令，把 `tw-rivers-line` 也加進 `at()` 檢查）
     - ⚠️ 長度是否正確**只能看建置日誌**（比照交通軸線）：線照樣渲染、卡片照樣開，
       只有公里數不對。五條已知偏離官方數字的河川（阿公店溪 -50%、後龍溪 -31%、
       花蓮溪 -21%、北港溪 -19%、卑南溪 +17%）是量測基準差異，不是 bug，理由見
       「河川路徑」那節；重跑 `npm run build:geodata -- --force --only=tw-rivers` 後
-      若**其他**河川冒出 >15% 的提醒，才代表上游關聯被改動了
-    - 26 條河川的 `id` 要跟內容檔（`src/content/geo/tw-rivers/`）與 `scripts/lib/rivers.mjs`
-      的 `RIVER_IDS`／`RIVER_OSM_REFS` 三者對得上——`npm run validate` 會抓交叉檢查
-19. **流域分區**（`/theme/taiwan`，勾「流域分區」，可以跟「主要河川」同時勾）：
+      若**其他**河川冒出 >15% 的提醒，才代表上游關聯被改動了。
+      另外 92 條沒有官方長度可比對，日誌印的公里數只是合理性線索——但**明顯不合理的
+      要追**（實測最短的水連溪只有 0.8 km，那是 OSM 只數化了下游河段）
+    - 118 條河川的 `id`／代碼／等級全部在 `scripts/lib/rivers.mjs` 的 `RIVERS`，
+      其中 26 條要對得上內容檔（`src/content/geo/tw-rivers/`）——`npm run validate` 會交叉檢查
+19. **流域分區**（`/theme/taiwan`，勾「流域分區」，可以跟「臺灣河川」同時勾）：
     ```js
     const m = window.__gaiaMaps.at(-1);
     m.jumpTo({ center: [120.9, 23.6], zoom: 7.3 });
-    new Set(m.queryRenderedFeatures({ layers: ['tw-basins-fill'] }).map(f => f.properties.id)).size  // 26
+    new Set(m.queryRenderedFeatures({ layers: ['tw-basins-fill'] }).map(f => f.properties.id)).size  // 72
     m.getPaintProperty('tw-basins-fill', 'fill-color')   // 水系藍 #2a78d6，跟河川線同色（刻意的，見說明）
     ```
-    - 點任一流域的面 → 卡片有流域面積／分類／對應河川、涵蓋縣市
+    - **可點清單依公告等級分四組**，筆數與「臺灣河川」那層不同是正常的
+      （上游只發布 72 個水系的個別流域面，見上）：
+      ```js
+      [...document.querySelectorAll('.layer-drawer .place-group')].map(g =>
+        g.textContent + ':' + g.nextElementSibling.querySelectorAll('.place-btn').length)
+      // 兩層都勾時會有八組：河川 24/2/27/65，流域 24/2/13/33
+      ```
+    - 點濁水溪流域（有內容檔）→ 卡片有涵蓋縣市、分水嶺說明、河川小檔案
+    - 點八蓮溪（**新增的、沒有內容檔**）→ 標題「八蓮溪」、次標「八連溪・新北市」、
+      再一行「直轄市管河川」，資料來源只有**經濟部水利署**（這一層不含 OSM，
+      跟河川層不同——面是水利署的 SHP，線才是 OSM）
+    - ⚠️ **面積數字只有中央管與跨省市那 26 條有**。另外 46 條不放面積，理由與河川
+      不放長度相同；dbf 的 `AREA` 欄位跟公告數字最大差 17.9%，**不要拿它補**
     - 同時勾兩層時，點擊仲裁要照「小目標優先、其餘照算繪順序」：圓點 > 線 > 面，
       面被同座標的河川線蓋住是正常的，不是 bug
+    - ⚠️ 建置日誌會印「對到 72／118 條」與那 46 條的清單。**那是資訊不是警告**；
+      真正要追的是數字**變少**，那代表上游改版
     - ⚠️ `tw-basins` 跟 `tw-rivers` 的 id **刻意不共用**（`gaoping-basin` vs `gaoping-river`）：
       選一條河的線，不應該連動強調它的流域面（反之亦然）——這是特意分開 id 命名空間的結果，
       不要為了「兩個都亮」去改成共用 id，那個行為沒有測過
@@ -1534,8 +1607,11 @@ scripts/
 ├─ lib/reservoirs.mjs     # 水利署開放資料的共用存取層（CSV 剖析、bot 防護、id 對照表）
 ├─ lib/monuments.mjs      # 文資局古蹟的存取層（經緯度顛倒修正、名稱前綴剝除、縣市分片）
 ├─ lib/crops.mjs          # 農情調查的存取層（逐縣市抓以避開 9999 上限、台／臺正規化、非生產列過濾）
-├─ lib/overpass.mjs       # OSM Overpass 存取層（端點輪替、路線關聯查詢、way 串接）
-├─ lib/rivers.mjs         # 河川／流域 id 對照表（BASIN_IDS 從 RIVER_IDS 衍生）+ 官方長度／流域面積（RIVER_FACTS）+ 河川的 OSM 選取碼（RIVER_OSM_REFS，水利署河川代碼）
+├─ lib/overpass.mjs       # OSM Overpass 存取層（端點輪替、way 串接）。**兩種查法並存**：
+│                         #   fetchRouteLines()  單一選擇器一次一條，交通軸線用（7 條）
+│                         #   fetchWaterwaysByRef() 依 ref 分批一次 30 條，河川用（118 條）
+├─ lib/rivers.mjs         # 118 個列管水系的官方身分（RIVERS：id／河川代碼／管理等級／流經縣市／常用別名／26 條才有的官方長度面積）
+│                         #   RIVER_IDS／RIVER_OSM_REFS／RIVER_FACTS／BASIN_IDS 全部從 RIVERS 衍生
 ├─ lib/fetch-retry.mjs    # 指數退避的 fetch（含 HTTP/2 fallback，見上）
 ├─ validate-content.mjs   # 建置前 schema 驗證 + 註冊表交叉檢查
 └─ postbuild.mjs          # 404.html + CNAME 確認

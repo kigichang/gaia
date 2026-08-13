@@ -58,7 +58,21 @@ export function DetailCard({
               ? String(props[detail.fallbackNameProperty ?? "name"])
               : undefined,
           meta: typeof props?.meta === "string" ? props.meta : undefined,
-          detail: typeof props?.top === "string" ? props.top : undefined,
+          /**
+           * ⚠️ 兩個屬性名都要讀。`detail` 是這個欄位本來的名字（`FeatureCard`
+           * 的 prop 就叫這個），臺灣河川用它放公告的管理等級；`top` 是主要作物
+           * 分布先前用的名字（那個鄉鎮種最多的前三種）。
+           *
+           * 之所以不統一成一個：`tw-crops-*.geojson` 是產物，改個 key 就得重跑
+           * `build:geodata` 去打農情調查的 API 逐縣市重抓一次——為了一個屬性名
+           * 付那個代價不值得。**新圖層一律用 `detail`。**
+           */
+          detail:
+            typeof props?.detail === "string"
+              ? props.detail
+              : typeof props?.top === "string"
+                ? props.top
+                : undefined,
           layerLabel: owner?.label ?? detail.collection,
           description: owner?.description ?? "",
           sources: owner?.sources ?? [],

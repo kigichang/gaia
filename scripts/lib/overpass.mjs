@@ -111,6 +111,76 @@ export async function fetchRouteLines(selector, { role } = {}) {
   return { lines, name: relations[0].tags?.name ?? "" };
 }
 
+/** 一次查詢問幾個 `ref`。太大會讓 Overpass 逾時，太小又回到「一條一次」的浪費。 */
+const REF_BATCH_SIZE = 30;
+
+/**
+ * 依 `ref`（水利署河川代碼）一次取回**多條**河川關聯的幾何。
+ *
+ * ## 為什麼不沿用 `fetchRouteLines()` 一條一條抓
+ *
+ * 交通軸線只有 7 條，一條一次很合理；河川有 **118 條**，一條一次實測要跑
+ * **40 分鐘**——絕大部分時間花在撞限流之後的退避等待上。Overpass 有明確的公平
+ * 使用規範，發 118 次查詢去拿一次就拿得完的東西，慢只是其中一個問題。
+ *
+ * ## ⚠️ 不可以用 `waterway=river` 當選擇器
+ *
+ * 踩過：118 條裡有一大半的小溪在 OSM 上是 **`waterway=stream`**（也有 `drain`、
+ * `canal`），寫死 `["waterway"="river"]` 會在第一條小溪（小坑溪，102000）就
+ * 選中 0 個而讓建置失敗。**共通的標籤是 `type=waterway`**（實測 150 個帶六位
+ * 河川代碼的關聯全部都有），所以選擇器用它，河川的種類交給 `ref` 去分辨。
+ *
+ * ## 保留「剛好一個」那道防線
+ *
+ * `fetchRouteLines()` 靠「選中數不等於 1 就失敗」擋住上游改名或關聯被拆開；
+ * 批次查詢一樣要有，而且**要逐個 ref 檢查**，不是只看總數——總數對得上但兩個
+ * ref 各自少一個多一個的情況，只看總數是看不出來的。回傳前也確認沒有任何一個
+ * 要求的 ref 落空。
+ */
+export async function fetchWaterwaysByRef(refs, { role } = {}) {
+  /** ref → { lines, name, tags } */
+  const out = new Map();
+
+  for (let i = 0; i < refs.length; i += REF_BATCH_SIZE) {
+    const batch = refs.slice(i, i + REF_BATCH_SIZE);
+    const pattern = `^(${batch.join("|")})$`;
+    const json = await overpassQuery(
+      `[out:json][timeout:300];(relation["type"="waterway"]["ref"~"${pattern}"](${TAIWAN_BBOX}););out geom;`,
+    );
+
+    /** 這一批實際回來的關聯，依 ref 分組——同一個 ref 回兩個就是上游被拆開了 */
+    const byRef = new Map();
+    for (const el of json.elements) {
+      if (el.type !== "relation") continue;
+      const ref = el.tags?.ref;
+      if (!batch.includes(ref)) continue; // 正規表示式理論上不會多給，但別假設
+      byRef.set(ref, [...(byRef.get(ref) ?? []), el]);
+    }
+
+    for (const ref of batch) {
+      const found = byRef.get(ref) ?? [];
+      if (found.length !== 1) {
+        const names = found.map((r) => r.tags?.name ?? `#${r.id}`).join("、") || "（無）";
+        throw new Error(
+          `河川代碼 ${ref} 在 OSM 上選中 ${found.length} 個 type=waterway 關聯` +
+            `（應為 1，現有：${names}），上游可能已改名、被拆開或重建，請重新確認`,
+        );
+      }
+      const relation = found[0];
+      const lines = [];
+      for (const member of relation.members ?? []) {
+        // 關聯裡也會有水閘之類的節點成員，只取有幾何的 way
+        if (member.type !== "way" || !(member.geometry?.length > 1)) continue;
+        if (role && member.role !== role) continue;
+        lines.push(member.geometry.map((p) => [p.lon, p.lat]));
+      }
+      out.set(ref, { lines, name: relation.tags?.name ?? "" });
+    }
+  }
+
+  return out;
+}
+
 const endKey = (p) => `${p[0]},${p[1]}`;
 
 /**

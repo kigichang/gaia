@@ -14,8 +14,11 @@ interface FeatureCardProps {
      */
     meta?: string;
     /**
-     * geojson 的 `detail` 屬性：比 `meta` 更具體的一行（主要作物分布用它列出這個
-     * 鄉鎮種最多的前三種作物）。有內容檔的圖層走 `facts`，這是沒有內容檔時的對應物。
+     * 比 `meta` 更具體的一行。有內容檔的圖層走 `facts`，這是沒有內容檔時的對應物。
+     *
+     * 來源是 geojson 的 `detail` 屬性（臺灣河川用它放公告的管理等級），或舊名
+     * `top`（主要作物分布用它列出這個鄉鎮種最多的前三種作物）——兩個名字並存的
+     * 理由見 `DetailCard`，新圖層一律用 `detail`。
      */
     detail?: string;
     layerLabel: string;
