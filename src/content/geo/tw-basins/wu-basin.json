@@ -1,0 +1,43 @@
+{
+  "id": "wu-basin",
+  "collection": "tw-basins",
+  "name": {
+    "zh": "烏溪流域",
+    "en": "Wu River Basin"
+  },
+  "subtitle": "中央管河川・西部",
+  "stats": [
+    {
+      "label": "流域面積",
+      "value": "2026 km²"
+    },
+    {
+      "label": "分類",
+      "value": "中央管河川"
+    },
+    {
+      "label": "對應河川",
+      "value": "烏溪"
+    }
+  ],
+  "facts": [
+    {
+      "label": "涵蓋縣市",
+      "value": "南投縣、臺中市、彰化縣"
+    },
+    {
+      "label": "分水嶺",
+      "value": "流域的邊界就是分水嶺——雨水落在邊界的哪一側，決定它會匯入這條河還是隔壁的河"
+    },
+    {
+      "label": "河川小檔案",
+      "value": "下游河段習慣稱為大肚溪，是彰化平原北界的重要河川"
+    }
+  ],
+  "curriculum": {
+    "unit": "臺灣的水文"
+  },
+  "sources": [
+    "經濟部水利署"
+  ]
+}

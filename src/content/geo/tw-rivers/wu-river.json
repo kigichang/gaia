@@ -1,0 +1,49 @@
+{
+  "id": "wu-river",
+  "collection": "tw-rivers",
+  "name": {
+    "zh": "烏溪",
+    "en": "Wu River"
+  },
+  "subtitle": "中央管河川・西部",
+  "stats": [
+    {
+      "label": "幹流長度",
+      "value": "119.1 km"
+    },
+    {
+      "label": "流域面積",
+      "value": "2026 km²"
+    },
+    {
+      "label": "分類",
+      "value": "中央管河川"
+    }
+  ],
+  "facts": [
+    {
+      "label": "發源地",
+      "value": "合歡山東側（下游改稱大肚溪）"
+    },
+    {
+      "label": "出海口",
+      "value": "臺中市龍井與彰化縣伸港間注入臺灣海峽"
+    },
+    {
+      "label": "流經",
+      "value": "南投縣、臺中市、彰化縣"
+    },
+    {
+      "label": "特色",
+      "value": "下游河段習慣稱為大肚溪，是彰化平原北界的重要河川"
+    }
+  ],
+  "curriculum": {
+    "unit": "臺灣的水文"
+  },
+  "schematic": true,
+  "sources": [
+    "維基百科",
+    "經濟部水利署"
+  ]
+}

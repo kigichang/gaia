@@ -1,0 +1,43 @@
+{
+  "id": "danshui-basin",
+  "collection": "tw-basins",
+  "name": {
+    "zh": "淡水河流域",
+    "en": "Tamsui River Basin"
+  },
+  "subtitle": "跨省市河川・北部（匯集三大支流後注入台灣海峽）",
+  "stats": [
+    {
+      "label": "流域面積",
+      "value": "2726 km²"
+    },
+    {
+      "label": "分類",
+      "value": "跨省市河川"
+    },
+    {
+      "label": "對應河川",
+      "value": "淡水河"
+    }
+  ],
+  "facts": [
+    {
+      "label": "涵蓋縣市",
+      "value": "臺北市、新北市、桃園市"
+    },
+    {
+      "label": "分水嶺",
+      "value": "流域的邊界就是分水嶺——雨水落在邊界的哪一側，決定它會匯入這條河還是隔壁的河"
+    },
+    {
+      "label": "河川小檔案",
+      "value": "臺灣三大都會區（雙北）的生活與航運中心，日治時期曾是重要內河航道"
+    }
+  ],
+  "curriculum": {
+    "unit": "臺灣的水文"
+  },
+  "sources": [
+    "經濟部水利署"
+  ]
+}

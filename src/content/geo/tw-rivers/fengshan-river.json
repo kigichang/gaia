@@ -1,0 +1,49 @@
+{
+  "id": "fengshan-river",
+  "collection": "tw-rivers",
+  "name": {
+    "zh": "鳳山溪",
+    "en": "Fengshan River"
+  },
+  "subtitle": "中央管河川・西部（頭前溪支流）",
+  "stats": [
+    {
+      "label": "幹流長度",
+      "value": "45.4 km"
+    },
+    {
+      "label": "流域面積",
+      "value": "250 km²"
+    },
+    {
+      "label": "分類",
+      "value": "中央管河川"
+    }
+  ],
+  "facts": [
+    {
+      "label": "發源地",
+      "value": "新竹縣關西鎮丘陵地"
+    },
+    {
+      "label": "出海口",
+      "value": "新竹縣竹北匯入頭前溪，再共同出海"
+    },
+    {
+      "label": "流經",
+      "value": "新竹縣"
+    },
+    {
+      "label": "特色",
+      "value": "頭前溪最大支流，流域涵蓋關西、竹東丘陵"
+    }
+  ],
+  "curriculum": {
+    "unit": "臺灣的水文"
+  },
+  "schematic": true,
+  "sources": [
+    "維基百科",
+    "經濟部水利署"
+  ]
+}
