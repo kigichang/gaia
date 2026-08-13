@@ -192,7 +192,17 @@ export function readShapefileZip(zipBuffer, pick) {
     throw new Error(`zip 內符合條件的 .shp 有 ${shpEntries.length} 個（內容：${listed}）`);
   }
   const stem = base(shpEntries[0].name);
-  const sibling = (ext) => entries.find((e) => e.name === `${stem}${ext}`);
+  /**
+   * 找同一個 stem 的兄弟檔（.prj／.cpg／.dbf）。
+   *
+   * ⚠️ **副檔名比對必須不分大小寫。** 鄉鎮市區界那份 zip 裡是 `TOWN_MOI_1140318.CPG`
+   * （大寫），大小寫敏感的比對會找不到它 → 編碼偵測落回 Big5 → 而那份 DBF 其實是
+   * UTF-8，於是**每一個中文名都變成亂碼**（`�箸蝮�`），而且不會拋出任何錯誤，
+   * 產出的是一份看起來正常、名字全壞的圖層。保護區那幾份 zip 剛好都是小寫副檔名，
+   * 所以這個 bug 潛伏到鄉鎮界才現形。
+   */
+  const sibling = (ext) =>
+    entries.find((e) => e.name.toLowerCase() === `${stem}${ext}`.toLowerCase());
 
   const prj = sibling(".prj");
   const projection = parsePrj(prj?.read().toString("utf8"));

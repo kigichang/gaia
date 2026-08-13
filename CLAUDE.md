@@ -56,6 +56,7 @@ Node ≥ 22.12（vite 8 要求）。開發機與 CI 都用 Node 24。
 | 氣候正常值 | `archive-api.open-meteo.com/v1/archive`（ERA5） | **只在建置期呼叫** |
 | 特有種觀測紀錄 | `api.gbif.org/v1/occurrence/search`（GBIF） | **只在建置期呼叫**，`ACAO: *` |
 | 臺灣縣市界線 | `data.gov.tw/api/v2/rest/dataset/7442` → TGOS 的 GML zip（內政部國土測繪中心） | **只在建置期呼叫**，政府資料開放授權條款第 1 版 |
+| 臺灣鄉鎮市區界線 | `data.gov.tw/api/v2/rest/dataset/**7441**` → TGOS 的 **SHP** zip（同一個單位） | **只在建置期呼叫**。⚠️ 這份**沒有 GML 只有 SHP**，而且 zip 裡有兩份 shapefile，見下 |
 | 世界行政區／河流幾何 | `raw.githubusercontent.com/nvkelso/natural-earth-vector`（Natural Earth） | **只在建置期呼叫**，public domain |
 | 地震目錄 | `earthquake.usgs.gov/fdsnws/event/1/query`（USGS） | **只在建置期呼叫**，免金鑰、`ACAO: *` |
 | 交通軸線幾何（高鐵／國道／臺鐵幹線）、河川幹流河道 | `overpass-api.de/api/interpreter`（OpenStreetMap Overpass） | **只在建置期呼叫**，ODbL 1.0。⚠️ **沒有 User-Agent 一律回 HTTP 406**，見下 |
@@ -362,6 +363,7 @@ ID 常數定義在 `src/map/layers/*.ts`，**一律 import 常數，不要寫死
 | `indigenous-source` / `indigenous-points` | geojson / circle |
 | `species-<id>-source` / `species-<id>-points` | geojson / circle，每個物種各自一組 |
 | `tw-counties-fill` / `tw-counties-outline` | fill + line（面的外框一定是獨立圖層） |
+| `tw-townships-fill` / `tw-townships-outline` | fill + line |
 | `world-rivers-line` / `world-rivers-label` | line + symbol |
 | `world-places-points` | circle |
 | `latitude-lines-line` / `latitude-lines-label` | line + symbol |
@@ -403,7 +405,7 @@ maplibre-contour 把 worker 以 Blob URL 內嵌，**不需要額外部署 worker
 
 | 主題 | 路由 | 內容 |
 |---|---|---|
-| 臺灣地理 | `/theme/taiwan` | 行政區、地形、水系（含水庫即時水情、河川流域分區）、人文（原住民族、交通軸線、古蹟）、植被生態（特有種、國家公園與保護區）、農業物產 |
+| 臺灣地理 | `/theme/taiwan` | 行政區（縣市、鄉鎮市區）、地形、水系（含水庫即時水情、河川流域分區）、人文（原住民族、交通軸線、古蹟）、植被生態（特有種、國家公園與保護區）、農業物產 |
 | 世界地理 | `/theme/world` | 世界重要城市、國界與大洲、地形水系、人文專題 |
 | 全球地理形貌 | `/theme/global` | 緯度參考線、氣候與生物群系、洋流、板塊與地震帶 |
 
@@ -673,6 +675,37 @@ node <dataviz-skill>/scripts/validate_palette.js "#aa604e,#934c3a,#7d3827" --ord
 
 - **縣市 id 由 `COUNTY_IDS` 對照表寫死，不是 slugify 出來的。** NLSC 的 GML 只有「名稱」一個屬性（COUNTYCODE 只在 SHP 版裡），而這些 id（`tw-tpe`／`tw-lie`…，ISO 3166-2:TW）是內容檔的檔名與圖徵強調用的 key，必須跨資料源改版保持穩定。對不到就讓建置失敗——縣市改名是重大行政變更，該由人決定新 id。
 
+- **鄉鎮市區界（`tw-townships`，368 筆）走的是 SHP，不是縣市界那條 GML 路。**
+  資料集 **7441** 只提供 SHP。縣市界當初避開 SHP 是因為「要 ogr2ogr」，但那是在
+  `lib/shp.mjs` 出現之前——現在直接用 `readShapefileZip()`（保護區在用的同一支）。
+  這份的 `.prj` 是 `GEOGCS["GCS_TWD97[2020]"…]`，**是地理坐標（度）不是 TM2**，
+  `parsePrj()` 回 null、不需要投影轉換。三個實測過的坑：
+
+  1. **zip 裡有兩份 shapefile**：要的是 `TOWN_MOI_<日期>.shp`（18 MB），另一份
+     `Town_Majia_Sanhe.shp`（45 KB）是屏東瑪家鄉三和的特例圖。**一定要傳 `pick`**
+     選 `/^TOWN_MOI_/i`——這與墾丁「主要計畫圖 vs 細部計畫圖」是同一類陷阱。
+  2. ⚠️ **`.CPG` 是大寫的。** `readShapefileZip()` 原本用大小寫敏感的比對找兄弟檔，
+     於是找不到它 → 編碼偵測落回 Big5 → 而這份 DBF 其實是 **UTF-8**，結果是
+     **每一個中文名都變成亂碼**（`�箸蝮�`）而且**不會報錯**。已把 `sibling()` 改成
+     不分大小寫；保護區那幾份 zip 剛好都是小寫副檔名，所以這個 bug 潛伏到現在。
+     **驗這一層一定要看名字是不是正常中文**，只數筆數是抓不到的。
+  3. **鄉鎮名不唯一**：實測 8 個重複名（中正區、信義區、中山區、大安區、東區、
+     西區、南區、北區）。id 因此用官方 `TOWNCODE`（8 位數字，368 筆全唯一），
+     **不能用名稱 slugify**。這件事一路影響到搜尋，見「搜尋索引」那節。
+
+- **鄉鎮界的 509 KB 超過建議值是預期的，不要去「修好」它。** 實測 115 萬個頂點、
+  1,036 個環，簡化到後面會**進入高原**：0.0008 是 677 KB、0.0012 是 509 KB，再放寬
+  也降不了多少。濾掉次像素礁岩（沿用 `MIN_ISLAND_AREA`）是必要的——不濾的話最寬鬆
+  的容差還有 963 KB，貼著 1 MB 硬上限；濾掉之後 polygon 從 1,034 降到 417，而
+  **368 個鄉鎮一個都沒有消失**。硬上限還有一倍餘裕，這是 368 個相鄰多邊形的必然
+  代價（縣市 22 個是 192 KB）。
+
+- **鄉鎮的清單順序要跟縣市界逐字相同，而縣市代表緯度必須用「面積加權形心」。**
+  不能沿用縣市界那支 `mainPartCentroidLatitude`（它取「最大的那一塊」）：這裡的
+  輸入是鄉鎮，取最大塊會變成「取該縣市面積最大的那個鄉鎮」，於是桃園市被代表成
+  復興區（山區、偏南）。實測會把基隆↔臺北、桃園↔新竹市、彰化↔花蓮、臺南↔高雄
+  **四對的順序排反**。改成面積加權後與 `tw-counties.geojson` 的縣市順序逐字相同。
+
 - **官方界線包含遠洋離島，這是對的，不要當成髒資料刪掉。** 東沙群島與南沙太平島屬高雄市、釣魚臺列嶼屬宜蘭縣、烏坵屬金門縣、彭佳嶼屬基隆市——都是課綱會提到的行政事實，已實測五個都有算繪出來。
 
   但它們會**撐爆 `fitBounds`**：高雄市的外接矩形從 1.0° 變成 **13.1°**，點一下「高雄市」相機會飛到整個南海。解法在 `bboxOf()`（`src/map/layers/geo.ts`）的 `MIN_FRAMED_PART_RATIO`：取景時忽略面積小於同圖徵最大塊 **1%** 的 polygon，**幾何本身完整保留**。用相對比例而不是絕對面積，才不會拆掉本來就由許多小島組成的縣市——實測 1% 之下澎湖 21 島、連江 11 島、雲林外傘頂洲、臺東蘭嶼全數保留，而 **2% 就會開始吃掉外傘頂洲與蘭嶼**。只對 MultiPolygon 生效，線與點不受影響。
@@ -786,12 +819,21 @@ maplibre 的四個角落容器是 map container 內的 `position: absolute; z-in
   ⚠️ 這條規則同時把 `quakes` 擋在外面，這是刻意的：那份 geojson 有 **400 KB**、2831 筆**沒有名稱**的點，它是密度場不是清單。索引它只會多抓一份大檔案再產生 2831 筆搜不到的項目。
 - **圖層本身**：所有 ready 圖層的名稱（搜「河流」要找得到「世界主要河流」這個圖層）。`planned` 的不列，因為勾不動。
 - 沒有 `properties.id` 或沒有 `properties.name` 的圖徵一律跳過——前者選不了、後者搜不到。
-- 比對的字串是 `name` + `shortName` + `meta` + 內容檔別名。**`shortName` 一定要在裡面**：它是沿線標註在地圖上實際印出來的字（「高鐵」「國道1」），使用者看到什麼就會搜什麼。少了它，搜最常用的俗名「高鐵」只會搜到圖層本身，而圖層結果是不開卡的——「國道」「南迴」剛好是全名的子字串，所以這個洞不會在那兩個字上暴露出來。
+- 比對的字串是 `name` + `shortName` + `en` + `meta` + 內容檔別名。**`shortName` 一定要在裡面**：它是沿線標註在地圖上實際印出來的字（「高鐵」「國道1」），使用者看到什麼就會搜什麼。少了它，搜最常用的俗名「高鐵」只會搜到圖層本身，而圖層結果是不開卡的——「國道」「南迴」剛好是全名的子字串，所以這個洞不會在那兩個字上暴露出來。`en` 是上游原生就有英文名時才有（目前只有鄉鎮的 `TOWNENG`）：`contentKeywords()` 只對 place／indigenous／species 回傳別名，`detail.type === "geo"` 的圖層拿不到任何別名，那一行是它們唯一的來源。⚠️ 官方羅馬拼音**不一定是漢語拼音**——鹿港鎮的 `TOWNENG` 是 `Lukang Township`，搜「Lugang」是搜不到的。
 
-索引是 **lazy 的**：搜尋框第一次獲得焦點才 `buildSearchIndex()`。目前它會抓十二份檔案，合計約 **1.37 MB**：
+#### ⚠️ 同名去重的 key 是「名稱 + `meta`」，不是只有名稱
+
+去重原本是為了 Natural Earth 把一條河拆成多段（`niger-0`、`niger-1`…），照單全收會讓搜「河」出現一整排一模一樣的「尼羅河」。但**同名不一定是同一個東西**：鄉鎮市區有 8 個重複名（中正區在臺北市與基隆市各一個、東區有四個），只看名稱的話搜「中正區」永遠只出得來一個，另一個**從此搜不到**，而畫面上沒有任何線索說明為什麼。
+
+被拆段的河流不受影響——它們的 `meta` 全是 `undefined`，同名同 meta 仍然收斂成一筆（實測 world-rivers 的 24 個重複名全部如此）。
+
+**而且撞名時要把 `meta` 補進副標**，否則畫面上是兩列一模一樣的字。這件事**只對真的撞名的標題做**：水庫的 `meta` 是「蓄水 62%・有效容量 …」這種長字串，沒撞名還硬加只會把副標塞爆。實測搜「東區」會得到四列，各自標著新竹市／臺中市／嘉義市／臺南市。
+
+索引是 **lazy 的**：搜尋框第一次獲得焦點才 `buildSearchIndex()`。目前它會抓十三份檔案，合計約 **1.88 MB**：
 
 | 檔案 | 大小 |
 |---|---|
+| `tw-townships.geojson` | 509 KB |
 | `tw-monuments-municipal.geojson` | 240 KB |
 | `tw-basins.geojson` | 219 KB |
 | `tw-counties.geojson` | 192 KB |
@@ -804,7 +846,7 @@ maplibre 的四個角落容器是 map container 內的 `position: absolute; z-in
 | `tw-reservoirs.geojson` + `reservoirs-live.json` | 20 + 7 KB |
 | `tw-county-halls.geojson` | 7 KB |
 
-一個班 30 個學生同時開站時，這 1.37 MB 不該是每個人無條件付的成本。資料一律走 `resolveLayerData()`，與圖層顯示共用同一份快取，不會抓兩次。
+一個班 30 個學生同時開站時，這 1.88 MB 不該是每個人無條件付的成本。資料一律走 `resolveLayerData()`，與圖層顯示共用同一份快取，不會抓兩次。
 
 ⚠️ **古蹟那三份（483 KB）是子項目圖層唯一會進索引的例子，而且必須明確開啟。**
 `items` 圖層預設**只索引子項目本身**（三筆「國定古蹟／直轄市定古蹟／縣(市)定古蹟」），
@@ -938,6 +980,7 @@ npm run build:reservoirs # 產生水庫即時水情（每次都重抓，CI 也�
 npm run build:geodata   # 產生行政區/河流/地震/水庫 geojson（已存在會跳過）
 npm run build:geodata -- --force --only=quakes   # 只重抓一個資料集
 npm run build:geodata -- --force --only=tw-protected-areas   # 國家公園與保護區（約 2 分鐘）
+npm run build:geodata -- --force --only=tw-townships          # 368 個鄉鎮市區（下載 12.8 MB）
 npm run build:geodata -- --force --only=tw-monuments-national   # 古蹟三級要各跑一次
                                        # （municipal／county 同理；歷史沿革分片會一起寫出）
 ```
@@ -1245,6 +1288,28 @@ m.isSourceLoaded('contour-source')
       // 選一筆之後 n 必須是 1，而且 m.getCenter() 要真的在那個縣市
       ```
     - 切底圖之後重驗一次顏色（`reapply` 路徑會重建圖層）
+
+21. **鄉鎮市區界**（`/theme/taiwan`，勾「鄉鎮市區界」，可以跟「縣市界」同時勾）：
+    ```js
+    const m = window.__gaiaMaps.at(-1);
+    m.jumpTo({ center: [120.9, 23.6], zoom: 10 });
+    new Set(m.queryRenderedFeatures({ layers: ['tw-townships-fill'] }).map(f => f.properties.id)).size
+    m.getPaintProperty('tw-townships-fill', 'fill-color')   // #d95926，跟縣市界**同色**（刻意的）
+    ```
+    - ⚠️ **先驗中文名不是亂碼**，這是 `.CPG` 大小寫那個坑唯一會現形的地方
+      （只數筆數抓不到）：抽屜清單的前幾筆應該是「基隆市 中正區／七堵區…」
+    - 縣市界與鄉鎮界**同時勾選**時兩層都在——`MAX_ACTIVE_BY_KIND.fill` 是 2，
+      這兩層剛好用滿，再勾第三個面圖層會踢掉先勾的那個
+    - zoom 13 以上鄉鎮面消失（`maxzoom: 12`），這是刻意的，不是壞掉
+    - 點任一鄉鎮 → `FeatureCard` fallback 顯示鄉鎮名 + 縣市 + 圖層說明（不是空白卡）
+    - 抽屜可點清單 368 筆，**縣市順序要與縣市界那層逐字相同**（由北到南、離島最後）：
+      ```js
+      // 兩層各自的縣市順序必須一致，見「面積加權形心」那條
+      ```
+    - 搜「中正區」要出現**兩筆**（臺北市、基隆市），搜「東區」要**四筆**，
+      而且副標各自標著縣市；搜「板橋區」只有一筆且副標**不**加縣市（沒撞名不補）
+    - 搜「Lukang」找得到鹿港鎮（`TOWNENG` 進了 haystack）。⚠️ 是 Lukang 不是 Lugang
+    - 切底圖之後重驗顏色與排序
 
 ### ⚠️ 用瀏覽器自動化點 UI 的三個陷阱
 

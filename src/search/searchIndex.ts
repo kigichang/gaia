@@ -183,6 +183,8 @@ async function featureHits(
   }
 
   const seenNames = new Set<string>();
+  /** hit.key → 該圖徵的 meta，給下面「撞名才補副標」那段用 */
+  const metaOf = new Map<string, string | undefined>();
   for (const feature of fc.features) {
     const props = feature.properties ?? {};
     const id = props.id;
@@ -193,8 +195,15 @@ async function featureHits(
     // 同名只留第一段。Natural Earth 把一條河拆成多個 LineString（`niger-0`、
     // `niger-1`…），照單全收的話搜「河」會出現一整排一模一樣的「尼羅河」。
     // 選到的是第一段而不是整條，這與圖層可點清單的既有行為一致。
-    if (seenNames.has(name)) continue;
-    seenNames.add(name);
+    //
+    // ⚠️ 但去重的 key 要**連 `meta` 一起**，不能只看名稱：同名不一定是同一個東西。
+    // 鄉鎮市區有 8 個重複名（中正區、信義區、中山區、東區…）散在不同縣市，只看名稱
+    // 的話搜「中正區」永遠只出得來一個，另一個**從此搜不到**，而且畫面上沒有任何
+    // 線索說明為什麼。被拆段的河流不受影響：它們的 `meta` 全是 undefined，
+    // 同名同 meta 仍然會被收斂成一筆（實測 world-rivers 的 24 個重複名全部如此）。
+    const dedupeKey = `${name} ${typeof props.meta === "string" ? props.meta : ""}`;
+    if (seenNames.has(dedupeKey)) continue;
+    seenNames.add(dedupeKey);
 
     hits.push({
       key: `${theme.id}:${layer.id}:${id}`,
@@ -213,10 +222,30 @@ async function featureHits(
         // 搜最常用的俗名「高鐵」只搜得到圖層本身，而圖層結果是不開卡的。
         // 「國道」「南迴」剛好是全名的子字串才沒暴露這件事。
         typeof props.shortName === "string" ? props.shortName : undefined,
+        // 上游原生就有英文名時一起收（目前只有鄉鎮市區界的 TOWNENG）。
+        // `contentKeywords` 只對 place／indigenous／species 這三種 detail 回傳別名，
+        // detail.type === "geo" 的圖層拿不到任何別名，這一行是它們唯一的來源。
+        typeof props.en === "string" ? props.en : undefined,
         typeof props.meta === "string" ? props.meta : undefined,
         ...contentKeywords(layer, id),
       ]),
     });
+    metaOf.set(`${theme.id}:${layer.id}:${id}`, typeof props.meta === "string" ? props.meta : undefined);
+  }
+
+  /**
+   * 同名的結果要把 `meta` 補進副標，否則畫面上是兩列**一模一樣**的字。
+   *
+   * 只對真的撞名的標題做，不是全部都加：鄉鎮市區界有 8 個重複名（中正區出現在
+   * 臺北市與基隆市、東區有四個），不補的話使用者看到兩列「中正區／鄉鎮市區界」
+   * 而無從選擇；但水庫的 `meta` 是「蓄水 62%・有效容量 …」這種長字串，沒撞名還
+   * 硬加只會把副標塞爆。
+   */
+  const titleCount = new Map<string, number>();
+  for (const hit of hits) titleCount.set(hit.title, (titleCount.get(hit.title) ?? 0) + 1);
+  for (const hit of hits) {
+    const meta = metaOf.get(hit.key);
+    if (meta && (titleCount.get(hit.title) ?? 0) > 1) hit.subtitle = `${hit.subtitle}・${meta}`;
   }
   return hits;
 }

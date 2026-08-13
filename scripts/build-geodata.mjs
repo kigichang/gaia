@@ -22,7 +22,12 @@ import { simplifyGeometry, slugify } from "./lib/simplify.mjs";
 import { parseNlscGml, ringArea } from "./lib/gml.mjs";
 import { parseReservoirKml, ringsCentroid } from "./lib/kml.mjs";
 import { readZip, readZipText } from "./lib/unzip.mjs";
-import { parseShpPolygons, parseDbf } from "./lib/shp.mjs";
+import {
+  parseShpPolygons,
+  parseDbf,
+  readShapefileZip,
+  ringsToPolygons,
+} from "./lib/shp.mjs";
 import { TM2_TAIWAN, tm2ToWgs84 } from "./lib/twd97.mjs";
 import {
   LICENSE as OSM_LICENSE,
@@ -170,6 +175,21 @@ const OFFSHORE_COUNTIES = new Set(["連江縣", "金門縣", "澎湖縣"]);
  * 用面形心（shoelace）而不是頂點平均：海岸線曲折的地方頂點特別密，頂點平均會被拉過去。
  * （實測這份資料兩種算法排出來的順序相同，選面形心只是不想依賴那個巧合。）
  */
+/**
+ * 單一環的形心緯度。`mainPartCentroidLatitude` 的內圈，另外抽出來給鄉鎮界用——
+ * 它要的是「整個縣市的面積加權形心」，不是「最大那一塊的形心」（見該處說明）。
+ */
+function ringCentroidLatitude(ring) {
+  let area2 = 0;
+  let cy = 0;
+  for (let i = 0, j = ring.length - 1; i < ring.length; j = i++) {
+    const cross = ring[j][0] * ring[i][1] - ring[i][0] * ring[j][1];
+    area2 += cross;
+    cy += (ring[j][1] + ring[i][1]) * cross;
+  }
+  return area2 ? cy / (3 * area2) : 0;
+}
+
 function mainPartCentroidLatitude(polygons) {
   const outer = polygons.reduce((best, p) => (ringArea(p[0]) > ringArea(best[0]) ? p : best))[0];
   let area2 = 0;
@@ -395,6 +415,107 @@ const SOURCES = [
         // 離島最後，清單才跟課本講臺灣的方式一致。
         .sort((a, b) => a._offshore - b._offshore || b._lat - a._lat)
         .map(({ _lat, _offshore, ...feature }) => feature),
+  },
+
+  {
+    id: "tw-townships",
+    label: "臺灣鄉鎮市區界",
+    /**
+     * 同一個發布單位、同一套實測界線，只是下一個行政層級（縣市界是資料集 7442）。
+     *
+     * ⚠️ **這一份只有 SHP，沒有 GML**——縣市界當初選 GML 是因為「SHP 要 ogr2ogr」，
+     * 但那是在 `lib/shp.mjs` 出現之前。現在直接用 `readShapefileZip()`（國家公園
+     * 與保護區在用的同一支），而且這份的 `.prj` 是 `GEOGCS["GCS_TWD97[2020]"…]`
+     * ——**是地理坐標（度）不是 TM2**，所以 `parsePrj()` 回 null、不需要投影轉換。
+     */
+    resolveUrl: () => resolveDataGovTwUrl(7441, /SHP/),
+    license: "政府資料開放授權條款第 1 版",
+    sourceLabel: "內政部國土測繪中心",
+    /**
+     * ⚠️ **zip 裡有兩份 shapefile**：要的是 `TOWN_MOI_<日期>.shp`（18 MB），另一份
+     * `Town_Majia_Sanhe.shp`（45 KB）是屏東瑪家鄉三和的特例圖。不指定 `pick` 的話
+     * `readShapefileZip()` 會因為「符合條件的 .shp 不等於 1」直接丟例外——這跟墾丁
+     * 那個「主要計畫圖 vs 細部計畫圖」是同一類陷阱，只是這次擋得住。
+     */
+    parse: async (res) =>
+      readShapefileZip(Buffer.from(await res.arrayBuffer()), (name) =>
+        /^TOWN_MOI_/i.test(name),
+      ),
+    /**
+     * 0.0012° ≈ 133 公尺。比縣市界那個 0.0008 粗，是**量體逼出來的**：368 個相鄰
+     * 多邊形、115 萬個頂點，簡化到後面會進入高原（實測 0.0008 是 677 KB、0.0012 是
+     * 509 KB，再放寬也降不了多少）。
+     *
+     * ⚠️ 產出約 **509 KB，會印「超過建議值 500 KB」的提醒——那是預期的，不是錯誤**。
+     * 硬上限 1 MB 還有一倍餘裕。要壓到 500 KB 以下只能犧牲鄉鎮數或讓形狀失真，
+     * 兩個都比多那 9 KB 糟。
+     */
+    tolerance: 0.0012,
+    digits: 4,
+    transform: ({ features }) => {
+      /** 縣市的代表緯度，用來把整個縣市的鄉鎮一起排到正確的南北位置。 */
+      const countyPolygons = new Map();
+      const rows = features.map((f) => {
+        const p = f.properties;
+        // 次像素的礁岩在簡化階段刪不掉，只能先濾（理由與判準同 tw-counties）。
+        // 實測濾掉之後 polygon 從 1034 降到 417，而 368 個鄉鎮一個都沒有消失。
+        const coordinates = ringsToPolygons(f.rings).filter(
+          (polygon) => Math.abs(ringArea(polygon[0])) >= MIN_ISLAND_AREA,
+        );
+        if (!countyPolygons.has(p.COUNTYNAME)) countyPolygons.set(p.COUNTYNAME, []);
+        countyPolygons.get(p.COUNTYNAME).push(...coordinates);
+        return {
+          type: "Feature",
+          geometry: { type: "MultiPolygon", coordinates },
+          properties: {
+            // ⚠️ id 用官方的 TOWNCODE，**不能用名稱 slugify**：鄉鎮名不唯一，
+            // 實測有 8 個重複名（中正區、信義區、中山區、東區…）散在不同縣市。
+            id: `tw-${p.TOWNCODE}`,
+            name: p.TOWNNAME,
+            county: p.COUNTYNAME,
+            /** 英文名進搜尋索引當別名（上游原生就有，不必自己拼） */
+            en: p.TOWNENG,
+            /** 清單次標。同名鄉鎮唯一能分辨的線索就是縣市 */
+            meta: p.COUNTYNAME,
+          },
+          _county: p.COUNTYNAME,
+          _code: p.TOWNCODE,
+        };
+      });
+
+      // ⚠️ feature 順序＝圖層抽屜可點清單的順序（LayerBrowseList 不排序）。
+      // 上游 SHP 的順序是任意的（實測第一筆是臺東縣成功鎮），排成跟縣市界一致的
+      // 「由北到南、離島整組最後」，同縣市內再依官方代碼，清單才讀得下去。
+      //
+      // ⚠️ 縣市的代表緯度要用**面積加權形心**，不能沿用縣市界那支
+      // `mainPartCentroidLatitude`（它取「最大的那一塊」）。理由是這裡的輸入是
+      // 鄉鎮而不是整個縣市：取最大塊會變成「取這個縣市面積最大的那個鄉鎮」，
+      // 於是桃園市被代表成復興區（山區、偏南）、臺北市被代表成士林區，實測會把
+      // 基隆↔臺北、桃園↔新竹市、彰化↔花蓮、臺南↔高雄四對的順序排反。
+      // 面積加權之後實測與 tw-counties.geojson 的縣市順序**逐字相同**——
+      // 兩個行政區圖層的清單順序不一致是會被看出來的。
+      const countyLat = new Map(
+        [...countyPolygons].map(([name, polygons]) => {
+          let area = 0;
+          let weighted = 0;
+          for (const polygon of polygons) {
+            const a = Math.abs(ringArea(polygon[0]));
+            area += a;
+            weighted += a * ringCentroidLatitude(polygon[0]);
+          }
+          return [name, area ? weighted / area : 0];
+        }),
+      );
+      return rows
+        .sort(
+          (a, b) =>
+            (OFFSHORE_COUNTIES.has(a._county) ? 1 : 0) -
+              (OFFSHORE_COUNTIES.has(b._county) ? 1 : 0) ||
+            countyLat.get(b._county) - countyLat.get(a._county) ||
+            a._code.localeCompare(b._code),
+        )
+        .map(({ _county, _code, ...feature }) => feature);
+    },
   },
   {
     id: "world-rivers",
