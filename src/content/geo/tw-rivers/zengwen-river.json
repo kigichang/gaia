@@ -1,0 +1,49 @@
+{
+  "id": "zengwen-river",
+  "collection": "tw-rivers",
+  "name": {
+    "zh": "曾文溪",
+    "en": "Zengwen River"
+  },
+  "subtitle": "中央管河川・西部",
+  "stats": [
+    {
+      "label": "幹流長度",
+      "value": "138.5 km"
+    },
+    {
+      "label": "流域面積",
+      "value": "1177 km²"
+    },
+    {
+      "label": "分類",
+      "value": "中央管河川"
+    }
+  ],
+  "facts": [
+    {
+      "label": "發源地",
+      "value": "阿里山山脈東水山"
+    },
+    {
+      "label": "出海口",
+      "value": "臺南市安南區與七股間注入臺灣海峽，鄰近台江國家公園"
+    },
+    {
+      "label": "流經",
+      "value": "嘉義縣、臺南市"
+    },
+    {
+      "label": "特色",
+      "value": "臺南第一大河，上游的曾文水庫是全臺有效容量最大的水庫"
+    }
+  ],
+  "curriculum": {
+    "unit": "臺灣的水文"
+  },
+  "schematic": true,
+  "sources": [
+    "維基百科",
+    "經濟部水利署"
+  ]
+}

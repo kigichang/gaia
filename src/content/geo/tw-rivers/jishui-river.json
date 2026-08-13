@@ -1,0 +1,49 @@
+{
+  "id": "jishui-river",
+  "collection": "tw-rivers",
+  "name": {
+    "zh": "急水溪",
+    "en": "Jishui River"
+  },
+  "subtitle": "中央管河川・西部",
+  "stats": [
+    {
+      "label": "幹流長度",
+      "value": "65 km"
+    },
+    {
+      "label": "流域面積",
+      "value": "379 km²"
+    },
+    {
+      "label": "分類",
+      "value": "中央管河川"
+    }
+  ],
+  "facts": [
+    {
+      "label": "發源地",
+      "value": "臺南市白河丘陵"
+    },
+    {
+      "label": "出海口",
+      "value": "臺南市北門注入臺灣海峽"
+    },
+    {
+      "label": "流經",
+      "value": "臺南市"
+    },
+    {
+      "label": "特色",
+      "value": "流域內的白河水庫是灌溉嘉南平原北段的重要水源"
+    }
+  ],
+  "curriculum": {
+    "unit": "臺灣的水文"
+  },
+  "schematic": true,
+  "sources": [
+    "維基百科",
+    "經濟部水利署"
+  ]
+}

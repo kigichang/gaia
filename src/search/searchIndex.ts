@@ -174,6 +174,12 @@ async function featureHits(
       featureId: id,
       haystack: push([
         name,
+        // 沿線標註用的短名也要能搜。這不是「順便多加一個欄位」：`shortName` 是
+        // 這一層在地圖上實際印出來的字（「高鐵」「國道1」），而全名是
+        // 「臺灣高速鐵路」——使用者看到什麼就會搜什麼，只索引 `name` 的話，
+        // 搜最常用的俗名「高鐵」只搜得到圖層本身，而圖層結果是不開卡的。
+        // 「國道」「南迴」剛好是全名的子字串才沒暴露這件事。
+        typeof props.shortName === "string" ? props.shortName : undefined,
         typeof props.meta === "string" ? props.meta : undefined,
         ...contentKeywords(layer, id),
       ]),

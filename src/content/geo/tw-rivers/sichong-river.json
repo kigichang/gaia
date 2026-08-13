@@ -1,0 +1,49 @@
+{
+  "id": "sichong-river",
+  "collection": "tw-rivers",
+  "name": {
+    "zh": "四重溪",
+    "en": "Sichong River"
+  },
+  "subtitle": "中央管河川・西部",
+  "stats": [
+    {
+      "label": "幹流長度",
+      "value": "31.9 km"
+    },
+    {
+      "label": "流域面積",
+      "value": "125 km²"
+    },
+    {
+      "label": "分類",
+      "value": "中央管河川"
+    }
+  ],
+  "facts": [
+    {
+      "label": "發源地",
+      "value": "屏東縣獅子鄉里龍山"
+    },
+    {
+      "label": "出海口",
+      "value": "屏東縣車城鄉射寮注入臺灣海峽"
+    },
+    {
+      "label": "流經",
+      "value": "屏東縣"
+    },
+    {
+      "label": "特色",
+      "value": "沿岸的四重溪溫泉是恆春半島著名的溫泉區"
+    }
+  ],
+  "curriculum": {
+    "unit": "臺灣的水文"
+  },
+  "schematic": true,
+  "sources": [
+    "維基百科",
+    "經濟部水利署"
+  ]
+}

@@ -1,0 +1,43 @@
+{
+  "id": "dajia-basin",
+  "collection": "tw-basins",
+  "name": {
+    "zh": "大甲溪流域",
+    "en": "Dajia River Basin"
+  },
+  "subtitle": "中央管河川・西部",
+  "stats": [
+    {
+      "label": "流域面積",
+      "value": "1236 km²"
+    },
+    {
+      "label": "分類",
+      "value": "中央管河川"
+    },
+    {
+      "label": "對應河川",
+      "value": "大甲溪"
+    }
+  ],
+  "facts": [
+    {
+      "label": "涵蓋縣市",
+      "value": "臺中市"
+    },
+    {
+      "label": "分水嶺",
+      "value": "流域的邊界就是分水嶺——雨水落在邊界的哪一側，決定它會匯入這條河還是隔壁的河"
+    },
+    {
+      "label": "河川小檔案",
+      "value": "落差大、水力豐富，上游沿線建有德基、谷關等多座水庫與發電廠"
+    }
+  ],
+  "curriculum": {
+    "unit": "臺灣的水文"
+  },
+  "sources": [
+    "經濟部水利署"
+  ]
+}

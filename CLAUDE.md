@@ -58,12 +58,15 @@ Node ≥ 22.12（vite 8 要求）。開發機與 CI 都用 Node 24。
 | 臺灣縣市界線 | `data.gov.tw/api/v2/rest/dataset/7442` → TGOS 的 GML zip（內政部國土測繪中心） | **只在建置期呼叫**，政府資料開放授權條款第 1 版 |
 | 世界行政區／河流幾何 | `raw.githubusercontent.com/nvkelso/natural-earth-vector`（Natural Earth） | **只在建置期呼叫**，public domain |
 | 地震目錄 | `earthquake.usgs.gov/fdsnws/event/1/query`（USGS） | **只在建置期呼叫**，免金鑰、`ACAO: *` |
+| 交通軸線幾何（高鐵／國道／臺鐵幹線） | `overpass-api.de/api/interpreter`（OpenStreetMap Overpass） | **只在建置期呼叫**，ODbL 1.0。⚠️ **沒有 User-Agent 一律回 HTTP 406**，見下 |
 | 水庫基本資料／水庫水情 | `opendata.wra.gov.tw/api/v2/…?format=CSV`（經濟部水利署） | **只在建置期呼叫**。⚠️ **沒有 CORS 標頭**（瀏覽器一定抓不到），而且掛著 bot 防護，見下 |
 | 水庫蓄水範圍 | `gic.wra.gov.tw/gis/gic/API/Google/DownLoad.aspx?fname=ressub&filetype=KML` | **只在建置期呼叫**，約 38 MB 的 KML，只用來算形心 |
+| 河川流域範圍圖 | `gic.wra.gov.tw/gis/gic/API/Google/DownLoad.aspx?fname=BASIN&filetype=SHP` | **只在建置期呼叫**，SHP（面），座標系統 TWD97/TM2 zone 121，見下 |
+| 河川長度／流域面積 | `www.wra.gov.tw/cp.aspx?n=3163&dn=3164`（經濟部水利署） | 沒有開放資料 API，人工抄錄進 `scripts/lib/rivers.mjs` 的 `RIVER_FACTS` |
 | 國家公園範圍 | `data.gov.tw/api/v2/rest/dataset/174421` →（索引 CSV）→ `tgos.tw` 各處的 SHP／KML；陽明山另走 `ogcmap.tgos.tw/…/Ymsnp3PlanBorder/SimpleWFS.aspx` | **只在建置期呼叫**，內政部國家公園署。座標是 **TWD97 TM2 公尺**，見下 |
 | 台江國家公園範圍 | `data.depositar.io`（中研院研究資料寄存所） | **只在建置期呼叫**。官方那兩份包在 7z 裡，見下；**這台主機只講 HTTP/2** |
 | 自然保留區／野生動物保護區／自然保護區 | `data.moa.gov.tw/api/FileToJson.ashx?DataId=157｜162｜350` → SHP zip | **只在建置期呼叫**，農業部林業及自然保育署 |
-| 基本地理事實（山脈走向、主峰高度、河川分界…） | `zh.wikipedia.org` 各條目 | **程式完全不呼叫**，人工查閱後寫進 `src/content/`。次級來源，用法見「內容撰寫規範」，CC BY-SA |
+| 基本地理事實（山脈走向、主峰高度、河川路徑、河川分界…） | `zh.wikipedia.org` 各條目 | **程式完全不呼叫**，人工查閱後寫進 `src/content/` 與 `public/data/geo-manual/`。次級來源，用法見「內容撰寫規範」，CC BY-SA |
 
 ### ⚠️ NLSC 的路徑順序陷阱
 
@@ -168,7 +171,74 @@ NLSC WMTS 是 `{z}/{y}/{x}`——**y 在 x 前面**，跟絕大多數 XYZ 服務
 兩件事都寫在圖層說明裡。各類的數量寫死在 `CONSERVATION_DATASETS` 的 `expected`，
 對不上就讓建置失敗——新公告一處保留區是要順手更新圖層說明的事件。
 
+### 河川路徑跟五大山脈一樣是手繪教學示意
+
+臺灣主要河川（24 條中央管河川 + 淡水河、磺溪共 26 條，水利署官方定義）的**路徑**（`public/data/geo-manual/tw-rivers.geojson`）是手繪教學示意幾何，走向依維基百科各河川條目描繪——跟五大山脈的稜線（見「已知資料限制」）是同一套做法、同一個理由：沒有一份免費、精確、逐條河川完整的官方向量圖資可以直接拿來用。長度／流域面積仍是水利署官網〈河川長度〉頁面的官方數字（人工抄進 `scripts/lib/rivers.mjs` 的 `RIVER_FACTS`），只有幾何本身是示意，圖層與每個河川的內容檔都標了 `schematic: true`，UI 會顯示警語。
+
+#### ⚠️ 為什麼不繼續用水利署的 RIVERLIN SHP
+
+早期版本改用過水利地理資訊服務平台「河川(支流)」SHP（`RIVERLIN`，2000–2008 年數化），幾何抓來即用，但踩到一個結構性的坑，最終放棄：**RIVERLIN 是依「名稱字串」分筆，不是依「實際河川」分筆**。同一個河川名稱在全國各地被獨立當成地名重複使用（例如「頭前溪」在新竹是知名大河，但其他鄉鎮的小溝渠也叫這個名字），這些互不相連、有時相隔上百公里的線段全部塞進同一筆 record 的 parts 裡——「北港溪」一筆記錄的所有 parts 疊起來，bounding box 對角線量到超過 200 公里，而北港溪本身只有 82 公里長。直接把一筆 record 的幾何當成一條河川畫出來，會畫出一條從新竹跳到南投再跳到屏東的假河川，而且沒有任何錯誤訊息。
+
+當時用 bounding-box 空間分群（`clusterParts()`）挑出最長的一群當作主要河川，但即使做了這一步，仍有約 11 條河川（烏溪、高屏溪、淡水河、濁水溪、中港溪、後龍溪、大安溪、朴子溪、急水溪、鹽水溪、阿公店溪）的圖徵只涵蓋官方幹流長度的 10–50%——因為這幾條河的官方幹流長度是沿著**上游改稱其他歷史／支流名稱的河段**去量的（例如淡水河的 158.7 公里實際上是沿大漢溪／新店溪這類另外命名的支流量出來的），不是簡單的名稱別名能自動接上。這是免費資料本身的完整度限制，不是分群邏輯的 bug，而人工逐條研究上游別名鏈是需要跨資料源驗證的水文研究工作，範圍遠超過「畫一張教學地圖」。
+
+**現在的做法是不再假裝自動化能解決這個問題**：既然 11/26 條河已經需要人工介入才能呈現完整路徑，不如全部 26 條都用同一套人工描繪流程，換來的是呈現一致（不會有「有些河川是精確測量、有些是殘缺片段」這種使用者看不出來的品質落差）。`scripts/lib/shp.mjs` 的 `parseShpPolylines()`／`clusterParts()`／`partLength()` 已經隨這次改動移除；`parseShpPolygons()`／`parseDbf()` 則保留下來，**專供 `tw-basins` 使用**——同一個檔案裡另外那組 `readShapefileZip()`（國家公園與保護區用）慣例不同，見該檔案中段的分隔說明，不要混用。
+
+### 流域分區：河川的姊妹圖層，這次真的「不共用幾何」
+
+「流域分區」（`tw-basins`，面）是河川的姊妹圖層，回答的問題不一樣——不是「這條河流過哪裡」，是「這片山坡的雨水會流進哪條河」。**幾何完全是另一份資料**（水利地理資訊服務平台的「河川流域範圍圖」，BASIN，面），不是從河川線算出來的：集水區範圍需要真正的水文測繪（分水嶺、地表逕流方向），不是幾何運算能從一條線推出面。
+
+**⚠️ 這是水系群組裡唯一還會抓取並剖析 SHP 的圖層**（`tw-rivers` 已經改用手繪路徑，見上；站上另一個吃 SHP 的是國家公園與保護區，走的是另一組剖析器，見上一節）。這份 SHP 的 `.prj` 寫的是 `TWD97_TM2_zone_121`（EPSG:3826）——**投影坐標**，單位是公尺，不是縣市界／水庫那份 TWD97 地理坐標（EPSG:3824，度，可以直接當 WGS84 用）。`scripts/lib/twd97.mjs` 因此實作了反算橫麥卡托（inverse Transverse Mercator，GRS80 橢球），已用 round-trip 測試驗證（正算已知座標再反算回來，四個測試點誤差在 1e-8 度以下），並用 BASIN 自己的 bbox 四角反算出北緯 21.9°–25.3°、東經 120.0°–122.0° 做過合理性檢查——跟臺灣本島＋周邊離島的實際範圍相符。**升級或更換這份圖資時要重新用同一組測試點驗證投影公式沒有錯位**（座標系統選錯不會報錯，只會讓流域全部畫到海裡）。
+
+**真正共用的是「這個官方河川叫什麼名字、對應本站哪個 id」這件事**，寫在 `scripts/lib/rivers.mjs` 裡：`tw-basins` 的 id 對照表（`BASIN_IDS`）直接從 `RIVER_IDS` 衍生（把 `-river` 尾綴換成 `-basin`，不是另外手動輸入 26 筆），長度／流域面積的官方數字（`RIVER_FACTS`）也是同一份。這才是使用者問「能不能跟河川資料合併」時真正該合併的部分。
+
+**⚠️ 兩層現在是「線是手繪、面是實測」的不對稱組合，不要被搞混。** `tw-rivers`（線）是依維基百科描繪的教學示意幾何、標了 `schematic: true`；`tw-basins`（面）是水利署 BASIN SHP 的實測資料、沒有 `schematic` 標記，143 筆 record 裡 26 個官方河川名稱各自剛好對到一筆**單一環、無孔洞**的多邊形（`build-geodata.mjs` 的 transform 會在遇到多環時直接丟例外，不猜哪個環是洞），面積跟官方數字的誤差多在 10% 以內（濁水溪 3167.5 vs 官方 3157 km²、淡水河 2733.9 vs 2726、卑南溪 1605.2 vs 1603）。同一組 26 條河川，兩種完全不同等級的幾何精確度共存在同一個「水系」群組底下——這是刻意接受的取捨（面精確度足夠支撐「這片山坡的水流進哪條河」的教學問題，線的教學問題「這條河大致怎麼流」用示意就夠），但新增功能或說明文案時不要假設兩者精確度一致。
+
+**⚠️ 兩層的 id 刻意不共用**（`gaoping-river` vs `gaoping-basin`），即使兩者指的是同一條河。這不是隨手加的尾綴：「主要河川」跟「流域分區」是兩個各自獨立可勾選的圖層，不是像五大山脈→主峰那種父子 `attach` 關係，如果共用同一個 id，選取其中一層會不會意外連動強調另一層（透過 `highlightIds` 的 Set 比對）沒有測過、行為未定義。用不同尾綴把兩個 id 命名空間分開，讓行為可預測——跟 `RIVER_IDS` 當初為了不跟水庫 id 撞名而加 `-river` 尾綴，是同一個理由。
+
+顏色沿用 `hydrology`（水系藍），跟河川線同色：面／線是已經一起驗證過的色票（見「顏色」一節的線／面色票），這裡刻意不挑另一個顏色——半透明面跟細線是不同的視覺通道，同色反而強化「這是同一個水系家族」的語意，跟縣市界橘、山脈洋紅維持區隔。
+
 ---
+
+### 交通軸線為什麼只能走 OpenStreetMap
+
+這是全站唯一一個資料來自 OSM 的圖層。其他圖層的順序都是「先找官方開放資料，找不到才手繪」，交通軸線兩條路都走不通：
+
+- **Natural Earth**：10m 的 `roads`／`railroads` 確實涵蓋臺灣（實測臺灣範圍內 79 條路），但**每一條的 `name` 都是 `null`**，而且被切成互不相連的碎段。一個「點了要開詳情卡」的圖層，圖徵沒有名字就等於不能用。
+- **交通部 TDX**：有完整的路線圖資，但**要申請 API key**，直接撞上硬性禁止事項 #1。政府資料開放平臺上的公路圖資多半是 SHP，也沒有「國道一號是哪一條線」這種路線級的幾何。
+- **手繪**（比照五大山脈）在這裡特別不誠實：山脈的走向本來就沒有官方界線圖資，而高鐵與國道的線位是精確且公開的事實，畫成示意線等於把可查證的東西降級。
+
+OSM 免金鑰、路線關聯原生帶中文名，是唯一同時滿足「精確」「有名字」「不需要金鑰」的來源。授權 ODbL 1.0 要求標示「© OpenStreetMap 貢獻者」，而本站的世界底圖 OpenFreeMap 本來就是 OSM 衍生的，這個署名義務不是新增的。
+
+#### ⚠️ 沒有 User-Agent 一律回 HTTP 406
+
+Overpass 對沒有識別的 client 直接回 **406**（實測 Node 預設 UA 每一次都被擋，curl 卻正常——很容易誤判成程式邏輯錯誤）。406 不是暫時性錯誤，退避重試永遠救不回來。`lib/overpass.mjs` 因此固定帶 UA，並準備了**三個端點依序輪替**：主站流量最大、429 與 504 是日常，鏡像站反而穩定，所以失敗就換下一台而不是死等同一台。
+
+#### ⚠️ way 一定要先串接再簡化
+
+Overpass 回來的是 OSM 的 way，一條國道會被切成好幾百段（實測國道三號 **716 段**）。串接不是為了省檔案，是兩件事的前提：
+
+- **沿線標註**：`symbol-placement: line` 是**逐一 LineString** 放置的。幾百段各長數百公尺的碎線，要嘛每段都擠一個標註、要嘛因為線段太短而一個都放不出來。
+- **簡化**：Douglas–Peucker 永遠保留每條線的頭尾兩點，對著 716 條六個點的碎線做簡化幾乎砍不掉任何東西。
+
+`stitchWays()` 用貪婪串接：路線上有匝道與雙線區間，本來就不保證是單一連通路徑，串不起來的段落各自留成獨立的線。**兩個方向都要走**——起點 way 可能落在路線中段，只往一個方向接的話起點以前那半條路線會全部散成碎段。
+
+⚠️ **有三件事會讓幾何「畫得出來但長度是假的」，症狀完全一樣**——線照樣渲染、標註照樣放，只有公里數不對，所以**唯一的核對方式是看建置日誌印出來的公里數對不對得上官方數字**（高鐵 351／官方約 350，國道一號 375／官方 374.3，國道三號 432／官方 431.5）。只有單一關聯的軸線（高鐵、三條國道）不會踩到後兩件，所以**驗證一定要看臺鐵那三條**：
+
+1. **往前接與往後接的「要不要反轉」條件是相反的**，共用同一個條件式會接出鋸齒狀的幾何：長度膨脹、大部分 way 接不起來（實測國道三號 432 km 變成 **560 km**、716 段只串成 358 條）。
+2. **同一條 way 會出現在多個關聯裡。** 西部幹線由四個關聯併成，而海岸線的關聯把跟縱貫線共用的路段整段收了進來（實測 **121 條重複、99.5 km**）；同一個關聯自己也會重複收同一條 way。不去重的話，貪婪串接會沿著 way 走出去再沿它的分身走回來。`stitchWays()` 因此**在入口就去重**，key 是「正向與反向取較小者」——同一條軌道反過來寫仍是同一條實體。
+3. **雙軌區間的兩條軌道都是關聯成員。** 這個去重解不掉（那是兩條不同的 way）：走到兩軌交會處時，「下一段」的候選裡就有一條是原路折返的另一條軌道。所以接的時候要在岔路上**挑轉角最小的**，並拒絕超過 `MAX_TURN`（120°）的轉角——寧可斷成兩條獨立的線，也不要接出折返。
+
+第 2、3 點合起來讓西部幹線從 **839.0 km 降到 730.7 km、自我折返的線從 5 條變 0 條**，東部幹線也少掉 1 條折返；四條單一關聯的軸線則**完全沒有變動**（條數與公里數逐位相同），這是改動串接邏輯時最好用的回歸判準。
+
+ℹ️ 西部幹線的 730.7 km 仍然明顯大於官方營運里程（縱貫線 404.5 ＋ 海線 91.7 ＋ 屏東線 61.9 ≈ 558 km），這是**對的**：雙軌區間的兩條軌道在 OSM 是兩條 way，兩條都在關聯裡，所以這個數字是「軌道公里」不是「路線公里」。兩軌相距約 10 公尺，在這個圖層看得到的縮放尺度下就是同一條走廊，不用去合併。
+
+#### 選擇器必須剛好選中一個關聯
+
+OSM 是眾人編輯的資料庫，關聯被拆開、改名或重建都可能發生，所以每個選擇器都比照 `resolveDataGovTwUrl()` **選中數量不等於 1 就讓建置失敗**。
+
+而且**每個選擇器都刻意只取單一方向**（北向／北上／順行）：OSM 把上下行分成兩個關聯，兩個都抓會畫出相距數十公尺的雙線——在教學會用的縮放尺度下那只是一條變粗、邊緣毛躁的線，還讓檔案大一倍。選錯方向不影響教學（走廊位置相同），但**必須固定一個**，否則每次重抓的產物都不一樣。
+
+幾條臺鐵幹線在 OSM 裡是依「線名」拆開的（縱貫線、臺中線、海岸線、屏東線各一個關聯），但課本講的是「西部幹線」這一整條，所以註冊表用 `parts` 把它們併成一個圖徵。
 
 ## 硬性禁止事項
 
@@ -215,6 +285,9 @@ ID 常數定義在 `src/map/layers/*.ts`，**一律 import 常數，不要寫死
 | `latitude-lines-line` / `latitude-lines-label` | line + symbol |
 | `quakes-points` | circle |
 | `tw-reservoirs-points` | circle（顏色是**依蓄水率分級的表達式**，不是單一色，見下） |
+| `tw-transport-line` / `tw-transport-label` | line + symbol（標註用 `shortName`，不是 `name`） |
+| `tw-rivers-line` / `tw-rivers-label` | line + symbol |
+| `tw-basins-fill` / `tw-basins-outline` | fill + line |
 
 `dem` 與 `dem-terrain` 是兩個來源但都指向同一個 shared DEM protocol：maplibre 會警告 hillshade 與 terrain 共用來源會降低算繪品質，拆開可消除警告，而底層圖磚快取仍然共用、不會重複下載。
 
@@ -247,7 +320,7 @@ maplibre-contour 把 worker 以 Blob URL 內嵌，**不需要額外部署 worker
 
 | 主題 | 路由 | 內容 |
 |---|---|---|
-| 臺灣地理 | `/theme/taiwan` | 行政區、地形、水系（含水庫即時水情）、人文（原住民族）、植被生態（特有種、國家公園與保護區）、農業物產 |
+| 臺灣地理 | `/theme/taiwan` | 行政區、地形、水系（含水庫即時水情、河川流域分區）、人文（原住民族、交通軸線）、植被生態（特有種、國家公園與保護區）、農業物產 |
 | 世界地理 | `/theme/world` | 世界重要城市、國界與大洲、地形水系、人文專題 |
 | 全球地理形貌 | `/theme/global` | 緯度參考線、氣候與生物群系、洋流、板塊與地震帶 |
 
@@ -373,7 +446,18 @@ fill   → `${instanceId}-fill` + `${instanceId}-outline`
 
 `src/map/thematicColors.ts` 是唯一的顏色來源。策略是**三組獨立色票**（`POINT` / `LINE` / `FILL`），各自**組內** all-pairs 驗證即可——形狀本身就在區辨（18% 透明度的面染跟 6px 圓點是不同的視覺通道），跨幾何的配對不需要驗證。每組再用 `MAX_ACTIVE_BY_KIND`（circle 4 / line 3 / fill 2）封頂，需求才維持在可解範圍。
 
-已驗證：地形景點藍 `#2a78d6` + 原住民族紅 `#e34948`；物種三色青／黃／紫；線／面**四色** 水系藍 `#2a78d6` + 行政區橘 `#d95926` + 山脈洋紅 `#c23f8f` + 保護區紫 `#7538ae`（`--pairs all`，CVD 最差 ΔE 9.2、一般視覺最差 ΔE 16.6）。
+已驗證：地形景點藍 `#2a78d6` + 原住民族紅 `#e34948`；物種三色青／黃／紫；線／面**五色** 水系藍 `#2a78d6` + 行政區橘 `#d95926` + 山脈洋紅 `#c23f8f` + 保護區紫 `#7538ae` + 交通翠綠 `#2da26d`：
+
+```bash
+node scripts/validate_palette.js "#2a78d6,#d95926,#c23f8f,#7538ae,#2da26d" --pairs all --mode light|dark
+# → 兩模式五項檢查全數 PASS，唯一一項 WARN 是深色模式下保護區紫的 2.43:1（見下）
+# → CVD 最差 ΔE 8.3（翠綠↔洋紅，deutan）、一般視覺最差 ΔE 16.6（保護區紫↔洋紅）
+```
+
+⚠️ **保護區紫與交通翠綠是在兩條分支上各自加入的**，各自只跟前三色驗過（都寫成
+「四色」）。合併之後才第一次以**五色**一起驗證——結論是沒有新的衝突：最差的那兩
+對仍然是各自原本就記錄的那兩對，紫↔綠這一對（兩邊都沒驗過的組合）比它們都寬鬆。
+**下次再加第六個線／面顏色時，要驗的是完整的五色清單，不是「前三色 + 新色」。**
 
 #### ⚠️ 保護區紫是唯一一個「帶著 WARN 上線」的顏色
 
@@ -392,6 +476,19 @@ fill   → `${instanceId}-fill` + `${instanceId}-outline`
 
 **要改這個顏色，請先把上面兩族候選在 NLSC 底圖的山區實際疊一次再說**，不要只看驗證
 器的輸出——這件事驗證器測不出來。
+
+#### 交通翠綠 `#2da26d` 是掃出來的，不是挑出來的
+
+前三色已經把色相空間佔掉大半，第四色的可行區間非常窄。用 OKLCH 掃過整個色域（色相每 2.5°、L 0.44–0.78、C 0.10–0.30，逐點跑明暗兩模式的 all-pairs），**零 WARN 的候選只剩 21 個**，集中在色相 150–162° 的一段綠，外加兩個彩度低到當地圖線太虛的淡紫。直覺會先想到的選擇全部不合格：紫 `#7a3fa6`／`#8335c3` 在 dark 模式對比只有 2.56–2.77:1（WARN，與當初 relief 拒絕紫色**同一個**原因）、青綠 `#00857a` 直接 FAIL、綠 `#009e73` 對洋紅的 deutan ΔE 只有 6.2。
+
+**要換色請重跑掃描，不要憑感覺往旁邊挪**——這一格四周就是 WARN。
+
+綠色在 relief 被禁、在這裡可以，理由是處境相反：山脈線整條走在 NLSC 的綠色山區底色上，交通軸線絕大部分走西部平原（NLSC 是白／灰底），而且這一層的教學重點正是「路線**繞開**山地」。
+
+⚠️ 順帶一提，保護區紫當初排除的候選之一正是 h 152–160 的綠（`#5aa173`），理由是
+「保護區有一半以上落在山區，綠色會被 NLSC 的山區底色吃掉」。那跟這裡選翠綠**不衝突**：
+兩層的地理分佈相反（保護區在山上、交通軸線在平原），所以同一個色相對前者不行、對
+後者可以。要動這兩個顏色任一個，都要先想清楚它實際會疊在什麼底色上。
 
 行政區橘刻意用 `#d95926` 而不是色票的 light step `#eb6834`：後者在 **dark 模式的亮度帶檢查會 FAIL**。地圖是 WebGL 畫布只能有一組固定色，所以必須挑「兩個模式都過」的值。
 
@@ -560,10 +657,27 @@ maplibre 的四個角落容器是 map container 內的 `position: absolute; z-in
   ⚠️ 這條規則同時把 `quakes` 擋在外面，這是刻意的：那份 geojson 有 **400 KB**、2831 筆**沒有名稱**的點，它是密度場不是清單。索引它只會多抓一份大檔案再產生 2831 筆搜不到的項目。
 - **圖層本身**：所有 ready 圖層的名稱（搜「河流」要找得到「世界主要河流」這個圖層）。`planned` 的不列，因為勾不動。
 - 沒有 `properties.id` 或沒有 `properties.name` 的圖徵一律跳過——前者選不了、後者搜不到。
+- 比對的字串是 `name` + `shortName` + `meta` + 內容檔別名。**`shortName` 一定要在裡面**：它是沿線標註在地圖上實際印出來的字（「高鐵」「國道1」），使用者看到什麼就會搜什麼。少了它，搜最常用的俗名「高鐵」只會搜到圖層本身，而圖層結果是不開卡的——「國道」「南迴」剛好是全名的子字串，所以這個洞不會在那兩個字上暴露出來。
 
-索引是 **lazy 的**：搜尋框第一次獲得焦點才 `buildSearchIndex()`，因為它要抓 `tw-counties.geojson`(192 KB)、`world-rivers.geojson`(146 KB)、`tw-protected-areas.geojson`(183 KB) 與水庫那兩份。一個班 30 個學生同時開站時，這半 MB 不該是每個人無條件付的成本。資料一律走 `resolveLayerData()`，與圖層顯示共用同一份快取，不會抓兩次。
+索引是 **lazy 的**：搜尋框第一次獲得焦點才 `buildSearchIndex()`。目前它會抓九份檔案，合計約 **820 KB**：
 
-**保護區那一層值得這 183 KB**：53 個圖徵全部有名字，而「玉山國家公園」「大武山自然保留區」正是學生會直接打進搜尋框的字串——這跟 `quakes` 那 400 KB／2831 筆**沒有名稱**的點是相反的案例。
+| 檔案 | 大小 |
+|---|---|
+| `tw-basins.geojson` | 219 KB |
+| `tw-counties.geojson` | 192 KB |
+| `tw-protected-areas.geojson` | 182 KB |
+| `world-rivers.geojson` | 146 KB |
+| `tw-transport.geojson` | 34 KB |
+| `tw-reservoirs.geojson` + `reservoirs-live.json` | 20 + 7 KB |
+| `tw-rivers.geojson` | 13 KB |
+| `tw-county-halls.geojson` | 7 KB |
+
+一個班 30 個學生同時開站時，這 800 多 KB 不該是每個人無條件付的成本。資料一律走 `resolveLayerData()`，與圖層顯示共用同一份快取，不會抓兩次。
+
+⚠️ **這張表上的數字要跟著 `public/data/` 一起維護**，不要照抄舊版：合併兩條分支時發現兩邊各自記的清單都已經過期（其中一邊還把 `tw-counties` 寫成 35 KB，實際是 192 KB）。要重新量就跑
+`for f in public/data/geo/*.geojson; do echo "$(basename $f) $(( $(wc -c < $f) / 1024 ))KB"; done`。
+
+**保護區那 182 KB 與流域那 219 KB 是值得的**：兩層的圖徵全部有名字，而「玉山國家公園」「大武山自然保留區」「濁水溪流域」正是學生會直接打進搜尋框的字串——這跟 `quakes` 那 402 KB／2831 筆**沒有名稱**的點是相反的案例（所以 `quakes` 沒有 `browse`，不進索引）。
 
 ### 選了一筆結果之後（`ThemeMapPage` 的 `pendingHit` 狀態機）
 
@@ -890,8 +1004,56 @@ m.isSourceLoaded('contour-source')
     - ⚠️ **一定要在 NLSC 通用電子地圖底圖上看**，而且要看山區（玉山、太魯閣、大武山）：
       這一層的顏色就是為了在那片綠色地形上還讀得出來才選紫的，換色前先在這個視角疊一次
     - 切底圖之後重驗一次
-    - ⚠️ 搜尋索引會多抓 `tw-protected-areas.geojson`(183 KB)，驗第 12 項的 Network
+    - ⚠️ 搜尋索引會多抓 `tw-protected-areas.geojson`(182 KB)，驗第 12 項的 Network
       期望值時要算進去
+17. **主要交通軸線**（`/theme/taiwan`，勾「主要交通軸線」）：
+    ```js
+    const m = window.__gaiaMaps.at(-1);
+    m.jumpTo({ center: [120.9, 23.6], zoom: 7.3 });
+    // 7 條軸線都要出現（distinct id，不是 feature 數——一條軸線是 MultiLineString）
+    [...new Set(m.queryRenderedFeatures({ layers: ['tw-transport-line'] }).map(f => f.properties.id))]
+    // 沿線標註用 shortName（「國道1」），用 name 會因為字串太長而放置數歸零
+    m.queryRenderedFeatures({ layers: ['tw-transport-label'] }).map(f => f.properties.shortName)
+    ```
+    - 標註**數量要實測**，不能只確認圖層存在（見「沿線標註很脆弱」）。實測值（跟視窗大小相依）：
+      全島視角 `jumpTo([120.9,23.6], 7.3)` 在 1500×723 下是 **4** 個；
+      `jumpTo([121.6,24.75], 9.5)` 在 1440×703 下是 **10** 個、涵蓋 6 條軸線。
+      ⚠️ 重點是**同一條軸線不會在同一段路上重複冒出來**——`spacing` 是 400 就是為了這件事，
+      臺鐵幹線在 OSM 裡是十幾條分段折線，用預設的 120 會讓「西部幹線」四個字連續出現一整排
+    - 點線或點標註都要開卡（`geoHitLayerIds` 對有標註的線會回傳兩層）
+    - 抽屜可點清單 7 筆，順序是高鐵 → 國道1／3／5 → 西部幹線 → 東部幹線 → 南迴線
+    - 搜「高鐵」「國道」「南迴」都要找得到；跨主題搜尋會多抓 `tw-transport.geojson`
+    - 切底圖之後重驗一次
+18. **主要河川**（`/theme/taiwan`，勾「主要河川」）：
+    ```js
+    const m = window.__gaiaMaps.at(-1);
+    m.jumpTo({ center: [120.9, 23.6], zoom: 7.3 });
+    new Set(m.queryRenderedFeatures({ layers: ['tw-rivers-line'] }).map(f => f.properties.id)).size  // 26
+    m.getPaintProperty('tw-rivers-line', 'line-color')   // 水系藍 #2a78d6（colorRole: hydrology）
+    ```
+    - 點濁水溪（或任一河川）→ 卡片有幹流長度／流域面積／分類、發源地、出海口
+    - 卡片要顯示「教學示意圖，非精確界線」警語（`.feature-schematic`），比照五大山脈：
+      `document.querySelector('.feature-schematic')` 有內容
+    - 圖層抽屜的這一列要有 `（教學示意圖，非精確界線）` 附註（`LayerPanel` 的 `.layer-schematic`）
+    - 圖例的這一項要有 `（示意）` 徽章（`MapLegend` 的 `.layer-schematic`）
+    - 切底圖之後重驗一次存在與排序（見上面關鍵坑二那組指令，把 `tw-rivers-line` 也加進 `at()` 檢查）
+    - ⚠️ 這份圖資是**手繪教學示意路徑**，不是量測資料（見 CLAUDE.md「河川路徑」那節）：
+      改動 `public/data/geo-manual/tw-rivers.geojson` 之後不需要重跑 `build:geodata`（該腳本
+      永遠不碰 `geo-manual/`），但要重新確認 26 條河川的 `id` 沒有跟內容檔（`src/content/geo/tw-rivers/`）
+      或 `scripts/lib/rivers.mjs` 的 `RIVER_IDS` 對不上——`npm run validate` 會抓交叉檢查
+19. **流域分區**（`/theme/taiwan`，勾「流域分區」，可以跟「主要河川」同時勾）：
+    ```js
+    const m = window.__gaiaMaps.at(-1);
+    m.jumpTo({ center: [120.9, 23.6], zoom: 7.3 });
+    new Set(m.queryRenderedFeatures({ layers: ['tw-basins-fill'] }).map(f => f.properties.id)).size  // 26
+    m.getPaintProperty('tw-basins-fill', 'fill-color')   // 水系藍 #2a78d6，跟河川線同色（刻意的，見說明）
+    ```
+    - 點任一流域的面 → 卡片有流域面積／分類／對應河川、涵蓋縣市
+    - 同時勾兩層時，點擊仲裁要照「小目標優先、其餘照算繪順序」：圓點 > 線 > 面，
+      面被同座標的河川線蓋住是正常的，不是 bug
+    - ⚠️ `tw-basins` 跟 `tw-rivers` 的 id **刻意不共用**（`gaoping-basin` vs `gaoping-river`）：
+      選一條河的線，不應該連動強調它的流域面（反之亦然）——這是特意分開 id 命名空間的結果，
+      不要為了「兩個都亮」去改成共用 id，那個行為沒有測過
 
 ### ⚠️ 用瀏覽器自動化點 UI 的三個陷阱
 
@@ -990,18 +1152,22 @@ public/data/
 scripts/
 ├─ build-climate.mjs      # Open-Meteo → public/data/climate
 ├─ build-species.mjs      # GBIF → public/data/species
-├─ build-geodata.mjs      # NLSC / Natural Earth / USGS / 水利署 → public/data/geo
+├─ build-geodata.mjs      # NLSC / Natural Earth / USGS / 水利署 / OSM → public/data/geo
 ├─ build-reservoirs.mjs   # 水利署水庫水情 → public/data/reservoirs-live.json
 ├─ lib/simplify.mjs       # 自帶的 Douglas–Peucker（刻意不加依賴）
 ├─ lib/unzip.mjs          # 自帶的 ZIP 讀取器（zlib.inflateRaw；檔名會判 Big5，見上）
 ├─ lib/gml.mjs            # NLSC 行政區界線 GML + TGOS SimpleWFS 兩種 GML 2 形狀
 ├─ lib/kml.mjs            # 水利署水庫蓄水範圍 KML 的剖析器（同樣只認得那一種）
-├─ lib/shp.mjs            # 自帶的 shapefile（.shp/.dbf/.prj/.cpg）讀取器，只支援多邊形
+├─ lib/shp.mjs            # shapefile 讀取器，只支援多邊形。**兩組慣例並存**：
+│                         #   readShapefileZip()（.shp/.dbf/.prj/.cpg，已反轉＋已投影）供保護區用
+│                         #   parseShpPolygons()/parseDbf()（原始 TM2 座標）專供 tw-basins
 ├─ lib/twd97.mjs          # TWD97 TM2 → WGS84（中央子午線 121/119/117 由 .prj 決定）
 ├─ lib/dissolve.mjs       # 有向邊相消的多邊形聯集（分區圖 → 園區範圍）
 ├─ lib/csv.mjs            # CSV 剖析器（水庫與國家公園索引共用）
 ├─ lib/protected-areas.mjs # 國家公園與保護區四個資料集的存取層
-├─ lib/reservoirs.mjs     # 水利署開放資料的共用存取層（bot 防護、id 對照表）
+├─ lib/reservoirs.mjs     # 水利署開放資料的共用存取層（CSV 剖析、bot 防護、id 對照表）
+├─ lib/overpass.mjs       # OSM Overpass 存取層（端點輪替、路線關聯查詢、way 串接）
+├─ lib/rivers.mjs         # 河川／流域 id 對照表（BASIN_IDS 從 RIVER_IDS 衍生）+ 官方長度／流域面積（RIVER_FACTS，不含幾何，河川線是手繪路徑）
 ├─ lib/fetch-retry.mjs    # 指數退避的 fetch（含 HTTP/2 fallback，見上）
 ├─ validate-content.mjs   # 建置前 schema 驗證 + 註冊表交叉檢查
 └─ postbuild.mjs          # 404.html + CNAME 確認

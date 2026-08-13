@@ -21,7 +21,17 @@ import { fetchWithRetry } from "./lib/fetch-retry.mjs";
 import { simplifyGeometry, slugify } from "./lib/simplify.mjs";
 import { parseNlscGml, ringArea } from "./lib/gml.mjs";
 import { parseReservoirKml, ringsCentroid } from "./lib/kml.mjs";
-import { readZipText } from "./lib/unzip.mjs";
+import { readZip, readZipText } from "./lib/unzip.mjs";
+import { parseShpPolygons, parseDbf } from "./lib/shp.mjs";
+import { TM2_TAIWAN, tm2ToWgs84 } from "./lib/twd97.mjs";
+import {
+  LICENSE as OSM_LICENSE,
+  SOURCE_LABEL as OSM_SOURCE_LABEL,
+  OVERPASS_ENDPOINTS,
+  fetchRouteLines,
+  stitchWays,
+  totalLengthKm,
+} from "./lib/overpass.mjs";
 import {
   LICENSE as PROTECTED_LICENSE,
   fetchProtectedAreas,
@@ -34,6 +44,7 @@ import {
   fetchReservoirBasics,
   formatCapacity,
 } from "./lib/reservoirs.mjs";
+import { BASIN_URL, BASIN_IDS, RIVER_FACTS } from "./lib/rivers.mjs";
 
 const exists = (p) => access(p).then(() => true).catch(() => false);
 
@@ -111,6 +122,24 @@ const COUNTY_IDS = {
  * **必須在簡化之前**做，不能指望容差幫忙。
  */
 const MIN_ISLAND_AREA = 1e-5;
+
+/**
+ * 交通軸線裡一段折線的最短長度（公里）。比照 `MIN_ISLAND_AREA` 的既有作法。
+ *
+ * 臺鐵的路線關聯除了正線之外，還收了車站股道、渡線與短連絡線，串完會剩下一批
+ * 短到只有幾百公尺、甚至不到 10 公尺的碎線。這些東西在這個圖層可見的縮放尺度下
+ * 全是一個點，卻各自是一條合法的 LineString，會讓沿線標註在同一個地方重複冒出來。
+ *
+ * ⚠️ 這裡不寫死「串完有幾條」：Overpass 各鏡像站的 replication 快照不同步，同一天
+ * 抓兩次拿到的 way 數就可能差十幾條（實測西部幹線 1006 與 1017 都出現過），
+ * 條數本來就會浮動。要核對的是**公里數**對不對得上官方數字，不是條數。
+ *
+ * ⚠️ 這個過濾**必須在簡化之前**做，理由跟礁岩那條一樣：Douglas–Peucker 不會刪掉
+ * 整條線，指望容差幫忙是沒有用的。
+ *
+ * 門檻取 2 公里而不是更高：成追線（3.4 公里）這種確實屬於幹線的短連絡線要留著。
+ */
+const MIN_AXIS_SEGMENT_KM = 2;
 
 /**
  * 離島縣。清單排序時整組排在本島各縣市之後。
@@ -220,6 +249,83 @@ const RIVER_NAMES_ZH = {
   Ayeyarwady: "伊洛瓦底江",
   Irrawaddy: "伊洛瓦底江",
 };
+
+/**
+ * 主要交通軸線。每一筆是**一條教學上會整條講的軸線**，不是一個 OSM 關聯。
+ *
+ * 幾條臺鐵幹線在 OSM 裡是依「線名」拆開的（縱貫線、臺中線、海岸線、屏東線各自
+ * 一個關聯），但課本講的是「西部幹線」這一整條；所以這裡用 `parts` 把它們併成
+ * 一個圖徵，串接交給 `stitchWays()`。
+ *
+ * ⚠️ **每個選擇器都刻意只取單一方向**（北向／北上／順行）。OSM 把上下行分成兩個
+ * 關聯，兩個都抓會在圖上畫出相距數十公尺的雙線——在教學會用的縮放尺度下那只是
+ * 一條變粗、邊緣毛躁的線，還讓檔案大一倍。選錯方向不影響教學（走廊位置相同），
+ * 但**必須固定一個**，否則每次重抓的產物都不一樣。
+ *
+ * `shortName` 是沿線標註用的短名，`name` 是詳情卡與清單用的全名。分開是必要的：
+ * 「國道一號（中山高速公路）」這種長字串在彎曲的線上會被放置演算法整個拒絕，
+ * 標註數直接變 0（見 CLAUDE.md「沿線標註很脆弱」）。
+ */
+const TRANSPORT_AXES = [
+  {
+    id: "thsr",
+    name: "臺灣高速鐵路",
+    shortName: "高鐵",
+    meta: "南港—左營・西部走廊",
+    parts: ['relation["route"="railway"]["network"="台灣高鐵"]["name"~"北向"]'],
+  },
+  {
+    id: "freeway-1",
+    name: "國道一號（中山高速公路）",
+    shortName: "國道1",
+    meta: "基隆—高雄・臺灣第一條高速公路",
+    parts: ['relation["route"="road"]["network"="TW:freeway"]["ref"="1"]["name"~"北向"]'],
+  },
+  {
+    id: "freeway-3",
+    name: "國道三號（福爾摩沙高速公路）",
+    shortName: "國道3",
+    meta: "基隆—林邊・沿西部丘陵臺地",
+    parts: ['relation["route"="road"]["network"="TW:freeway"]["ref"="3"]["name"~"北上"]'],
+  },
+  {
+    id: "freeway-5",
+    name: "國道五號（蔣渭水高速公路）",
+    shortName: "國道5",
+    meta: "南港—蘇澳・雪山隧道穿越雪山山脈",
+    parts: ['relation["route"="road"]["network"="TW:freeway"]["ref"="5"]["name"~"北向"]'],
+  },
+  {
+    id: "tra-west",
+    name: "臺鐵西部幹線",
+    shortName: "西部幹線",
+    meta: "基隆—枋寮・縱貫線＋山線＋海線＋屏東線",
+    parts: [
+      'relation["route"="railway"]["name"="縱貫線(北上)"]',
+      'relation["route"="railway"]["name"="臺中線"]',
+      'relation["route"="railway"]["name"="海岸線"]',
+      'relation["route"="railway"]["name"="屏東線"]',
+    ],
+  },
+  {
+    id: "tra-east",
+    name: "臺鐵東部幹線",
+    shortName: "東部幹線",
+    meta: "八堵—臺東・宜蘭線＋北迴線＋臺東線",
+    parts: [
+      'relation["route"="railway"]["name"="宜蘭線 (順行)"]',
+      'relation["route"="railway"]["name"="北迴線 (順行)"]',
+      'relation["route"="railway"]["name"="臺東線"]',
+    ],
+  },
+  {
+    id: "tra-south-link",
+    name: "臺鐵南迴線",
+    shortName: "南迴線",
+    meta: "枋寮—臺東・唯一連接西部與東部的鐵路",
+    parts: ['relation["route"="railway"]["name"="南迴線"]'],
+  },
+];
 
 const SOURCES = [
   {
@@ -409,6 +515,137 @@ const SOURCES = [
     transform: (raw) => raw.features,
   },
   {
+    id: "tw-transport",
+    label: "臺灣主要交通軸線",
+    /**
+     * 唯一走 OpenStreetMap 的圖層。為什麼別無選擇（NE 的臺灣道路沒有名字、
+     * TDX 要 API key、手繪對精確且公開的線位不誠實）寫在 lib/overpass.mjs 開頭。
+     */
+    url: OVERPASS_ENDPOINTS[0],
+    license: OSM_LICENSE,
+    sourceLabel: OSM_SOURCE_LABEL,
+    /**
+     * 走 `load` 而不是 `url` + `parse`：Overpass 要 POST 查詢語句，而且一條軸線
+     * 可能由多個關聯併起來（西部幹線是四個），本來就不是「下載一個檔案」。
+     */
+    load: async () => {
+      const axes = [];
+      for (const axis of TRANSPORT_AXES) {
+        const lines = [];
+        for (const selector of axis.parts) {
+          const part = await fetchRouteLines(selector);
+          lines.push(...part.lines);
+        }
+        // 串接必須在簡化之前：DP 永遠保留每條線的頭尾，對著幾百條碎線做簡化
+        // 幾乎砍不掉東西，沿線標註也放不出來（見 lib/overpass.mjs 的說明）
+        const stitched = stitchWays(lines);
+        // 車站股道與渡線在這個尺度下只是一個點，卻會各自吃掉一個沿線標註
+        const kept = stitched.filter((line) => totalLengthKm([line]) >= MIN_AXIS_SEGMENT_KM);
+        if (kept.length === 0) {
+          throw new Error(`${axis.name}：串接後沒有任何長度足夠的折線，選擇器可能選錯了`);
+        }
+        console.log(
+          `\n  ${axis.name}：${lines.length} 段 → 串成 ${stitched.length} 條、` +
+            `留下 ${kept.length} 條／約 ${totalLengthKm(kept).toFixed(0)} 公里`,
+        );
+        axes.push({ ...axis, lines: kept });
+      }
+      return axes;
+    },
+    // 0.0005° ≈ 55 公尺。交通軸線是「走廊位置」的教學圖層，不是導航圖資；
+    // 這個容差在圖層可見的每個縮放尺度下都是次像素，卻能把點數砍掉九成。
+    tolerance: 0.0005,
+    digits: 4,
+    // ⚠️ feature 順序＝圖層抽屜可點清單的順序（LayerBrowseList 不排序）。
+    // 依「高鐵 → 國道 → 台鐵」排，跟課本介紹西部走廊的順序一致。
+    transform: (axes) =>
+      axes.map(({ id, name, shortName, meta, lines }) => ({
+        type: "Feature",
+        geometry: { type: "MultiLineString", coordinates: lines },
+        properties: { id, name, shortName, meta },
+      })),
+  },
+  {
+    id: "tw-basins",
+    label: "臺灣河川流域分區",
+    /**
+     * 跟 tw-rivers 是**同一組官方河川清單**（RIVER_FACTS），幾何來源卻完全不同：
+     * tw-rivers 的路徑是手繪教學示意（`public/data/geo-manual/tw-rivers.geojson`，
+     * 見 CLAUDE.md「河川路徑」那節），這裡才是真正抓來的 SHP（BASIN，面）。
+     * id 對照表用 lib/rivers.mjs 的 `BASIN_IDS`（從 `RIVER_IDS` 衍生），facts
+     * （面積）沿用同一份 `RIVER_FACTS`——這是這兩個圖層真正共用資料的地方。
+     *
+     * ⚠️ BASIN 這份資料乾淨很多：實測 143 筆 record 裡，26 個官方河川名稱各自
+     * 剛好對到一筆**單一環（無孔洞）**多邊形，面積與官方數字誤差多在 10% 以內，
+     * 精確比對名稱就夠了，不需要空間分群。真的對不到才要懷疑上游改版，不要自己
+     * 加模糊比對。
+     */
+    url: BASIN_URL,
+    license: WRA_LICENSE,
+    sourceLabel: WRA_SOURCE_LABEL,
+    parse: async (res) => {
+      const buf = Buffer.from(await res.arrayBuffer());
+      const entries = readZip(buf);
+      const shpEntry = entries.find((e) => e.name.toLowerCase().endsWith(".shp"));
+      const dbfEntry = entries.find((e) => e.name.toLowerCase().endsWith(".dbf"));
+      if (!shpEntry || !dbfEntry) {
+        throw new Error(`BASIN.zip 裡找不到 .shp／.dbf（內容：${entries.map((e) => e.name).join("、")}）`);
+      }
+      return {
+        polygons: parseShpPolygons(shpEntry.read()),
+        rows: parseDbf(dbfEntry.read()),
+      };
+    },
+    // 0.0004° 跟 tw-rivers 同一個量級：流域邊界本身就是這個圖層唯一的內容
+    tolerance: 0.0004,
+    digits: 5,
+    transform: ({ polygons, rows }) => {
+      const byName = new Map(rows.map((r, i) => [r.BASIN_NAME, i]));
+      const features = [];
+      /** 官方表格裡有、但 BASIN 裡對不到幾何的河川。靜默跳過會讓「少一條」永遠沒人發現。 */
+      const missing = [];
+
+      for (const [officialName, facts] of Object.entries(RIVER_FACTS)) {
+        const id = BASIN_IDS[officialName];
+        if (!id) {
+          throw new Error(`河川「${officialName}」不在 BASIN_IDS 對照表裡，請先決定它的 id`);
+        }
+
+        const idx = byName.get(officialName);
+        const record = idx == null ? null : polygons[idx];
+        if (!record || record.parts.length === 0) {
+          missing.push(officialName);
+          continue;
+        }
+        if (record.parts.length !== 1) {
+          // 見上面說明：實測全部是單一環，多環代表上游改版，寧可失敗也不要猜哪個環是洞
+          throw new Error(`「${officialName}」的流域是 ${record.parts.length} 環，需要人工確認外環／洞的判斷`);
+        }
+
+        // BASIN.prj 就是 TWD97 TM2 zone 121，參數與 TM2_TAIWAN 完全相同
+        const ring = record.parts[0].map(([x, y]) => tm2ToWgs84(x, y, TM2_TAIWAN));
+        features.push({
+          type: "Feature",
+          geometry: { type: "Polygon", coordinates: [ring] },
+          properties: {
+            id,
+            name: officialName,
+            area_km2: facts.area_km2,
+            category: facts.category,
+            meta: `流域面積 ${facts.area_km2} km²`,
+          },
+        });
+      }
+
+      if (missing.length) {
+        throw new Error(`BASIN 裡找不到幾何：${missing.join("、")}`);
+      }
+      // ⚠️ feature 順序就是圖層抽屜裡可點清單的順序（LayerBrowseList 不排序）。
+      // 依流域面積由大到小，清單開頭是高屏溪、濁水溪、淡水河這些課本會點名的河川。
+      return features.sort((a, b) => b.properties.area_km2 - a.properties.area_km2);
+    },
+  },
+  {
     id: "quakes",
     label: "全球地震帶",
     // 免金鑰、ACAO: *。單次上限 20000 筆；抓之前先打 /count 確認沒超過。
@@ -483,10 +720,13 @@ async function build(source) {
 
   process.stdout.write(`- ${source.id}：`);
   process.stdout.write("下載中…");
-  let url = source.sourceUrl;
+  // `load` 的資料源沒有單一下載網址：多來源的用 sourceUrl（見 tw-protected-areas），
+  // 單一端點的仍然填 url（見 tw-transport 的 Overpass）。這個值只用來寫進產物的 metadata。
+  let url = source.sourceUrl ?? source.url;
   let raw;
   if (source.load) {
-    // 多來源的資料集自己抓（見 tw-protected-areas）；順便把它想讓人知道的事情印出來
+    // 不是「下載一個檔案」的資料源自己負責取得（見 tw-transport 的 Overpass 查詢、
+    // tw-protected-areas 的四個資料集）；順便把它想讓人知道的事情印出來
     raw = await source.load(fetchWithRetry);
     for (const warning of raw.warnings ?? []) console.log(`\n  · ${warning}`);
   } else {

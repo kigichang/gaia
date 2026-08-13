@@ -1,0 +1,49 @@
+{
+  "id": "danshui-river",
+  "collection": "tw-rivers",
+  "name": {
+    "zh": "淡水河",
+    "en": "Tamsui River"
+  },
+  "subtitle": "跨省市河川・北部（匯集三大支流後注入台灣海峽）",
+  "stats": [
+    {
+      "label": "幹流長度",
+      "value": "158.7 km"
+    },
+    {
+      "label": "流域面積",
+      "value": "2726 km²"
+    },
+    {
+      "label": "分類",
+      "value": "跨省市河川"
+    }
+  ],
+  "facts": [
+    {
+      "label": "發源地",
+      "value": "由大漢溪、新店溪、基隆河三大支流匯集而成"
+    },
+    {
+      "label": "出海口",
+      "value": "淡水區注入臺灣海峽"
+    },
+    {
+      "label": "流經",
+      "value": "臺北市、新北市、桃園市"
+    },
+    {
+      "label": "特色",
+      "value": "臺灣三大都會區（雙北）的生活與航運中心，日治時期曾是重要內河航道"
+    }
+  ],
+  "curriculum": {
+    "unit": "臺灣的水文"
+  },
+  "schematic": true,
+  "sources": [
+    "維基百科",
+    "經濟部水利署"
+  ]
+}

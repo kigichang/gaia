@@ -207,22 +207,43 @@ export const taiwanTheme: ThemeDefinition = {
       id: "tw-rivers",
       label: "主要河川",
       group: "水系",
-      status: "planned",
-      render: { kind: "line" },
-      detail: { type: "none" },
-      // Natural Earth 10m 的臺灣河川覆蓋太薄，不能拿世界資料集充數，
-      // 要走水利署或國土測繪中心的開放資料。
-      description: "濁水溪、高屏溪、淡水河等主要河川，看中央山脈如何分東西水系。",
-      sources: ["經濟部水利署"],
+      status: "ready",
+      // 手繪示意河道：水利署 RIVERLIN 圖資（2000–2008 年數化）依「名稱字串」分筆而
+      // 非依實際河川分筆，同名不同河的問題無法穩定自動修復（見 CLAUDE.md「河川路徑」
+      // 那節）。改用跟五大山脈一樣的手繪路徑，才能讓 26 條河川的呈現一致可信。
+      source: { type: "remote", path: "data/geo-manual/tw-rivers.geojson" },
+      render: { kind: "line", width: 2, label: { property: "name" } },
+      colorRole: "hydrology",
+      detail: { type: "geo", collection: "tw-rivers" },
+      browse: {},
+      schematic: true,
+      description:
+        "24 條中央管河川與 2 條跨省市河川（淡水河、磺溪），水利署官方認定的主要河川。" +
+        "濁水溪、高屏溪、淡水河等大河，可以看出中央山脈如何分東西水系。" +
+        "⚠️ 圖上的路徑是依維基百科各河川條目描繪的教學示意幾何，不是精確測量的河道——" +
+        "長度與流域面積仍是水利署現行官方數字，點進個別河川的說明會註明。",
+      sources: ["維基百科", "經濟部水利署"],
     },
     {
       id: "tw-basins",
       label: "流域分區",
       group: "水系",
-      status: "planned",
+      status: "ready",
+      // 跟「主要河川」是同一組官方河川清單（見 scripts/lib/rivers.mjs 的
+      // RIVER_FACTS／BASIN_IDS），但幾何來自另一份 SHP（BASIN，面），不是從
+      // 河川線推導出來的——集水區範圍需要真正的水文測繪，不是幾何運算。
+      source: { type: "remote", path: "data/geo/tw-basins.geojson" },
       render: { kind: "fill" },
-      detail: { type: "none" },
-      description: "各主要河川的集水區範圍，說明分水嶺與流域的概念。",
+      // 面／線共用同一組已驗證色票（水系藍／行政區橘／山脈洋紅），fill 目前只有
+      // 縣市界（boundary 橘）用掉一個名額，這裡用 hydrology 藍——跟河川線同色，
+      // 是刻意的：形狀（半透明面 vs 線）已經足夠區辨，藍色維持「水系」的視覺家族。
+      colorRole: "hydrology",
+      detail: { type: "geo", collection: "tw-basins" },
+      browse: {},
+      description:
+        "24 條中央管河川與 2 條跨省市河川的集水區範圍，說明分水嶺與流域的概念——" +
+        "山脈稜線兩側的雨水，會分別匯集到不同的流域裡。跟「主要河川」是同一份官方清單，" +
+        "但這裡的面是另一份水利署圖資，不是從河川線推算出來的。",
       sources: ["經濟部水利署"],
     },
     {
@@ -284,11 +305,34 @@ export const taiwanTheme: ThemeDefinition = {
       id: "tw-transport",
       label: "主要交通軸線",
       group: "人文",
-      status: "planned",
-      render: { kind: "line" },
-      detail: { type: "none" },
-      description: "高鐵、國道與東部幹線，對照地形如何決定交通路線。",
-      sources: ["交通部"],
+      status: "ready",
+      source: { type: "remote", path: "data/geo/tw-transport.geojson" },
+      /**
+       * 沿線標註用 `shortName`（「國道1」「西部幹線」）而不是 `name`。
+       *
+       * 這不是排版偏好：`name` 是「國道一號（中山高速公路）」這種 11 個字的字串，
+       * 而放置演算法要求越長的字串就要越平直的線段，長字串配上交流道一帶的彎道
+       * 會被**整個靜默拒絕**、標註數直接歸零（見 CLAUDE.md「沿線標註很脆弱」）。
+       * 詳情卡與可點清單顯示的仍然是全名。
+       *
+       * `spacing` 調到 400（預設 120）：臺鐵幹線在 OSM 裡是十幾條平行或分段的
+       * 折線，而 maplibre 是**逐一 LineString** 放置標註的，沿用等高線那組密集
+       * 參數會讓「西部幹線」四個字在同一段路上重複好幾次。這跟緯度參考線要調高
+       * spacing 是同一類問題（見 CLAUDE.md）。
+       */
+      render: {
+        kind: "line",
+        width: 2.2,
+        label: { property: "shortName", spacing: 400 },
+      },
+      colorRole: "transport",
+      detail: { type: "geo", collection: "tw-transport" },
+      browse: {},
+      description:
+        "高鐵、三條主要國道與臺鐵三大幹線。這一層要對照的是地形：西部走廊上五條路線幾乎重疊，" +
+        "而東部只有一條鐵路沿海岸擠在山與海之間，南迴線是唯一從南端把兩側接起來的鐵路。" +
+        "線位取自 OpenStreetMap 的路線關聯，上下行只取單一方向。",
+      sources: ["OpenStreetMap"],
     },
     {
       id: "tw-vegetation-belts",

@@ -83,6 +83,10 @@ export const RELIEF_COLOR = "#c23f8f";
  *   node scripts/validate_palette.js "#2a78d6,#d95926,#c23f8f,#7538ae" --pairs all --mode light|dark
  *   → CVD 最差 ΔE 9.2、一般視覺最差 ΔE 16.6（對洋紅），亮度帶與彩度下限兩模式皆過
  *
+ * ⚠️ 上面那次是**加入時**的四色驗證。`TRANSPORT_COLOR` 後來在另一條分支上加入，
+ * 現在線／面色票實際上是**五色**，合併時已重新一起驗過（見該常數的說明與
+ * CLAUDE.md「顏色」一節）。要再加色請驗完整的五色清單。
+ *
  * ## ⚠️ 這一個角色有一項 WARN，是知道之後接受的
  *
  * `#7538ae` 在**深色模式**對面板底色（`--surface: #1a1a19`）的對比是 **2.43:1**，
@@ -111,6 +115,47 @@ export const RELIEF_COLOR = "#c23f8f";
  * 飽和的森林綠 `#1f7a4d` 對行政區橘的 CVD 只有 **4.4（hard FAIL）**，也不是選項。
  */
 export const CONSERVATION_COLOR = "#7538ae";
+
+/**
+ * 交通軸線（高鐵、國道、臺鐵幹線）。翠綠。
+ *
+ * 四色一起以 `--pairs all` 驗證過**明暗兩模式**：
+ *   node scripts/validate_palette.js "#2a78d6,#d95926,#c23f8f,#2da26d" --pairs all --mode light|dark
+ *   → 兩模式各五項全數 PASS（CVD 最差 ΔE 8.3、一般視覺最差 ΔE 16.7）
+ *
+ * ⚠️ 上面那次是**加入時**的四色驗證，當時 `CONSERVATION_COLOR` 還在另一條分支上。
+ * 合併後線／面色票是**五色**，已重新一起驗過：
+ *   node scripts/validate_palette.js "#2a78d6,#d95926,#c23f8f,#7538ae,#2da26d" --pairs all --mode light|dark
+ *   → 兩模式五項全數 PASS；最差的 CVD 對仍然是翠綠↔洋紅 ΔE 8.3（沒有因為多一色
+ *     而變差），紫↔綠這一對比它寬鬆。唯一的 WARN 是深色模式下保護區紫的 2.43:1，
+ *     那是加入 CONSERVATION_COLOR 時就知道並接受的（見上）。
+ *
+ * ## 這個顏色是算出來的，不是挑出來的
+ *
+ * 前三色（藍／橘／洋紅）已經把色相空間佔掉大半，第四色的可行區間非常窄。用
+ * OKLCH 掃過整個色域（色相每 2.5°、L 0.44–0.78、C 0.10–0.30，逐點丟進
+ * validate_palette.js 跑明暗兩模式的 all-pairs），**零 WARN 的候選只剩 21 個**，
+ * 集中在兩處：色相 150–162° 的一段綠，以及兩個彩度極低、當地圖線太虛的淡紫。
+ * 直覺上會先想到的選擇全都不合格：
+ *
+ *   - 紫 `#7a3fa6`／`#8335c3`／`#7b43b9` —— dark 模式對比只有 2.56–2.77:1（WARN），
+ *     跟當初 relief 拒絕紫色是**同一個**原因，不是新問題。
+ *   - 青綠 `#00857a`、`#007a8a` —— 直接 FAIL。
+ *   - 綠 `#009e73` —— 對洋紅的 deutan ΔE 只有 6.2（WARN）。
+ *
+ * `#2da26d` 是那段綠裡兩個 binding 條件（對洋紅的 CVD 8.3 > 8.0、淺色模式對比
+ * 3.15 > 3.0）餘裕最平衡的一點。**要換色請重跑掃描，不要憑感覺往旁邊挪**——
+ * 這一格四周就是 WARN。
+ *
+ * ## 為什麼綠色在這裡可以，在 relief 卻不行
+ *
+ * 山脈被禁用綠色的理由是「NLSC 通用電子地圖的山區底色就是綠的，山脈線畫成綠色
+ * 等於畫在它自己要說明的那片地形上看不見」。交通軸線的處境相反：它們絕大部分
+ * 路段走在西部平原與海岸走廊，NLSC 在那裡是白／灰底；而且這一層的教學重點正是
+ * 「路線**繞開**山地」。少數穿山路段（國道五號雪山隧道、北迴線、南迴線）是飽和
+ * 翠綠對上 NLSC 的淡黃綠山區暈渲，色相與彩度都拉得開。
+ */
+export const TRANSPORT_COLOR = "#2da26d";
 
 /**
  * 非分類的固定色角色——比照 hillshade 的棕色與等高線的棕色，
@@ -192,6 +237,8 @@ export const LAYER_COLORS = {
   relief: RELIEF_COLOR,
   /** 國家公園與保護區（面）。紫——綠會被 NLSC 底圖的山區底色吃掉，見上。 */
   conservation: CONSERVATION_COLOR,
+  /** 交通軸線（線）。翠綠——是掃過整個色域後僅存的可行區間，見上。 */
+  transport: TRANSPORT_COLOR,
   /** 緯度參考線等參考幾何。中性色，非分類。 */
   reference: REFERENCE_COLOR,
   /** 地震帶等密度場。中性色，非分類。 */

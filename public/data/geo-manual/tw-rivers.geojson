@@ -1,0 +1,595 @@
+{
+  "type": "FeatureCollection",
+  "metadata": {
+    "collection": "tw-rivers",
+    "source": "手繪教學示意幾何，河道走向依維基百科各河川條目描繪、並用 Google Maps 逐條校對過主要彎道與出海口位置；長度／流域面積取自水利署官方數字",
+    "license": "CC BY-SA 4.0（描繪自維基百科條目所述之走向與端點）",
+    "generatedAt": "2026-08-13",
+    "featureCount": 26
+  },
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "zhuoshui-river",
+        "name": "濁水溪",
+        "length_km": 186.6,
+        "area_km2": 3157,
+        "category": "中央管河川",
+        "meta": "幹流長度 186.6 km"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [121.28, 24.15],
+          [121.15, 24.05],
+          [121.03, 23.95],
+          [120.95, 23.85],
+          [120.85, 23.79],
+          [120.78, 23.82],
+          [120.66, 23.81],
+          [120.51, 23.79],
+          [120.32, 23.8],
+          [120.2, 23.8]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "gaoping-river",
+        "name": "高屏溪",
+        "length_km": 171,
+        "area_km2": 3257,
+        "category": "中央管河川",
+        "meta": "幹流長度 171 km"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [121.05, 23.35],
+          [120.95, 23.16],
+          [120.73, 23.16],
+          [120.62, 22.99],
+          [120.53, 22.9],
+          [120.5, 22.78],
+          [120.44, 22.7],
+          [120.4, 22.62],
+          [120.41, 22.55],
+          [120.4, 22.47]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "danshui-river",
+        "name": "淡水河",
+        "length_km": 158.7,
+        "area_km2": 2726,
+        "category": "跨省市河川",
+        "meta": "幹流長度 158.7 km"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [121.35, 24.75],
+          [121.25, 24.8],
+          [121.28, 24.88],
+          [121.33, 24.92],
+          [121.35, 24.96],
+          [121.42, 24.99],
+          [121.46, 25.01],
+          [121.49, 25.06],
+          [121.47, 25.13],
+          [121.44, 25.17]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "zengwen-river",
+        "name": "曾文溪",
+        "length_km": 138.5,
+        "area_km2": 1177,
+        "category": "中央管河川",
+        "meta": "幹流長度 138.5 km"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [120.75, 23.4],
+          [120.65, 23.3],
+          [120.58, 23.23],
+          [120.45, 23.2],
+          [120.32, 23.21],
+          [120.25, 23.18],
+          [120.15, 23.13],
+          [120.05, 23.1]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "dajia-river",
+        "name": "大甲溪",
+        "length_km": 124.2,
+        "area_km2": 1236,
+        "category": "中央管河川",
+        "meta": "幹流長度 124.2 km"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [121.4, 24.35],
+          [121.23, 24.25],
+          [121, 24.23],
+          [120.83, 24.25],
+          [120.72, 24.27],
+          [120.68, 24.31],
+          [120.62, 24.35]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "wu-river",
+        "name": "烏溪",
+        "length_km": 119.1,
+        "area_km2": 2026,
+        "category": "中央管河川",
+        "meta": "幹流長度 119.1 km"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [121.27, 24.15],
+          [121.05, 24.05],
+          [120.86, 23.98],
+          [120.68, 24.09],
+          [120.58, 24.15],
+          [120.52, 24.21]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "daan-river",
+        "name": "大安溪",
+        "length_km": 95.8,
+        "area_km2": 758,
+        "category": "中央管河川",
+        "meta": "幹流長度 95.8 km"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [121.23, 24.48],
+          [121.04, 24.44],
+          [120.86, 24.42],
+          [120.83, 24.32],
+          [120.75, 24.34],
+          [120.68, 24.35],
+          [120.62, 24.35]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "beinan-river",
+        "name": "卑南溪",
+        "length_km": 84.4,
+        "area_km2": 1603,
+        "category": "中央管河川",
+        "meta": "幹流長度 84.4 km"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [121.02, 23.15],
+          [121.05, 23.1],
+          [121.10, 23.03],
+          [121.16, 22.97],
+          [121.13, 22.85],
+          [121.15, 22.76]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "beigang-river",
+        "name": "北港溪",
+        "length_km": 82,
+        "area_km2": 645,
+        "category": "中央管河川",
+        "meta": "幹流長度 82 km"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [120.58, 23.63],
+          [120.5, 23.6],
+          [120.42, 23.65],
+          [120.35, 23.61],
+          [120.3, 23.57],
+          [120.22, 23.55]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "xiuguluan-river",
+        "name": "秀姑巒溪",
+        "length_km": 81.2,
+        "area_km2": 1790,
+        "category": "中央管河川",
+        "meta": "幹流長度 81.2 km"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [121.20, 23.42],
+          [121.28, 23.38],
+          [121.33, 23.33],
+          [121.42, 23.35],
+          [121.47, 23.37],
+          [121.48, 23.375]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "bazhang-river",
+        "name": "八掌溪",
+        "length_km": 80.9,
+        "area_km2": 475,
+        "category": "中央管河川",
+        "meta": "幹流長度 80.9 km"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [120.68, 23.51],
+          [120.55, 23.47],
+          [120.45, 23.48],
+          [120.35, 23.42],
+          [120.25, 23.38],
+          [120.16, 23.38]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "puzi-river",
+        "name": "朴子溪",
+        "length_km": 75.9,
+        "area_km2": 427,
+        "category": "中央管河川",
+        "meta": "幹流長度 75.9 km"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [120.62, 23.47],
+          [120.55, 23.47],
+          [120.43, 23.51],
+          [120.32, 23.49],
+          [120.25, 23.46],
+          [120.17, 23.45]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "lanyang-river",
+        "name": "蘭陽溪",
+        "length_km": 73,
+        "area_km2": 978,
+        "category": "中央管河川",
+        "meta": "幹流長度 73 km"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [121.36, 24.40],
+          [121.44, 24.53],
+          [121.54, 24.61],
+          [121.61, 24.65],
+          [121.68, 24.68],
+          [121.78, 24.70],
+          [121.83, 24.71]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "jishui-river",
+        "name": "急水溪",
+        "length_km": 65,
+        "area_km2": 379,
+        "category": "中央管河川",
+        "meta": "幹流長度 65 km"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [120.47, 23.35],
+          [120.40, 23.33],
+          [120.32, 23.31],
+          [120.25, 23.29],
+          [120.17, 23.28],
+          [120.10, 23.27]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "erren-river",
+        "name": "二仁溪",
+        "length_km": 63.2,
+        "area_km2": 350,
+        "category": "中央管河川",
+        "meta": "幹流長度 63.2 km"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [120.47, 22.95],
+          [120.42, 22.97],
+          [120.38, 22.94],
+          [120.33, 22.95],
+          [120.28, 22.92],
+          [120.24, 22.9],
+          [120.17, 22.91]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "touqian-river",
+        "name": "頭前溪",
+        "length_km": 63,
+        "area_km2": 566,
+        "category": "中央管河川",
+        "meta": "幹流長度 63 km"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [121.2, 24.7],
+          [121.13, 24.72],
+          [121.09, 24.74],
+          [121.03, 24.77],
+          [121, 24.79],
+          [120.97, 24.8],
+          [120.91, 24.82]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "houlong-river",
+        "name": "後龍溪",
+        "length_km": 58.3,
+        "area_km2": 537,
+        "category": "中央管河川",
+        "meta": "幹流長度 58.3 km"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [121.05, 24.47],
+          [120.94, 24.50],
+          [120.86, 24.54],
+          [120.82, 24.56],
+          [120.79, 24.65]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "hualien-river",
+        "name": "花蓮溪",
+        "length_km": 57.3,
+        "area_km2": 1507,
+        "category": "中央管河川",
+        "meta": "幹流長度 57.3 km"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [121.35, 23.65],
+          [121.45, 23.75],
+          [121.52, 23.88],
+          [121.56, 23.98],
+          [121.6, 23.98]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "zhonggang-river",
+        "name": "中港溪",
+        "length_km": 54,
+        "area_km2": 446,
+        "category": "中央管河川",
+        "meta": "幹流長度 54 km"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [121.09, 24.59],
+          [121, 24.58],
+          [120.94, 24.63],
+          [120.91, 24.65],
+          [120.87, 24.68],
+          [120.85, 24.7]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "heping-river",
+        "name": "和平溪",
+        "length_km": 50.7,
+        "area_km2": 561,
+        "category": "中央管河川",
+        "meta": "幹流長度 50.7 km"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [121.43, 24.35],
+          [121.50, 24.34],
+          [121.58, 24.33],
+          [121.65, 24.32],
+          [121.72, 24.315],
+          [121.79, 24.31]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "fengshan-river",
+        "name": "鳳山溪",
+        "length_km": 45.4,
+        "area_km2": 250,
+        "category": "中央管河川",
+        "meta": "幹流長度 45.4 km"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [121.28, 24.79],
+          [121.18, 24.79],
+          [121.05, 24.82],
+          [121, 24.83]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "donggang-river",
+        "name": "東港溪",
+        "length_km": 44,
+        "area_km2": 472,
+        "category": "中央管河川",
+        "meta": "幹流長度 44 km"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [120.68, 22.77],
+          [120.6, 22.72],
+          [120.53, 22.67],
+          [120.49, 22.6],
+          [120.45, 22.47]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "yanshui-river",
+        "name": "鹽水溪",
+        "length_km": 41.3,
+        "area_km2": 343,
+        "category": "中央管河川",
+        "meta": "幹流長度 41.3 km"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [120.44, 23.0],
+          [120.32, 23.08],
+          [120.22, 23.05],
+          [120.14, 23.04],
+          [120.1, 23.05]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "agongdian-river",
+        "name": "阿公店溪",
+        "length_km": 38,
+        "area_km2": 137,
+        "category": "中央管河川",
+        "meta": "幹流長度 38 km"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [120.35, 22.83],
+          [120.34, 22.82],
+          [120.32, 22.815],
+          [120.29, 22.80],
+          [120.26, 22.795],
+          [120.235, 22.80]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "sichong-river",
+        "name": "四重溪",
+        "length_km": 31.9,
+        "area_km2": 125,
+        "category": "中央管河川",
+        "meta": "幹流長度 31.9 km"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [120.75, 22.14],
+          [120.73, 22.12],
+          [120.72, 22.1],
+          [120.7, 22.07],
+          [120.69, 22.06]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "huang-river",
+        "name": "磺溪",
+        "length_km": 13.5,
+        "area_km2": 49,
+        "category": "跨省市河川",
+        "meta": "幹流長度 13.5 km"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [121.55, 25.17],
+          [121.58, 25.19],
+          [121.61, 25.20],
+          [121.63, 25.21],
+          [121.64, 25.22]
+        ]
+      }
+    }
+  ]
+}
