@@ -20,12 +20,16 @@ export const SOURCE_LINKS: Record<string, string> = {
   "原住民族委員會 113年4月原住民族人口數統計資料":
     "https://www.cip.gov.tw/zh-tw/news/data-list/940F9579765AC6A0/index.html?cumid=940F9579765AC6A0",
   台灣原住民族文化知識網: "https://knowlegde.gov.taipei/",
+  內政部國家公園署: "https://www.nps.gov.tw/",
   玉山國家公園管理處: "https://www.ysnp.gov.tw/",
   雪霸國家公園管理處: "https://www.spnp.gov.tw/",
   太魯閣國家公園管理處: "https://www.taroko.gov.tw/",
   陽明山國家公園管理處: "https://www.ymsnp.gov.tw/",
   墾丁國家公園管理處: "https://www.ktnp.gov.tw/",
   臺江國家公園管理處: "https://www.tjnp.gov.tw/",
+  金門國家公園管理處: "https://www.kmnp.gov.tw/",
+  // 東沙環礁與澎湖南方四島兩座海洋型國家公園同屬這一處
+  海洋國家公園管理處: "https://www.marine.gov.tw/",
   北海岸及觀音山國家風景區管理處: "https://www.northguan-nsa.gov.tw/",
   澎湖國家風景區管理處: "https://www.penghu-nsa.gov.tw/",
   交通部觀光署: "https://www.taiwan.net.tw/",

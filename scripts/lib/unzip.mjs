@@ -16,6 +16,31 @@ import { inflateRawSync } from "node:zlib";
 
 const EOCD_SIGNATURE = 0x06054b50;
 const CENTRAL_SIGNATURE = 0x02014b50;
+/** general purpose bit 11：檔名是 UTF-8。沒設就是「作業系統預設編碼」。 */
+const UTF8_NAME_FLAG = 0x0800;
+
+const utf8Strict = new TextDecoder("utf-8", { fatal: true });
+
+/**
+ * 解出 zip 目錄裡的檔名。
+ *
+ * ⚠️ 臺灣的政府圖資 zip 幾乎都是 Windows 上用中文檔名打包的，**沒有**設 UTF-8 旗標，
+ * 檔名是 Big5 位元組。一律當 UTF-8 解會得到一串替換字元，於是像「這個 zip 裡有
+ * 主要計畫圖與細部計畫圖兩份 shapefile，我要前者」這種挑選就完全做不到——而且
+ * 失敗的樣子是「挑到了另一份圖資」，不會報錯。
+ *
+ * 判斷順序刻意是「旗標 → 嚴格 UTF-8 → Big5」而不是直接看旗標：有些打包工具會寫
+ * UTF-8 檔名卻忘了設旗標，先試嚴格 UTF-8 就不會把它們誤解成 Big5。ASCII 檔名在
+ * 兩種編碼下完全相同，所以既有的資料源不受影響。
+ */
+function decodeName(bytes, flags) {
+  if (flags & UTF8_NAME_FLAG) return Buffer.from(bytes).toString("utf8");
+  try {
+    return utf8Strict.decode(bytes);
+  } catch {
+    return new TextDecoder("big5").decode(bytes);
+  }
+}
 
 /**
  * 列出 zip 內的所有檔案（不解壓）。
@@ -45,7 +70,8 @@ export function readZip(buf) {
     const extraLen = buf.readUInt16LE(offset + 30);
     const commentLen = buf.readUInt16LE(offset + 32);
     const localHeader = buf.readUInt32LE(offset + 42);
-    const name = buf.toString("utf8", offset + 46, offset + 46 + nameLen);
+    const flags = buf.readUInt16LE(offset + 8);
+    const name = decodeName(buf.subarray(offset + 46, offset + 46 + nameLen), flags);
 
     entries.push({
       name,

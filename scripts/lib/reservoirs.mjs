@@ -16,6 +16,7 @@
  * 沒有第 2 點的話，CSV 剖析器會把那頁 HTML 當成一欄叫 `<!DOCTYPE html>` 的資料表
  * 安靜地吃下去，然後產出 0 筆水庫——這正是它咬人的方式。
  */
+import { parseCsv } from "./csv.mjs";
 
 /** 資料集 45501「水庫水情資料」，每小時更新。 */
 export const CONDITIONS_URL =
@@ -102,42 +103,10 @@ function assertNotChallenge(text, url) {
 }
 
 /**
- * 夠用的 CSV 剖析器（引號、跳脫引號、欄位內逗號與換行）。
- *
- * 不能用 `split(",")`：`集水面積` 這類欄位的值是 `"48,100.00"`，千分位逗號在
- * 引號裡面。比照 lib/simplify.mjs 與 lib/unzip.mjs 的既有作法，不加依賴。
+ * CSV 剖析器已經搬到 lib/csv.mjs（國家公園的圖層索引也是 CSV）。
+ * 這裡 re-export 保持既有的 import 路徑可用。
  */
-export function parseCsv(text) {
-  const rows = [];
-  let row = [];
-  let field = "";
-  let quoted = false;
-  // 去掉 BOM——上游的 CSV 一律帶 BOM（JSON 才沒有），不去掉的話第一個欄位名
-  // 會變成 "﻿民國年"，對不到任何欄位而且完全不報錯。
-  const src = text.charCodeAt(0) === 0xfeff ? text.slice(1) : text;
-
-  for (let i = 0; i < src.length; i++) {
-    const ch = src[i];
-    if (quoted) {
-      if (ch === '"') {
-        if (src[i + 1] === '"') { field += '"'; i++; } else quoted = false;
-      } else field += ch;
-      continue;
-    }
-    if (ch === '"') quoted = true;
-    else if (ch === ",") { row.push(field); field = ""; }
-    else if (ch === "\r") { /* 忽略，交給 \n 收尾 */ }
-    else if (ch === "\n") { row.push(field); rows.push(row); row = []; field = ""; }
-    else field += ch;
-  }
-  if (field || row.length) { row.push(field); rows.push(row); }
-
-  const [header, ...body] = rows.filter((r) => r.some((c) => c !== ""));
-  if (!header) return [];
-  return body.map((cells) =>
-    Object.fromEntries(header.map((h, i) => [h.trim(), (cells[i] ?? "").trim()])),
-  );
-}
+export { parseCsv };
 
 /**
  * ⚠️ 退避重試必須包住 **assertNotChallenge**，不能只包住 fetch。

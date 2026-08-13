@@ -39,6 +39,7 @@ export type ColorRole =
   | "boundary"
   | "hydrology"
   | "relief"
+  | "conservation"
   // 非分類的固定角色，不參與色票驗證（見 thematicColors.ts）
   | "reference"
   | "hazard";

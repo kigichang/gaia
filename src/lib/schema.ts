@@ -202,7 +202,11 @@ export const GeoCollectionSchema = z.object({
   metadata: z
     .object({
       collection: z.string(),
-      source: z.string(),
+      /**
+       * 一份圖層可能是好幾個資料集拼出來的（保護區那一層拼了四個），
+       * 這時 source 是一組網址。單一來源仍然寫成字串，既有檔案不必動。
+       */
+      source: z.union([z.string(), z.array(z.string()).min(1)]),
       license: z.string(),
       generatedAt: z.string(),
       simplifyTolerance: z.number().optional(),

@@ -304,11 +304,30 @@ export const taiwanTheme: ThemeDefinition = {
       id: "tw-protected-areas",
       label: "國家公園與保護區",
       group: "植被生態",
-      status: "planned",
-      render: { kind: "fill" },
-      detail: { type: "none" },
-      description: "國家公園、自然保留區與野生動物保護區的範圍。",
-      sources: ["農業部林業及自然保育署"],
+      status: "ready",
+      source: { type: "remote", path: "data/geo/tw-protected-areas.geojson" },
+      /**
+       * 外框比縣市界粗（1.6 對 1.2）：這一層有 53 個圖徵，其中一半小於 200 公頃，
+       * 在教學會用的縮放範圍下面染本身只有幾個像素寬，看得見的其實是外框。
+       */
+      render: { kind: "fill", fillOpacity: 0.18, outlineWidth: 1.6 },
+      colorRole: "conservation",
+      detail: { type: "geo", collection: "tw-protected-areas" },
+      browse: {},
+      /**
+       * ⚠️ **不設 maxzoom**（縣市界設 11 是因為相鄰面各自簡化會開出次像素縫隙）。
+       * 保護區彼此不相鄰，沒有共用邊界，所以沒有那個問題；而且這一層放大來看
+       * 「保護區的界線切在哪」本來就是有意義的操作。簡化容差因此也調細成
+       * 0.0003°（≈33 公尺），見 build-geodata.mjs。
+       */
+      description:
+        "九座國家公園、壽山國家自然公園，加上 22 處自然保留區、16 處陸域野生動物保護區與 5 處自然保護區，共 53 處。" +
+        "四類的法源與主管機關都不同：國家公園依國家公園法由內政部國家公園署管理，其餘三類分別依文化資產保存法、" +
+        "野生動物保育法與森林法相關規定，由農業部林業及自然保育署管理。" +
+        "⚠️ 面積最大的「野生動物重要棲息環境」未收錄——它與前四類大量重疊，一起畫上去會看不出保護區的位置；" +
+        "海域的野生動物保護區已改由海洋委員會主管，也不在這份陸域資料裡。" +
+        "圖上的面積是由圖形範圍計算，與公告面積可能有小幅出入。",
+      sources: ["內政部國家公園署", "農業部林業及自然保育署"],
     },
     {
       id: "tw-crops",

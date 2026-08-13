@@ -60,6 +60,9 @@ Node ≥ 22.12（vite 8 要求）。開發機與 CI 都用 Node 24。
 | 地震目錄 | `earthquake.usgs.gov/fdsnws/event/1/query`（USGS） | **只在建置期呼叫**，免金鑰、`ACAO: *` |
 | 水庫基本資料／水庫水情 | `opendata.wra.gov.tw/api/v2/…?format=CSV`（經濟部水利署） | **只在建置期呼叫**。⚠️ **沒有 CORS 標頭**（瀏覽器一定抓不到），而且掛著 bot 防護，見下 |
 | 水庫蓄水範圍 | `gic.wra.gov.tw/gis/gic/API/Google/DownLoad.aspx?fname=ressub&filetype=KML` | **只在建置期呼叫**，約 38 MB 的 KML，只用來算形心 |
+| 國家公園範圍 | `data.gov.tw/api/v2/rest/dataset/174421` →（索引 CSV）→ `tgos.tw` 各處的 SHP／KML；陽明山另走 `ogcmap.tgos.tw/…/Ymsnp3PlanBorder/SimpleWFS.aspx` | **只在建置期呼叫**，內政部國家公園署。座標是 **TWD97 TM2 公尺**，見下 |
+| 台江國家公園範圍 | `data.depositar.io`（中研院研究資料寄存所） | **只在建置期呼叫**。官方那兩份包在 7z 裡，見下；**這台主機只講 HTTP/2** |
+| 自然保留區／野生動物保護區／自然保護區 | `data.moa.gov.tw/api/FileToJson.ashx?DataId=157｜162｜350` → SHP zip | **只在建置期呼叫**，農業部林業及自然保育署 |
 | 基本地理事實（山脈走向、主峰高度、河川分界…） | `zh.wikipedia.org` 各條目 | **程式完全不呼叫**，人工查閱後寫進 `src/content/`。次級來源，用法見「內容撰寫規範」，CC BY-SA |
 
 ### ⚠️ NLSC 的路徑順序陷阱
@@ -109,6 +112,62 @@ NLSC WMTS 是 `{z}/{y}/{x}`——**y 在 x 前面**，跟絕大多數 XYZ 服務
 - **KML 的座標高度是科學記號**（`…,-1.599837560206652e-005`），數字的正規表示式少了 `[eE][-+]?\d+` 會讓**每一個** token 都判成格式錯誤（實測 491/491）。
 - **形心用面積加權（shoelace），不是 bbox 中心**：水庫是狹長的樹枝狀，bbox 中心經常落在水體外面的山坡上（實測石門、曾文都是），而那個點會被拿去當「點一下飛過去」的目標。
 
+### 國家公園與保護區為什麼需要三個新的剖析器
+
+`tw-protected-areas` 是全站唯一一個把**四個資料集**拼成一層的圖層（十座國家公園／
+國家自然公園 + 22 處自然保留區 + 16 處陸域野生動物保護區 + 5 處自然保護區，共 53 處），
+取得邏輯全部關在 `scripts/lib/protected-areas.mjs`。踩過的坑照順序記在這裡：
+
+- **官方只發 SHP**（少數幾份另有 KML），所以有了 `lib/shp.mjs`——shapefile 是二進位
+  格式，既有的 GML／KML 剖析器接不上。只支援多邊形，遇到點或線直接丟例外。
+- **座標是 TWD97 TM2 公尺，而且中央子午線有三種**：本島 121°、澎湖金門馬祖 119°、
+  **東沙環礁 117°**。三者的 `.prj` 投影名稱完全一樣，只有 `Central_Meridian` 不同。
+  寫死 121 的話金門會落在福建內陸、東沙會掉進南海中央，而且**不會有任何錯誤訊息**。
+  所以 `lib/twd97.mjs` 的參數一律從 `.prj` 讀，不要在呼叫端寫死。
+- **一半的國家公園沒有「範圍圖」，只有「土地使用分區圖」**（墾丁、太魯閣、東沙環礁、
+  澎湖南方四島、台江）。直接畫出來，面染是對的，但外框圖層會把每一條分區界都描出來。
+  `lib/dissolve.mjs` 用**有向邊相消**合併——分區圖是同一份拓樸切出來的，相鄰分區共用
+  的邊逐位元相同、方向相反，所以不需要真正的多邊形裁剪器。實測四份分區圖的邊重數
+  只有 1 與 2、沒有 3 以上，前提成立。
+- ⚠️ **相消之後一定要丟掉零面積的「來回線」**（`minArea` 參數）。懸空的邊會串出面積
+  為零但點數很多的環，它們的帶號面積略小於零 → 被判成內環 → 外框圖層在園區裡畫出
+  幾十條毛刺。實測墾丁 827 個退化環佔掉檔案將近三成（444 KB → 183 KB），而**面積
+  計算完全正確**（零面積不影響），只驗面積是抓不到的。
+- **繞行方向是外環／內環的唯一線索。** SHP 的慣例是外環順時針，`lib/shp.mjs` 讀進來
+  時整份反轉成 GeoJSON 慣例；但 KML 與 WFS 那兩條路徑沒有經過它，要自己用
+  `orient()` 強制。踩過：陽明山的環是順時針，dissolve 判定「一個外環都沒有」，整座
+  公園消失。
+- **陽明山與台江的官方檔案包在 RAR／7z 裡**，免依賴的 Node（zlib 只有 inflate）開不了。
+  陽明山改走 TGOS 的 WFS 端點（一樣官方，但是第 3 次通盤檢討的版本，界線幾乎沒變）；
+  台江改抓中研院「研究資料寄存所」寄存的同一份官方 shapefile——**這是全站唯一一筆
+  不是直接向主管機關取得的資料**，圖層說明有註記。
+- ⚠️ **`data.depositar.io` 的下載端點只接受 HTTP/2。** Node 的 `fetch`（undici）只講
+  HTTP/1.1，連線會在回任何東西之前就被關掉，錯誤是一句沒有上下文的
+  `fetch failed / other side closed`，看起來像網路不穩。同一台主機的 CKAN API 走
+  HTTP/1.1 完全正常，只有 `/download/` 那條路徑不行。`lib/fetch-retry.mjs` 的
+  `fetchBuffer()` 因此在連線層級失敗時改用 `node:http2` 再試一次。
+- **TGOS 的網址帶未編碼的中文檔名**，要靠 `new URL()` 的序列化補上百分比編碼。
+  自己跑 `encodeURIComponent` 會把已編碼的部分再編一次（`%` → `%25`），得到一個
+  看起來很像對的 404。
+- **政府圖資 zip 的檔名是 Big5 而且沒設 UTF-8 旗標**，一律當 UTF-8 解會得到一串替換
+  字元，於是「這個 zip 裡有主要計畫圖與細部計畫圖兩份 shapefile，我要前者」就完全
+  做不到——而失敗的樣子是**挑到了另一份圖資**，不會報錯。`lib/unzip.mjs` 的
+  `decodeName()` 因此按「旗標 → 嚴格 UTF-8 → Big5」的順序解。
+  （墾丁只有「細部計畫圖」那一列，但那個 zip 裡兩份都有；**要的是主要計畫圖**，
+  細部計畫只涵蓋園區內需要細部規劃的幾塊，拿它當範圍會少掉大半個墾丁。）
+
+**面積一律由幾何算，不抄上游的欄位。** 上游的 `Area_ha` 不一致：有時是分區面積
+（楠梓仙溪 311 + 145），有時是整區面積重複填在每一筆（新竹市濱海四筆都是 1617.03）。
+公告面積只留在 `NATIONAL_PARKS` 的 `officialHa` 裡當**交叉比對**用（差 10% 印提醒、
+差 50% 直接失敗）——那是唯一能抓到「挑錯圖層或投影」的檢查。實測十座公園全部落在
+10% 以內（太魯閣 +7% 最大，其餘都在 1% 上下）。
+
+**收錄範圍是刻意的取捨，不是漏掉：** 第五類「野生動物重要棲息環境」未收——它面積
+最大又與前四類大量重疊（常常整個包住保護區），一起畫只會看不出保護區在哪；海域的
+野生動物保護區已改由海洋委員會主管，不在林業及自然保育署這份「陸域」資料集裡。
+兩件事都寫在圖層說明裡。各類的數量寫死在 `CONSERVATION_DATASETS` 的 `expected`，
+對不上就讓建置失敗——新公告一處保留區是要順手更新圖層說明的事件。
+
 ---
 
 ## 硬性禁止事項
@@ -147,6 +206,7 @@ ID 常數定義在 `src/map/layers/*.ts`，**一律 import 常數，不要寫死
 | id | 型別 |
 |---|---|
 | `places-source` / `places-points` | geojson / circle |
+| `tw-protected-areas-fill` / `tw-protected-areas-outline` | fill + line |
 | `indigenous-source` / `indigenous-points` | geojson / circle |
 | `species-<id>-source` / `species-<id>-points` | geojson / circle，每個物種各自一組 |
 | `tw-counties-fill` / `tw-counties-outline` | fill + line（面的外框一定是獨立圖層） |
@@ -187,7 +247,7 @@ maplibre-contour 把 worker 以 Blob URL 內嵌，**不需要額外部署 worker
 
 | 主題 | 路由 | 內容 |
 |---|---|---|
-| 臺灣地理 | `/theme/taiwan` | 行政區、地形、水系（含水庫即時水情）、人文（原住民族）、植被生態（特有種）、農業物產 |
+| 臺灣地理 | `/theme/taiwan` | 行政區、地形、水系（含水庫即時水情）、人文（原住民族）、植被生態（特有種、國家公園與保護區）、農業物產 |
 | 世界地理 | `/theme/world` | 世界重要城市、國界與大洲、地形水系、人文專題 |
 | 全球地理形貌 | `/theme/global` | 緯度參考線、氣候與生物群系、洋流、板塊與地震帶 |
 
@@ -313,7 +373,25 @@ fill   → `${instanceId}-fill` + `${instanceId}-outline`
 
 `src/map/thematicColors.ts` 是唯一的顏色來源。策略是**三組獨立色票**（`POINT` / `LINE` / `FILL`），各自**組內** all-pairs 驗證即可——形狀本身就在區辨（18% 透明度的面染跟 6px 圓點是不同的視覺通道），跨幾何的配對不需要驗證。每組再用 `MAX_ACTIVE_BY_KIND`（circle 4 / line 3 / fill 2）封頂，需求才維持在可解範圍。
 
-已驗證：地形景點藍 `#2a78d6` + 原住民族紅 `#e34948`；物種三色青／黃／紫；線／面三色 水系藍 `#2a78d6` + 行政區橘 `#d95926` + 山脈洋紅 `#c23f8f`（`--pairs all`，明暗兩模式全數 PASS，CVD 最差 ΔE 12.3、一般視覺最差 ΔE 16.7）。
+已驗證：地形景點藍 `#2a78d6` + 原住民族紅 `#e34948`；物種三色青／黃／紫；線／面**四色** 水系藍 `#2a78d6` + 行政區橘 `#d95926` + 山脈洋紅 `#c23f8f` + 保護區紫 `#7538ae`（`--pairs all`，CVD 最差 ΔE 9.2、一般視覺最差 ΔE 16.6）。
+
+#### ⚠️ 保護區紫是唯一一個「帶著 WARN 上線」的顏色
+
+`#7538ae` 在**深色模式**對面板底色的對比只有 **2.43:1**（低於 3:1）——正是當初否掉
+山脈紫 `#7a3fa6`（2.56:1）的那一項。這次判斷相反，理由要一起看才成立：
+
+1. **山脈那次有乾淨的替代品（洋紅），這次沒有。** 掃過整個 OKLCH 色域（L 0.48–0.68
+   × C 0.08–0.24 × 全色相）之後，在四色 all-pairs 下**六項全 PASS** 的只剩 h 152–160
+   的綠（`#5aa173` 一帶）與 h 308 的淡紫 `#a684c5`。
+2. **那兩個在地圖上都不能用，是實測不是推測。** 臺灣主題的建議底圖是 NLSC 通用電子
+   地圖，山區底色就是綠的，而保護區有一半以上落在山區——`#5aa173` 疊上去之後玉山、
+   太魯閣、大武山的界線幾乎描不出來（跟當初排除綠與棕當山脈線色是同一個理由）；
+   `#a684c5` 彩度只有 0.10，同樣糊掉。三個候選在同一個視角實際疊過才選的。
+3. **WARN 要求的 relief 在這個 UI 裡本來就成立。** 色塊只出現在圖層抽屜與圖例，兩處
+   一律緊接著圖層名稱的文字，色塊從來不是唯一的辨識線索。
+
+**要改這個顏色，請先把上面兩族候選在 NLSC 底圖的山區實際疊一次再說**，不要只看驗證
+器的輸出——這件事驗證器測不出來。
 
 行政區橘刻意用 `#d95926` 而不是色票的 light step `#eb6834`：後者在 **dark 模式的亮度帶檢查會 FAIL**。地圖是 WebGL 畫布只能有一組固定色，所以必須挑「兩個模式都過」的值。
 
@@ -483,7 +561,9 @@ maplibre 的四個角落容器是 map container 內的 `position: absolute; z-in
 - **圖層本身**：所有 ready 圖層的名稱（搜「河流」要找得到「世界主要河流」這個圖層）。`planned` 的不列，因為勾不動。
 - 沒有 `properties.id` 或沒有 `properties.name` 的圖徵一律跳過——前者選不了、後者搜不到。
 
-索引是 **lazy 的**：搜尋框第一次獲得焦點才 `buildSearchIndex()`，因為它要抓 `tw-counties.geojson`(35 KB) 與 `world-rivers.geojson`(146 KB)。一個班 30 個學生同時開站時，這 181 KB 不該是每個人無條件付的成本。資料一律走 `resolveLayerData()`，與圖層顯示共用同一份快取，不會抓兩次。
+索引是 **lazy 的**：搜尋框第一次獲得焦點才 `buildSearchIndex()`，因為它要抓 `tw-counties.geojson`(192 KB)、`world-rivers.geojson`(146 KB)、`tw-protected-areas.geojson`(183 KB) 與水庫那兩份。一個班 30 個學生同時開站時，這半 MB 不該是每個人無條件付的成本。資料一律走 `resolveLayerData()`，與圖層顯示共用同一份快取，不會抓兩次。
+
+**保護區那一層值得這 183 KB**：53 個圖徵全部有名字，而「玉山國家公園」「大武山自然保留區」正是學生會直接打進搜尋框的字串——這跟 `quakes` 那 400 KB／2831 筆**沒有名稱**的點是相反的案例。
 
 ### 選了一筆結果之後（`ThemeMapPage` 的 `pendingHit` 狀態機）
 
@@ -601,6 +681,7 @@ npm run build:species -- --force   # 全部重抓
 npm run build:reservoirs # 產生水庫即時水情（每次都重抓，CI 也會跑，見「部署」）
 npm run build:geodata   # 產生行政區/河流/地震/水庫 geojson（已存在會跳過）
 npm run build:geodata -- --force --only=quakes   # 只重抓一個資料集
+npm run build:geodata -- --force --only=tw-protected-areas   # 國家公園與保護區（約 2 分鐘）
 ```
 
 `build:climate` 對 Open-Meteo、`build:species` 對 GBIF、`build:geodata` 對 Natural Earth 與 USGS 都有指數退避重試（429/5xx 時等 5s/10s/20s…），連抓多筆被限流是正常的，重跑一次即可補齊。
@@ -618,6 +699,14 @@ maplibre 的 `Style.loadJSON()` 會先 `await` 一個 `requestAnimationFrame` �
 先確認 `document.visibilityState === 'visible'`（背景分頁下所有地圖驗證都不算數），需要時用
 `osascript -e 'tell application "Google Chrome" to set active tab index of window 1 to N'` 把分頁切到前景再等幾秒。
 同理，在背景載入、之後才切到前景的分頁，相機狀態可能跟網址參數對不上（`_constrain` 會在尺寸還沒定案時調整 zoom／緯度），要重新整理後再驗一次比較頁的 URL 還原。
+
+**「前景」不等於「這個分頁是視窗裡被選中的那一個」。** `document.visibilityState` 走的是
+系統層級的可見性：分頁被選中、Chrome 是最前景的應用程式，但**視窗在一個已休眠或被遮住的
+螢幕上**時，它照樣是 `hidden`——而 `setInterval` 不會被節流（背景分頁會被節流到 1 秒），
+所以「計時器跑得好好的、頁面卻是 hidden」正是這個情況的指紋。實測踩過：視窗在第二台
+螢幕上，`osascript … activate` 回報成功、`active tab index` 也對、截圖甚至照得到畫面，
+但地圖永遠停在空白、`window.__gaiaMaps` 是 undefined，看起來完全像程式壞了。
+先用 `tell application "Google Chrome" to get bounds of window 1` 確認視窗在哪台螢幕上。
 
 **分頁在測試中途才掉到背景也算數，而且症狀更難認。** 這時地圖已經載好了（`__gaiaMaps` 有東西、DOM 一切正常、React 也照常算繪），只有靠 rAF 的東西會靜靜地不動——尤其 `flyTo`。實測過的誤判：用 ⋮⋮⋮ 選單切主題時，路由、☰ 上的主題名、抽屜內容全都正確更新了，只有相機沒飛、zoom 停在切換前的值，看起來活像「換主題的 effect 壞了」。**每一段驗證腳本的開頭都印一次 `document.visibilityState`**，不要只在最開始確認一次。
 
@@ -780,6 +869,29 @@ m.isSourceLoaded('contour-source')
     - 切底圖之後重驗一次（ramp 表達式是 `reapply` 時重建的）
     - ⚠️ 搜尋索引現在會多抓 `tw-reservoirs.geojson`(20 KB) 與 `reservoirs-live.json`(8 KB)，
       驗第 12 項的 Network 期望值時要把這兩個算進去
+16. **國家公園與保護區**（`/theme/taiwan`，勾「國家公園與保護區」）：
+    ```js
+    const m = window.__gaiaMaps.at(-1);
+    m.jumpTo({ center: [120.95, 23.55], zoom: 8.4 });
+    m.getPaintProperty('tw-protected-areas-fill', 'fill-color')       // "#7538ae"
+    // zoom 7 的全島視角實測 52 個算繪多邊形／47 個不重複名稱
+    new Set(m.queryRenderedFeatures({ layers: ['tw-protected-areas-fill'] })
+      .map(f => f.properties.name)).size
+    // 53 個圖徵、171 個環、**0 個退化環**（零面積的來回線，見上）
+    const fc = await fetch('/data/geo/tw-protected-areas.geojson').then(r => r.json());
+    fc.features.length                                                // 53
+    ```
+    - 點玉山國家公園 → 卡片有成立年份、公告面積、最高峰與四則說明（十座國家公園都有內容檔）
+    - 點大武山自然保留區 → **沒有內容檔**，走 `FeatureCard` fallback：顯示 geojson 的
+      name + 圖層自己的 description／sources，不是空白卡
+    - 抽屜清單 53 筆，順序是十座國家公園（依成立年份）→ 自然保留區 → 野生動物保護區 →
+      自然保護區；次標是「類別・約 N 公頃」
+    - 搜「玉山國家公園」「大武山」都要搜得到（這一層有 `browse`，所以自動進索引）
+    - ⚠️ **一定要在 NLSC 通用電子地圖底圖上看**，而且要看山區（玉山、太魯閣、大武山）：
+      這一層的顏色就是為了在那片綠色地形上還讀得出來才選紫的，換色前先在這個視角疊一次
+    - 切底圖之後重驗一次
+    - ⚠️ 搜尋索引會多抓 `tw-protected-areas.geojson`(183 KB)，驗第 12 項的 Network
+      期望值時要算進去
 
 ### ⚠️ 用瀏覽器自動化點 UI 的三個陷阱
 
@@ -881,11 +993,16 @@ scripts/
 ├─ build-geodata.mjs      # NLSC / Natural Earth / USGS / 水利署 → public/data/geo
 ├─ build-reservoirs.mjs   # 水利署水庫水情 → public/data/reservoirs-live.json
 ├─ lib/simplify.mjs       # 自帶的 Douglas–Peucker（刻意不加依賴）
-├─ lib/unzip.mjs          # 自帶的 ZIP 讀取器（zlib.inflateRaw，同樣不加依賴）
-├─ lib/gml.mjs            # NLSC 行政區界線 GML 的剖析器（只認得那一種形狀）
+├─ lib/unzip.mjs          # 自帶的 ZIP 讀取器（zlib.inflateRaw；檔名會判 Big5，見上）
+├─ lib/gml.mjs            # NLSC 行政區界線 GML + TGOS SimpleWFS 兩種 GML 2 形狀
 ├─ lib/kml.mjs            # 水利署水庫蓄水範圍 KML 的剖析器（同樣只認得那一種）
-├─ lib/reservoirs.mjs     # 水利署開放資料的共用存取層（CSV 剖析、bot 防護、id 對照表）
-├─ lib/fetch-retry.mjs    # 指數退避的 fetch，兩支 build 腳本共用
+├─ lib/shp.mjs            # 自帶的 shapefile（.shp/.dbf/.prj/.cpg）讀取器，只支援多邊形
+├─ lib/twd97.mjs          # TWD97 TM2 → WGS84（中央子午線 121/119/117 由 .prj 決定）
+├─ lib/dissolve.mjs       # 有向邊相消的多邊形聯集（分區圖 → 園區範圍）
+├─ lib/csv.mjs            # CSV 剖析器（水庫與國家公園索引共用）
+├─ lib/protected-areas.mjs # 國家公園與保護區四個資料集的存取層
+├─ lib/reservoirs.mjs     # 水利署開放資料的共用存取層（bot 防護、id 對照表）
+├─ lib/fetch-retry.mjs    # 指數退避的 fetch（含 HTTP/2 fallback，見上）
 ├─ validate-content.mjs   # 建置前 schema 驗證 + 註冊表交叉檢查
 └─ postbuild.mjs          # 404.html + CNAME 確認
 ```

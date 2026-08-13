@@ -75,6 +75,34 @@ export function parseNlscGml(xml, nameTag = "名稱") {
 }
 
 /**
+ * TGOS 的 SimpleWFS 回應 → 每個 featureMember 的環陣列。
+ *
+ * 為什麼會需要第二種 GML：陽明山國家公園的**範圍圖**在官方索引裡只有兩種形式，
+ * SHP 那份包在一個 RAR 裡（免依賴的 Node 開不了），另一份就是這個 WFS 端點。
+ * 所幸它跟 NLSC 那份一樣是 GML 2 的 `<gml:coordinates>` 寫法，只差在沒有
+ * `<gml:polygonMember>` 這層包裝，所以共用同一個座標剖析函式。
+ *
+ * ⚠️ **座標不是經緯度**：`srsName="EPSG:3826"` 是 TWD97 TM2 公尺，呼叫端要自己
+ * 用 lib/twd97.mjs 換算。這裡不代勞是刻意的——本模組不該知道投影，而 srsName
+ * 一併回傳，呼叫端就能在它變成別的坐標系時直接失敗。
+ */
+export function parseWfsGml(xml) {
+  const members = xml.split(FEATURE_SPLIT).slice(1);
+  if (members.length === 0) throw new Error("WFS 回應裡找不到任何 gml:featureMember");
+  return members.map((member) => {
+    // boundedBy 也含 <gml:Box><gml:coordinates>，先切掉才不會把外框當成幾何
+    const body = member.replace(/<gml:boundedBy>[\s\S]*?<\/gml:boundedBy>/g, "");
+    const outer = OUTER_RE.exec(body);
+    if (!outer) throw new Error("WFS 的 featureMember 缺 outerBoundaryIs");
+    const inners = [...body.matchAll(INNER_RE)].map((m) => parseCoordinates(m[1]));
+    return {
+      srsName: /srsName="([^"]+)"/.exec(body)?.[1] ?? "",
+      rings: [parseCoordinates(outer[1]), ...inners],
+    };
+  });
+}
+
+/**
  * 環的面積（度²，shoelace）。用於濾掉在圖層可見的縮放範圍內小於一個像素的離島。
  *
  * 度² 而不是平方公里是刻意的：這個門檻要跟 simplifyGeometry 的容差（也是度）用同一個

@@ -23,6 +23,10 @@ import { parseNlscGml, ringArea } from "./lib/gml.mjs";
 import { parseReservoirKml, ringsCentroid } from "./lib/kml.mjs";
 import { readZipText } from "./lib/unzip.mjs";
 import {
+  LICENSE as PROTECTED_LICENSE,
+  fetchProtectedAreas,
+} from "./lib/protected-areas.mjs";
+import {
   EXTENT_KML_URL,
   LICENSE as WRA_LICENSE,
   RESERVOIR_IDS,
@@ -379,6 +383,32 @@ const SOURCES = [
     },
   },
   {
+    id: "tw-protected-areas",
+    label: "臺灣國家公園與保護區",
+    /**
+     * 四個資料集拼起來（十座國家公園 + 自然保留區 + 陸域野生動物保護區 +
+     * 自然保護區），取得與合併的細節全部關在 lib/protected-areas.mjs 裡。
+     * 所以這一筆用 `load` 自己抓，不走 `url` + `parse` 那條單一來源的路。
+     */
+    load: (fetchWithRetry) => fetchProtectedAreas(fetchWithRetry),
+    sourceUrl: [
+      "https://data.gov.tw/dataset/174421",
+      "https://data.gov.tw/dataset/9933",
+      "https://data.gov.tw/dataset/25540",
+      "https://data.gov.tw/dataset/24914",
+    ],
+    license: PROTECTED_LICENSE,
+    sourceLabel: "內政部國家公園署、農業部林業及自然保育署",
+    /**
+     * 0.0003° ≈ 33 公尺。比縣市界那個 0.0008 細，因為這一層**沒有設 maxzoom**：
+     * 保護區彼此不相鄰，沒有「相鄰面各自簡化會開出縫隙」的問題，所以可以一直
+     * 放大看。33 公尺在 zoom 13 約 1.4 px，在教學會用的 zoom 7–12 都是次像素。
+     */
+    tolerance: 0.0003,
+    digits: 5,
+    transform: (raw) => raw.features,
+  },
+  {
     id: "quakes",
     label: "全球地震帶",
     // 免金鑰、ACAO: *。單次上限 20000 筆；抓之前先打 /count 確認沒超過。
@@ -452,11 +482,19 @@ async function build(source) {
   }
 
   process.stdout.write(`- ${source.id}：`);
-  const url = source.resolveUrl ? await source.resolveUrl() : source.url;
   process.stdout.write("下載中…");
-  const res = await fetchWithRetry(url);
-  // 預設是 GeoJSON；需要先解壓／換格式的資料源自己提供 parse（見 tw-counties）
-  const raw = source.parse ? await source.parse(res) : await res.json();
+  let url = source.sourceUrl;
+  let raw;
+  if (source.load) {
+    // 多來源的資料集自己抓（見 tw-protected-areas）；順便把它想讓人知道的事情印出來
+    raw = await source.load(fetchWithRetry);
+    for (const warning of raw.warnings ?? []) console.log(`\n  · ${warning}`);
+  } else {
+    url = source.resolveUrl ? await source.resolveUrl() : source.url;
+    const res = await fetchWithRetry(url);
+    // 預設是 GeoJSON；需要先解壓／換格式的資料源自己提供 parse（見 tw-counties）
+    raw = source.parse ? await source.parse(res) : await res.json();
+  }
   process.stdout.write("轉換中…");
 
   const features = source
