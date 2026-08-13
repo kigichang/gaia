@@ -258,16 +258,6 @@ export const taiwanTheme: ThemeDefinition = {
       sources: ["維基百科", "內政部國土測繪中心"],
     },
     {
-      id: "tw-landform-zones",
-      label: "平原／盆地／台地分區",
-      group: "地形",
-      status: "planned",
-      render: { kind: "fill" },
-      detail: { type: "none" },
-      description: "西部平原、台地與盆地的範圍，對照人口與農業分布。",
-      sources: ["內政部國土測繪中心"],
-    },
-    {
       id: "tw-rivers",
       label: "主要河川",
       group: "水系",
