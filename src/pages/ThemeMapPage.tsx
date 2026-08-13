@@ -212,20 +212,27 @@ function ThemeMapView({ theme, chrome }: { theme: ThemeDefinition; chrome: Chrom
    * `layer.attach` 上而不是圖層自己身上。
    */
   const flyToFeature = useCallback(
-    (layer: LayerDefinition, featureId: string, attached = false) => {
+    (layer: LayerDefinition, featureId: string, attached = false, itemId?: string) => {
       if (!map) return;
       const attach = layer.attach;
       const browse = attached ? attach?.browse : layer.browse;
+      // ⚠️ 子項目圖層有**兩種**目標，不能都當成「選了一個子項目」：
+      //   - 子項目本身（特有種）：featureId 就是 itemId
+      //   - 子項目裡的單一圖徵（古蹟）：featureId 是圖徵 id，itemId 另外給
+      // 混在一起的話 layerInstanceId() 會用圖徵 id 去組 instance id，組出一個
+      // 不存在的 instance → fc 是 undefined → 直接 return，**相機完全不動**，
+      // 而詳情卡照樣開得好好的（搜「赤嵌樓」開出臺南的卡片、地圖還停在臺北）。
+      const targetsItemItself = layer.items && (itemId === undefined || itemId === featureId);
       const instanceId = attached
         ? attach?.id
         : layer.items
-          ? layerInstanceId(layer.id, featureId)
+          ? layerInstanceId(layer.id, itemId ?? featureId)
           : layer.id;
       const inst = instances.find((i) => i.instanceId === instanceId);
       const fc = inst?.data;
       if (!fc) return;
 
-      if (layer.items && !attached) {
+      if (targetsItemItself && !attached) {
         // 子項目整份就是一個圖層（例如一個物種的所有觀測點），框住全部
         const bounds = bboxOf(fc);
         if (bounds) map.fitBounds(bounds, { padding: 48, duration: 1200, maxZoom: 12 });
@@ -375,7 +382,7 @@ function ThemeMapView({ theme, chrome }: { theme: ThemeDefinition; chrome: Chrom
       if (detail && detail.type !== "none") {
         setSelected({ detail, featureId: pendingHit.featureId });
       }
-      flyToFeature(layer, pendingHit.featureId, attached);
+      flyToFeature(layer, pendingHit.featureId, attached, pendingHit.itemId);
     } else {
       const bounds = bboxOf(inst.data);
       if (bounds) map.fitBounds(bounds, { padding: 48, duration: 1200, maxZoom: 12 });
