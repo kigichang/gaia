@@ -677,6 +677,8 @@ maplibre 的四個角落容器是 map container 內的 `position: absolute; z-in
 ⚠️ **這張表上的數字要跟著 `public/data/` 一起維護**，不要照抄舊版：合併兩條分支時發現兩邊各自記的清單都已經過期（其中一邊還把 `tw-counties` 寫成 35 KB，實際是 192 KB）。要重新量就跑
 `for f in public/data/geo/*.geojson; do echo "$(basename $f) $(( $(wc -c < $f) / 1024 ))KB"; done`。
 
+⚠️ 實測時 `performance.getEntriesByType('resource')` 會列出**十份**而不是九份：多出來的 `tw-ranges.geojson`(3 KB) 是「五大山脈」`defaultOn` 在**進站時**就抓的，不是搜尋索引的成本（它確實也在索引裡，只是那筆已經付過了）。上表只列聚焦搜尋框才新增的九份。
+
 **保護區那 182 KB 與流域那 219 KB 是值得的**：兩層的圖徵全部有名字，而「玉山國家公園」「大武山自然保留區」「濁水溪流域」正是學生會直接打進搜尋框的字串——這跟 `quakes` 那 402 KB／2831 筆**沒有名稱**的點是相反的案例（所以 `quakes` 沒有 `browse`，不進索引）。
 
 ### 選了一筆結果之後（`ThemeMapPage` 的 `pendingHit` 狀態機）
