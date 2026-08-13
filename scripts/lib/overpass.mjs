@@ -110,6 +110,31 @@ export async function fetchRouteLines(selector) {
 const endKey = (p) => `${p[0]},${p[1]}`;
 
 /**
+ * 方位角（弧度）。只用來在岔路上比較「哪一條比較直」，所以不必是真的大地方位角，
+ * 把經度依緯度壓縮一下就夠了。
+ */
+function bearing(a, b) {
+  const dx = (b[0] - a[0]) * Math.cos((((a[1] + b[1]) / 2) * Math.PI) / 180);
+  return Math.atan2(b[1] - a[1], dx);
+}
+
+/** 兩個方位角之間的夾角，0（完全同向）到 π（原路折返）。 */
+function turnAngle(from, to) {
+  const d = Math.abs(to - from) % (2 * Math.PI);
+  return d > Math.PI ? 2 * Math.PI - d : d;
+}
+
+/**
+ * 接下去的轉角超過這個角度就不接（120°）。
+ *
+ * 這是「寧可斷成兩條，也不要接出折返」的取捨：折返的線畫得出來、長度卻是假的，
+ * 而斷開只是多一條獨立的線（本來就允許，見下）。這幾條軸線的 way 粒度下沒有
+ * 任何真實彎道會在**單一節點**上轉超過 120°——會的是阿里山線那種之字形登山鐵路，
+ * 而那不在這個圖層裡。
+ */
+const MAX_TURN = (120 * Math.PI) / 180;
+
+/**
  * 把首尾相接的 way 串成連續的長折線。
  *
  * **這不是為了省檔案大小而已，是沿線標註的前提。** Overpass 回來的是 OSM 的
@@ -124,9 +149,37 @@ const endKey = (p) => `${p[0]},${p[1]}`;
  *
  * 用貪婪串接而不是求歐拉路徑：路線上有匝道、側線與雙線區間，本來就不保證
  * 是單一連通路徑，串不起來的段落各自留成獨立的線就好。
+ *
+ * ## ⚠️ 兩件讓幾何「畫得出來但長度是假的」的事
+ *
+ * 兩者的症狀一模一樣——線照樣渲染、標註照樣放，只有公里數對不上官方數字，
+ * 所以**驗證方式是核對建置日誌印出來的長度**，不是看畫面。
+ *
+ * 1. **同一條 way 會出現在多個關聯裡。** 西部幹線是四個關聯併起來的，而
+ *    海岸線的關聯把竹南以北、彰化以南跟縱貫線共用的路段整段收了進來（實測
+ *    121 條重複、99.5 公里）；甚至同一個關聯自己也會重複收同一條 way。
+ *    不去重的話貪婪串接會沿著 way 走出去、再沿它的分身走回來。
+ * 2. **雙軌區間的兩條軌道都是關聯成員。** 兩條平行的 way 在交會處共用節點，
+ *    走到底之後「接下一段」的候選裡就有一條是原路折返的另一條軌道。
+ *    這個不是去重能解的——那兩條 way 是不同的實體。
+ *
+ * 所以這裡做兩件事：入口先去重（方向無關），接的時候在岔路上**挑最直的那條**
+ * 並拒絕超過 `MAX_TURN` 的轉角。實測西部幹線 839.5 → 734.4 公里、
+ * 自我折返的線從 5 條降到 0 條。
  */
 export function stitchWays(lines) {
-  const remaining = lines.map((l) => l.slice());
+  // 去重：同一條 way 反過來寫也是同一條實體軌道，所以用「正向與反向取較小者」
+  // 當 key。真的走兩趟同一段路的環狀路線會被併成一趟——這幾條軸線沒有這種東西，
+  // 而把重複的軌道畫兩遍的代價（見上）遠大於這個假設出錯的風險。
+  const seen = new Map();
+  for (const line of lines) {
+    const a = JSON.stringify(line);
+    const b = JSON.stringify(line.slice().reverse());
+    const key = a < b ? a : b;
+    if (!seen.has(key)) seen.set(key, line);
+  }
+  const remaining = [...seen.values()].map((l) => l.slice());
+
   /** 端點座標 → 還沒用掉的線在 remaining 裡的索引 */
   const index = new Map();
   const add = (key, i) => index.set(key, [...(index.get(key) ?? []), i]);
@@ -136,10 +189,42 @@ export function stitchWays(lines) {
   });
 
   const used = new Array(remaining.length).fill(false);
-  /** 從 index 裡找一條還沒用掉、且某一端等於 key 的線 */
-  const takeAt = (key) => {
-    for (const i of index.get(key) ?? []) if (!used[i]) return i;
-    return -1;
+
+  /**
+   * 在接點上挑一條要接的線：**轉角最小的優先**，超過 `MAX_TURN` 的一律不接。
+   *
+   * `heading` 是目前這條鏈在接點上的行進方向；回傳的 `piece` 已經轉好方向
+   * （往後接時以接點開頭、往前接時以接點結尾），呼叫端直接串上去就好。
+   */
+  const pickNext = (tip, heading, forward) => {
+    let best = -1;
+    let bestPiece = null;
+    let bestTurn = Infinity;
+    for (const i of index.get(tip) ?? []) {
+      if (used[i]) continue;
+      let piece = remaining[i];
+      // ⚠️ 往後接與往前接的「要不要反轉」條件是**相反**的，共用同一個條件式
+      // 會靜默地接出鋸齒狀的錯誤幾何（實測國道三號 431 km 變成 560 km、
+      // 716 段只串成 358 條）。
+      if (forward) {
+        if (endKey(piece[piece.length - 1]) === tip) piece = piece.slice().reverse();
+      } else {
+        if (endKey(piece[0]) === tip) piece = piece.slice().reverse();
+      }
+      // 接上去之後，行進方向在接點上會變成什麼
+      const outgoing = forward
+        ? bearing(piece[0], piece[1])
+        : bearing(piece[piece.length - 2], piece[piece.length - 1]);
+      const turn = forward ? turnAngle(heading, outgoing) : turnAngle(outgoing, heading);
+      if (turn < bestTurn) {
+        bestTurn = turn;
+        best = i;
+        bestPiece = piece;
+      }
+    }
+    if (best === -1 || bestTurn > MAX_TURN) return null;
+    used[best] = true;
+    return bestPiece;
   };
 
   const out = [];
@@ -153,22 +238,13 @@ export function stitchWays(lines) {
     for (const forward of [true, false]) {
       for (;;) {
         const tip = endKey(forward ? chain[chain.length - 1] : chain[0]);
-        const next = takeAt(tip);
-        if (next === -1) break;
-        used[next] = true;
-        let piece = remaining[next];
-        if (forward) {
-          // 往後接：piece 要以接點「開頭」，所以只有在它以接點結尾時才反轉
-          if (endKey(piece[piece.length - 1]) === tip) piece = piece.slice().reverse();
-          chain = chain.concat(piece.slice(1)); // slice(1) 去掉重複的接點
-        } else {
-          // 往前接：方向相反，piece 要以接點「結尾」——反轉的條件因此也相反。
-          // ⚠️ 這裡兩個方向共用同一個條件式會靜默地接出鋸齒狀的錯誤幾何：
-          // 線還是畫得出來、長度卻會膨脹（實測國道三號 431 km 變成 560 km），
-          // 而且大部分 way 接不起來（716 段只串成 358 條）。
-          if (endKey(piece[0]) === tip) piece = piece.slice().reverse();
-          chain = piece.slice(0, -1).concat(chain);
-        }
+        const heading = forward
+          ? bearing(chain[chain.length - 2], chain[chain.length - 1])
+          : bearing(chain[0], chain[1]);
+        const piece = pickNext(tip, heading, forward);
+        if (!piece) break;
+        // slice 去掉重複的接點
+        chain = forward ? chain.concat(piece.slice(1)) : piece.slice(0, -1).concat(chain);
       }
     }
     out.push(chain);
