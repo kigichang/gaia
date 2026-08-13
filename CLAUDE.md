@@ -56,6 +56,7 @@ Node ≥ 22.12（vite 8 要求）。開發機與 CI 都用 Node 24。
 | 氣候正常值 | `archive-api.open-meteo.com/v1/archive`（ERA5） | **只在建置期呼叫** |
 | 特有種觀測紀錄 | `api.gbif.org/v1/occurrence/search`（GBIF） | **只在建置期呼叫**，`ACAO: *` |
 | 臺灣縣市界線 | `data.gov.tw/api/v2/rest/dataset/7442` → TGOS 的 GML zip（內政部國土測繪中心） | **只在建置期呼叫**，政府資料開放授權條款第 1 版 |
+| 鄉鎮別作物種植面積 | `data.gov.tw` 資料集 **7302**「農情調查」→ `data.moa.gov.tw/Service/OpenData/FromM/TownCropData.aspx` | **只在建置期呼叫**（有 CORS 但 43,538 筆不該讓瀏覽器自己聚合）。⚠️ **不帶篩選只回 9999 筆**，且**不含水稻**，見下 |
 | 臺灣鄉鎮市區界線 | `data.gov.tw/api/v2/rest/dataset/**7441**` → TGOS 的 **SHP** zip（同一個單位） | **只在建置期呼叫**。⚠️ 這份**沒有 GML 只有 SHP**，而且 zip 裡有兩份 shapefile，見下 |
 | 世界行政區／河流幾何 | `raw.githubusercontent.com/nvkelso/natural-earth-vector`（Natural Earth） | **只在建置期呼叫**，public domain |
 | 地震目錄 | `earthquake.usgs.gov/fdsnws/event/1/query`（USGS） | **只在建置期呼叫**，免金鑰、`ACAO: *` |
@@ -322,6 +323,51 @@ OSM 是眾人編輯的資料庫，關聯被拆開、改名或重建都可能發�
 維基百科只在**人工逐一確認**後才寫進少數知名古蹟的內容檔 `sources`，比照
 「維基百科是次級來源」的既有規範。
 
+---
+
+### 主要作物分布：資料只到鄉鎮，所以先有鄉鎮界才有這一層
+
+`tw-crops` 是農業部農糧署「農情調查」（資料集 7302）的**鄉鎮別**種植面積，畫成
+鄉鎮形心上的點、半徑代表年種植面積，依作物分成果樹／蔬菜／茶三個子圖層。
+取得邏輯在 `scripts/lib/crops.mjs`。
+
+**幾何來自 `public/data/geo/tw-townships.geojson`**（建置期直接讀那份產物，不重新
+剖析 12.8 MB 的 SHP），所以**建置順序有相依**：沒有鄉鎮界就不能建作物層，腳本會
+明講該先跑哪個指令。join key 由 `townKey()` 兩邊共用——各自組 key 的話會靜默失敗。
+
+#### ⚠️ 上游的五個坑
+
+1. **不帶篩選只回 9999 筆。** 這是硬上限不是巧合，而且那 9999 筆只涵蓋 6 個縣市
+   ——照單全收會做出一張「臺灣只有六個縣市種東西」的地圖，**沒有任何錯誤訊息**。
+   解法是**逐縣市抓**（`City=`），實測單一縣市最多 4,583 筆，離上限還有距離；
+   `crops.mjs` 另外在拿到 ≥9999 筆時直接失敗，免得上限哪天被撞到而沒人發現。
+2. **「台」與「臺」混用，而且鄉鎮名也有。** 縣市是 台北／台中／台南／台東，鄉鎮
+   是屏東縣**霧台**鄉（鄉鎮界圖資寫的是霧**臺**鄉）。只正規化縣市的話實測
+   344/345 對得上——**少的那一個不會報錯，只是那個鄉鎮從地圖上消失**。兩邊都
+   正規化之後 345/345。
+3. **⚠️ 這份資料完全不含水稻。** 實測彰化縣（稻米大縣）的水稻是 **0 筆**，雲林縣
+   只有 4 筆掛在雜項代碼 Y04 下，而且 `Crop=水稻` 篩選回 0 列、113 與 114 年都
+   一樣。水稻另有官方統計（「臺灣地區稻作種植、收穫面積及產量」）但**只到縣市**，
+   跟這一層的鄉鎮尺度混在一起會讓學生讀錯。所以這一層**刻意沒有稻米**，圖層說明
+   要講清楚——這不是漏掉。
+4. **「休閒面積」「荒廢面積」不是作物**（代碼 5 開頭，全國合計 211 萬公頃，比任何
+   真作物都大），**花卉菇類的「面積」也不是耕地面積**（太空包香菇按包計算，全國
+   57 萬公頃，比整個蔬菜類還大）。只取果樹（代碼 6）、蔬菜（4）、茶（305）就自然
+   避開，但**新增作物類別前要先看它的量級合不合理**。
+5. **面積是跨期作相加的年種植面積**，一塊地一年種兩期就算兩次。這是農業統計的標準
+   定義，不是重複計算的 bug，但卡片與說明都要寫「年種植面積」，不要寫成耕地面積。
+
+#### ⚠️ 多年生作物要濾掉「沒有收成」的列
+
+新竹縣寶山鄉報了 **2,487 公頃的蘋果**，收穫面積 0、收量 0——那是全國其他所有蘋果
+（約 230 公頃，真正的產地是臺中和平區梨山一帶）的十六倍，而寶山鄉是海拔一百多
+公尺的丘陵。不濾掉的話新竹丘陵會長出一顆全臺數一數二大的果樹圓點。
+
+`isProducing()` 因此對**多年生作物**（`期作 === "全年"`，也就是茶與果樹）要求
+「收穫面積或收量至少有一個大於 0」。實測影響小而準：果樹面積少 6.5%、茶少 0.2%
+（前五大茶鄉一個都沒變），寶山鄉的果樹從 4,497 回到 320 公頃。
+**季節性作物不套這條規則**——蔬菜一年多收，某一期沒收成是正常的。
+
 ## 硬性禁止事項
 
 1. **不得引入任何需要 API key、token 或付費金鑰的服務。** MapTiler、Mapbox、Google Maps 一律不用。純靜態站沒有地方藏金鑰。
@@ -373,6 +419,7 @@ ID 常數定義在 `src/map/layers/*.ts`，**一律 import 常數，不要寫死
 | `tw-rivers-line` / `tw-rivers-label` | line + symbol |
 | `tw-basins-fill` / `tw-basins-outline` | fill + line |
 | `tw-monuments-<level>-points` | circle，三個級別各自一組（`national`／`municipal`／`county`） |
+| `tw-crops-<crop>-points` | circle，三種作物各自一組（`fruit`／`vegetable`／`tea`） |
 
 `dem` 與 `dem-terrain` 是兩個來源但都指向同一個 shared DEM protocol：maplibre 會警告 hillshade 與 terrain 共用來源會降低算繪品質，拆開可消除警告，而底層圖磚快取仍然共用、不會重複下載。
 
@@ -405,7 +452,7 @@ maplibre-contour 把 worker 以 Blob URL 內嵌，**不需要額外部署 worker
 
 | 主題 | 路由 | 內容 |
 |---|---|---|
-| 臺灣地理 | `/theme/taiwan` | 行政區（縣市、鄉鎮市區）、地形、水系（含水庫即時水情、河川流域分區）、人文（原住民族、交通軸線、古蹟）、植被生態（特有種、國家公園與保護區）、農業物產 |
+| 臺灣地理 | `/theme/taiwan` | 行政區（縣市、鄉鎮市區）、地形、水系（含水庫即時水情、河川流域分區）、人文（原住民族、交通軸線、古蹟）、植被生態（特有種、國家公園與保護區）、農業物產（主要作物分布） |
 | 世界地理 | `/theme/world` | 世界重要城市、國界與大洲、地形水系、人文專題 |
 | 全球地理形貌 | `/theme/global` | 緯度參考線、氣候與生物群系、洋流、板塊與地震帶 |
 
@@ -628,6 +675,25 @@ node <dataviz-skill>/scripts/validate_palette.js "#aa604e,#934c3a,#7d3827" --ord
 而且圓點有白色外框。要改這個顏色、或懷疑山區的古蹟看不清楚時，**先在 NLSC 底圖的
 山區實際疊一次再說**。
 
+#### 主要作物三色，以及「物種三色全數 PASS」這句話已經不成立
+
+作物三色 `CROP_COLORS`（果樹 `#d36085`／蔬菜 `#7d9913`／茶 `#0994de`）是**分類色**，
+用 `--pairs all` 驗證：CVD 最差 ΔE 10.4、一般視覺最差 25.9，彩度下限與亮度帶**兩個
+模式都過**。
+
+⚠️ **校準過的事實：現行的物種三色（`#1baf7a,#eda100,#4a3aa7`）用現在的驗證器重跑，
+深色模式的亮度帶檢查是 FAIL**（`#eda100` L=0.764、`#4a3aa7` L=0.433 都在帶外），
+CVD 9.1、一般視覺 22.9。也就是說本檔案舊版寫的「物種三色 all-pairs 全數 PASS」
+**已經不可重現**（驗證器或色票其中之一變過）。作物色是刻意選在**比它更嚴格**的
+位置上的，要改色請至少維持 CVD ≥ 9.1、一般視覺 ≥ 22.9，而且兩個模式的亮度帶都過。
+
+⚠️ **為什麼只有三種作物**：不是挑剩的，是掃出來的上限。用 OKLCH 掃過色相／亮度／
+彩度找**四色**分類組合，能達到上面那個分離度的**一組都沒有**——四個分類色本質上
+就是沒辦法跟三個一樣好分。所以這一層維持三個子圖層。
+
+顏色與作物的對應靠圖例文字，不是靠「像不像」——茶配藍不是寫錯，那是掃描後唯一可行
+的第三個色相（比照交通軸線的翠綠是算出來的，不是挑出來的）。
+
 `reference`（緯度參考線）與 `hazard`（地震帶）是**非分類的固定角色**，比照 hillshade 的棕色，刻意排除在色票驗證之外。地震帶尤其不該給分類色相：2800 個依震級縮放的點是**密度場**，教學內容是「地震帶沿板塊邊緣浮現」，不是「這個色相代表地震」；給它色相不但擠爆色票驗證，2800 個不透明白框圓點在投影機上也只是一坨糊的（所以 `strokeWidth: 0` 必須是可設定的）。
 
 ### 選取中的圖徵怎麼強調
@@ -829,11 +895,14 @@ maplibre 的四個角落容器是 map container 內的 `position: absolute; z-in
 
 **而且撞名時要把 `meta` 補進副標**，否則畫面上是兩列一模一樣的字。這件事**只對真的撞名的標題做**：水庫的 `meta` 是「蓄水 62%・有效容量 …」這種長字串，沒撞名還硬加只會把副標塞爆。實測搜「東區」會得到四列，各自標著新竹市／臺中市／嘉義市／臺南市。
 
-索引是 **lazy 的**：搜尋框第一次獲得焦點才 `buildSearchIndex()`。目前它會抓十三份檔案，合計約 **1.88 MB**：
+索引是 **lazy 的**：搜尋框第一次獲得焦點才 `buildSearchIndex()`。目前它會抓十六份檔案，合計約 **2.13 MB**：
 
 | 檔案 | 大小 |
 |---|---|
 | `tw-townships.geojson` | 509 KB |
+| `tw-crops-vegetable.geojson` | 112 KB |
+| `tw-crops-fruit.geojson` | 107 KB |
+| `tw-crops-tea.geojson` | 26 KB |
 | `tw-monuments-municipal.geojson` | 240 KB |
 | `tw-basins.geojson` | 219 KB |
 | `tw-counties.geojson` | 192 KB |
@@ -846,7 +915,7 @@ maplibre 的四個角落容器是 map container 內的 `position: absolute; z-in
 | `tw-reservoirs.geojson` + `reservoirs-live.json` | 20 + 7 KB |
 | `tw-county-halls.geojson` | 7 KB |
 
-一個班 30 個學生同時開站時，這 1.88 MB 不該是每個人無條件付的成本。資料一律走 `resolveLayerData()`，與圖層顯示共用同一份快取，不會抓兩次。
+一個班 30 個學生同時開站時，這 2.13 MB 不該是每個人無條件付的成本。資料一律走 `resolveLayerData()`，與圖層顯示共用同一份快取，不會抓兩次。
 
 ⚠️ **古蹟那三份（483 KB）是子項目圖層唯一會進索引的例子，而且必須明確開啟。**
 `items` 圖層預設**只索引子項目本身**（三筆「國定古蹟／直轄市定古蹟／縣(市)定古蹟」），
@@ -981,6 +1050,7 @@ npm run build:geodata   # 產生行政區/河流/地震/水庫 geojson（已存�
 npm run build:geodata -- --force --only=quakes   # 只重抓一個資料集
 npm run build:geodata -- --force --only=tw-protected-areas   # 國家公園與保護區（約 2 分鐘）
 npm run build:geodata -- --force --only=tw-townships          # 368 個鄉鎮市區（下載 12.8 MB）
+npm run build:geodata -- --force --only=tw-crops-fruit        # 作物三種要各跑一次（需先有鄉鎮界）
 npm run build:geodata -- --force --only=tw-monuments-national   # 古蹟三級要各跑一次
                                        # （municipal／county 同理；歷史沿革分片會一起寫出）
 ```
@@ -1311,6 +1381,25 @@ m.isSourceLoaded('contour-source')
     - 搜「Lukang」找得到鹿港鎮（`TOWNENG` 進了 haystack）。⚠️ 是 Lukang 不是 Lugang
     - 切底圖之後重驗顏色與排序
 
+22. **主要作物分布**（`/theme/taiwan`，勾「主要作物分布」，底下三個作物子核取方塊）：
+    ```js
+    const m = window.__gaiaMaps.at(-1);
+    m.jumpTo({ center: [120.6, 23.8], zoom: 9 });
+    ['fruit','vegetable','tea'].map(k => k + ':' + m.getPaintProperty(`tw-crops-${k}-points`, 'circle-color'))
+    // 期望 fruit #d36085 / vegetable #7d9913 / tea #0994de
+    ```
+    - **顏色要綁在作物上，不是勾選順序**：先勾「茶」再勾「果樹」，茶仍然要是藍的
+    - 點嘉義縣中埔鄉的果樹點 → 卡片標題「中埔鄉」、副標「嘉義縣・果樹 5,432 公頃」、
+      底下一行是**這個鄉鎮種最多的前三種**（檳榔／香蕉／其他果樹）。
+      ⚠️ 只看到圖層說明而沒有鄉鎮名，代表 `DetailCard` 的 geo 分支又只比對了圖層 id
+      ——子項目圖層的 instance 是 `tw-crops-<crop>`，要掃過所有指向同一個 collection
+      的 instance（踩過一次）
+    - 搜「鹿谷」要同時出現鄉鎮市區界與三筆作物（副標各自標著果樹／蔬菜／茶）
+    - 地理合理性抽查（這一層最容易看出資料錯）：茶的前三名是名間鄉、仁愛鄉、鹿谷鄉；
+      蔬菜是雲林二崙、西螺；果樹是嘉義中埔、南投中寮、臺中和平。
+      ⚠️ **新竹縣寶山鄉不該出現在果樹前段**——它出現就代表 `isProducing()` 沒生效
+    - 切底圖之後重驗顏色
+
 ### ⚠️ 用瀏覽器自動化點 UI 的三個陷阱
 
 - **主題頁的底圖選單藏在左下角「圖層」彈出層裡**，必須先 `document.querySelector('.map-tile').click()` 才找得到 `<select>`；`/compare` 的仍然直接在頁首。
@@ -1425,6 +1514,7 @@ scripts/
 ├─ lib/protected-areas.mjs # 國家公園與保護區四個資料集的存取層
 ├─ lib/reservoirs.mjs     # 水利署開放資料的共用存取層（CSV 剖析、bot 防護、id 對照表）
 ├─ lib/monuments.mjs      # 文資局古蹟的存取層（經緯度顛倒修正、名稱前綴剝除、縣市分片）
+├─ lib/crops.mjs          # 農情調查的存取層（逐縣市抓以避開 9999 上限、台／臺正規化、非生產列過濾）
 ├─ lib/overpass.mjs       # OSM Overpass 存取層（端點輪替、路線關聯查詢、way 串接）
 ├─ lib/rivers.mjs         # 河川／流域 id 對照表（BASIN_IDS 從 RIVER_IDS 衍生）+ 官方長度／流域面積（RIVER_FACTS）+ 河川的 OSM 選取碼（RIVER_OSM_REFS，水利署河川代碼）
 ├─ lib/fetch-retry.mjs    # 指數退避的 fetch（含 HTTP/2 fallback，見上）

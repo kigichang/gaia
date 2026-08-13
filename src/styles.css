@@ -1243,6 +1243,14 @@ input {
 }
 
 /* 還沒寫內容檔時顯示的圖層說明，不要給一張空卡 */
+.feature-detail-line {
+  margin: 0 0 8px;
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--text-primary);
+  font-variant-numeric: tabular-nums;
+}
+
 .feature-fallback {
   margin: 0 0 8px;
   font-size: 13px;

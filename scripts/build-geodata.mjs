@@ -14,7 +14,7 @@
  *   npm run build:geodata -- --force       # 全部重抓
  *   npm run build:geodata -- --only=quakes # 只處理一個資料集
  */
-import { writeFile, mkdir, access } from "node:fs/promises";
+import { writeFile, mkdir, access, readFile } from "node:fs/promises";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import { fetchWithRetry } from "./lib/fetch-retry.mjs";
@@ -41,6 +41,16 @@ import {
   LICENSE as PROTECTED_LICENSE,
   fetchProtectedAreas,
 } from "./lib/protected-areas.mjs";
+import {
+  CROP_ITEMS,
+  DATASET_ID as CROP_DATASET_ID,
+  LICENSE as CROP_LICENSE,
+  SOURCE_LABEL as CROP_SOURCE_LABEL,
+  aggregate as aggregateCrops,
+  fetchCrops,
+  formatArea,
+  townKey,
+} from "./lib/crops.mjs";
 import {
   DATASET_ID as MONUMENT_DATASET_ID,
   LEVELS as MONUMENT_LEVELS,
@@ -909,6 +919,62 @@ const SOURCES = [
    * feature 順序＝指定年份由早到晚，讓最早公告的（赤嵌樓、淡水紅毛城那一批）
    * 排在前面；同年再依名稱，避免上游順序變動造成無意義的 diff。
    */
+  /**
+   * 三種作物各一筆。共用 `lib/crops.mjs` 的 module-level 快取，所以 22 個縣市的
+   * 統計一個 process 只抓一輪；產物是三個小檔（各一兩百個鄉鎮的點）。
+   */
+  ...CROP_ITEMS.map((item) => ({
+    id: `tw-crops-${item.id}`,
+    label: `臺灣${item.label}分布`,
+    load: async (fetchWithRetry) => {
+      const { rows, warnings } = await fetchCrops(fetchWithRetry);
+      return { rows, warnings, centroids: await townshipCentroids() };
+    },
+    sourceUrl: `https://data.gov.tw/dataset/${CROP_DATASET_ID}`,
+    license: CROP_LICENSE,
+    sourceLabel: CROP_SOURCE_LABEL,
+    // 點不需要簡化；5 位小數 ≈ 1 公尺，形心本來就沒有更高的精度可言
+    tolerance: 0,
+    digits: 5,
+    transform: ({ rows, centroids }) => {
+      const byTown = aggregateCrops(rows, item);
+      const features = [];
+      /** 統計裡有、但鄉鎮界圖資對不到的鄉鎮。靜默跳過會讓少一塊沒人發現。 */
+      const unmatched = [];
+      for (const [key, { county, town, area, crops }] of byTown) {
+        const centroid = centroids.get(key);
+        if (!centroid) {
+          unmatched.push(`${county}${town}`);
+          continue;
+        }
+        // 這個鄉鎮種最多的前三種，給詳情卡用
+        const top = [...crops].sort((a, b) => b[1] - a[1]).slice(0, 3);
+        features.push({
+          type: "Feature",
+          geometry: { type: "Point", coordinates: centroid },
+          properties: {
+            id: `crop-${item.id}-${county}-${town}`,
+            name: town,
+            county,
+            crop: item.label,
+            area_ha: Math.round(area * 10) / 10,
+            areaLabel: formatArea(area),
+            top: top.map(([n, a]) => `${n} ${formatArea(a)}`).join("、"),
+            meta: `${county}・${item.label} ${formatArea(area)}`,
+          },
+        });
+      }
+      if (unmatched.length) {
+        throw new Error(
+          `這些鄉鎮在 tw-townships.geojson 裡找不到：${unmatched.join("、")}（可能是「台／臺」沒正規化）`,
+        );
+      }
+      // ⚠️ feature 順序＝抽屜可點清單的順序。依面積由大到小，清單開頭就是這種
+      // 作物最主要的產地——那正是這一層要回答的問題。
+      return features.sort((a, b) => b.properties.area_ha - a.properties.area_ha);
+    },
+  })),
+
   ...Object.entries(MONUMENT_LEVELS).map(([levelName, { slug }]) => ({
     id: `tw-monuments-${slug}`,
     label: `臺灣${levelName}`,
@@ -933,6 +999,38 @@ const SOURCES = [
         .map(monumentFeature),
   })),
 ];
+
+/**
+ * 鄉鎮形心，給作物圖層當點位用：鄉鎮中文名（含縣市）→ [lng, lat]。
+ *
+ * 幾何直接讀已經產好的 `tw-townships.geojson`，不重新剖析那份 12.8 MB 的 SHP。
+ * 代價是**建置順序有相依**：要先有鄉鎮界才能建作物層，所以檔案不在時要講清楚
+ * 該跑哪一個指令，而不是丟一個 ENOENT。
+ */
+let townCentroidsPromise = null;
+function townshipCentroids() {
+  townCentroidsPromise ??= (async () => {
+    const path = join(OUT_DIR, "tw-townships.geojson");
+    let fc;
+    try {
+      fc = JSON.parse(await readFile(path, "utf8"));
+    } catch {
+      throw new Error(
+        "找不到 public/data/geo/tw-townships.geojson，作物圖層的點位靠它決定。" +
+          "請先執行 npm run build:geodata -- --only=tw-townships",
+      );
+    }
+    const byName = new Map();
+    for (const f of fc.features) {
+      const centroid = ringsCentroid(f.geometry.coordinates.flat());
+      if (centroid) {
+        byName.set(townKey(f.properties.county, f.properties.name), centroid);
+      }
+    }
+    return byName;
+  })();
+  return townCentroidsPromise;
+}
 
 /**
  * 歷史沿革的縣市分片，21 份（**臺東縣沒有古蹟**，見 lib/monuments.mjs）。

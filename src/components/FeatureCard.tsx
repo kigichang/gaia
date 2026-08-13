@@ -13,6 +13,11 @@ interface FeatureCardProps {
      * 沒有內容檔時它常常是這個圖徵**唯一**的具體資訊，不顯示就浪費掉了。
      */
     meta?: string;
+    /**
+     * geojson 的 `detail` 屬性：比 `meta` 更具體的一行（主要作物分布用它列出這個
+     * 鄉鎮種最多的前三種作物）。有內容檔的圖層走 `facts`，這是沒有內容檔時的對應物。
+     */
+    detail?: string;
     layerLabel: string;
     description: string;
     sources: string[];
@@ -65,6 +70,7 @@ export function FeatureCard({ feature, fallback }: FeatureCardProps) {
         // 還沒寫內容檔：至少把圖層自己的說明交代清楚，不要給一張空卡
         <>
           {fallback.meta && <p className="feature-subtitle">{fallback.meta}</p>}
+          {fallback.detail && <p className="feature-detail-line">{fallback.detail}</p>}
           <p className="feature-fallback">{fallback.description}</p>
         </>
       )}

@@ -38,8 +38,17 @@ export function DetailCard({
     // **附屬圖層也要找**（縣市界 → 縣市政府）：它不在 theme.layers 裡，漏掉的話
     // fallback 會拿不到名稱與說明，卡片標題會退化成 collection 這個內部字串。
     const owner = findGeoOwner(theme, detail.collection);
-    const fc = instances.find((i) => i.instanceId === owner?.id)?.data;
-    const props = fc?.features.find((f) => f.properties?.id === featureId)?.properties;
+    /**
+     * ⚠️ **不能只找 `instanceId === owner.id`。** 子項目圖層的 instance id 是
+     * `<圖層 id>-<子項目 id>`（主要作物分布是 tw-crops-fruit／-vegetable／-tea），
+     * 只比對圖層 id 會一個都對不到 → props 是 undefined → 卡片退化成「只有圖層
+     * 標題與說明」，看起來像 fallback 正常運作，其實是查錯了地方。
+     * 改成掃過所有指向同一個 collection 的 instance。
+     */
+    const props = instances
+      .filter((i) => i.detail.type === "geo" && i.detail.collection === detail.collection)
+      .flatMap((i) => i.data?.features ?? [])
+      .find((f) => f.properties?.id === featureId)?.properties;
     return (
       <FeatureCard
         feature={getGeoFeature(detail.collection, featureId)}
@@ -49,6 +58,7 @@ export function DetailCard({
               ? String(props[detail.fallbackNameProperty ?? "name"])
               : undefined,
           meta: typeof props?.meta === "string" ? props.meta : undefined,
+          detail: typeof props?.top === "string" ? props.top : undefined,
           layerLabel: owner?.label ?? detail.collection,
           description: owner?.description ?? "",
           sources: owner?.sources ?? [],

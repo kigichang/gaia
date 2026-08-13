@@ -1,5 +1,6 @@
 // .ts 副檔名是必要的：Node 直接載入註冊表時不會自己補副檔名（見 ../types.ts）
 import {
+  CROP_COLORS,
   MAX_SIMULTANEOUS_SPECIES,
   MONUMENT_LEVEL_COLORS,
   RESERVOIR_FILL_RAMP,
@@ -200,9 +201,10 @@ export const taiwanTheme: ThemeDefinition = {
       sources: ["文化部文化資產局"],
     },
 
-    // ── 以下是還沒有資料的圖層 ────────────────────────────────────────
-    // 先把分類骨架擺出來，資料再逐一回補。UI 會顯示成停用的核取方塊，
-    // 但 description 仍然要寫清楚——一個沒有文字的停用選項什麼都沒教到。
+    // ── 以下混著已上線與尚未有資料的圖層 ──────────────────────────────
+    // `status: "planned"` 的會顯示成停用的核取方塊，但 description 仍然要寫清楚
+    // ——一個沒有文字的停用選項什麼都沒教到。目前還是 planned 的只剩
+    // tw-population、tw-vegetation-belts、tw-agri-zones 三個。
     {
       id: "tw-townships",
       label: "鄉鎮市區界",
@@ -455,11 +457,72 @@ export const taiwanTheme: ThemeDefinition = {
       id: "tw-crops",
       label: "主要作物分布",
       group: "農業物產",
-      status: "planned",
-      render: { kind: "circle" },
-      detail: { type: "none" },
-      description: "稻米、茶、水果等主要作物的產地分布。",
-      sources: ["農業部"],
+      status: "ready",
+      /**
+       * 半徑＝年種植面積的平方根線性內插，比照水庫的容量。不用嚴格面積正比：
+       * 雲林二崙 1.6 萬公頃對上澎湖幾十公頃，正比之下小的那些會小到看不見，
+       * 而「哪裡種得多」本來就是靠量級差距讀的，精確數字卡片上有。
+       */
+      render: {
+        kind: "circle",
+        radius: [
+          "interpolate",
+          ["linear"],
+          ["sqrt", ["coalesce", ["get", "area_ha"], 0]],
+          0,
+          3,
+          130,
+          16,
+        ],
+        // 300 多個鄉鎮的點會大量重疊，白外框糊成一片，降低不透明度讓疊加處看得出深淺
+        opacity: 0.72,
+        strokeWidth: 0.8,
+      },
+      detail: { type: "geo", collection: "tw-crops" },
+      items: {
+        /**
+         * 三種作物各一個檔，比照古蹟：只勾「茶」就只抓 27 KB，不是整包 250 KB。
+         *
+         * ⚠️ **沒有稻米**，這不是漏掉——農情調查（本層唯一的鄉鎮級來源）**不含
+         * 水稻**，實測彰化縣的水稻是 0 筆。水稻另有官方統計但**只到縣市**，跟這
+         * 一層的鄉鎮尺度混不起來。詳見 scripts/lib/crops.mjs 的說明。
+         */
+        from: {
+          type: "inline",
+          list: [
+            {
+              id: "fruit",
+              label: "果樹",
+              source: { type: "remote", path: "data/geo/tw-crops-fruit.geojson" },
+              color: CROP_COLORS.fruit,
+            },
+            {
+              id: "vegetable",
+              label: "蔬菜",
+              source: { type: "remote", path: "data/geo/tw-crops-vegetable.geojson" },
+              color: CROP_COLORS.vegetable,
+            },
+            {
+              id: "tea",
+              label: "茶",
+              source: { type: "remote", path: "data/geo/tw-crops-tea.geojson" },
+              color: CROP_COLORS.tea,
+            },
+          ],
+        },
+        maxActive: 3,
+        palette: Object.values(CROP_COLORS),
+        // 鄉鎮全部有名字，而 items 圖層沒有可點清單——搜尋是唯一的檢索入口
+        indexFeatures: true,
+      },
+      browse: { zoom: 11 },
+      description:
+        "農業部農糧署農情調查的鄉鎮別種植面積，圓點大小是年種植面積。" +
+        "對照地形看：蔬菜集中在濁水溪沖積扇（西螺、二崙），茶在山麓丘陵（名間、鹿谷、梅山），" +
+        "果樹則從嘉南丘陵一路排到臺中和平的高山溫帶果園。" +
+        "⚠️ **不含稻米**——農情調查這份鄉鎮級統計不收水稻，官方的稻作統計只到縣市，" +
+        "兩種尺度混在一起會讀錯。面積是**年種植面積**（一塊地一年種兩期就算兩次），不是耕地面積。",
+      sources: ["農業部農糧署"],
     },
     {
       id: "tw-agri-zones",
