@@ -1402,6 +1402,13 @@ input {
   border: 1px solid var(--text-muted);
 }
 
+/* 地震卡片上「氣象署規模不同」那一行附註 */
+.quake-alt-mag {
+  margin: 8px 0 0;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
 /* ---------- 鄉鎮市區共用詳情卡 ---------- */
 
 /* 沿用古蹟沿革那組小標的視覺層級——同樣是「卡片裡的一個次區塊」 */

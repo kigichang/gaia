@@ -60,7 +60,8 @@ Node ≥ 22.12（vite 8 要求）。開發機與 CI 都用 Node 24。
 | 鄉鎮別作物種植面積 | `data.gov.tw` 資料集 **7302**「農情調查」→ `data.moa.gov.tw/Service/OpenData/FromM/TownCropData.aspx` | **只在建置期呼叫**（有 CORS 但 43,538 筆不該讓瀏覽器自己聚合）。⚠️ **不帶篩選只回 9999 筆**，且**不含水稻**，見下 |
 | 臺灣鄉鎮市區界線 | `data.gov.tw/api/v2/rest/dataset/**7441**` → TGOS 的 **SHP** zip（同一個單位） | **只在建置期呼叫**。⚠️ 這份**沒有 GML 只有 SHP**，而且 zip 裡有兩份 shapefile，見下 |
 | 世界行政區／河流幾何 | `raw.githubusercontent.com/nvkelso/natural-earth-vector`（Natural Earth） | **只在建置期呼叫**，public domain |
-| 地震目錄 | `earthquake.usgs.gov/fdsnws/event/1/query`（USGS） | **只在建置期呼叫**，免金鑰、`ACAO: *` |
+| 地震目錄 | `earthquake.usgs.gov/fdsnws/event/1/query`（USGS） | **只在建置期呼叫**，免金鑰、`ACAO: *`。全球與臺灣兩層共用這一個端點 |
+| 臺灣活動斷層 | `geologycloud.tw/data/zh-tw/ActiveFault`（經濟部地質調查及礦業管理中心「地質雲」） | **只在建置期呼叫**。⚠️ data.gov.tw 那份**只有 WMS 影像**，拿不到向量；而且這是 **33 條的舊版**，見下 |
 | 交通軸線幾何（高鐵／國道／臺鐵幹線）、河川幹流河道 | `overpass-api.de/api/interpreter`（OpenStreetMap Overpass） | **只在建置期呼叫**，ODbL 1.0。⚠️ **沒有 User-Agent 一律回 HTTP 406**；河川的選擇器**不能寫 `waterway=river`**（一半以上是 `stream`），要用 `type=waterway`＋`ref`，見下 |
 | 水庫基本資料／水庫水情 | `opendata.wra.gov.tw/api/v2/…?format=CSV`（經濟部水利署） | **只在建置期呼叫**。⚠️ **沒有 CORS 標頭**（瀏覽器一定抓不到），而且掛著 bot 防護，見下 |
 | 水庫蓄水範圍 | `gic.wra.gov.tw/gis/gic/API/Google/DownLoad.aspx?fname=ressub&filetype=KML` | **只在建置期呼叫**，約 38 MB 的 KML，只用來算形心 |
@@ -70,6 +71,7 @@ Node ≥ 22.12（vite 8 要求）。開發機與 CI 都用 Node 24。
 | 台江國家公園範圍 | `data.depositar.io`（中研院研究資料寄存所） | **只在建置期呼叫**。官方那兩份包在 7z 裡，見下；**這台主機只講 HTTP/2** |
 | 自然保留區／野生動物保護區／自然保護區 | `data.moa.gov.tw/api/FileToJson.ashx?DataId=157｜162｜350` → SHP zip | **只在建置期呼叫**，農業部林業及自然保育署 |
 | 古蹟（國定／直轄市定／縣市定） | `data.gov.tw` 資料集 **6246** → `data.boch.gov.tw/opendata/v2/assetsCase/1.1.json` | **只在建置期呼叫**（8.1 MB、**沒有 CORS 標頭**），文化部文化資產局。⚠️ 座標有 5 筆經緯度顛倒，見下 |
+| 災害性地震列表（地名、死傷） | `zh.wikipedia.org`〈臺灣地震列表〉 | **程式完全不呼叫**，人工抄進 `scripts/lib/quakes-major.mjs`，建置期只拿它跟 USGS 對照 |
 | 基本地理事實（山脈走向、主峰高度、河川路徑、河川分界…） | `zh.wikipedia.org` 各條目 | **程式完全不呼叫**，人工查閱後寫進 `src/content/` 與 `public/data/geo-manual/`。次級來源，用法見「內容撰寫規範」，CC BY-SA |
 
 ### ⚠️ NLSC 的路徑順序陷阱
@@ -652,6 +654,128 @@ sources」的對照，由卡片自己挑。
 `contour-lines` 之上（整個主題區塊都是），但 45% 的不透明度讓等高線照樣透得出來，
 跟主題面的處境相同。`npm run test:order` 已經把這一條加進回歸測試。
 
+### 活動斷層與臺灣地震：兩層是要一起看的
+
+`tw-faults`（33 條活動斷層，線）與 `tw-quakes`（1900 年以來臺灣周邊 M≥5.0，1,341 個點）
+分開是兩份資料，一起看才是這組的教學內容：**西部的淺層地震沿著麓山帶的斷層排列，
+東部外海密集的一片則是菲律賓海板塊與歐亞板塊聚合的結果**。兩個圖層說明互相點名。
+
+#### ⚠️ 斷層的向量資料不在 data.gov.tw
+
+政府資料開放平臺的「活動斷層分布圖」（資料集 **6697**）**只發佈 WMS 連結**——那是
+影像服務，拿不到向量幾何，而且會變成執行期的外部相依。實測那份 CSV 裡全是
+`geomap.gsmma.gov.tw/mapguide/...&format=image/png` 這種圖磚網址。
+
+向量資料在**同一個主管機關自己的**「地質雲加值應用平臺」上
+（`geologycloud.tw/data/zh-tw/ActiveFault`），回的就是乾淨的 GeoJSON（WGS84、
+100 條線段、帶分類與觀察方式）。所以來源仍是主管機關本身，只是走它的網站端點。
+
+⚠️ 那是一個**沒有文件的內部端點**，沒有版本與格式承諾。`lib/faults.mjs` 因此加了
+線段數（100）與斷層數（33）的硬檢查——上游改版時要**直接失敗**，不要靜默少畫幾條。
+
+#### ⚠️ 這是 33 條的版本，不是最新的 36 條
+
+2021 年改版把活動斷層從 33 增為 36（新增初鄉、口宵里、車瓜林）。這個端點回的是
+**改版前的 33 條**（實測搜尋不到那三個名字）。三條都是後來才補列、課本不會點名的
+小斷層，課本會講的（車籠埔、山腳、梅山、新化、池上、潮州…）一條都沒少——但
+**圖層說明必須寫明是 33 條的版本**，不能寫「最新」。
+
+#### ⚠️ `slugify()` 對中文會回空字串
+
+斷層 id 用 `lib/faults.mjs` 的 `FAULT_IDS` 人工對照表（比照 `COUNTY_IDS`／`RIVERS`／
+`RESERVOIR_IDS`），**不是 `slugify()`**：那支是 `[^a-z0-9]+ → -`，中文全部被剝掉，
+33 條斷層會得到 33 個空字串。這件事是靠 `build-geodata.mjs` 的「id 有重複」檢查擋
+下來的，**沒有那道檢查就會靜默產出一份 33 筆同 id 的 geojson**。任何要對中文名取
+id 的新圖層都要注意這一點。
+
+#### 第一類／第二類用線寬分，不是兩個顏色
+
+分類是官方的序位（第一類＝全新世一萬年內曾活動、第二類＝更新世晚期十萬年內），
+所以用**線寬**當第二通道（2.4px／1.2px），可點清單也依類別分組（22／11）。
+
+⚠️ 實測**沒有任何一組「深紅／淺紅」兩階能讓兩階都通過色票驗證**——淺的那階對
+行政區橘 `#d95926` 的一般視覺 ΔE 一定掉到 15 以下。不要為了「兩個顏色比較好看」
+再試一次。
+
+#### 地震：為什麼是 USGS 而不是中央氣象署，以及 1973 年那道坎
+
+CWA 的地震開放資料**要申請 API key**，直接撞上硬性禁止事項 #1。USGS 免金鑰、
+public domain，而且「全球地震帶」用的就是同一個目錄，兩層的資料基礎一致。
+
+⚠️ **USGS 對臺灣 1973 年以前的目錄並不完整**：實測每十年只有 8–67 筆，1970 年代
+之後跳到 140–190。**那個跳升是目錄完整度，不是地震變多**，圖層說明必須講明白，
+否則學生會讀成「以前地震比較少」。仍然收到 1900 年，是因為 1920 花蓮（M8.2）、
+1935 新竹－臺中、1951 縱谷這些課本會點名的大地震都在那之前。
+
+「規模」不是「震度」：圓點大小是**規模**（M，一場地震一個值），不是震度（各地不同
+的搖晃程度）。使用者說「強度 5.0」時指的幾乎一定是規模——震度是整數級距，不會
+寫成 5.0。
+
+#### ⚠️ 日期一定要換算成臺灣時間（UTC+8）
+
+USGS 的 `time` 是 UTC epoch。直接 `toISOString()` 會把 **921 大地震**
+（1999-09-21 01:47 CST）印成 **1999-09-20**——那是學生一眼就看出錯的日期，而且
+不會有任何錯誤訊息。0403 花蓮地震（2024-04-03 07:58 CST）同理會變成 04-02。
+`build-geodata.mjs` 因此在取日期前先加 8 小時。**改動這一段之後回頭驗這兩個日期。**
+
+#### 重大地震：同一批點，畫得更深，而且**有**清單
+
+`tw-quakes-major`（92 筆）是維基百科〈臺灣地震列表〉的災害性地震，對照到
+`tw-quakes` 的震央。它是**獨立的一層**，在抽屜裡排在「臺灣地震」正下方。
+
+⚠️ **為什麼不是 `attach`**（那才是「掛在母圖層底下」的既有機制）：`attach` 的巢狀
+清單要靠母圖層的 `browse` 才會算繪（見 `ThemeBrowse` 的 `browseLayerExtra` 與
+`ThemeMapPage` 的 `browseLayers` 過濾），而母圖層**刻意沒有 `browse`**（1,341 筆）。
+獨立成層還多一個好處：可以只看這 92 次，不必背著 1,341 個點。
+
+- **幾何與規模一律沿用 USGS 那一份**（直接讀已經產好的 `tw-quakes.geojson`，
+  不重打一次 USGS），維基百科只提供「叫什麼、造成什麼災害」。所以**建置順序有相依**。
+- **共用同一個 `id`**：`highlightIds` 靠字串比對跨圖層連動，點重大地震時底下那顆
+  一般震央也會一起加粗（比照鄉鎮三層共用 id）。
+- **顏色不變、只是更深**：同一個 `hazard` 中性色，不透明度 0.32 → 0.9、半徑加大、
+  加白框。使用者要的是「把這幾次標出來」，不是新的類別——也就省下一次色票驗證。
+
+⚠️ **`DetailCard` 的 quake 分支不能 `find` 第一個符合的圖層。** 兩層都是
+`detail.type === "quake"` 且**共用 id**，`find` 會拿到母圖層的 feature（沒有地名與
+災害情形）與母圖層的說明，卡片退化成「規模 7.7 地震」而不是「南投（集集大地震）」。
+規則是**兩層都找、有 `name` 的那一筆優先**。這跟 `findGeoOwner` 只回第一個符合圖層
+是同一類的坑。
+
+⚠️ **那個欄位必須叫 `name`，不能叫 `place`。** `searchIndex` 的 `featureHits()` 要求
+`typeof props.name === "string"`，否則整層被跳過——實測叫 `place` 時搜「美濃」只找得到
+古蹟，一次地震都搜不到，**而且沒有任何錯誤訊息**。
+
+⚠️ **維基百科是人工抄錄的，建置期不打維基**（既有規則：它是次級來源）。
+表在 `scripts/lib/quakes-major.mjs`，上游條目更新時要重新抄。對照以**當地日期**
+（UTC+8）比對、同一天取規模最接近者，且**規模差超過 1.0 就不算對到**——寧可少一筆，
+也不要把「2,415 人死亡」掛到同一天的另一場地震上。實測 99 筆裡對到 92 筆，
+對不到的 7 筆（早期或規模太小）會列在建置日誌上，那是預期中的資料範圍差異。
+
+⚠️ **中央氣象署與 USGS 的規模不是同一個東西**：921 是氣象署 7.3、USGS 7.7；
+2025-12-27 宜蘭外海是 7.0 對 6.6。地圖與卡片的「規模」一律用 USGS（那是點位的來源，
+兩者必須一致），兩邊差 0.3 以上時卡片才另外標出氣象署的值——否則看過課本的人會
+以為我們寫錯了。
+
+#### 震央點得開卡片，但刻意沒有可點清單
+
+跟「全球地震帶」不同：那一層 2,831 筆是純密度場、`detail: none`；臺灣這一層點得開
+`QuakeCard`，因為「1999 那次的震央在哪、多深」是學生會問的問題。
+
+⚠️ 但**刻意不宣告 `browse`**：有 `browse` 才會進搜尋索引，而 1,341 筆「規模 5.2 地震」
+這種同質標題會把搜尋結果洗掉，還要每個人多付 201 KB（比照全球地震帶不進索引的
+既有理由）。實測搜「地震」只回三個**圖層**結果，沒有任何單筆震央。
+
+⚠️ **給人看的字串一律由 `QuakeCard` 組，不要存進 geojson。** 試過把
+`name`／`meta`／`detail` 三個字串寫進 properties（好讓 `FeatureCard` 的 fallback 直接
+用），檔案從 **190 KB 漲到 400 KB**——那 210 KB 全是可以從 `mag`／`depth_km`／`date`
+重新算出來的重複資料。震央的經緯度同理不存進 properties（那就是幾何本身），所以
+`DetailCard` 的 quake 分支傳的是**整個 feature**，不是只有 properties。
+
+⚠️ **震央（epicenter）與震源不是同一件事**：震央是地面上的那個點，也就是地圖上畫的
+位置；`depth_km` 是它底下破裂起始點的**震源深度**。卡片上兩者分開寫，不要混成一個
+「深度」——那是課本會考的區別。臺灣實測 1,239 筆淺層（<70 km）、102 筆中源、
+0 筆深源。
+
 ## 硬性禁止事項
 
 1. **不得引入任何需要 API key、token 或付費金鑰的服務。** MapTiler、Mapbox、Google Maps 一律不用。純靜態站沒有地方藏金鑰。
@@ -706,6 +830,9 @@ ID 常數定義在 `src/map/layers/*.ts`，**一律 import 常數，不要寫死
 | `tw-crops-<crop>-points` | circle，三種作物各自一組（`fruit`／`vegetable`／`tea`） |
 | `tw-population-points` | circle（半徑＝人口、顏色＝依人口密度分級的 ramp） |
 | `tw-vegetation-belts-elevation` | **color-relief**（不是幾何圖層，見「垂直植被帶」） |
+| `tw-faults-line` | line（線寬依 `classRank` 分第一類／第二類） |
+| `tw-quakes-points` | circle（半徑依規模，`strokeWidth: 0`） |
+| `tw-quakes-major-points` | circle（同一個 hazard 色但更深、更大、有白框） |
 
 `dem` 與 `dem-terrain` 是兩個來源但都指向同一個 shared DEM protocol：maplibre 會警告 hillshade 與 terrain 共用來源會降低算繪品質，拆開可消除警告，而底層圖磚快取仍然共用、不會重複下載。
 
@@ -738,7 +865,7 @@ maplibre-contour 把 worker 以 Blob URL 內嵌，**不需要額外部署 worker
 
 | 主題 | 路由 | 內容 |
 |---|---|---|
-| 臺灣地理 | `/theme/taiwan` | 行政區（縣市、鄉鎮市區）、地形、水系（118 個列管水系、水庫即時水情、河川流域分區）、人文（原住民族、交通軸線、古蹟、人口與都市體系）、植被生態（特有種、國家公園與保護區、垂直植被帶）、農業物產（主要作物分布） |
+| 臺灣地理 | `/theme/taiwan` | 行政區（縣市、鄉鎮市區）、地形（含活動斷層與地震）、水系（118 個列管水系、水庫即時水情、河川流域分區）、人文（原住民族、交通軸線、古蹟、人口與都市體系）、植被生態（特有種、國家公園與保護區、垂直植被帶）、農業物產（主要作物分布） |
 | 世界地理 | `/theme/world` | 世界重要城市、國界與大洲、地形水系、人文專題 |
 | 全球地理形貌 | `/theme/global` | 緯度參考線、氣候與生物群系、洋流、板塊與地震帶 |
 
@@ -1025,6 +1152,26 @@ node <dataviz-skill>/scripts/validate_palette.js "#f0e6da,#e7c89f,#cead59,#94993
 本來就是綠的（山脈線與保護區不能用綠就是這個原因）。改色前先在玉山一帶打開 3D
 地形實際疊一次。
 
+#### ⚠️ 線／面色票其實**沒有**飽和——那個結論來自一次太粗的掃描
+
+本檔案一度記錄線／面五色已飽和。加活動斷層時重掃才發現：那次掃描的 **L 步進是
+0.06、彩度從 0.10 起跳**，剛好跳過 L≈0.485 那一條窄縫。把步進降到 0.005 之後，
+`#8f463f`（磚紅）讓**六色 all-pairs 兩模式全數 PASS**：
+
+```bash
+node <dataviz-skill>/scripts/validate_palette.js "#2a78d6,#d95926,#c23f8f,#7538ae,#2da26d,#8f463f" --pairs all --mode light|dark
+# → 一般視覺最差 #8f463f↔#c23f8f ΔE 15.8（剛好過 15 的硬下限）
+# → CVD 最差仍是既有的翠綠↔洋紅 8.3（沒有因為多一色而變差）
+# → 唯一 WARN 是深色模式對比 2.58，跟保護區紫的 2.43 同一類、同一個既有判例
+```
+
+⚠️ **餘裕非常小（15.8 對下限 15）**，往任何方向挪都可能掉出去。要改色請重跑上面
+那條完整六色指令，而且 **L 的掃描步進不要大於 0.005**——粗掃會讓你以為無解。
+
+紅色在語意上也對：官方「臺灣活動斷層分布圖」與課本畫斷層就是紅的。⚠️ 它跟古蹟
+赭紅 `#934c3a` 很近，但古蹟是**圓點**、斷層是**線**，跨幾何本站不驗（既有規則），
+而且地理分佈相反——古蹟在市區與平原，斷層沿山前與縱谷。
+
 #### 主要作物三色，以及「物種三色全數 PASS」這句話已經不成立
 
 作物三色 `CROP_COLORS`（果樹 `#d36085`／蔬菜 `#7d9913`／茶 `#0994de`）是**分類色**，
@@ -1283,7 +1430,7 @@ maplibre 的四個角落容器是 map container 內的 `position: absolute; z-in
 
 **而且撞名時要把 `meta` 補進副標**，否則畫面上是兩列一模一樣的字。這件事**只對真的撞名的標題做**：水庫的 `meta` 是「蓄水 62%・有效容量 …」這種長字串，沒撞名還硬加只會把副標塞爆。實測搜「東區」會得到四列，各自標著新竹市／臺中市／嘉義市／臺南市。
 
-索引是 **lazy 的**：搜尋框第一次獲得焦點才 `buildSearchIndex()`。目前它會抓十七份檔案，合計約 **2.42 MB**（實測，2026-08）：
+索引是 **lazy 的**：搜尋框第一次獲得焦點才 `buildSearchIndex()`。目前它會抓十八份檔案，合計約 **2.44 MB**（實測，2026-08）：
 
 | 檔案 | 大小 |
 |---|---|
@@ -1302,9 +1449,10 @@ maplibre 的四個角落容器是 map container 內的 `position: absolute; z-in
 | `tw-transport.geojson` | 34 KB |
 | `tw-crops-tea.geojson` | 24 KB |
 | `tw-reservoirs.geojson` + `reservoirs-live.json` | 20 + 7 KB |
+| `tw-quakes-major.geojson` | 22 KB |
 | `tw-county-halls.geojson` | 7 KB |
 
-一個班 30 個學生同時開站時，這 2.42 MB 不該是每個人無條件付的成本。資料一律走 `resolveLayerData()`，與圖層顯示**以及 `TownshipCard`** 共用同一份快取，不會抓兩次——鄉鎮共用卡要的那五份（鄉鎮界、人口、三份作物）全都已經在這張表上。
+一個班 30 個學生同時開站時，這 2.44 MB 不該是每個人無條件付的成本。資料一律走 `resolveLayerData()`，與圖層顯示**以及 `TownshipCard`** 共用同一份快取，不會抓兩次——鄉鎮共用卡要的那五份（鄉鎮界、人口、三份作物）全都已經在這張表上。
 
 ⚠️ **古蹟那三份（483 KB）是子項目圖層唯一會進索引的例子，而且必須明確開啟。**
 `items` 圖層預設**只索引子項目本身**（三筆「國定古蹟／直轄市定古蹟／縣(市)定古蹟」），
@@ -1444,6 +1592,9 @@ npm run build:geodata -- --force --only=tw-rivers             # 118 個列管水
                                        #   這是正常的，不要以為卡住了。跑背景並看日誌的長度對照）
 npm run build:geodata -- --force --only=tw-crops-fruit        # 作物三種要各跑一次（需先有鄉鎮界）
 npm run build:geodata -- --force --only=tw-population         # 368 個鄉鎮的人口（同樣需先有鄉鎮界）
+npm run build:geodata -- --force --only=tw-faults             # 33 條活動斷層
+npm run build:geodata -- --force --only=tw-quakes             # 臺灣周邊 M≥5.0（1,341 筆）
+npm run build:geodata -- --force --only=tw-quakes-major       # 災害性地震（需先有 tw-quakes）
 npm run build:geodata -- --force --only=tw-monuments-national   # 古蹟三級要各跑一次
                                        # （municipal／county 同理；歷史沿革分片會一起寫出）
 ```
@@ -1990,6 +2141,56 @@ m.isSourceLoaded('contour-source')
       （比對切換前後的 `color-relief-color` 字串長度），而且共用的 `dem` source 與
       3D 地形都還在（`removeGeoLayer` 不可以把它們一起帶走）
 
+26. **活動斷層與臺灣地震**（`/theme/taiwan`，兩層一起勾，見「兩層是要一起看的」）：
+    ```js
+    const m = window.__gaiaMaps.at(-1);
+    m.jumpTo({ center: [120.9, 23.7], zoom: 7.4 });   // 兩層 minzoom 都是 6
+    new Set(m.queryRenderedFeatures({ layers: ['tw-faults-line'] }).map(f => f.properties.id)).size  // 32/33
+    m.queryRenderedFeatures({ layers: ['tw-quakes-points'] }).length   // 全島視角實測 1,176
+    m.getPaintProperty('tw-faults-line', 'line-color')   // "#8f463f"
+    m.getPaintProperty('tw-faults-line', 'line-width')   // ["match",["get","classRank"],1,2.4,1.2]
+    ```
+    - **可點清單依類別分兩組**，筆數不可變（`groupBy` 依序切、不排序，所以 geojson
+      的第一類必須全部連續排在第二類前面）：
+      ```js
+      [...document.querySelectorAll('.layer-drawer .place-group')].map(g =>
+        g.textContent + ':' + g.nextElementSibling.querySelectorAll('.place-btn').length)
+      // ["第一類:22","第二類:11"]
+      ```
+    - 點車籠埔斷層 → 卡片「車籠埔斷層」「第一類・全新世（一萬年內）曾活動」「觀察」
+      + 圖層說明；相機飛到約 120.77/24.01，線寬表達式含 `fault-chelongpu`
+    - **第一類的線要看得出比第二類粗**（那是唯一的分類通道，沒有第二個顏色）
+    - ⚠️ **同時勾「縣市界」時斷層紅要跟行政區橘分得開**：兩者的一般視覺 ΔE 只有
+      15.5，是六色裡最緊的一對。換色前先在 NLSC 底圖同時勾這兩層看一次
+    - **地理合理性**（這一組最容易看出資料錯）：斷層集中在西部麓山帶與花東縱谷，
+      地震在東部外海最密集。西部平原中央不該有斷層線
+    - **點任何一顆震央要開卡**：標題「規模 7.7 地震」、副標「1999-09-21・淺層地震」、
+      三個 stat（規模／震源深度／震央經緯度）。⚠️ **921 那筆的日期必須是 09-21 不是
+      09-20**——USGS 是 UTC，沒加 8 小時就會錯（0403 花蓮同理要是 04-03）
+    - ⚠️ **搜尋不該出現單筆震央**：搜「地震」只回圖層結果（這一層沒有 `browse`，
+      1,341 筆同質標題會把搜尋洗掉）
+      ```js
+      [...document.querySelectorAll('.search-hit')].map(h => h.innerText.replace(/\n/g,'・'))
+      // 只有「臺灣地震・圖層…」「活動斷層・圖層…」「全球地震帶・圖層…」
+      ```
+    - **重大地震**（勾「重大地震」，排在「臺灣地震」正下方）：
+      ```js
+      m.queryRenderedFeatures({ layers: ['tw-quakes-major-points'] }).length   // 全島視角 91
+      m.getPaintProperty('tw-quakes-major-points','circle-opacity')            // 0.9（母圖層是 0.32）
+      ```
+      清單 92 筆、由新到舊；點「南投（集集大地震）」→ 卡片標題就是它（**不是**
+      「規模 7.7 地震」，那代表 DetailCard 又只找了第一個 quake 圖層），
+      有災害情形「2,415人死亡…」與「中央氣象署的規模是 7.3」那一行
+    - **兩層共用 id**：點重大地震時母圖層那顆也要一起加粗
+      ```js
+      ['tw-quakes-points','tw-quakes-major-points'].map(id =>
+        JSON.stringify(m.getPaintProperty(id,'circle-radius')).includes('usp0009eq0'))  // [true,true]
+      ```
+    - 搜「美濃」要出現「高雄美濃・重大地震」（⚠️ 欄位叫 `name` 才進得了索引），
+      選了要飛到 120.60/22.94、`movestart` 剛好 1 次
+    - 搜「車籠埔」要出現「車籠埔斷層・活動斷層」
+    - 切底圖之後重驗顏色與排序
+
 ### ⚠️ 用瀏覽器自動化點 UI 的三個陷阱
 
 - **主題頁的底圖選單藏在左下角「圖層」彈出層裡**，必須先 `document.querySelector('.map-tile').click()` 才找得到 `<select>`；`/compare` 的仍然直接在頁首。
@@ -2078,6 +2279,7 @@ src/
    ├─ ThemeBrowse.tsx     # 圖層抽屜裡的可點清單（browseLayerExtra）
    ├─ ReservoirCard.tsx   # 水庫詳情卡（即時水情長條 + 基本資料，資料全來自 geojson）
    ├─ MonumentCard.tsx    # 古蹟詳情卡（基本資料來自 geojson，歷史沿革按縣市延遲載入）
+   ├─ QuakeCard.tsx       # 單次地震的震央卡片（規模／震源深度／震央經緯度，字串在這裡組）
    ├─ TownshipCard.tsx    # 鄉鎮市區詳情卡（鄉鎮界／人口／作物三層共用，五份資料自己抓）
    └─ PlaceCard/IndigenousCard/SpeciesCard/FeatureCard/LayerPanel/MapLegend…
 public/data/
@@ -2105,6 +2307,8 @@ scripts/
 ├─ lib/protected-areas.mjs # 國家公園與保護區四個資料集的存取層
 ├─ lib/reservoirs.mjs     # 水利署開放資料的共用存取層（CSV 剖析、bot 防護、id 對照表）
 ├─ lib/monuments.mjs      # 文資局古蹟的存取層（經緯度顛倒修正、名稱前綴剝除、縣市分片）
+├─ lib/quakes-major.mjs   # 維基〈臺灣地震列表〉災害性地震的**人工抄錄表**（建置期不打維基）
+├─ lib/faults.mjs         # 活動斷層的存取層（地質雲端點、33 條的 id 對照表、筆數檢查）
 ├─ lib/population.mjs     # 各鄉鎮市區人口密度的存取層（年份寫死、site_id 切縣市／鄉鎮、行政層級）
 ├─ lib/crops.mjs          # 農情調查的存取層（逐縣市抓以避開 9999 上限、台／臺正規化、非生產列過濾）
 ├─ lib/overpass.mjs       # OSM Overpass 存取層（端點輪替、way 串接）。**兩種查法並存**：

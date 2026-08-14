@@ -5,8 +5,9 @@ import { FeatureCard } from "./FeatureCard";
 import { ReservoirCard } from "./ReservoirCard";
 import { MonumentCard } from "./MonumentCard";
 import { TownshipCard } from "./TownshipCard";
+import { QuakeCard } from "./QuakeCard";
 import { getGeoFeature, getIndigenousGroup, getPlace, getSpecies } from "../content";
-import type { DetailSpec, ThemeDefinition } from "../map/registry/types";
+import type { DetailSpec, LayerDefinition, ThemeDefinition } from "../map/registry/types";
 import type { GeoLayerInstance } from "../map/useGeoLayers";
 
 /** 目前選取的圖徵。`detail` 決定要拿哪一種內容來渲染，`featureId` 是它的 id。 */
@@ -124,6 +125,38 @@ export function DetailCard({
         sourcesByLayer={Object.fromEntries(owners.map((l) => [l.id, l.sources]))}
       />
     );
+  }
+  if (detail.type === "quake") {
+    /**
+     * ⚠️ 這裡找的是**整個 feature**，不是只有 properties：震央的經緯度就是幾何本身
+     * （存進 properties 等於把座標寫兩份），見 registry/types.ts 的說明。
+     *
+     * ⚠️ **有兩個圖層是 `quake`**（臺灣地震、重大地震），而且重大地震那 92 筆跟母
+     * 圖層**共用同一個 id**（那是連動強調要的）。所以不能像水庫那樣 `find` 第一個
+     * 符合的圖層——那會讓點重大地震時拿到母圖層的 feature（沒有地名與災害情形）
+     * 與母圖層的說明，卡片退化成「規模 7.7 地震」而不是「南投集集地震」。
+     * 這跟 `findGeoOwner` 只回第一個符合圖層是同一類的坑。
+     *
+     * 規則：**兩層都找，有 `name` 的那一筆優先**（那就是重大地震那一層——母圖層的
+     * 震央沒有名字）。
+     */
+    const owners = theme.layers.filter((l) => l.detail.type === "quake");
+    const hits = owners
+      .map((layer) => ({
+        layer,
+        feature: instances
+          .find((i) => i.instanceId === layer.id)
+          ?.data?.features.find((f) => f.properties?.id === featureId),
+      }))
+      .filter((h): h is { layer: LayerDefinition; feature: GeoJSON.Feature } => Boolean(h.feature));
+    const best = hits.find((h) => h.feature.properties?.name) ?? hits[0];
+    return best ? (
+      <QuakeCard
+        feature={best.feature}
+        description={best.layer.description}
+        sources={best.layer.sources}
+      />
+    ) : null;
   }
   if (detail.type === "reservoir") {
     // 水庫沒有內容檔，卡片的資料就在圖層的 geojson 裡（基本資料 + join 進來的

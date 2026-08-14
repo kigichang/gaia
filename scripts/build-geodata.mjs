@@ -61,6 +61,14 @@ import {
   historyShards,
   monumentFeature,
 } from "./lib/monuments.mjs";
+import { MAJOR_QUAKES } from "./lib/quakes-major.mjs";
+import {
+  CLASS_NOTE as FAULT_CLASS_NOTE,
+  LICENSE as FAULT_LICENSE,
+  SOURCE_LABEL as FAULT_SOURCE_LABEL,
+  SOURCE_PAGE as FAULT_SOURCE_PAGE,
+  fetchFaults,
+} from "./lib/faults.mjs";
 import {
   DATASET_ID as POPULATION_DATASET_ID,
   LEVEL_ORDER as POPULATION_LEVEL_ORDER,
@@ -1200,6 +1208,214 @@ const SOURCES = [
             POPULATION_LEVEL_ORDER.indexOf(b.properties.level) ||
           b.properties.population - a.properties.population,
       );
+    },
+  },
+
+  {
+    id: "tw-faults",
+    label: "臺灣活動斷層",
+    load: async (fetchWithRetry) => fetchFaults(fetchWithRetry),
+    sourceUrl: FAULT_SOURCE_PAGE,
+    license: FAULT_LICENSE,
+    sourceLabel: FAULT_SOURCE_LABEL,
+    // 上游已經是 WGS84 的折線。0.0002° ≈ 22 公尺——斷層線位本來就有數化誤差，
+    // 這個容差在教學會用的每個 zoom 都是次像素。
+    tolerance: 0.0002,
+    digits: 5,
+    transform: ({ faults }) =>
+      faults
+        .map((f) => ({
+          type: "Feature",
+          geometry: { type: "MultiLineString", coordinates: f.lines },
+          properties: {
+            // ⚠️ 用 lib/faults.mjs 的人工對照表，**不是 slugify**：那支把中文全部
+            // 剝掉，33 條斷層會得到 33 個空字串（實測踩過）
+            id: `fault-${f.id}`,
+            name: f.name,
+            faultClass: f.faultClass,
+            // 線寬用它驅動：第一類粗、第二類細（見註冊表的 render.width）
+            classRank: f.faultClass === "第一類" ? 1 : 2,
+            meta: `${f.faultClass}・${FAULT_CLASS_NOTE[f.faultClass]}`,
+            detail: [...f.observe].join("、"),
+          },
+        }))
+        // ⚠️ feature 順序＝可點清單的順序，而 browse.groupBy 是**依序切、不排序**的，
+        // 所以第一類必須全部連續排在第二類前面。組內依名稱，避免上游順序變動造成
+        // 無意義的 diff。
+        .sort(
+          (a, b) =>
+            a.properties.classRank - b.properties.classRank ||
+            a.properties.name.localeCompare(b.properties.name, "zh-Hant"),
+        ),
+  },
+
+  {
+    id: "tw-quakes",
+    label: "臺灣地震",
+    /**
+     * 臺灣周邊 M≥5.0、1900 年以來（實測 1,341 筆）。
+     *
+     * ⚠️ **為什麼不用中央氣象署**：CWA 的地震開放資料要申請 API key，直接撞上
+     * 硬性禁止事項 #1。USGS 免金鑰、public domain，而且站上「全球地震帶」用的
+     * 就是同一個目錄，兩層的資料基礎一致。
+     *
+     * ⚠️ **USGS 對臺灣 1973 年以前的目錄並不完整**（實測每十年 8–67 筆，1970 年代
+     * 之後跳到 140–190）。那個跳升是**目錄完整度**不是地震變多，圖層說明必須講。
+     * 仍然收到 1900 年，是因為 1920 花蓮 M8.2、1935 新竹-臺中、1951 縱谷這些課本
+     * 會點名的大地震都在那之前。
+     */
+    url:
+      "https://earthquake.usgs.gov/fdsnws/event/1/query" +
+      "?format=geojson&minmagnitude=5&starttime=1900-01-01&orderby=time" +
+      "&minlatitude=21.0&maxlatitude=26.5&minlongitude=118.5&maxlongitude=123.5",
+    countUrl:
+      "https://earthquake.usgs.gov/fdsnws/event/1/count" +
+      "?format=geojson&minmagnitude=5&starttime=1900-01-01" +
+      "&minlatitude=21.0&maxlatitude=26.5&minlongitude=118.5&maxlongitude=123.5",
+    license: "USGS（public domain）",
+    sourceLabel: "USGS",
+    // 比照全球地震帶：點位不簡化、只取位。2 位小數 ≈ 1.1 公里，在這一層看得到的
+    // 每個 zoom 都是次像素。
+    tolerance: 0,
+    digits: 2,
+    /**
+     * ⚠️ **這一層的每個點就是一個震央**，properties 只留描述那個震央的東西：
+     * 規模、震源深度、發生日期。USGS 還給了 `place`（英文地名字串）、`sig`、`tsunami`
+     * 之類的欄位，一律不留——這是中文教學站，而且那些跟「震央在哪」無關。
+     *
+     * ⚠️ **給人看的字串一律由 `QuakeCard` 組，不要存進 geojson。** 試過把
+     * `name`／`meta`／`detail` 三個字串寫進 properties（好讓 FeatureCard 的 fallback
+     * 直接用），檔案從 190 KB 漲到 **400 KB**——那 210 KB 全是可以從 mag／depth／date
+     * 重新算出來的重複資料，而這一層是一個班 30 個學生勾下去就要各付一份的東西。
+     *
+     * ⚠️ **震央與震源是兩件事**：震央（epicenter）是地面上的那個點，也就是這裡畫的
+     * 位置；震源深度是它底下破裂起始點的深度。卡片上要分別寫清楚，不要混成「深度」。
+     */
+    transform: (raw) =>
+      raw.features
+        .filter((f) => f.geometry?.type === "Point" && f.properties.mag != null)
+        .map((f) => {
+          const mag = Math.round(f.properties.mag * 10) / 10;
+          return {
+            type: "Feature",
+            geometry: { type: "Point", coordinates: f.geometry.coordinates.slice(0, 2) },
+            properties: {
+              id: slugify(f.id),
+              mag,
+              /** 震源深度（公里）。⚠️ 那是震央**底下**破裂起始點的深度，不是震央本身。 */
+              depth_km: Math.round(f.geometry.coordinates[2] ?? 0),
+              /**
+               * ⚠️ **一定要換算成臺灣時間（UTC+8）再取日期。**
+               * USGS 的 `time` 是 UTC epoch，直接 `toISOString()` 會把 921 大地震
+               * （1999-09-21 01:47 CST）印成 **1999-09-20**——那是學生一眼就會看出
+               * 錯的日期，而且不會有任何錯誤訊息。同理 0403 花蓮地震（2024-04-03
+               * 07:58 CST）UTC 是 04-02。
+               */
+              date: new Date(f.properties.time + 8 * 3600 * 1000).toISOString().slice(0, 10),
+            },
+          };
+        }),
+  },
+
+  {
+    id: "tw-quakes-major",
+    label: "臺灣重大地震",
+    /**
+     * 維基百科〈臺灣地震列表〉的災害性地震，對照到 `tw-quakes` 的震央。
+     *
+     * ⚠️ **幾何與規模一律沿用 USGS 那份**（直接讀已經產好的 geojson，不重打一次
+     * USGS），維基百科只提供「這次地震叫什麼、造成什麼災害」。兩份資料各司其職：
+     * 點位與規模要跟母圖層逐位一致，否則同一次地震會在圖上出現兩個位置略異的點。
+     *
+     * ⚠️ 因此**建置順序有相依**：要先有 tw-quakes 才能建這一層。
+     */
+    load: async () => {
+      const path = join(OUT_DIR, "tw-quakes.geojson");
+      let fc;
+      try {
+        fc = JSON.parse(await readFile(path, "utf8"));
+      } catch {
+        throw new Error(
+          "找不到 public/data/geo/tw-quakes.geojson，重大地震的點位與規模都靠它。" +
+            "請先執行 npm run build:geodata -- --only=tw-quakes",
+        );
+      }
+      return { fc };
+    },
+    sourceUrl: "https://zh.wikipedia.org/wiki/臺灣地震列表",
+    license: "CC BY-SA（維基百科）／USGS public domain",
+    sourceLabel: "維基百科",
+    tolerance: 0,
+    digits: 2,
+    transform: ({ fc }) => {
+      const byDate = new Map();
+      for (const f of fc.features) {
+        const d = f.properties.date;
+        if (!byDate.has(d)) byDate.set(d, []);
+        byDate.get(d).push(f);
+      }
+      const shift = (d, n) => {
+        const t = new Date(`${d}T00:00:00Z`);
+        t.setUTCDate(t.getUTCDate() + n);
+        return t.toISOString().slice(0, 10);
+      };
+
+      const features = [];
+      const unmatched = [];
+      const usedIds = new Set();
+      for (const w of MAJOR_QUAKES) {
+        // ±1 天：兩邊都已經是 UTC+8 的當地日期，但跨午夜的事件仍可能差一天
+        const cands = [byDate.get(w.date), byDate.get(shift(w.date, -1)), byDate.get(shift(w.date, 1))]
+          .filter(Boolean)
+          .flat()
+          .filter((f) => !usedIds.has(f.properties.id));
+        const wm = w.magCwa ?? 0;
+        cands.sort((a, b) => Math.abs(a.properties.mag - wm) - Math.abs(b.properties.mag - wm));
+        const hit = cands[0];
+        // ⚠️ 規模差太多就當作沒對到。CWA 與 USGS 系統性地差 0.2–0.6，但差超過 1.0
+        // 幾乎一定是同一天的另一場地震——寧可少一筆，不要把「2,415 人死亡」掛到
+        // 錯的震央上。**不要為了湊滿而放寬這個條件。**
+        if (!hit || Math.abs(hit.properties.mag - wm) > 1.0) {
+          unmatched.push(`${w.date} M${w.magCwa ?? "?"} ${w.place}`);
+          continue;
+        }
+        usedIds.add(hit.properties.id);
+        const p = hit.properties;
+        features.push({
+          type: "Feature",
+          geometry: hit.geometry,
+          properties: {
+            // ⚠️ **跟母圖層同一個 id**：highlightIds 靠字串比對跨圖層連動，
+            // 點重大地震時底下那顆一般震央也會一起加粗（比照鄉鎮三層共用 id）
+            id: p.id,
+            mag: p.mag,
+            depth_km: p.depth_km,
+            date: p.date,
+            /**
+             * ⚠️ 這個欄位**必須叫 `name`**，不能叫 `place`：`searchIndex` 的
+             * `featureHits()` 要求 `typeof props.name === "string"`，否則整層直接
+             * 被跳過——實測叫 `place` 時搜「美濃」只找得到古蹟，一次地震都搜不到，
+             * 而且沒有任何錯誤訊息。`browse.primary` 的預設值也是 `name`。
+             *
+             * 站上一律用「臺」（課綱用字），維基原文有「台南」「台東」。
+             */
+            name: w.place.replace(/台/g, "臺"),
+            // 可點清單的次標。⚠️ 母圖層刻意不存這種衍生字串（1,341 筆會多付
+            // 210 KB），但這裡只有 92 筆＝約 2 KB，換來一份讀得懂的清單划算。
+            meta: `${p.date}・規模 ${p.mag.toFixed(1)}`,
+            ...(w.harm && { harm: w.harm }),
+            // 兩邊差 0.3 以上才標，否則卡片上會出現兩個幾乎一樣的數字
+            ...(w.magCwa != null && Math.abs(w.magCwa - p.mag) >= 0.3 && { magCwa: w.magCwa }),
+          },
+        });
+      }
+
+      if (unmatched.length) {
+        console.log(`  · 對不到 USGS 震央而略過 ${unmatched.length} 筆：${unmatched.join("、")}`);
+      }
+      console.log(`  · 對到 ${features.length}／${MAJOR_QUAKES.length} 筆`);
+      // ⚠️ feature 順序＝可點清單的順序。由新到舊——學生想找的多半是近年的那幾次。
+      return features.sort((a, b) => b.properties.date.localeCompare(a.properties.date));
     },
   },
 ];

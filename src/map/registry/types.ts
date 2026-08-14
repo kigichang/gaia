@@ -46,6 +46,7 @@ export type ColorRole =
   | "conservation"
   | "transport"
   | "population"
+  | "fault"
   // 非分類的固定角色，不參與色票驗證（見 thematicColors.ts）
   | "reference"
   | "hazard"
@@ -251,6 +252,14 @@ export type DetailSpec =
    * 所以**沒勾人口或作物也看得到那些數字**。
    */
   | { type: "township" }
+  /**
+   * 單一次地震的震央。同樣**全部來自 geojson**（1,341 筆不可能逐一手寫內容檔）。
+   *
+   * ⚠️ 它跟水庫／古蹟／鄉鎮不同的是**卡片需要幾何**：震央的經緯度就是那個點本身，
+   * 不在 properties 裡（存進去等於把座標寫兩份）。所以 `DetailCard` 的這個分支傳的是
+   * **整個 feature**，不是只有 properties。
+   */
+  | { type: "quake" }
   | { type: "none" };
 
 /** 為這個圖層列出可點清單（點了飛過去並開詳情卡），長在圖層抽屜裡（見 components/ThemeBrowse.tsx）。 */
