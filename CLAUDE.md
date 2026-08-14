@@ -722,6 +722,34 @@ id 的新圖層都要注意這一點。
 行政區橘 `#d95926` 的一般視覺 ΔE 一定掉到 15 以下。不要為了「兩個顏色比較好看」
 再試一次。
 
+#### 沿線標註：這一層點得到的關鍵，而且要依 zoom 換長短名
+
+斷層只有線、沒有點，最粗的也才 2.4px——使用者真正會點的是線上的名字。加了
+`render.label` 之後 `geoHitLayerIds()` 會回傳 `[線, 標註]` 兩層，點字或點線都開得了
+卡片（實測：真的用滑鼠點「車籠埔斷層」四個字，卡片開出來、線也跟著加粗）。
+
+⚠️ **全名太長，放置演算法會大量拒絕。** 實測 1440×663 畫布，全島視角（zoom 7.4）
+用全名只放得出 **3** 個標註，改用去掉尾綴「斷層」兩字的 `shortName` 是 **13** 個；
+zoom 8.5 的南部是 8 → 16。`symbol-spacing` 從 400 調到 120 幾乎沒有差別（斷層的線段
+本來就短），**真正的變數是字串長度**。
+
+⚠️ **但短名會跟底圖的地名混淆**：「彰化」「新竹」「池上」「玉里」「旗山」本身都是
+地名。所以文字是一段 `["step", ["zoom"], ["get","shortName"], 10, ["get","name"]]`
+——**zoom < 10 用短名**（先看得出哪裡有斷層），**zoom ≥ 10 換回全名**（那時線在畫面上
+夠長，全名放得出來，也不會有人把「車籠埔斷層」讀成地名）。這也是 `LayerRender.label`
+的 `property` 除了屬性名之外**還接受 maplibre 表達式**的唯一理由（純陣列字面值，
+`themes/*.ts` 仍然是純資料，比照 `LayerItem.filter`）。
+
+`shortName` 是 **build 時算的**（`build-geodata.mjs` 的 transform：`name` 去掉尾綴
+「斷層」），比照交通軸線的 `shortName`（「國道1」）。33 條裡只有「三義斷層之分支斷層」
+是例外，寫在 `lib/faults.mjs` 的 `SHORT_NAMES`（→「三義分支」）——去尾綴只會短兩個字，
+等於沒省到。
+
+⚠️ 其餘參數：`spacing: 400`（斷層是 MultiLineString、一條被上游切成好幾段，用預設
+120 會讓同一個名字沿線連續冒出好幾次，跟臺鐵幹線同一個坑）、`maxAngle: 150`（斷層沿
+麓山帶蜿蜒，跟臺灣河川同一類）、`size: 10`。**改動之後要重新實測標註數**，不要只確認
+圖層還在。
+
 #### 地震：為什麼是 USGS 而不是中央氣象署，以及 1973 年那道坎
 
 CWA 的地震開放資料**要申請 API key**，直接撞上硬性禁止事項 #1。USGS 免金鑰、
@@ -862,7 +890,7 @@ ID 常數定義在 `src/map/layers/*.ts`，**一律 import 常數，不要寫死
 | `tw-crops-<crop>-points` | circle，三種作物各自一組（`fruit`／`vegetable`／`tea`） |
 | `tw-population-points` | circle（半徑＝人口、顏色＝依人口密度分級的 ramp） |
 | `tw-vegetation-belts-elevation` | **color-relief**（不是幾何圖層，見「垂直植被帶」） |
-| `tw-faults-line` | line（線寬依 `classRank` 分第一類／第二類） |
+| `tw-faults-line` / `tw-faults-label` | line + symbol（線寬依 `classRank` 分第一類／第二類；標註**依 zoom 換長短名**） |
 | `tw-quakes-points` | circle（半徑依規模，`strokeWidth: 0`） |
 | `tw-quakes-major-points` | circle（同一個 hazard 色但更深、更大、有白框） |
 
@@ -2258,6 +2286,19 @@ m.isSourceLoaded('contour-source')
     - 點車籠埔斷層 → 卡片「車籠埔斷層」「第一類・全新世（一萬年內）曾活動」「觀察」
       + 圖層說明；相機飛到約 120.77/24.01，線寬表達式含 `fault-chelongpu`
     - **第一類的線要看得出比第二類粗**（那是唯一的分類通道，沒有第二個顏色）
+    - **沿線標註要實測數量，而且要依 zoom 換長短名**（見上）。1440×663 畫布實測：
+      ```js
+      const at = (c, z) => { m.jumpTo({ center: c, zoom: z });
+        return m.queryRenderedFeatures({ layers: ['tw-faults-label'] }).length; };
+      // jumpTo([120.9,23.7], 7.4) → 13（短名）
+      // jumpTo([120.6,23.2], 8.5) → 16（短名）
+      // jumpTo([120.72,24.1], 10.5) → 3（全名：彰化斷層／車籠埔斷層／大茅埔－雙冬斷層）
+      m.getLayoutProperty('tw-faults-label', 'text-field')
+      // ["step",["zoom"],["get","shortName"],10,["get","name"]]
+      ```
+      ⚠️ **點在「字」上要開得了卡片**（那是加標註的主要理由）——一定要用**真的滑鼠
+      點擊**驗證：`map.fire('click', …)` 這種合成事件不會走 maplibre 的圖層委派，
+      實測會靜靜地什麼都不做，很容易誤判成功能壞掉。
     - ⚠️ **同時勾「縣市界」時斷層紅要跟行政區橘分得開**：兩者的一般視覺 ΔE 只有
       15.5，是六色裡最緊的一對。換色前先在 NLSC 底圖同時勾這兩層看一次
     - **地理合理性**（這一組最容易看出資料錯）：斷層集中在西部麓山帶與花東縱谷，

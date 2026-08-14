@@ -275,7 +275,12 @@ export function addGeoLayer(map: MapLibreMap, spec: GeoLayerSpec) {
           ...zoom,
           layout: {
             "symbol-placement": "line",
-            "text-field": ["get", render.label.property],
+            // 屬性名 → ["get", 名稱]；直接給表達式的話原樣採用（活動斷層依 zoom
+            // 切換長短名，見註冊表）
+            "text-field":
+              typeof render.label.property === "string"
+                ? ["get", render.label.property]
+                : render.label.property,
             // 只有 "Noto Sans Bold" 確定存在於 basemaps.ts 借用的 OpenFreeMap
             // glyph 端點上。換成別的字型名稱會**靜默**畫不出任何標註。
             "text-font": ["Noto Sans Bold"],

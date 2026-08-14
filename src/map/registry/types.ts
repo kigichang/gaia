@@ -1,4 +1,8 @@
-import type { DataDrivenPropertyValueSpecification, FilterSpecification } from "maplibre-gl";
+import type {
+  DataDrivenPropertyValueSpecification,
+  ExpressionSpecification,
+  FilterSpecification,
+} from "maplibre-gl";
 
 /**
  * 主題圖層註冊表的型別定義。
@@ -172,7 +176,19 @@ export type LayerRender =
        *
        * 改動之後一定要用 queryRenderedFeatures 實測放置數量，不要只靠肉眼看。
        */
-      label?: { property: string; size?: number; spacing?: number; maxAngle?: number };
+      label?: {
+        /**
+         * 標註文字的來源屬性名。
+         *
+         * 也可以直接給一段 maplibre 表達式（純陣列字面值，`themes/*.ts` 仍然是純資料
+         * ——`LayerItem.filter` 早就這樣做了）。活動斷層用它依 zoom 切換長短名：
+         * 遠看用短名才排得下，近看換回全名才不會跟底圖的地名混淆。
+         */
+        property: string | ExpressionSpecification;
+        size?: number;
+        spacing?: number;
+        maxAngle?: number;
+      };
     }
   | {
       kind: "fill";
