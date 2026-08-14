@@ -50,11 +50,14 @@ export function QuakeCard({
   const mag = num(p.mag);
   const depth = num(p.depth_km);
   const date = str(p.date);
-  // 以下三個只有「重大地震」那一層有（維基百科整理的地名與災害情形）。
+  // 以下只有「重大地震」那一層有（中央氣象署〈災害地震〉表）。
   // ⚠️ 欄位叫 `name` 不是 `place`——searchIndex 只認 `name`，見 build-geodata.mjs
   const place = str(p.name);
   const harm = str(p.harm);
-  const magCwa = num(p.magCwa);
+  /** 地震矩規模 Mw。只有跟 ML 差 0.3 以上時才會出現在資料裡。 */
+  const magMoment = num(p.magMoment);
+  /** ⚠️ 混合來源（官方表只到 2022），每一筆都要標得出來自哪裡。 */
+  const source = str(p.source);
   const coords =
     feature.geometry?.type === "Point"
       ? (feature.geometry.coordinates as [number, number])
@@ -98,11 +101,14 @@ export function QuakeCard({
         </ul>
       )}
 
-      {/* ⚠️ 中央氣象署與 USGS 的規模系統性地不同（921 是 7.3 對 7.7）。差距明顯時
-          要標出來，否則看過課本的人會以為我們寫錯了。 */}
-      {magCwa != null && (
-        <p className="quake-alt-mag">中央氣象署的規模是 {magCwa.toFixed(1)}（本站點位與規模採用 USGS 目錄）</p>
+      {/* ⚠️ 芮氏規模 ML 與地震矩規模 Mw 是兩套量法，大地震尤其會分歧。
+          課本與新聞講的是 ML，所以主要欄位用它，Mw 差得多時另外標。 */}
+      {magMoment != null && (
+        <p className="quake-alt-mag">地震矩規模 M_w 是 {magMoment.toFixed(1)}（上面的規模是芮氏規模 M_L）</p>
       )}
+
+      {/* ⚠️ 這一層是混合來源：官方〈災害地震〉表只收到 2022 年，之後的另外補錄 */}
+      {source && <p className="quake-alt-mag">本筆資料來源：{source}</p>}
 
       <p className="feature-fallback">{description}</p>
       <p className="detail-sources">

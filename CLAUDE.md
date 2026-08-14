@@ -71,7 +71,7 @@ Node ≥ 22.12（vite 8 要求）。開發機與 CI 都用 Node 24。
 | 台江國家公園範圍 | `data.depositar.io`（中研院研究資料寄存所） | **只在建置期呼叫**。官方那兩份包在 7z 裡，見下；**這台主機只講 HTTP/2** |
 | 自然保留區／野生動物保護區／自然保護區 | `data.moa.gov.tw/api/FileToJson.ashx?DataId=157｜162｜350` → SHP zip | **只在建置期呼叫**，農業部林業及自然保育署 |
 | 古蹟（國定／直轄市定／縣市定） | `data.gov.tw` 資料集 **6246** → `data.boch.gov.tw/opendata/v2/assetsCase/1.1.json` | **只在建置期呼叫**（8.1 MB、**沒有 CORS 標頭**），文化部文化資產局。⚠️ 座標有 5 筆經緯度顛倒，見下 |
-| 災害性地震列表（地名、死傷） | `zh.wikipedia.org`〈臺灣地震列表〉 | **程式完全不呼叫**，人工抄進 `scripts/lib/quakes-major.mjs`，建置期只拿它跟 USGS 對照 |
+| 災害地震（官方清單） | `scweb.cwa.gov.tw/zh-tw/page/disaster/5`（交通部中央氣象署地震測報中心） | **只在建置期呼叫**。⚠️ 沒有開放資料 API（那邊要金鑰），只能剖析 HTML 表格；⚠️ **只收到 2022-09-18**，見下 |
 | 基本地理事實（山脈走向、主峰高度、河川路徑、河川分界…） | `zh.wikipedia.org` 各條目 | **程式完全不呼叫**，人工查閱後寫進 `src/content/` 與 `public/data/geo-manual/`。次級來源，用法見「內容撰寫規範」，CC BY-SA |
 
 ### ⚠️ NLSC 的路徑順序陷阱
@@ -718,43 +718,50 @@ USGS 的 `time` 是 UTC epoch。直接 `toISOString()` 會把 **921 大地震**
 不會有任何錯誤訊息。0403 花蓮地震（2024-04-03 07:58 CST）同理會變成 04-02。
 `build-geodata.mjs` 因此在取日期前先加 8 小時。**改動這一段之後回頭驗這兩個日期。**
 
-#### 重大地震：同一批點，畫得更深，而且**有**清單
+#### 重大地震：官方災害地震清單，畫得更深，而且**有**清單
 
-`tw-quakes-major`（92 筆）是維基百科〈臺灣地震列表〉的災害性地震，對照到
-`tw-quakes` 的震央。它是**獨立的一層**，在抽屜裡排在「臺灣地震」正下方。
+`tw-quakes-major`（150 筆）是**交通部中央氣象署**〈災害地震〉表，在抽屜裡排在
+「臺灣地震」正下方。
 
 ⚠️ **為什麼不是 `attach`**（那才是「掛在母圖層底下」的既有機制）：`attach` 的巢狀
-清單要靠母圖層的 `browse` 才會算繪（見 `ThemeBrowse` 的 `browseLayerExtra` 與
-`ThemeMapPage` 的 `browseLayers` 過濾），而母圖層**刻意沒有 `browse`**（1,341 筆）。
-獨立成層還多一個好處：可以只看這 92 次，不必背著 1,341 個點。
+清單要靠母圖層的 `browse` 才會算繪，而母圖層**刻意沒有 `browse`**（612 筆）。
+獨立成層還多一個好處：可以只看這 150 次，不必背著 612 個點。
 
-- **幾何與規模一律沿用 USGS 那一份**（直接讀已經產好的 `tw-quakes.geojson`，
-  不重打一次 USGS），維基百科只提供「叫什麼、造成什麼災害」。所以**建置順序有相依**。
-- **共用同一個 `id`**：`highlightIds` 靠字串比對跨圖層連動，點重大地震時底下那顆
-  一般震央也會一起加粗（比照鄉鎮三層共用 id）。
-- **顏色不變、只是更深**：同一個 `hazard` 中性色，不透明度 0.32 → 0.9、半徑加大、
-  加白框。使用者要的是「把這幾次標出來」，不是新的類別——也就省下一次色票驗證。
+- **氣象署那份自己就帶官方經緯度、震源深度與 ML／Mw**，所以這一層**不跟 USGS 做
+  任何比對**。⚠️ 早期版本是維基百科的清單 + 「同一天、規模最接近」的啟發式比對去
+  猜 USGS 震央——那條路有把災情掛到錯的地震上的風險，整段已經拿掉，**不要再走回去**。
+- **規模是氣象署的芮氏規模 ML**，那才是課本與新聞講的數字（921 是 **7.3**，
+  不是 USGS 的 7.7）。Mw 跟 ML 差 0.3 以上時卡片另外標。
+- **顏色不變、只是更深**：同一個 `hazard` 中性色，不透明度 0.9、半徑加大、加白框。
 
-⚠️ **`DetailCard` 的 quake 分支不能 `find` 第一個符合的圖層。** 兩層都是
-`detail.type === "quake"` 且**共用 id**，`find` 會拿到母圖層的 feature（沒有地名與
-災害情形）與母圖層的說明，卡片退化成「規模 7.7 地震」而不是「南投（集集大地震）」。
-規則是**兩層都找、有 `name` 的那一筆優先**。這跟 `findGeoOwner` 只回第一個符合圖層
-是同一類的坑。
+##### ⚠️ 官方表只收到 2022-09-18，所以這一層是混合來源
 
-⚠️ **那個欄位必須叫 `name`，不能叫 `place`。** `searchIndex` 的 `featureHits()` 要求
-`typeof props.name === "string"`，否則整層被跳過——實測叫 `place` 時搜「美濃」只找得到
-古蹟，一次地震都搜不到，**而且沒有任何錯誤訊息**。
+2023 年以後的災害地震（含 **0403 花蓮**）不在官方表裡。那 11 筆由
+`RECENT_QUAKES` 補上（名稱與災情人工抄自維基百科，位置與規模取自 USGS），
+**每一筆產物都帶 `source`，卡片一定要顯示**——混合來源就要說出來。
 
-⚠️ **維基百科是人工抄錄的，建置期不打維基**（既有規則：它是次級來源）。
-表在 `scripts/lib/quakes-major.mjs`，上游條目更新時要重新抄。對照以**當地日期**
-（UTC+8）比對、同一天取規模最接近者，且**規模差超過 1.0 就不算對到**——寧可少一筆，
-也不要把「2,415 人死亡」掛到同一天的另一場地震上。實測 99 筆裡對到 92 筆，
-對不到的 7 筆（早期或規模太小）會列在建置日誌上，那是預期中的資料範圍差異。
+⚠️ **不要為了「來源一致」把 `RECENT_QUAKES` 拿掉**（最近三年會一片空白），
+也不要反過來整層改回維基百科（會退回啟發式比對）。氣象署補上 2023 年以後的
+資料時，應該把 `RECENT_QUAKES` 對應的幾筆刪掉。
 
-⚠️ **中央氣象署與 USGS 的規模不是同一個東西**：921 是氣象署 7.3、USGS 7.7；
-2025-12-27 宜蘭外海是 7.0 對 6.6。地圖與卡片的「規模」一律用 USGS（那是點位的來源，
-兩者必須一致），兩邊差 0.3 以上時卡片才另外標出氣象署的值——否則看過課本的人會
-以為我們寫錯了。
+##### ⚠️ 兩層的震央不再重合，那不是 bug
+
+兩層來自**不同目錄**（氣象署 vs USGS），同一次地震的震央實測差 **5–26 公里**
+（2022 關山最大 25.9 km），規模也不同套。所以：
+
+- 它們**不再共用 id**，也**不會連動強調**（那是上一版靠 USGS 比對換來的，
+  代價是錯配風險，不划算）。
+- 同一次地震在圖上會是兩個位置略異的點。圖層說明有交代這是兩個目錄的真實差異。
+
+##### ⚠️ 這是 HTML 剖析，要有硬檢查
+
+氣象署沒有把這份表放進開放資料平臺（那邊的地震 API 要金鑰，撞硬性禁止 #1），
+只能剖析那一頁的表格。所以 `lib/quakes-major.mjs` 有**筆數（139）與欄數（9）的硬
+檢查**——上游改版要直接失敗，不要靜默少收幾筆。
+
+⚠️ **`備註` 欄要拆成「名稱」與「災情」，判準是第一段含不含「地震」**，不是「有沒有
+逗號」：有一筆備註只有「1人重傷」，純用逗號切會把它當成地震的名字。官方表另有
+8 筆完全沒有名稱，用日期補一個，否則可點清單那一列會是空白。
 
 #### 震央點得開卡片，但刻意沒有可點清單
 
@@ -1449,7 +1456,7 @@ maplibre 的四個角落容器是 map container 內的 `position: absolute; z-in
 | `tw-transport.geojson` | 34 KB |
 | `tw-crops-tea.geojson` | 24 KB |
 | `tw-reservoirs.geojson` + `reservoirs-live.json` | 20 + 7 KB |
-| `tw-quakes-major.geojson` | 22 KB |
+| `tw-quakes-major.geojson` | 49 KB |
 | `tw-county-halls.geojson` | 7 KB |
 
 一個班 30 個學生同時開站時，這 2.44 MB 不該是每個人無條件付的成本。資料一律走 `resolveLayerData()`，與圖層顯示**以及 `TownshipCard`** 共用同一份快取，不會抓兩次——鄉鎮共用卡要的那五份（鄉鎮界、人口、三份作物）全都已經在這張表上。
@@ -1593,8 +1600,8 @@ npm run build:geodata -- --force --only=tw-rivers             # 118 個列管水
 npm run build:geodata -- --force --only=tw-crops-fruit        # 作物三種要各跑一次（需先有鄉鎮界）
 npm run build:geodata -- --force --only=tw-population         # 368 個鄉鎮的人口（同樣需先有鄉鎮界）
 npm run build:geodata -- --force --only=tw-faults             # 33 條活動斷層
-npm run build:geodata -- --force --only=tw-quakes             # 臺灣周邊 M≥5.0（1,341 筆）
-npm run build:geodata -- --force --only=tw-quakes-major       # 災害性地震（需先有 tw-quakes）
+npm run build:geodata -- --force --only=tw-quakes             # 臺灣周邊 M≥5.5（612 筆）
+npm run build:geodata -- --force --only=tw-quakes-major       # 災害性地震（自己查 USGS，不依賴 tw-quakes）
 npm run build:geodata -- --force --only=tw-monuments-national   # 古蹟三級要各跑一次
                                        # （municipal／county 同理；歷史沿革分片會一起寫出）
 ```
@@ -2146,7 +2153,9 @@ m.isSourceLoaded('contour-source')
     const m = window.__gaiaMaps.at(-1);
     m.jumpTo({ center: [120.9, 23.7], zoom: 7.4 });   // 兩層 minzoom 都是 6
     new Set(m.queryRenderedFeatures({ layers: ['tw-faults-line'] }).map(f => f.properties.id)).size  // 32/33
-    m.queryRenderedFeatures({ layers: ['tw-quakes-points'] }).length   // 全島視角實測 1,176
+    m.queryRenderedFeatures({ layers: ['tw-quakes-points'] }).length   // 全島視角實測 574
+    m.getPaintProperty('tw-quakes-points','circle-opacity')            // 0.65（不是 0.32）
+    m.getPaintProperty('tw-quakes-points','circle-stroke-width')       // 0.8（白框，不是 0）
     m.getPaintProperty('tw-faults-line', 'line-color')   // "#8f463f"
     m.getPaintProperty('tw-faults-line', 'line-width')   // ["match",["get","classRank"],1,2.4,1.2]
     ```
@@ -2173,21 +2182,24 @@ m.isSourceLoaded('contour-source')
       [...document.querySelectorAll('.search-hit')].map(h => h.innerText.replace(/\n/g,'・'))
       // 只有「臺灣地震・圖層…」「活動斷層・圖層…」「全球地震帶・圖層…」
       ```
+    - ⚠️ **本島上的點要清楚可辨**（這一層最常被抱怨的地方）：
+      `m.jumpTo({ center: [120.95, 23.75], zoom: 8.4 })` 看中部山區，
+      每顆震央都要靠白框從等高線與地形陰影上分得出來，不是沉進背景的灰影
     - **重大地震**（勾「重大地震」，排在「臺灣地震」正下方）：
       ```js
-      m.queryRenderedFeatures({ layers: ['tw-quakes-major-points'] }).length   // 全島視角 91
+      m.queryRenderedFeatures({ layers: ['tw-quakes-major-points'] }).length   // 全島視角 142
       m.getPaintProperty('tw-quakes-major-points','circle-opacity')            // 0.9（母圖層是 0.32）
       ```
-      清單 92 筆、由新到舊；點「南投（集集大地震）」→ 卡片標題就是它（**不是**
-      「規模 7.7 地震」，那代表 DetailCard 又只找了第一個 quake 圖層），
-      有災害情形「2,415人死亡…」與「中央氣象署的規模是 7.3」那一行
-    - **兩層共用 id**：點重大地震時母圖層那顆也要一起加粗
-      ```js
-      ['tw-quakes-points','tw-quakes-major-points'].map(id =>
-        JSON.stringify(m.getPaintProperty(id,'circle-radius')).includes('usp0009eq0'))  // [true,true]
-      ```
-    - 搜「美濃」要出現「高雄美濃・重大地震」（⚠️ 欄位叫 `name` 才進得了索引），
-      選了要飛到 120.60/22.94、`movestart` 剛好 1 次
+      清單 **150 筆**（氣象署 139 ＋ 補錄 11）、由新到舊。點「集集地震」→ 卡片標題
+      就是它（**不是**「規模 7.3 地震」，那代表 DetailCard 又只找了第一個 quake 圖層），
+      規模是氣象署的 **7.3**（不是 USGS 的 7.7）、有官方災情全文，並且有
+      「本筆資料來源：交通部中央氣象署」那一行
+    - ⚠️ **混合來源必須看得出來**：點 2024 或 2025 年那幾筆，來源那行要是
+      「維基百科／USGS」——官方表只收到 2022-09-18，之後的是補錄的
+    - ⚠️ **兩層的震央不再重合、也不再連動強調**（不同目錄，實測差 5–26 km）。
+      同一次地震在圖上有兩個位置略異的點是正確的，不要「修好」它
+    - 搜「集集」要出現「集集地震・重大地震」（⚠️ 欄位叫 `name` 才進得了索引），
+      選了要飛過去、`movestart` 剛好 1 次
     - 搜「車籠埔」要出現「車籠埔斷層・活動斷層」
     - 切底圖之後重驗顏色與排序
 
@@ -2307,7 +2319,7 @@ scripts/
 ├─ lib/protected-areas.mjs # 國家公園與保護區四個資料集的存取層
 ├─ lib/reservoirs.mjs     # 水利署開放資料的共用存取層（CSV 剖析、bot 防護、id 對照表）
 ├─ lib/monuments.mjs      # 文資局古蹟的存取層（經緯度顛倒修正、名稱前綴剝除、縣市分片）
-├─ lib/quakes-major.mjs   # 維基〈臺灣地震列表〉災害性地震的**人工抄錄表**（建置期不打維基）
+├─ lib/quakes-major.mjs   # 氣象署〈災害地震〉表的剖析（＋2023 年後補錄的人工抄錄表）
 ├─ lib/faults.mjs         # 活動斷層的存取層（地質雲端點、33 條的 id 對照表、筆數檢查）
 ├─ lib/population.mjs     # 各鄉鎮市區人口密度的存取層（年份寫死、site_id 切縣市／鄉鎮、行政層級）
 ├─ lib/crops.mjs          # 農情調查的存取層（逐縣市抓以避開 9999 上限、台／臺正規化、非生產列過濾）
