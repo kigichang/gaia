@@ -24,6 +24,19 @@ import { Stat } from "./PlaceCard";
  *
  * `mag` 是**規模**（一場地震只有一個值，描述釋放的能量）。震度是各地不同的搖晃
  * 程度，這份資料沒有、也不該從規模推算。標題與欄位都寫「規模」。
+ *
+ * ## ⚠️ 這張卡**不重複圖層說明**
+ *
+ * 早期版本在卡片底部印一段 `description`（＝圖層說明 + 全部 `notes`）。但這一層有
+ * 612＋150 個點，那段字**每一筆都逐字相同**，於是卡片有大半的高度在講「這個圖層是
+ * 什麼」而不是「這一次地震是什麼」，而且跟圖層抽屜那一列的說明重複。
+ *
+ * 圖層層級的話現在各有各的位置：說明在抽屜的核取方塊下面，資料限制在圖層名稱旁邊
+ * 那顆 ⚠️ 按鈕的小視窗裡（見 `LayerPanel` 的 `LayerNotes`）。
+ *
+ * ⚠️ 但**逐筆不同**的東西一定要留在卡片上：`source`（混合來源，官方表只到 2022）
+ * 與 `magMoment`（ML 與 Mw 分歧）都是這一筆自己的事實，不是圖層的性質。
+ * 底部的 `資料來源` 連結也一樣不能拿掉——那是全站每張卡片都有的署名。
  */
 
 const num = (v: unknown): number | undefined => (typeof v === "number" ? v : undefined);
@@ -39,11 +52,9 @@ function formatCoord(lat: number, lng: number): string {
 
 export function QuakeCard({
   feature,
-  description,
   sources,
 }: {
   feature: GeoJSON.Feature;
-  description: string;
   sources: readonly string[];
 }) {
   const p = feature.properties ?? {};
@@ -110,7 +121,6 @@ export function QuakeCard({
       {/* ⚠️ 這一層是混合來源：官方〈災害地震〉表只收到 2022 年，之後的另外補錄 */}
       {source && <p className="quake-alt-mag">本筆資料來源：{source}</p>}
 
-      <p className="feature-fallback">{description}</p>
       <p className="detail-sources">
         資料來源：
         <SourceLinks sources={[...sources]} />
