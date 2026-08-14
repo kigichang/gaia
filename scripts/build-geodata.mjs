@@ -490,13 +490,21 @@ const SOURCES = [
           properties: {
             // ⚠️ id 用官方的 TOWNCODE，**不能用名稱 slugify**：鄉鎮名不唯一，
             // 實測有 8 個重複名（中正區、信義區、中山區、東區…）散在不同縣市。
+            // 人口與作物兩層也**共用這個 id**（見 CLAUDE.md「三層共用 id」），
+            // 所以它現在同時是三層共用詳情卡的 join key。
             id: `tw-${p.TOWNCODE}`,
             name: p.TOWNNAME,
             county: p.COUNTYNAME,
+            /**
+             * 行政層級（區／縣轄市／鎮／鄉），從鄉鎮名末字判斷，不需要額外資料源。
+             * 三層合併成一筆搜尋結果之後，活下來的是這一層那一筆，副標要講得出
+             * 「這是什麼」才有用（見 searchIndex.ts 的合併規則）。
+             */
+            level: adminLevel(p.TOWNNAME),
             /** 英文名進搜尋索引當別名（上游原生就有，不必自己拼） */
             en: p.TOWNENG,
             /** 清單次標。同名鄉鎮唯一能分辨的線索就是縣市 */
-            meta: p.COUNTYNAME,
+            meta: `${p.COUNTYNAME}・${adminLevel(p.TOWNNAME)}`,
           },
           _county: p.COUNTYNAME,
           _code: p.TOWNCODE,
@@ -1072,8 +1080,8 @@ const SOURCES = [
       /** 統計裡有、但鄉鎮界圖資對不到的鄉鎮。靜默跳過會讓少一塊沒人發現。 */
       const unmatched = [];
       for (const [key, { county, town, area, crops }] of byTown) {
-        const centroid = centroids.get(key);
-        if (!centroid) {
+        const town_ = centroids.get(key);
+        if (!town_) {
           unmatched.push(`${county}${town}`);
           continue;
         }
@@ -1081,9 +1089,12 @@ const SOURCES = [
         const top = [...crops].sort((a, b) => b[1] - a[1]).slice(0, 3);
         features.push({
           type: "Feature",
-          geometry: { type: "Point", coordinates: centroid },
+          geometry: { type: "Point", coordinates: town_.centroid },
           properties: {
-            id: `crop-${item.id}-${county}-${town}`,
+            // ⚠️ 官方 TOWNCODE，跟鄉鎮界與人口層**共用**（見 CLAUDE.md「三層共用 id」）。
+            // 三個作物子圖層因此各有一筆同 id 的 feature——instance 之內仍然唯一
+            // （一個鄉鎮一種作物一筆），跨 instance 互撞正是這次要的。
+            id: town_.id,
             name: town,
             county,
             crop: item.label,
@@ -1147,33 +1158,31 @@ const SOURCES = [
       /** 統計裡有、但鄉鎮界圖資對不到的鄉鎮。靜默跳過會讓少一塊沒人發現。 */
       const unmatched = [];
       for (const { county, town, pop, area, density } of rows) {
-        const centroid = centroids.get(townKey(county, town));
-        if (!centroid) {
+        const town_ = centroids.get(townKey(county, town));
+        if (!town_) {
           unmatched.push(`${county}${town}`);
           continue;
         }
         const level = adminLevel(town);
         features.push({
           type: "Feature",
-          geometry: { type: "Point", coordinates: centroid },
+          geometry: { type: "Point", coordinates: town_.centroid },
           properties: {
-            // ⚠️ 不能用鄉鎮名 slugify：中正區、東區這類名稱在 8 個縣市重複出現
-            // （見 tw-townships 那一層踩過的同一個坑）。縣市＋鄉鎮才唯一。
-            id: `pop-${county}-${town}`,
+            // ⚠️ **用鄉鎮界那份的官方 TOWNCODE id，不是自己組一個。**
+            // 鄉鎮／人口／作物三層講的是同一個實體，共用 id 才能共用同一張詳情卡、
+            // 在搜尋裡合併成一筆、以及讓 highlightIds 連動強調（見 CLAUDE.md
+            // 「三層共用 id」）。順帶也解掉「中正區、東區在 8 個縣市重複」那個
+            // 不能用名稱 slugify 的老問題。
+            id: town_.id,
             name: town,
             county,
             level,
-            // 半徑用 sqrt(population) 內插、顏色用 density 分級——兩個都要是
-            // **數字**，給人看的字串另外組進 meta／detail，不要讓算繪表達式去 parse 字串
+            // 半徑用 sqrt(population) 內插、顏色用 density 分級——都要是**數字**。
+            // TownshipCard 也直接讀這幾個數值自己排版，所以不再組 detail 字串。
             population: pop,
             density: Math.round(density),
-            // FeatureCard 的 fallback 只讀 name／meta／detail 這三個欄位
-            // （見 components/DetailCard.tsx 的 geo 分支），所以人口密度與面積
-            // 要組進 detail，否則卡片上只剩圖層說明
+            area_km2: Math.round(area * 100) / 100,
             meta: `${county}・${level}・${formatPopulation(pop)}`,
-            detail:
-              `人口密度 ${Math.round(density).toLocaleString("en-US")} 人/km²` +
-              `・面積 ${(Math.round(area * 100) / 100).toLocaleString("en-US")} km²`,
           },
         });
       }
@@ -1196,11 +1205,15 @@ const SOURCES = [
 ];
 
 /**
- * 鄉鎮形心，給作物圖層當點位用：鄉鎮中文名（含縣市）→ [lng, lat]。
+ * 鄉鎮的形心與官方 id，給人口與作物兩層用：鄉鎮中文名（含縣市）→ `{ id, centroid }`。
  *
  * 幾何直接讀已經產好的 `tw-townships.geojson`，不重新剖析那份 12.8 MB 的 SHP。
- * 代價是**建置順序有相依**：要先有鄉鎮界才能建作物層，所以檔案不在時要講清楚
+ * 代價是**建置順序有相依**：要先有鄉鎮界才能建這兩層，所以檔案不在時要講清楚
  * 該跑哪一個指令，而不是丟一個 ENOENT。
+ *
+ * ⚠️ **`id` 也要一起帶出來**，那是「鄉鎮／人口／作物三層共用同一張詳情卡」的關鍵：
+ * 三層的 featureId 都用官方 TOWNCODE，卡片、搜尋合併與連動強調才對得起來。
+ * 詳見 CLAUDE.md「三層共用 id」那一節。
  */
 let townCentroidsPromise = null;
 function townshipCentroids() {
@@ -1211,7 +1224,7 @@ function townshipCentroids() {
       fc = JSON.parse(await readFile(path, "utf8"));
     } catch {
       throw new Error(
-        "找不到 public/data/geo/tw-townships.geojson，作物圖層的點位靠它決定。" +
+        "找不到 public/data/geo/tw-townships.geojson，人口與作物圖層的點位與 id 都靠它決定。" +
           "請先執行 npm run build:geodata -- --only=tw-townships",
       );
     }
@@ -1219,7 +1232,10 @@ function townshipCentroids() {
     for (const f of fc.features) {
       const centroid = ringsCentroid(f.geometry.coordinates.flat());
       if (centroid) {
-        byName.set(townKey(f.properties.county, f.properties.name), centroid);
+        byName.set(townKey(f.properties.county, f.properties.name), {
+          id: f.properties.id,
+          centroid,
+        });
       }
     }
     return byName;

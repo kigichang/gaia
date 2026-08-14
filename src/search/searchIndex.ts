@@ -279,10 +279,36 @@ export function buildSearchIndex(): Promise<SearchHit[]> {
         .map(({ theme, layer }) => featureHits(theme, layer)),
     );
 
-    return [
-      ...featureLists.flat(),
-      ...ready.map(({ theme, layer }) => layerHit(theme, layer)),
-    ];
+    /**
+     * 鄉鎮市區界／人口與都市體系／主要作物分布三層共用同一個 featureId 與同一張
+     * 詳情卡，所以同一個鄉鎮在索引裡最多會產生**五筆一模一樣的標題**（鄉鎮界 1 +
+     * 人口 1 + 作物 3）。既然選哪一筆都開同一張卡，那五筆就只是雜訊——合併成一筆。
+     *
+     * 依 featureId 去重、保留第一筆。`ready` 的順序來自 `theme.layers`，鄉鎮市區界
+     * 排在最前面，所以活下來的是它——選了會 `fitBounds` 到整個鄉鎮的面，比飛到一個
+     * 形心點更適合「給我看這個鄉鎮」。
+     *
+     * ⚠️ 一般圖層自己那套 dedup（`seenNames`）**跨不了圖層**（每次呼叫都新建），
+     * 而子項目那條分支根本沒有 dedup，所以這件事只能在這裡做。
+     */
+    const townshipLayers = new Set(
+      ready
+        .filter(({ layer }) => layer.detail.type === "township")
+        .map(({ theme, layer }) => `${theme.id}:${layer.id}`),
+    );
+    const seenTownship = new Set<string>();
+    const features = featureLists.flat().filter((hit) => {
+      // ⚠️ 子項目**本身**那幾筆（「果樹」「蔬菜」「茶」）不是鄉鎮，一定要留著，
+      // 否則搜「茶」就找不到那個子圖層了。它們的辨識特徵是 featureId === itemId。
+      if (!townshipLayers.has(`${hit.themeId}:${hit.layerId}`)) return true;
+      if (!hit.featureId || hit.featureId === hit.itemId) return true;
+      const key = `${hit.themeId}:${hit.featureId}`;
+      if (seenTownship.has(key)) return false;
+      seenTownship.add(key);
+      return true;
+    });
+
+    return [...features, ...ready.map(({ theme, layer }) => layerHit(theme, layer))];
   })();
 
   return indexPromise;

@@ -1392,6 +1392,30 @@ input {
   color: var(--text-muted);
 }
 
+/* ---------- 鄉鎮市區共用詳情卡 ---------- */
+
+/* 沿用古蹟沿革那組小標的視覺層級——同樣是「卡片裡的一個次區塊」 */
+.township-section-title {
+  margin: 12px 0 4px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+/* 前三名作物排在面積下面自成一行：跟面積擠在同一行會讓兩個數字看起來像同一個量 */
+.township-crop-top {
+  display: block;
+  margin-top: 2px;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.township-loading {
+  margin: 8px 0 0;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
 .detail-empty {
   margin: 0;
   padding: 12px;

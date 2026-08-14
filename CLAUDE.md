@@ -470,8 +470,9 @@ OSM 是眾人編輯的資料庫，關聯被拆開、改名或重建都可能發�
   就切」——那會把 `新竹縣竹北市` 切成 `新竹縣竹` + `北市`，而且**不會報錯**。
 - **東沙群島與南沙群島兩列的人口是「…」**，跟當初聚合縣市人口踩到的是同一筆資料。
   取得層直接濾掉並列出來（**不是補 0**——0 人跟沒有統計是兩回事），所以是 368 不是 370。
-- **id 用「縣市＋鄉鎮」而不是鄉鎮名 slugify**：中正區、東區這些名稱在 8 個縣市重複，
-  跟 `tw-townships` 踩過的是同一個坑。
+- **id 直接用鄉鎮界那份的官方 `TOWNCODE`**（`tw-10008070`），不是自己組一個。
+  這同時解掉「中正區、東區在 8 個縣市重複，不能用名稱 slugify」那個老問題，
+  也是「三層共用同一張詳情卡」的 join key，見下一節。
 
 #### 這一層的資料證明「人口」與「密度」真的要分兩個通道
 
@@ -480,6 +481,78 @@ OSM 是眾人編輯的資料庫，關聯被拆開、改名或重建都可能發�
 全部畫成同一顆點就看不出這件事，那正是這一層要教的。
 
 （各層級人口最多的分別是板橋區 55.0 萬／竹北市 22.1 萬／竹東鎮 9.8 萬／湖口鄉 8.5 萬。）
+
+### ⚠️ 三層共用 id：鄉鎮市區界／人口／主要作物分布
+
+`tw-townships`（面）、`tw-population`（點）、`tw-crops-*`（點）講的是**同一個實體**
+——一個鄉鎮市區。所以三層的 `properties.id` **一律是官方 `TOWNCODE`**
+（`tw-10008070`），`detail` 一律是 `{ type: "township" }`，點哪一層都開同一張
+`TownshipCard`。
+
+**這是刻意讓三層的 id 互撞，跟 `tw-rivers` vs `tw-basins` 那個「刻意不共用 id」的
+決定方向相反**，兩件事的差別要一起看才不會誤判成 bug：
+
+| | 河川 vs 流域 | 鄉鎮 vs 人口 vs 作物 |
+|---|---|---|
+| 是不是同一個實體 | **不是**（一條線 vs 一片集水區，來源也不同） | **是**（同一個行政區的三種屬性） |
+| id | 刻意加 `-river`／`-basin` 分開 | 刻意共用 `TOWNCODE` |
+| 選了其中一個 | 只亮自己 | 三層**全部**一起亮 |
+
+共用 id 之後，這三件事是**自動**成立的，不需要任何額外機制：
+
+- **連動強調**：`highlightIds` 本來就是拿一份 id 清單去比對所有 instance 的
+  `properties.id`（`ThemeMapPage`），所以選任何一個，鄉鎮面＋人口點＋三個作物點
+  一起加粗。不需要 `attach.parentProperty`。
+- **共用詳情卡**：`DetailCard` 只看 `detail.type` 與 `featureId`，三層都一樣就必然
+  開出逐字相同的卡。
+- **搜尋合併**：見下。
+
+#### 卡片一律拓齊，資料自己抓
+
+`TownshipCard` **不從 `instances` 撿資料**，而是用 `resolveLayerData()` 把五份抓齊
+（鄉鎮界、人口、三份作物）。理由是從 instances 只撿得到**目前勾選中**那幾層，於是
+同一個鄉鎮的卡片會因為使用者勾了什麼而長得不一樣——那是使用者無從預期的。
+
+成本沒有看起來那麼高：`resolveLayerData()` 是模組層級的 Promise 快取，**跟圖層本身
+以及搜尋索引共用同一份**，而那五份本來就都在搜尋索引的抓取清單裡。實測只勾「鄉鎮
+市區界」時點一個鄉鎮會多抓四份，**點第二個鄉鎮一份都不會再抓**。
+
+⚠️ **署名要跟著實際畫出來的區塊走，不是三層的聯集**。連江與金門整個縣都不在農情
+調查裡，那些鄉鎮的卡片沒有作物區塊，掛上農糧署等於替一份沒出現在卡片上的資料署名
+（實測南竿鄉只列兩個來源、鹿谷鄉列三個）。所以 `DetailCard` 傳的是「圖層 id →
+sources」的對照，由卡片自己挑。
+
+#### ⚠️ featureId 不是 TOWNCODE 時要退回圖層說明
+
+`handleItemNameClick` 在使用者點 `LayerPanel` 裡「果樹」這個**子項目名稱**（不是核取
+方塊）時，傳的 `featureId` 是 `"fruit"`。`DetailCard` 的 township 分支因此要用
+`/^tw-\d+$/` 判斷，對不上就退回 `FeatureCard` 顯示作物圖層的說明——直接回 `null`
+的話畫面會是一張**空白面板**而 `data-detail-open` 仍然是 true。
+
+#### 搜尋合併成一筆
+
+同一個鄉鎮本來會產生**五筆一模一樣的標題**（鄉鎮界 1 + 人口 1 + 作物 3）。既然選哪
+一筆都開同一張卡，那五筆就只是雜訊，所以 `buildSearchIndex()` 依 featureId 去重、
+保留第一筆——`theme.layers` 的順序讓活下來的是鄉鎮市區界，它會 `fitBounds` 到整個
+鄉鎮的面，比飛到一個形心點更適合「給我看這個鄉鎮」。
+
+⚠️ 兩件事不能弄錯：
+- **子項目本身那幾筆要留著**（「果樹」「蔬菜」「茶」），否則搜「茶」就找不到那個
+  子圖層。辨識特徵是 `featureId === itemId`。
+- **合併是依 featureId，不是依名稱**：搜「中正區」仍然要出現**兩筆**（基隆市、
+  臺北市），副標各自標著縣市與層級。
+- 一般圖層自己那套 dedup（`seenNames`）**跨不了圖層**（每次呼叫都新建），而子項目
+  那條分支根本沒有 dedup，所以這件事只能在 `buildSearchIndex()` 做。
+
+#### 鄉鎮界的 `meta` 多了行政層級
+
+`tw-townships` 的 `meta` 從 `基隆市` 改成 `基隆市・區`（層級由 `adminLevel()` 從鄉鎮名
+末字判斷，**不需要新的資料來源**）。合併之後活下來的是鄉鎮界那一筆，副標要講得出
+「這是什麼」才有用。
+
+⚠️ 副標**沒有**人口數字，那是刻意的：要把人口放進去，`tw-townships` 的建置就得反過來
+依賴人口資料集，而人口層又依賴鄉鎮幾何——為了一行副標付這個循環相依不划算。人口在
+卡片第一行就看得到。
 
 ## 硬性禁止事項
 
@@ -906,7 +979,8 @@ CVD 9.1、一般視覺 22.9。也就是說本檔案舊版寫的「物種三色 a
      **驗這一層一定要看名字是不是正常中文**，只數筆數是抓不到的。
   3. **鄉鎮名不唯一**：實測 8 個重複名（中正區、信義區、中山區、大安區、東區、
      西區、南區、北區）。id 因此用官方 `TOWNCODE`（8 位數字，368 筆全唯一），
-     **不能用名稱 slugify**。這件事一路影響到搜尋，見「搜尋索引」那節。
+     **不能用名稱 slugify**。這件事一路影響到搜尋，見「搜尋索引」那節；而且
+     **人口與作物兩層也共用這個 id**，見「三層共用 id」。
 
 - **鄉鎮界的 509 KB 超過建議值是預期的，不要去「修好」它。** 實測 115 萬個頂點、
   1,036 個環，簡化到後面會**進入高原**：0.0008 是 677 KB、0.0012 是 509 KB，再放寬
@@ -1081,27 +1155,28 @@ maplibre 的四個角落容器是 map container 內的 `position: absolute; z-in
 
 **而且撞名時要把 `meta` 補進副標**，否則畫面上是兩列一模一樣的字。這件事**只對真的撞名的標題做**：水庫的 `meta` 是「蓄水 62%・有效容量 …」這種長字串，沒撞名還硬加只會把副標塞爆。實測搜「東區」會得到四列，各自標著新竹市／臺中市／嘉義市／臺南市。
 
-索引是 **lazy 的**：搜尋框第一次獲得焦點才 `buildSearchIndex()`。目前它會抓十六份檔案，合計約 **2.35 MB**：
+索引是 **lazy 的**：搜尋框第一次獲得焦點才 `buildSearchIndex()`。目前它會抓十七份檔案，合計約 **2.42 MB**（實測，2026-08）：
 
 | 檔案 | 大小 |
 |---|---|
-| `tw-townships.geojson` | 509 KB |
-| `tw-crops-vegetable.geojson` | 112 KB |
-| `tw-crops-fruit.geojson` | 107 KB |
-| `tw-crops-tea.geojson` | 26 KB |
+| `tw-townships.geojson` | 516 KB |
+| `tw-basins.geojson` | 345 KB |
 | `tw-monuments-municipal.geojson` | 240 KB |
-| `tw-basins.geojson` | 346 KB |
+| `tw-rivers.geojson` | 225 KB |
 | `tw-counties.geojson` | 192 KB |
 | `tw-monuments-county.geojson` | 192 KB |
 | `tw-protected-areas.geojson` | 182 KB |
 | `world-rivers.geojson` | 146 KB |
-| `tw-rivers.geojson` | 226 KB |
+| `tw-crops-vegetable.geojson` | 105 KB |
+| `tw-crops-fruit.geojson` | 101 KB |
+| `tw-population.geojson` | 93 KB |
 | `tw-monuments-national.geojson` | 50 KB |
 | `tw-transport.geojson` | 34 KB |
+| `tw-crops-tea.geojson` | 24 KB |
 | `tw-reservoirs.geojson` + `reservoirs-live.json` | 20 + 7 KB |
 | `tw-county-halls.geojson` | 7 KB |
 
-一個班 30 個學生同時開站時，這 2.35 MB 不該是每個人無條件付的成本。資料一律走 `resolveLayerData()`，與圖層顯示共用同一份快取，不會抓兩次。
+一個班 30 個學生同時開站時，這 2.42 MB 不該是每個人無條件付的成本。資料一律走 `resolveLayerData()`，與圖層顯示**以及 `TownshipCard`** 共用同一份快取，不會抓兩次——鄉鎮共用卡要的那五份（鄉鎮界、人口、三份作物）全都已經在這張表上。
 
 ⚠️ **古蹟那三份（483 KB）是子項目圖層唯一會進索引的例子，而且必須明確開啟。**
 `items` 圖層預設**只索引子項目本身**（三筆「國定古蹟／直轄市定古蹟／縣(市)定古蹟」），
@@ -1636,7 +1711,8 @@ m.isSourceLoaded('contour-source')
     - 縣市界與鄉鎮界**同時勾選**時兩層都在——`MAX_ACTIVE_BY_KIND.fill` 是 2，
       這兩層剛好用滿，再勾第三個面圖層會踢掉先勾的那個
     - zoom 13 以上鄉鎮面消失（`maxzoom: 12`），這是刻意的，不是壞掉
-    - 點任一鄉鎮 → `FeatureCard` fallback 顯示鄉鎮名 + 縣市 + 圖層說明（不是空白卡）
+    - 點任一鄉鎮 → 開的是**三層共用的 `TownshipCard`**（不是 FeatureCard fallback），
+      而且**人口與作物那兩層沒勾也要有數字**——卡片會自己抓（見「三層共用 id」）
     - 抽屜可點清單**依縣市分組**：22 個組名（不可點）＋底下縮排的鄉鎮，
       而且**縣市順序要與縣市界那層逐字相同**（由北到南、離島最後）：
       ```js
@@ -1646,7 +1722,8 @@ m.isSourceLoaded('contour-source')
       分組是 `browse.groupBy`（見 registry/types.ts）。⚠️ 它**依序切、不排序**——
       同一個縣市的鄉鎮必須在資料裡是連續的，否則會被切成兩組
     - 搜「中正區」要出現**兩筆**（臺北市、基隆市），搜「東區」要**四筆**，
-      而且副標各自標著縣市；搜「板橋區」只有一筆且副標**不**加縣市（沒撞名不補）
+      而且副標各自標著縣市與層級（`基隆市・區`）；搜「板橋區」只有一筆且副標**不**
+      加縣市（沒撞名不補）。⚠️ 合併是依 featureId 不是依名稱，所以同名的仍然是多筆
     - 搜「Lukang」找得到鹿港鎮（`TOWNENG` 進了 haystack）。⚠️ 是 Lukang 不是 Lugang
     - 切底圖之後重驗顏色與排序
 
@@ -1658,12 +1735,17 @@ m.isSourceLoaded('contour-source')
     // 期望 fruit #d36085 / vegetable #7d9913 / tea #0994de
     ```
     - **顏色要綁在作物上，不是勾選順序**：先勾「茶」再勾「果樹」，茶仍然要是藍的
-    - 點嘉義縣中埔鄉的果樹點 → 卡片標題「中埔鄉」、副標「嘉義縣・果樹 5,432 公頃」、
-      底下一行是**這個鄉鎮種最多的前三種**（檳榔／香蕉／其他果樹）。
-      ⚠️ 只看到圖層說明而沒有鄉鎮名，代表 `DetailCard` 的 geo 分支又只比對了圖層 id
-      ——子項目圖層的 instance 是 `tw-crops-<crop>`，要掃過所有指向同一個 collection
-      的 instance（踩過一次）
-    - 搜「鹿谷」要同時出現鄉鎮市區界與三筆作物（副標各自標著果樹／蔬菜／茶）
+    - 點嘉義縣中埔鄉的果樹點 → 開的是**三層共用的 `TownshipCard`**：標題「中埔鄉」、
+      副標「嘉義縣・鄉」、人口／密度／面積三個 stat，底下「主要作物（年種植面積）」
+      列出果樹 5,432 公頃（檳榔／香蕉／其他果樹）、蔬菜、茶
+    - ⚠️ **在圖層抽屜點「果樹」這個子項目名稱**（不是核取方塊）→ 要顯示作物圖層的
+      說明，**不是空白面板**。那條路徑傳的 featureId 是 `"fruit"`，不是 TOWNCODE：
+      ```js
+      document.querySelector('.map-detail-panel').innerText.trim().length > 0
+      ```
+    - 搜「鹿谷」現在只有**一筆**鄉鎮（副標「鄉鎮市區界」），不再是鄉鎮界＋三筆作物
+      ——三層共用同一張卡，五筆一樣的標題只是雜訊（見「搜尋合併成一筆」）。
+      但搜「茶」仍然要找得到「茶・主要作物分布」那個子圖層
     - 地理合理性抽查（這一層最容易看出資料錯）：茶的前三名是名間鄉、仁愛鄉、鹿谷鄉；
       蔬菜是雲林二崙、西螺；果樹是嘉義中埔、南投中寮、臺中和平。
       ⚠️ **新竹縣寶山鄉不該出現在果樹前段**——它出現就代表 `isProducing()` 沒生效
@@ -1689,12 +1771,12 @@ m.isSourceLoaded('contour-source')
       // ["區:170","縣轄市:14","鎮:38","鄉:146"]  （合計 368）
       ```
       各組第一筆是該層級人口最多的：板橋區／竹北市／竹東鎮／湖口鄉
-    - 點板橋區 → 卡片是「板橋區」「新北市・區・55.0 萬人」「人口密度 23,761 人/km²・
-      面積 23.14 km²」+ 圖層說明（沒有內容檔，走 `FeatureCard` fallback，所以人口密度
-      與面積**必須組進 geojson 的 `detail` 欄位**，那是 fallback 唯一會讀的第三個欄位）
+    - 點板橋區 → 開的是**三層共用的 `TownshipCard`**：「板橋區」「新北市・區」＋
+      人口 55.0 萬人／人口密度 23,761 人/km²／面積 23.14 km² 三個 stat
     - **地理合理性**：全島視角要一眼看得出西部走廊——臺北／新北、桃園、臺中、
       臺南／高雄是成片的深紫大點，中央山脈與東部是稀疏的淺紫小點
-    - 搜「永和區」要出現「永和區・人口與都市體系」那一筆（跟鄉鎮市區界、作物並存）
+    - 搜「永和區」只出現**一筆**（副標「鄉鎮市區界・新北市・區」），選了要
+      `fitBounds` 到永和區的面、開共用卡、`movestart` 剛好 1 次
     - ⚠️ **同時勾「國家公園與保護區」，在 NLSC 底圖上看山地鄉那幾顆淺色點**：兩個紫
       只差 11° 色相（跨幾何不驗，見「第三個色階」）。形心真的落在保護區面上的只有
       **花蓮縣卓溪鄉與秀林鄉**兩個，靠白色外框區辨——換色後要重看這兩個點：
@@ -1706,6 +1788,33 @@ m.isSourceLoaded('contour-source')
       }).map(f => f.properties.name)
       ```
     - 切底圖之後重驗顏色與圖例
+
+24. **三層共用詳情卡**（鄉鎮市區界／人口與都市體系／主要作物分布，見「三層共用 id」）：
+    ```js
+    const m = window.__gaiaMaps.at(-1);
+    const ID = 'tw-10008070';   // 南投縣鹿谷鄉
+    ```
+    - **卡片一律拓齊**：**只勾「鄉鎮市區界」**（人口與作物都不勾）→ 點中埔鄉 →
+      卡片要同時有人口／密度／面積與果樹、蔬菜、茶。Network 會多抓四份，
+      **但點第二個鄉鎮一份都不會再抓**：
+      ```js
+      performance.getEntriesByType('resource').filter(r => /geojson/.test(r.name)).length
+      ```
+    - **三個入口逐字相同**：分別從鄉鎮界的面、人口圓點、作物圓點點進去，
+      `document.querySelector('.map-detail-panel').innerText` 三次要**完全一樣**
+    - **連動強調**（共用 id 的直接後果）：三層都勾，點任何一個，四個圖層的表達式
+      都要含同一個 id：
+      ```js
+      const has = (id, prop) => JSON.stringify(m.getPaintProperty(id, prop)).includes(ID);
+      [has('tw-townships-fill','fill-opacity'), has('tw-townships-outline','line-width'),
+       has('tw-population-points','circle-radius'), has('tw-crops-tea-points','circle-radius')]
+      // [true, true, true, true]
+      ```
+    - ⚠️ **署名要跟著實際畫出來的區塊走**：搜「南竿鄉」（連江縣不在農情調查裡）→
+      卡片沒有作物區塊，來源**只有兩個**、不含農業部農糧署；鹿谷鄉則是三個
+    - **缺資料不填 0**：南竿鄉沒有作物區塊（不是「果樹 0 公頃」）；基隆市信義區
+      只有蔬菜一列（沒有果樹與茶那兩列）
+    - 切底圖之後重驗連動強調（`reapply` 會重建圖層）
 
 ### ⚠️ 用瀏覽器自動化點 UI 的三個陷阱
 
@@ -1795,6 +1904,7 @@ src/
    ├─ ThemeBrowse.tsx     # 圖層抽屜裡的可點清單（browseLayerExtra）
    ├─ ReservoirCard.tsx   # 水庫詳情卡（即時水情長條 + 基本資料，資料全來自 geojson）
    ├─ MonumentCard.tsx    # 古蹟詳情卡（基本資料來自 geojson，歷史沿革按縣市延遲載入）
+   ├─ TownshipCard.tsx    # 鄉鎮市區詳情卡（鄉鎮界／人口／作物三層共用，五份資料自己抓）
    └─ PlaceCard/IndigenousCard/SpeciesCard/FeatureCard/LayerPanel/MapLegend…
 public/data/
 ├─ reservoirs-live.json   # build:reservoirs 產生（禁止手改，每次部署重抓）

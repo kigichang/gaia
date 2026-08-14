@@ -205,7 +205,7 @@ export const taiwanTheme: ThemeDefinition = {
     // ── 以下混著已上線與尚未有資料的圖層 ──────────────────────────────
     // `status: "planned"` 的會顯示成停用的核取方塊，但 description 仍然要寫清楚
     // ——一個沒有文字的停用選項什麼都沒教到。目前還是 planned 的只剩
-    // tw-population 與 tw-vegetation-belts 兩個。
+    // tw-vegetation-belts 一個。
     {
       id: "tw-townships",
       label: "鄉鎮市區界",
@@ -220,7 +220,9 @@ export const taiwanTheme: ThemeDefinition = {
        * 飽和狀態，為同一個家族再挑第六色要重跑完整色域掃描，不划算。
        */
       colorRole: "boundary",
-      detail: { type: "geo", collection: "tw-townships" },
+      // 三層（鄉鎮市區界／人口/都市體系／主要作物分布）共用同一張詳情卡與同一組
+      // featureId（官方 TOWNCODE），見 registry/types.ts 的 township 說明
+      detail: { type: "township" },
       // 368 筆平鋪很難看出縣市層級，改成「縣市名 + 底下縮排的鄉鎮」（見 LayerBrowse.groupBy）
       browse: { groupBy: "county" },
       /**
@@ -425,7 +427,9 @@ export const taiwanTheme: ThemeDefinition = {
       },
       // 顏色由 ramp 決定，但圖例與抽屜的色塊要有一個身分色（見 thematicColors.ts）
       colorRole: "population",
-      detail: { type: "geo", collection: "tw-population" },
+      // 三層（鄉鎮市區界／人口/都市體系／主要作物分布）共用同一張詳情卡與同一組
+      // featureId（官方 TOWNCODE），見 registry/types.ts 的 township 說明
+      detail: { type: "township" },
       /**
        * 清單依**行政層級**分組（區／縣轄市／鎮／鄉），層級之內依人口由多到少。
        * 這就是圖層名稱裡「都市體系」那一半：《地方制度法》的層級本身就是官方的
@@ -544,7 +548,9 @@ export const taiwanTheme: ThemeDefinition = {
         opacity: 0.72,
         strokeWidth: 0.8,
       },
-      detail: { type: "geo", collection: "tw-crops" },
+      // 三層（鄉鎮市區界／人口/都市體系／主要作物分布）共用同一張詳情卡與同一組
+      // featureId（官方 TOWNCODE），見 registry/types.ts 的 township 說明
+      detail: { type: "township" },
       items: {
         /**
          * 三種作物各一個檔，比照古蹟：只勾「茶」就只抓 27 KB，不是整包 250 KB。

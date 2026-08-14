@@ -4,6 +4,7 @@ import { SpeciesCard } from "./SpeciesCard";
 import { FeatureCard } from "./FeatureCard";
 import { ReservoirCard } from "./ReservoirCard";
 import { MonumentCard } from "./MonumentCard";
+import { TownshipCard } from "./TownshipCard";
 import { getGeoFeature, getIndigenousGroup, getPlace, getSpecies } from "../content";
 import type { DetailSpec, ThemeDefinition } from "../map/registry/types";
 import type { GeoLayerInstance } from "../map/useGeoLayers";
@@ -78,6 +79,49 @@ export function DetailCard({
           sources: owner?.sources ?? [],
           schematic: owner?.schematic,
         }}
+      />
+    );
+  }
+  if (detail.type === "township") {
+    /**
+     * 鄉鎮市區界／人口／作物三層共用的卡片。三層的 featureId 都是官方 TOWNCODE，
+     * 所以這裡不必知道使用者點的是哪一層——`TownshipCard` 會自己把五份資料抓齊。
+     *
+     * `seed` 是從**已勾選**圖層撿到的 properties，只為了讓標題在抓取完成前先出現。
+     * 撿不到（三層都沒勾、純粹從搜尋跳過來）也沒關係，卡片會等資料到。
+     */
+    const owners = theme.layers.filter((l) => l.detail.type === "township");
+    const seed = instances
+      .filter((i) => i.detail.type === "township")
+      .flatMap((i) => i.data?.features ?? [])
+      .find((f) => f.properties?.id === featureId)?.properties ?? undefined;
+
+    /**
+     * ⚠️ featureId 不是鄉鎮時要退回圖層說明，**不能回 `null`**。
+     * `handleItemNameClick`（ThemeMapPage）在使用者點「果樹」這個**子項目名稱**時，
+     * 傳的 featureId 是 `"fruit"`——那不是 TOWNCODE。回 null 的話畫面會是一張
+     * 空白面板，而 `data-detail-open` 仍然是 true。
+     */
+    if (!/^tw-\d+$/.test(featureId)) {
+      const owner = owners.find((l) => l.items) ?? owners[0];
+      return (
+        <FeatureCard
+          fallback={{
+            layerLabel: owner?.label ?? "鄉鎮市區",
+            description: owner?.description ?? "",
+            sources: owner?.sources ?? [],
+          }}
+        />
+      );
+    }
+
+    return (
+      <TownshipCard
+        featureId={featureId}
+        seed={seed}
+        // 卡片依**實際畫出來的區塊**挑署名，所以這裡給的是「圖層 id → sources」
+        // 的對照，不是先取好的聯集（見 TownshipCard 的說明）
+        sourcesByLayer={Object.fromEntries(owners.map((l) => [l.id, l.sources]))}
       />
     );
   }

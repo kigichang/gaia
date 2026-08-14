@@ -198,6 +198,21 @@ export type DetailSpec =
    * 另外按縣市分片、點開卡片才抓（見 components/MonumentCard.tsx）。
    */
   | { type: "monument" }
+  /**
+   * 鄉鎮市區。**三個圖層共用這一個型別**：鄉鎮市區界（面）、人口與都市體系（點）、
+   * 主要作物分布（點）講的是同一個實體，所以它們的 featureId 都是官方 TOWNCODE，
+   * 點哪一層都開同一張 `TownshipCard`（見 CLAUDE.md「三層共用 id」）。
+   *
+   * ⚠️ **不能用 `geo` + 同一個 collection 代替**，那條路有兩個坑：
+   * `DetailCard` 的 `findGeoOwner()` 只回傳 `theme.layers` 裡**第一個**符合的圖層，
+   * 三層共用 collection 會讓人口卡與作物卡的署名全部變成「鄉鎮市區界」那一份，
+   * 而且不會報錯；`FeatureCard` 的內容檔分支與 fallback 分支又是互斥的，哪天替
+   * 某個鄉鎮寫了內容檔，人口與作物數字會整段消失。
+   *
+   * 卡片自己用 `resolveLayerData()` 把五份資料抓齊（跟圖層與搜尋索引共用快取），
+   * 所以**沒勾人口或作物也看得到那些數字**。
+   */
+  | { type: "township" }
   | { type: "none" };
 
 /** 為這個圖層列出可點清單（點了飛過去並開詳情卡），長在圖層抽屜裡（見 components/ThemeBrowse.tsx）。 */
