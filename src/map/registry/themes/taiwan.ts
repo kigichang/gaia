@@ -103,7 +103,15 @@ export const taiwanTheme: ThemeDefinition = {
       source: { type: "remote", path: "data/geo/tw-counties.geojson" },
       render: { kind: "fill", fillOpacity: 0.16, outlineWidth: 1.2 },
       colorRole: "boundary",
-      detail: { type: "geo", collection: "tw-counties" },
+      /**
+       * ⚠️ `hideLayerDescription`：卡片不印圖層說明——那段字對每一個縣市都逐字相同，
+       * 而且就是抽屜那一列的內容（見 registry/types.ts）。
+       *
+       * 22 個縣市**都有內容檔**，所以今天它其實是 no-op（`FeatureCard` 只有在沒有
+       * 內容檔時才走 fallback）。掛著是為了規則一致：哪天新增一個縣市而內容檔還沒
+       * 寫，卡片會是「名稱＋來源」而不是整片圖層說明。
+       */
+      detail: { type: "geo", collection: "tw-counties", hideLayerDescription: true },
       browse: {},
       /**
        * 縣市政府所在地，跟著縣市界一起開關、在可點清單裡巢狀排在各縣市底下。
@@ -126,7 +134,8 @@ export const taiwanTheme: ThemeDefinition = {
         source: { type: "remote", path: "data/geo-manual/tw-county-halls.geojson" },
         render: { kind: "circle" },
         colorRole: "place",
-        detail: { type: "geo", collection: "tw-county-halls" },
+        // 同上：22 處縣市政府都有內容檔，掛著是為了規則一致
+        detail: { type: "geo", collection: "tw-county-halls", hideLayerDescription: true },
         parentProperty: "countyId",
         browse: { zoom: 10 },
         description:
@@ -365,7 +374,13 @@ export const taiwanTheme: ThemeDefinition = {
       // 放大到 zoom 10 也不會讓同一條河重複冒出來（spacing 維持預設 120 即可）。
       render: { kind: "line", width: 2, label: { property: "name", maxAngle: 150 } },
       colorRole: "hydrology",
-      detail: { type: "geo", collection: "tw-rivers" },
+      /**
+       * ⚠️ `hideLayerDescription`：144 條河川裡有 **118 條沒有內容檔**，它們的卡片
+       * 本來整片都是同一段圖層說明（那段字很長，講的是收錄範圍與管理等級制度），
+       * 跟抽屜那一列完全重複。拿掉之後留下的是這條河自己的事：名稱、別名與流經
+       * 縣市、公告的管理等級、來源署名（ODbL 要求的 OpenStreetMap 也在裡面）。
+       */
+      detail: { type: "geo", collection: "tw-rivers", hideLayerDescription: true },
       // 118 筆平鋪太長，改成依公告的管理等級分組（見 LayerBrowse.groupBy）：
       // 課本會點名的 24 條中央管河川排在最前面，65 條縣(市)管的排在最後。
       browse: { groupBy: "category" },
@@ -605,7 +620,14 @@ export const taiwanTheme: ThemeDefinition = {
         },
       },
       colorRole: "fault",
-      detail: { type: "geo", collection: "tw-faults" },
+      /**
+       * ⚠️ `hideLayerDescription`：33 條斷層都沒有內容檔，卡片走 `FeatureCard` 的
+       * fallback，而那段圖層說明**在每一張卡上逐字相同**，又跟抽屜那一列重複。
+       * 卡片只留這一條斷層自己的事（名稱、類別與活動年代、觀察方式、來源），
+       * 圖層層級的話留在抽屜——說明在核取方塊下面、資料限制在 ⚠️ 小視窗。
+       * 跟 `QuakeCard` 不吃 `fullDescription()` 是同一個判斷。
+       */
+      detail: { type: "geo", collection: "tw-faults", hideLayerDescription: true },
       /**
        * 可點清單依類別分組（第一類 22 條、第二類 11 條）。
        * ⚠️ `groupBy` 依序切、不排序，所以 geojson 的 feature 必須讓同一類連續

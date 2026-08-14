@@ -239,7 +239,26 @@ export type DetailSpec =
    * 找不到內容檔時 FeatureCard 會退回顯示 geojson 的 name 屬性 + 圖層自己的
    * description/sources——22 個縣市不必每個都先寫好內容檔才能上線。
    */
-  | { type: "geo"; collection: string; fallbackNameProperty?: string }
+  | {
+      type: "geo";
+      collection: string;
+      fallbackNameProperty?: string;
+      /**
+       * 沒有內容檔時**不要**在卡片上印圖層說明。
+       *
+       * ⚠️ 預設是印的，那條路徑是刻意的：22 個縣市、92 條河川這種「還沒寫內容檔」的
+       * 圖徵，卡片上唯一講得出東西的就是圖層說明。
+       *
+       * 只有在「圖徵很多、而且每一張卡上那段字逐字相同」時才設 true——目前只有
+       * 活動斷層（33 條共用同一段說明，跟圖層抽屜那一列完全重複，卡片有大半高度在
+       * 講「這個圖層是什麼」而不是「這條斷層是什麼」）。跟 `QuakeCard` 不吃
+       * `fullDescription()` 是同一個判斷。
+       *
+       * 設了它就等於把圖層層級的話全部交給抽屜：說明在核取方塊下面，資料限制在
+       * 圖層名稱旁邊那顆 ⚠️ 按鈕的小視窗裡。
+       */
+      hideLayerDescription?: boolean;
+    }
   /**
    * 水庫。卡片的內容**全部來自 geojson 的 properties**（基本資料 + join 進來的
    * 即時水情），不是 `src/content/` 底下的手寫檔案——水情每小時都在變，寫成
