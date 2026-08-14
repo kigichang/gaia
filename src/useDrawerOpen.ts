@@ -13,19 +13,18 @@ function readStored(): boolean {
 
 /**
  * 圖層抽屜的開關，會記住使用者上次的選擇。作法比照 `useTheme`（同樣包 try/catch，
- * 隱私模式下只是不跨次保留，不會拋錯）。**首次到訪預設收起**——抽屜疊在詳情面板
- * 之上又蓋住左上角的搜尋框，預設開著會讓人第一眼看不到搜尋框與詳情卡。圖層仍然
- * 找得到：☰ 就在搜尋藥丸的最左邊，而且搜尋本身也搜得到圖層名稱。
+ * 隱私模式下只是不跨次保留，不會拋錯）。**首次到訪預設收起**——抽屜蓋住左上角的
+ * 搜尋框，預設開著會讓人第一眼看不到這次的主要入口。圖層仍然找得到：☰ 就在搜尋
+ * 藥丸的最左邊，而且搜尋本身也搜得到圖層名稱。
  *
- * 分成兩個 setter 是有原因的：抽屜疊在詳情面板之上，所以只要選取了任何圖徵就得
- * 自動把抽屜收起來，否則剛開出來的詳情卡會被抽屜整個蓋住。但那次收起是系統替
- * 使用者做的決定，**不可以**覆寫掉他自己記住的偏好——下次進站還是要照他上次
- * 手動設定的狀態。
+ * 開關只有這一個 setter，而且每次都寫進 localStorage：選取圖徵時**不會**再自動
+ * 收起抽屜（詳情面板現在疊在抽屜之上，見 styles.css 的 --z-panel／--z-drawer），
+ * 所以不存在「系統替使用者收起、但不可以覆寫他的偏好」那種第二種收起方式了。
  */
 export function useDrawerOpen() {
   const [open, setOpenState] = useState<boolean>(() => readStored());
 
-  /** 使用者主動切換（點 ☰ 或關閉鈕）：寫進 localStorage。 */
+  /** 使用者主動切換（點 ☰、關閉鈕或按 Escape）：寫進 localStorage。 */
   const setOpen = useCallback((next: boolean) => {
     setOpenState(next);
     try {
@@ -35,8 +34,5 @@ export function useDrawerOpen() {
     }
   }, []);
 
-  /** 因為選取圖徵而自動收起：只改畫面，不動記憶值。 */
-  const closeTransient = useCallback(() => setOpenState(false), []);
-
-  return { open, setOpen, closeTransient };
+  return { open, setOpen };
 }

@@ -29,6 +29,12 @@ export interface PopoverOptions {
    * 窄螢幕才靠遮罩關閉。
    */
   dismissOnOutsideClick?: boolean;
+  /**
+   * 按 Escape 是否要由這裡關掉。
+   * ⋮⋮⋮ 選單與「圖層」磚是 true；圖層抽屜是 false——它跟詳情面板可以同時開著，
+   * 關的順序要由 `ThemeMapPage` 統一仲裁（詳情優先），見那裡的說明。
+   */
+  dismissOnEscape?: boolean;
 }
 
 export interface PopoverBindings {
@@ -48,7 +54,7 @@ export interface PopoverBindings {
     role: "dialog";
     "aria-label": string;
     tabIndex: -1;
-    onKeyDown: KeyboardEventHandler;
+    onKeyDown?: KeyboardEventHandler;
   };
 }
 
@@ -57,6 +63,7 @@ export function usePopover({
   onOpenChange,
   label,
   dismissOnOutsideClick = true,
+  dismissOnEscape = true,
 }: PopoverOptions): PopoverBindings {
   const id = useId();
   const rootRef = useRef<HTMLDivElement | null>(null);
@@ -126,7 +133,7 @@ export function usePopover({
       role: "dialog",
       "aria-label": label,
       tabIndex: -1,
-      onKeyDown,
+      onKeyDown: dismissOnEscape ? onKeyDown : undefined,
     },
   };
 }

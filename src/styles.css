@@ -38,10 +38,10 @@
   --search-pill-h: 40px;
   --search-h: calc(var(--search-pill-h) + var(--fab-gap) * 2);
   --z-map-ui: 5; /* 浮動控制與圖例 */
-  --z-panel: 10; /* 詳情面板 */
-  --z-scrim: 15; /* 窄螢幕遮罩：在面板之上、抽屜之下 */
-  --z-drawer: 20; /* 圖層抽屜（刻意蓋在詳情面板之上，比照 Google Map） */
-  --z-popover: 30; /* ⋮⋮⋮ 與「圖層」彈出層 */
+  --z-scrim: 10; /* 窄螢幕遮罩：那是抽屜的遮罩，所以在抽屜之下 */
+  --z-drawer: 15; /* 圖層抽屜 */
+  --z-panel: 20; /* 詳情面板（刻意疊在抽屜之上，關掉就回到底下那份圖層清單） */
+  --z-popover: 30; /* ⋮⋮⋮ 與「圖層」彈出層、搜尋建議清單 */
 }
 
 @media (prefers-color-scheme: dark) {
@@ -1008,6 +1008,12 @@ input {
   box-shadow: var(--float-shadow);
 }
 
+/* 抽屜開著時整片蓋住它——關掉詳情就回到剛才那份圖層清單。
+   搜尋欄此時本來就是 visibility: hidden（見 .map-top-left 那條），所以不必留 --search-h。 */
+.map-shell[data-drawer-open="true"] .map-detail-panel {
+  top: 0;
+}
+
 .map-detail-head {
   display: flex;
   align-items: center;
@@ -1561,6 +1567,13 @@ input {
     border-right: none;
     border-top: 1px solid var(--border);
     border-radius: 16px 16px 0 0;
+  }
+
+  /* ⚠️ 窄螢幕的詳情是底部抽拉卡，起點不隨抽屜開關改變。這條要用**一模一樣的
+     選擇器**寫回去：上面那條 top: 0 的特異性比 .map-detail-panel 高，光靠媒體
+     查詢寫在後面是壓不過它的（會變成 top: 0 + height: 62dvh 的怪版面）。 */
+  .map-shell[data-drawer-open="true"] .map-detail-panel {
+    top: auto;
   }
 
   /* 「圖層」磚縮小，把寬度讓給地圖（☰ 本來就只有圖示） */

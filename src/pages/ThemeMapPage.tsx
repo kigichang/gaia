@@ -64,7 +64,7 @@ function ThemeMapView({ theme, chrome }: { theme: ThemeDefinition; chrome: Chrom
   const [selected, setSelected] = useState<Selection>(() => theme.initialSelection ?? null);
   const [data, setData] = useState<Record<string, GeoJSON.FeatureCollection | null>>({});
   const [pendingHit, setPendingHit] = useState<SearchHit | null>(null);
-  const { open: drawerOpen, setOpen: setDrawerOpen, closeTransient } = useDrawerOpen();
+  const { open: drawerOpen, setOpen: setDrawerOpen } = useDrawerOpen();
 
   // 抽屜的開關繫結。刻意上提到這裡：☰ 住在搜尋藥丸裡、面板是抽屜，兩者不再
   // 共用一個 DOM 子樹（為什麼這樣安全，見 LayerDrawer.tsx 的說明）。
@@ -73,6 +73,8 @@ function ThemeMapView({ theme, chrome }: { theme: ThemeDefinition; chrome: Chrom
     onOpenChange: setDrawerOpen,
     label: `圖層選單：${theme.label}`,
     dismissOnOutsideClick: false,
+    // 抽屜與詳情面板可以同時開著，Escape 的優先順序由下面那個 effect 統一仲裁
+    dismissOnEscape: false,
   });
 
   const active = useMemo<ActiveState>(
@@ -98,16 +100,37 @@ function ThemeMapView({ theme, chrome }: { theme: ThemeDefinition; chrome: Chrom
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pendingKey]);
 
-  // 抽屜疊在詳情面板之上，所以一旦選了圖徵就得把抽屜收起來，否則剛開出來的
-  // 詳情卡會被整片蓋住。用 closeTransient 而不是 setOpen(false)：這是系統替
-  // 使用者做的決定，不可以覆寫他自己記在 localStorage 裡的偏好。
-  const handleSelect = useCallback(
-    (detail: DetailSpec, featureId: string) => {
-      setSelected({ detail, featureId });
-      closeTransient();
-    },
-    [closeTransient],
-  );
+  // 詳情面板疊在抽屜之上（--z-panel > --z-drawer），所以選了圖徵不必動抽屜：
+  // 詳情整片蓋住它，關掉就回到剛才那份可點清單，不用重開抽屜、重新展開圖層。
+  const handleSelect = useCallback((detail: DetailSpec, featureId: string) => {
+    setSelected({ detail, featureId });
+  }, []);
+
+  /**
+   * Escape：先關最上層的詳情，再關抽屜。
+   *
+   * ⚠️ 這是全站唯一一個掛在 document 上的 Escape，跟 usePopover 的既有規則相反，
+   * 理由是**焦點不一定在面板裡**：點地圖圖徵之後焦點還在 canvas（甚至 body）上，
+   * 面板層級的 onKeyDown 根本收不到。這裡一次只關一層，所以不會出現當初排除
+   * document 監聽時擔心的「把抽屜跟選單一起關掉」。
+   *
+   * 巢狀的彈出層仍然優先：⋮⋮⋮、「圖層」磚（usePopover）與搜尋建議清單
+   * （MapSearchBox）都在自己的 onKeyDown 裡 stopPropagation()，而 React 的合成
+   * 事件會連帶呼叫原生的 stopPropagation，事件冒不到 document，這裡就不會多關一層。
+   *
+   * 用 setDrawerOpen（會寫 localStorage）而不是只改畫面：按 Escape 關抽屜是使用者
+   * 主動的動作，語意跟點 ✕ 一樣。
+   */
+  useEffect(() => {
+    if (!selected && !drawerOpen) return;
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key !== "Escape") return;
+      if (selected) setSelected(null);
+      else setDrawerOpen(false);
+    };
+    document.addEventListener("keydown", onKeyDown);
+    return () => document.removeEventListener("keydown", onKeyDown);
+  }, [selected, drawerOpen, setDrawerOpen]);
 
   /**
    * 要在地圖上強調的圖徵：選取的那一筆，加上它「順帶指名」的關聯圖徵。
@@ -257,10 +280,9 @@ function ThemeMapView({ theme, chrome }: { theme: ThemeDefinition; chrome: Chrom
   const handleBrowseSelect = useCallback(
     (layer: LayerDefinition, featureId: string) => {
       setSelected({ detail: layer.detail, featureId });
-      closeTransient();
       flyToFeature(layer, featureId);
     },
-    [flyToFeature, closeTransient],
+    [flyToFeature],
   );
 
   /**
@@ -274,10 +296,9 @@ function ThemeMapView({ theme, chrome }: { theme: ThemeDefinition; chrome: Chrom
       const attach = layer.attach;
       if (!attach) return;
       setSelected({ detail: attach.detail, featureId });
-      closeTransient();
       flyToFeature(layer, featureId, true);
     },
-    [flyToFeature, closeTransient],
+    [flyToFeature],
   );
 
   /**
@@ -329,10 +350,9 @@ function ThemeMapView({ theme, chrome }: { theme: ThemeDefinition; chrome: Chrom
     (hit: SearchHit) => {
       pendingHitRef.current = hit;
       setPendingHit(hit);
-      closeTransient();
       if (hit.themeId !== theme.id) navigate(`/theme/${hit.themeId}`);
     },
-    [theme, navigate, closeTransient],
+    [theme, navigate],
   );
 
   const handleItemNameClick = useCallback(
@@ -340,10 +360,9 @@ function ThemeMapView({ theme, chrome }: { theme: ThemeDefinition; chrome: Chrom
       const layer = theme.layers.find((l) => l.id === layerId);
       if (!layer) return;
       setSelected({ detail: layer.detail, featureId: itemId });
-      closeTransient();
       flyToFeature(layer, itemId);
     },
-    [theme, flyToFeature, closeTransient],
+    [theme, flyToFeature],
   );
 
   /**

@@ -919,9 +919,15 @@ CVD 9.1、一般視覺 22.9。也就是說本檔案舊版寫的「物種三色 a
 
 ### z-index 階梯與 maplibre 的堆疊脈絡
 
-`--z-map-ui: 5` → `--z-panel: 10` → `--z-scrim: 15` → `--z-drawer: 20` → `--z-popover: 30`。抽屜在詳情面板**之上**是刻意的設計決定；因此**選取任何圖徵（點地圖或選搜尋結果）都會自動收起抽屜**（`useDrawerOpen` 的 `closeTransient`），否則剛開出來的詳情卡會被整片蓋住。`closeTransient` 不寫 localStorage——那是系統替使用者做的決定，不能覆寫他自己記住的偏好（`setOpen` 才會寫）。
+`--z-map-ui: 5` → `--z-scrim: 10` → `--z-drawer: 15` → `--z-panel: 20` → `--z-popover: 30`。
 
-抽屜**首次造訪預設收起**：它蓋住的正好是左上角的搜尋框與詳情面板，預設開著會讓人第一眼看不到這次的主要入口。圖層仍然找得到——☰ 就在搜尋藥丸最左邊，而且搜尋本身也搜得到圖層名稱。
+**詳情面板在抽屜之上**，而且抽屜開著時它從 `top: 0` 起算（`.map-shell[data-drawer-open="true"] .map-detail-panel`），把抽屜**整片蓋住**——關掉詳情就回到剛才那份可點清單，不用重開抽屜、重新展開圖層。所以**選取圖徵不會動到抽屜**：`useDrawerOpen` 只有 `setOpen` 一個 setter，早期那個「選了圖徵就自動收起抽屜、但不寫 localStorage」的 `closeTransient` 已經連同五處呼叫一起移除。
+
+⚠️ 那條 `top: 0` 的特異性（0,3,0）高過 `@media (max-width: 860px)` 裡的 `.map-detail-panel`（0,1,0），**光靠媒體查詢寫在後面是壓不過它的**。窄螢幕的底部抽拉卡因此要用**一模一樣的選擇器**把 `top: auto` 寫回去，否則會變成 `top: 0` + `height: 62dvh` 的怪版面。
+
+遮罩（`--z-scrim`）是**抽屜的**遮罩，所以排在抽屜之下——它原本被夾在 panel 與 drawer 中間，只是為了在舊順序下蓋住詳情面板。`--z-popover` 仍高於 `--z-panel`，搜尋建議清單照樣蓋在詳情之上。
+
+抽屜**首次造訪預設收起**：它蓋住的正好是左上角的搜尋框，預設開著會讓人第一眼看不到這次的主要入口。圖層仍然找得到——☰ 就在搜尋藥丸最左邊，而且搜尋本身也搜得到圖層名稱。
 
 maplibre 的四個角落容器是 map container 內的 `position: absolute; z-index: 2`，所以 `.map-shell-canvas` 要 `isolation: isolate` 把它關進自己的堆疊脈絡。浮動控制的容器一律 `pointer-events: none`，只有按鈕與面板本身 `auto`，否則會吃掉地圖手勢。
 
@@ -935,10 +941,20 @@ maplibre 的四個角落容器是 map container 內的 `position: absolute; z-in
 
 **不用 `<dialog>`、不用原生 Popover API。** `showModal()` 會鎖焦點並擋住地圖拖曳；`show()` / `popover=""` 會升到 top layer，於是跳出上面那道 z-index 階梯與 `--left-panel-w` 的定位脈絡——而整個 shell 的重點就是這幾層彼此的相對順序。
 
-- Escape 掛在**面板層級**的 `onKeyDown`，不是 document 監聽：開啟時焦點已在面板裡，Escape 自然只關掉最上層；document 監聽會把抽屜跟選單一起關掉。
+- Escape 掛在**面板層級**的 `onKeyDown`，不是 document 監聽：開啟時焦點已在面板裡，Escape 自然只關掉最上層；document 監聽會把抽屜跟選單一起關掉。**圖層抽屜是唯一的例外**（`dismissOnEscape: false`），見下。
+- `didOpenRef` 擋住「抽屜從 localStorage 還原成開啟」時在首次算繪就搶走文件焦點。**焦點還給觸發器那條路徑跟誰關掉它無關**：那個 effect 只看 `open` 由真變假，所以用 ☰ 開的抽屜即使是被下面那個 shell 層級的 Escape 關掉，焦點一樣會回到 ☰。
 - 點外面關閉用 `pointerdown` 而不是 `click`，這樣彈出層會在 maplibre 開始拖曳前就關掉。原生 `<select>` 的選項清單不派發頁面層級的 `pointerdown`，所以「圖層」彈出層裡的底圖 `<select>` 不會把自己關掉。
-- `didOpenRef` 擋住「抽屜從 localStorage 還原成開啟」時在首次算繪就搶走文件焦點。
 - 不做 focus trap、不加 `aria-modal`：底下的地圖仍然可以操作，宣告成 modal 是對輔助科技說謊。
+
+#### ⚠️ 全站唯一掛在 document 上的 Escape
+
+抽屜與詳情面板現在可以同時開著，關的順序要有人仲裁（**先關最上層的詳情，再關抽屜**），所以那一個 Escape 由 `ThemeMapPage` 的一個 effect 統一處理，抽屜的 `usePopover` 用 `dismissOnEscape: false` 把自己那份讓出來。
+
+- **必須掛在 document**，這一條跟上面的既有規則相反：焦點不一定在面板裡——點地圖圖徵之後焦點還在 canvas（甚至 body）上，面板層級的 `onKeyDown` 根本收不到，而詳情面板在改動前**完全沒有鍵盤關閉方式**就是這個原因。
+- **不會出現當初排除 document 監聽時擔心的「一次關掉兩層」**：仲裁一次只關一層。
+- **巢狀的彈出層仍然優先**：⋮⋮⋮、「圖層」磚與搜尋建議清單都在自己的 `onKeyDown` 裡 `stopPropagation()`，而 React 的合成事件會連帶呼叫**原生**的 `stopPropagation`，事件冒不到 document。實測：搜尋框裡按 Escape 只收起建議清單、詳情不動；⋮⋮⋮ 開著時按 Escape 只關選單。
+- ⚠️ **抽屜的 `usePopover` 不可以退回成自己處理 Escape**。最常見的那個流程是：點抽屜清單裡的一列（焦點停在那顆按鈕上）→ 詳情疊上來 → 按 Escape，面板層級的 handler 會先攔到，**關掉的是底下看不到的抽屜而不是最上層的詳情**。
+- 關抽屜用 `setOpen`（會寫 localStorage）：按 Escape 是使用者主動的動作，語意跟點 ✕ 一樣。
 
 `usePopover` 由 `ThemeMapPage` 呼叫（不是 `LayerDrawer` 自己），因為 ☰ 現在住在搜尋藥丸裡、面板是抽屜，兩者不再共用一個 DOM 子樹。這樣拆是安全的：`rootRef` **只**用在「點外面關閉」那個 effect，而抽屜是 `dismissOnOutsideClick: false`，那個 effect 直接 early return；焦點的進出靠 `triggerRef`／`panelRef`，與 DOM 結構無關。
 
@@ -1208,9 +1224,22 @@ m.isSourceLoaded('contour-source')
 7. **切到每一種向量底圖（目前是「世界地圖」）並確認地物真的渲染出來**，不能只看 `npm run build` 成功。這一項只在 production build 才驗得出來——`npm run dev` 用的是原始 ESM，不會踩到 worker 檔案沒被複製的問題，`npm run preview` 或實際部署才會踩到
 8. 主題頁（滿版版面）：
    - 搜尋藥丸左邊的 ☰ 開圖層抽屜 → 核取方塊可任意複選疊加；`planned` 的是停用狀態但仍有說明文字
-   - 點地圖圖徵 → **搜尋框下方的詳情面板**開卡，且**抽屜會自動收起**（否則詳情被蓋住），但 `localStorage.getItem('gaia-layer-drawer')` **不變**
+   - 抽屜關著時點地圖圖徵 → **搜尋框下方的詳情面板**開卡（`top` 是 `60px`，＝`--search-h`）
+   - **抽屜開著時點抽屜清單裡的一列 → 抽屜留在原地，詳情整片疊在它上面**：
+     ```js
+     const shell = document.querySelector('.map-shell');
+     const css = (s, p) => getComputedStyle(document.querySelector(s))[p];
+     shell.dataset.drawerOpen === 'true' && shell.dataset.detailOpen === 'true'  // 兩個都開
+     css('.map-detail-panel', 'top')      // '0px'（抽屜開著時從頂端起算，不留 --search-h）
+     +css('.map-detail-panel', 'zIndex') > +css('.layer-drawer', 'zIndex')       // 20 > 15
+     ```
+     關掉詳情（✕ 或 Escape）→ 抽屜與剛才展開的那一層**原封不動**（連捲動位置都在），選取中那一列是 `.place-btn.is-active`
    - `localStorage.removeItem('gaia-layer-drawer')` 後重整 → 抽屜是**收起的**，搜尋框與詳情卡直接可見
    - 手動開抽屜 → 重新整理後仍是開的；模擬封鎖 localStorage 不得拋錯
+   - ⚠️ 窄螢幕（≤860px）**抽屜開著時詳情仍然是底部抽拉卡**，不能被打回 `top: 0`：
+     ```js
+     css('.map-detail-panel', 'height')   // = 62dvh；rect.top + rect.height === innerHeight
+     ```
    - 搜尋（見下面第 12 項）
    - 勾選縣市界／世界主要河流後，可點清單長在圖層抽屜裡該圖層那一列底下：
      ```js
@@ -1219,6 +1248,11 @@ m.isSourceLoaded('contour-source')
      ```
    - 鍵盤：Tab 到 ☰ → Enter 開啟 → Escape 關閉且焦點回到 ☰；⋮⋮⋮ 同理；⋮⋮⋮ 開著時點「圖層」磚會關掉 ⋮⋮⋮ 但**不會**關掉抽屜
      （⚠️ `MapView` 是第一個子節點，所以 Tab 會先走過 canvas 與 maplibre 自己的縮放鈕才輪到 ☰）
+   - **Escape 是兩段式的，而且四種焦點位置都要驗**（見「全站唯一掛在 document 上的 Escape」）：
+     - 焦點在抽屜清單的按鈕上（點過一列之後最常見的位置）→ 第一次 Escape 關**詳情**、抽屜還在；第二次才關抽屜，之後 `localStorage.getItem('gaia-layer-drawer') === 'closed'`
+     - 焦點在 `BODY`／canvas 上（點完地圖圖徵的位置）→ Escape 一樣關得掉詳情。**這是加 document 監聽的唯一理由，一定要驗**
+     - 焦點在搜尋輸入框、建議清單開著 → Escape 只收清單，`shell.dataset.detailOpen` **不變**
+     - ⋮⋮⋮ 開著 → Escape 只關選單，`shell.dataset.detailOpen` **不變**
    - 面板閃避：抽屜或詳情開啟時 `document.querySelector('.map-bottom-left').getBoundingClientRect().left >= 360`
    - 面板開關**不得**改變 canvas 尺寸（證明不需要 `resize()`）：
      ```js
