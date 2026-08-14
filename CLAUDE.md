@@ -1800,7 +1800,9 @@ m.isSourceLoaded('contour-source')
 
     ⚠️ **臺灣主題的 `defaultOn` 是「五大山脈」，不是「地形景點」。** 這個主題的 `initialSelection` 是玉山主峰、`camera` 也開在玉山，主峰現在住在五大山脈底下——換掉預設開啟的圖層，進站第一眼就會變成「詳情卡在講玉山主峰，地圖上卻沒有任何圖徵」。
 
-    ⚠️ **`src/content/places/taipei.json` 不可以刪。** 它同時被 `/compare` 的「臺北 ↔ 開羅」預設組合使用，刪掉會讓比較頁那一組壞掉。改動 `src/content/places/` 之後要順手開 `/compare` 點一次那個組合確認（下拉選單要顯示「臺北（25.0°N）」與「開羅（30.0°N）」、四張圖表都在）。
+    ⚠️ **`src/content/places/taipei.json` 不可以刪，`id` 也不可以改。** 它同時被 `/compare` 的預設組合使用（`presets.ts` 用 `a: "taipei"` 參照），刪掉或改 id 會讓比較頁那一組壞掉。改動 `src/content/places/` 之後要順手開 `/compare` 點一次那個組合確認（下拉選單要顯示「臺北盆地（25.0°N）」與「開羅（30.0°N）」、四張圖表都在）。
+
+    ⚠️ 這一筆的 `name.zh` 是**臺北盆地**不是「臺北」——那是刻意的，用來跟行政區圖層的「臺北市」分開（搜「盆地」現在會乾淨地列出埔里／臺中／臺北三個盆地）。**改名時 `presets.ts` 的 `label` 要一起改**，否則按鈕寫「臺北」、底下下拉選單卻是「臺北盆地」。
 
     ⚠️ **`src/content/places/` 新增一筆地點，就會同時改動三個地方**：地形景點圖層、`/compare` 的兩個下拉選單、主題頁搜尋索引。所以新增後 `npm run build:climate` 是必須的——`/compare` 選到一個沒有氣候 JSON 的地點會得到空圖表，而 `npm run validate` **不會**擋（climate 驗證只檢查「有 JSON 的必須對得到地點」，反向不檢查）。
 

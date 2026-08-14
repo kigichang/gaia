@@ -1,6 +1,6 @@
 {
   "id": "taipei",
-  "name": { "zh": "臺北", "en": "Taipei" },
+  "name": { "zh": "臺北盆地", "en": "Taipei Basin" },
   "coord": { "lat": 25.033, "lng": 121.565 },
   "elevation_m": 18,
   "region": "taiwan",

@@ -46,7 +46,7 @@ export const COMPARE_PRESETS: ComparePreset[] = [
   },
   {
     id: "subtropical-taipei-cairo",
-    label: "副熱帶：臺北 ↔ 開羅",
+    label: "副熱帶：臺北盆地 ↔ 開羅",
     hint: "緯度只差 5 度，一邊是常濕的副熱帶，一邊是沙漠中的外來河綠洲。",
     lat: 27,
     zoom: 6,
