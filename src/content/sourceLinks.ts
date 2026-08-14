@@ -36,6 +36,13 @@ export const SOURCE_LINKS: Record<string, string> = {
   經濟部水利署: "https://www.wra.gov.tw/",
   農業部農田水利署: "https://www.ia.gov.tw/",
   農業部林業及自然保育署: "https://www.forest.gov.tw/",
+  // 垂直植被帶那六個高程界線的實際出處。連的是那一頁本身而不是農業部首頁：
+  // 六帶與界線只有這一頁講得完整，而全站的既有承諾是「資料要能追溯出處」。
+  // ⚠️ 舊網域 kids.coa.gov.tw 仍然搜得到，農業部改制後已改為 kids.moa.gov.tw。
+  "農業部農業兒童網 山地植群帶分布":
+    "https://kids.moa.gov.tw/view.php?func=knowledge&subfunc=kids_knowledge&category=B16&id=27",
+  // 上面那一頁自己標的製作單位（發行是林務局，即現在的林業及自然保育署）
+  國立臺灣大學生物多樣性研究中心: "https://www.brc.ntu.edu.tw/",
   // 主要作物分布的來源（農情調查）
   農業部農糧署: "https://www.afa.gov.tw/",
   // 古蹟圖層的來源。網站名是「國家文化資產網」，每一處古蹟的官方頁面都在它底下

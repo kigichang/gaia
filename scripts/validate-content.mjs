@@ -329,14 +329,47 @@ for (const relDir of GEO_DATA_DIRS) {
   console.log(`registry: ${THEMES.length} 個主題／${seenLayerIds.size} 個圖層通過交叉檢查`);
 }
 
-// 地理要素內容檔的 (collection, id) 必須在對應 geojson 裡找得到。
-// 反向**刻意不要求**：沒有內容檔的圖徵（例如還沒寫說明的縣市）是允許的。
+/**
+ * 地理要素內容檔的 (collection, id) 必須在對應 geojson 裡找得到。
+ * 反向**刻意不要求**：沒有內容檔的圖徵（例如還沒寫說明的縣市）是允許的。
+ *
+ * ⚠️ 例外是 `kind: "elevation"`（垂直植被帶）：那一層**沒有 geojson**，顏色由 DEM
+ * 逐像素算出來，它的「圖徵」就是 `items` 那六個高程分帶。所以 id 改成跟 items 對，
+ * 對不上一樣要失敗——`handleItemNameClick` 傳的 featureId 就是 item id，打錯字的話
+ * 點下去會開出一張只有圖層說明的卡，完全靜默。
+ */
+const elevationItemIds = new Map(); // collection → Set(item id)
+for (const { layer } of allLayers()) {
+  if (layer.render?.kind !== "elevation" || layer.detail?.type !== "geo") continue;
+  const list = layer.items?.from.type === "inline" ? layer.items.from.list : [];
+  elevationItemIds.set(layer.detail.collection, new Set(list.map((i) => i.id)));
+}
+
 for (const f of geoFeatures) {
+  const items = elevationItemIds.get(f.collection);
+  if (items) {
+    if (!items.has(f.id)) {
+      errors.push(
+        `geo/${f.collection}/${f.id}.json → 這個 collection 由高程分帶圖層提供，但 items 裡沒有 id「${f.id}」`,
+      );
+    }
+    continue;
+  }
   const found = [...geoCollectionIds.entries()].some(
     ([path, ids]) => path.includes(f.collection) && ids.has(f.id),
   );
   if (geoCollectionIds.size && !found) {
     errors.push(`geo/${f.collection}/${f.id}.json → 在對應的 geojson 裡找不到 id「${f.id}」`);
+  }
+}
+
+// 高程分帶反過來**要求每一帶都有內容檔**：這一層沒有 geojson，FeatureCard 的
+// fallback 在這裡等於沒有退路，少一個檔案就是一張只有圖層說明的卡。
+for (const [collection, ids] of elevationItemIds) {
+  for (const id of ids) {
+    if (!geoFeatures.some((f) => f.collection === collection && f.id === id)) {
+      errors.push(`geo/${collection} → 高程分帶「${id}」缺內容檔，點帶名會開出沒有內容的卡`);
+    }
   }
 }
 
