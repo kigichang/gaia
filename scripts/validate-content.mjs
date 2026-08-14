@@ -243,6 +243,27 @@ for (const relDir of GEO_DATA_DIRS) {
       errors.push(`registry/${theme.id} → ready 的圖層「${layer.id}」必須有 source 或 items`);
     }
 
+    /**
+     * 資料限制一律放 `notes`，`description` 裡不留 ⚠️。
+     *
+     * 圖層抽屜就是靠這件事把兩者分開：說明留在核取方塊下面，警語收進圖層名稱旁邊
+     * 那顆 ⚠️ 按鈕開出來的小視窗（沒有 notes 就沒有按鈕）。警語漏回 description
+     * 的話，那一列會長回原本的長度、但按鈕不會出現——畫面上看起來只是「這個圖層
+     * 的說明比較長」，沒有任何線索指向寫錯了地方。
+     */
+    if (layer.description?.includes("⚠️")) {
+      errors.push(
+        `registry/${theme.id} → 圖層「${layer.id}」的 description 含 ⚠️，資料限制要改放 notes（抽屜的 ⚠️ 小視窗只讀 notes）`,
+      );
+    }
+    for (const note of layer.notes ?? []) {
+      if (!note.startsWith("⚠️ ")) {
+        errors.push(
+          `registry/${theme.id} → 圖層「${layer.id}」的 notes 有一則不是以「⚠️ 」開頭：${note.slice(0, 20)}…`,
+        );
+      }
+    }
+
     if (layer.items && layer.items.maxActive > layer.items.palette.length) {
       errors.push(
         `registry/${theme.id} → 圖層「${layer.id}」的 maxActive（${layer.items.maxActive}）超過色票長度（${layer.items.palette.length}）`,

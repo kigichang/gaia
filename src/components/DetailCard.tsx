@@ -76,7 +76,7 @@ export function DetailCard({
                 ? props.top
                 : undefined,
           layerLabel: owner?.label ?? detail.collection,
-          description: owner?.description ?? "",
+          description: owner ? fullDescription(owner) : "",
           sources: owner?.sources ?? [],
           schematic: owner?.schematic,
         }}
@@ -109,7 +109,7 @@ export function DetailCard({
         <FeatureCard
           fallback={{
             layerLabel: owner?.label ?? "鄉鎮市區",
-            description: owner?.description ?? "",
+            description: owner ? fullDescription(owner) : "",
             sources: owner?.sources ?? [],
           }}
         />
@@ -153,7 +153,7 @@ export function DetailCard({
     return best ? (
       <QuakeCard
         feature={best.feature}
-        description={best.layer.description}
+        description={fullDescription(best.layer)}
         sources={best.layer.sources}
       />
     ) : null;
@@ -194,6 +194,18 @@ export function DetailCard({
 }
 
 /**
+ * 圖層說明的完整文字＝`description` + 所有 `notes`。
+ *
+ * 圖層抽屜把兩者分開（警語收進圖層名稱旁邊的 ⚠️ 小視窗，讓那份長清單捲得動），
+ * 但**詳情卡不分**：這張卡是沒有內容檔的圖徵唯一看得到說明的地方，把資料限制
+ * 藏起來會違反「不得暗示精確性」的既有承諾。分開只是抽屜的排版手段，不是可以
+ * 少講一半的授權。
+ */
+function fullDescription(layer: { description: string; notes?: string[] }) {
+  return layer.notes?.length ? [layer.description, ...layer.notes].join("") : layer.description;
+}
+
+/**
  * 哪個圖層（或附屬圖層）擁有這個 geo collection。
  *
  * 附屬圖層沒有自己的 `description`／`sources`，沒填就沿用母圖層的——它們本來就是
@@ -205,7 +217,7 @@ function findGeoOwner(theme: ThemeDefinition, collection: string) {
       return {
         id: l.id,
         label: l.label,
-        description: l.description,
+        description: fullDescription(l),
         sources: l.sources,
         schematic: l.schematic,
       };
@@ -215,7 +227,7 @@ function findGeoOwner(theme: ThemeDefinition, collection: string) {
       return {
         id: a.id,
         label: a.label,
-        description: a.description ?? l.description,
+        description: a.description ?? fullDescription(l),
         sources: a.sources ?? l.sources,
         schematic: l.schematic,
       };

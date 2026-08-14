@@ -42,6 +42,9 @@
   --z-drawer: 15; /* 圖層抽屜 */
   --z-panel: 20; /* 詳情面板（刻意疊在抽屜之上，關掉就回到底下那份圖層清單） */
   --z-popover: 30; /* ⋮⋮⋮ 與「圖層」彈出層、搜尋建議清單 */
+  /* 圖層的資料限制小視窗：它 portal 到 #root（抽屜是 overflow + 自己的堆疊脈絡，
+     留在裡面會被裁掉又被詳情面板蓋住），所以要壓過上面每一層 */
+  --z-modal: 40;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -1202,6 +1205,77 @@ input {
 /* 示意幾何的警語：與 GBIF/ERA5 的既有做法一致，不得暗示精確性 */
 .layer-schematic {
   color: var(--series-temp);
+}
+
+/* ---------- 圖層的資料限制（⚠️ 按鈕 + 小視窗） ---------- */
+
+/* 核取方塊那一列：圖層名稱後面接 ⚠️。按鈕刻意放在 <label> 外面——放進去的話，
+   點它會連帶切換核取方塊（label 的啟動行為）。 */
+.layer-row-head {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.layer-notes-btn {
+  flex: none;
+  display: flex;
+  align-items: center;
+  padding: 2px 4px;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  font-size: 11px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.layer-notes-btn:hover {
+  background: var(--hover-wash);
+}
+
+/* 小視窗本身。top／left 由 JS 量出來（貼著抽屜右緣、對齊按下的那一列），
+   這裡不給預設值——抽屜寬度跟著 --panel-w 與媒體查詢走，純 CSS 接不上。 */
+.layer-notes-window {
+  position: fixed;
+  z-index: var(--z-modal);
+  width: min(380px, calc(100vw - 32px));
+  max-height: min(60dvh, 460px);
+  display: flex;
+  flex-direction: column;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--float-shadow);
+}
+
+.layer-notes-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 10px 12px 8px 14px;
+  border-bottom: 1px solid var(--border);
+}
+
+.layer-notes-title {
+  margin: 0;
+  font-size: 13px;
+}
+
+.layer-notes-list {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  margin: 0;
+  padding: 12px 14px 14px;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  font-size: 12px;
+  line-height: 1.6;
+  color: var(--text-secondary);
 }
 
 .layer-basemap-hint {
