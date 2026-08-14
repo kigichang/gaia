@@ -151,4 +151,15 @@ export async function fetchFaults(fetchWithRetry) {
   return { faults: [...byName.values()], warnings };
 }
 
+/**
+ * 沿線標註用的短名例外。
+ *
+ * 一般規則是把尾綴的「斷層」兩個字去掉（`build-geodata.mjs` 的 transform 在做），
+ * 33 條裡只有這一條不適用——去掉尾綴會得到「三義斷層之分支」，比原本的全名只短
+ * 兩個字，等於沒省到，而標註能不能放得出來就取決於字串長度。
+ */
+export const SHORT_NAMES = {
+  三義斷層之分支斷層: "三義分支",
+};
+
 export { CLASS_NOTE };

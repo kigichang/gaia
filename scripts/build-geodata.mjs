@@ -71,6 +71,7 @@ import {
   LICENSE as FAULT_LICENSE,
   SOURCE_LABEL as FAULT_SOURCE_LABEL,
   SOURCE_PAGE as FAULT_SOURCE_PAGE,
+  SHORT_NAMES as FAULT_SHORT_NAMES,
   fetchFaults,
 } from "./lib/faults.mjs";
 import {
@@ -1236,6 +1237,18 @@ const SOURCES = [
             // 剝掉，33 條斷層會得到 33 個空字串（實測踩過）
             id: `fault-${f.id}`,
             name: f.name,
+            /**
+             * 沿線標註用的短名（見註冊表的 `render.label`）。
+             *
+             * ⚠️ **不是排版偏好，是「標得出來」與「標不出來」的差別。** 實測 1440×663
+             * 的畫布：用全名（4–9 個字）在全島視角只放得出 **3** 個標註，去掉尾綴的
+             * 「斷層」兩個字之後是 **13** 個；zoom 8.5 的南部是 8 → 16。`symbol-placement:
+             * line` 對字串長度極度敏感，而斷層線又短又彎。
+             *
+             * 這跟交通軸線用 `shortName`（「國道1」而不是「國道一號（中山高速公路）」）
+             * 是同一條規則。全名仍然留在 `name` 上，清單、卡片與搜尋都用它。
+             */
+            shortName: FAULT_SHORT_NAMES[f.name] ?? f.name.replace(/斷層$/, ""),
             faultClass: f.faultClass,
             // 線寬用它驅動：第一類粗、第二類細（見註冊表的 render.width）
             classRank: f.faultClass === "第一類" ? 1 : 2,
