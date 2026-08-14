@@ -62,6 +62,15 @@ import {
   monumentFeature,
 } from "./lib/monuments.mjs";
 import {
+  DATASET_ID as POPULATION_DATASET_ID,
+  LEVEL_ORDER as POPULATION_LEVEL_ORDER,
+  LICENSE as POPULATION_LICENSE,
+  SOURCE_LABEL as POPULATION_SOURCE_LABEL,
+  adminLevel,
+  fetchPopulation,
+  formatPopulation,
+} from "./lib/population.mjs";
+import {
   EXTENT_KML_URL,
   LICENSE as WRA_LICENSE,
   RESERVOIR_IDS,
@@ -1119,6 +1128,71 @@ const SOURCES = [
         .sort((a, b) => (a.year ?? 9999) - (b.year ?? 9999) || a.name.localeCompare(b.name, "zh-Hant"))
         .map(monumentFeature),
   })),
+
+  {
+    id: "tw-population",
+    label: "臺灣鄉鎮人口",
+    load: async (fetchWithRetry) => {
+      const { rows, warnings } = await fetchPopulation(fetchWithRetry, resolveDataGovTwUrl);
+      return { rows, warnings, centroids: await townshipCentroids() };
+    },
+    sourceUrl: `https://data.gov.tw/dataset/${POPULATION_DATASET_ID}`,
+    license: POPULATION_LICENSE,
+    sourceLabel: POPULATION_SOURCE_LABEL,
+    // 點不需要簡化；5 位小數 ≈ 1 公尺，形心本來就沒有更高的精度可言
+    tolerance: 0,
+    digits: 5,
+    transform: ({ rows, centroids }) => {
+      const features = [];
+      /** 統計裡有、但鄉鎮界圖資對不到的鄉鎮。靜默跳過會讓少一塊沒人發現。 */
+      const unmatched = [];
+      for (const { county, town, pop, area, density } of rows) {
+        const centroid = centroids.get(townKey(county, town));
+        if (!centroid) {
+          unmatched.push(`${county}${town}`);
+          continue;
+        }
+        const level = adminLevel(town);
+        features.push({
+          type: "Feature",
+          geometry: { type: "Point", coordinates: centroid },
+          properties: {
+            // ⚠️ 不能用鄉鎮名 slugify：中正區、東區這類名稱在 8 個縣市重複出現
+            // （見 tw-townships 那一層踩過的同一個坑）。縣市＋鄉鎮才唯一。
+            id: `pop-${county}-${town}`,
+            name: town,
+            county,
+            level,
+            // 半徑用 sqrt(population) 內插、顏色用 density 分級——兩個都要是
+            // **數字**，給人看的字串另外組進 meta／detail，不要讓算繪表達式去 parse 字串
+            population: pop,
+            density: Math.round(density),
+            // FeatureCard 的 fallback 只讀 name／meta／detail 這三個欄位
+            // （見 components/DetailCard.tsx 的 geo 分支），所以人口密度與面積
+            // 要組進 detail，否則卡片上只剩圖層說明
+            meta: `${county}・${level}・${formatPopulation(pop)}`,
+            detail:
+              `人口密度 ${Math.round(density).toLocaleString("en-US")} 人/km²` +
+              `・面積 ${(Math.round(area * 100) / 100).toLocaleString("en-US")} km²`,
+          },
+        });
+      }
+      if (unmatched.length) {
+        throw new Error(
+          `這些鄉鎮在 tw-townships.geojson 裡找不到：${unmatched.join("、")}（可能是「台／臺」沒正規化）`,
+        );
+      }
+      // ⚠️ feature 順序＝抽屜可點清單的順序，而 `browse.groupBy: "level"` 是
+      // **依序切、不排序**的，所以同一個層級必須連續。層級之內再依人口由多到少
+      // ——清單開頭就是全臺人口最多的鄉鎮，那正是「都市體系」要看的東西。
+      return features.sort(
+        (a, b) =>
+          POPULATION_LEVEL_ORDER.indexOf(a.properties.level) -
+            POPULATION_LEVEL_ORDER.indexOf(b.properties.level) ||
+          b.properties.population - a.properties.population,
+      );
+    },
+  },
 ];
 
 /**

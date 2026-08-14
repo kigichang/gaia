@@ -41,6 +41,7 @@ export type ColorRole =
   | "relief"
   | "conservation"
   | "transport"
+  | "population"
   // 非分類的固定角色，不參與色票驗證（見 thematicColors.ts）
   | "reference"
   | "hazard";
@@ -99,8 +100,14 @@ type NumberValue = DataDrivenPropertyValueSpecification<number>;
 export interface ColorRamp {
   property: string;
   steps: readonly { readonly below: number | null; readonly color: string; readonly label: string }[];
-  /** 沒有這個屬性的 feature（例如當天沒回報水情的水庫） */
-  nodata: { readonly color: string; readonly label: string };
+  /**
+   * 沒有這個屬性的 feature（例如當天沒回報水情的水庫）。
+   *
+   * **只在真的會有缺值時才宣告**：它會在圖例上多畫一列。人口那一層 368 個鄉鎮
+   * 每一個都有統計（沒有的兩筆在取得層就濾掉了、不會變成 feature），宣告它等於
+   * 在圖例上放一個永遠不會出現的類別。省略時缺值的 feature 畫成圖層的身分色。
+   */
+  nodata?: { readonly color: string; readonly label: string };
 }
 
 /**

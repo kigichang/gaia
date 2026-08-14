@@ -47,7 +47,9 @@ export function MapLegend({ entries }: MapLegendProps) {
           </div>
           {e.ramp && (
             <div className="map-legend-ramp">
-              {[...e.ramp.steps, e.ramp.nodata].map((s) => (
+              {/* nodata 是選填的：沒有缺值的圖層（人口）不該在圖例上多一個
+                  永遠不會出現的類別，見 registry/types.ts 的 ColorRamp */}
+              {[...e.ramp.steps, ...(e.ramp.nodata ? [e.ramp.nodata] : [])].map((s) => (
                 <span key={s.label} className="map-legend-ramp-step">
                   <span
                     className="layer-swatch layer-swatch-circle"

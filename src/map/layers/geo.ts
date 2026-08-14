@@ -81,8 +81,12 @@ const SELECTED = {
  * ⚠️ 外層一定要先問 `["has", prop]`。`["step"]` 拿到 null 會在執行期丟型別錯誤，
  * 而「這個 feature 沒有這個屬性」是**正常情況**——當天沒回報水情的水庫就是這樣。
  * 它們畫成 `nodata.color`：資料缺漏不是「蓄水率 0%」，兩者不能混為一談。
+ *
+ * 圖層沒宣告 `nodata`（人口那一層每筆都有值）時退回圖層自己的身分色。那個 case
+ * 分支仍然要留著——`["step"]` 拿到 null 一樣會炸，而「保證每筆都有值」是資料的
+ * 承諾、不是型別系統擋得住的事。
  */
-function rampExpression(ramp: ColorRamp): unknown {
+function rampExpression(ramp: ColorRamp, fallback: string): unknown {
   // ["step", input, 第一段的色, 界線1, 第二段的色, 界線2, …]——界線來自前一段的
   // `below`，顏色是後一段的。最後一段的 below 是 null（開放上界），不參與。
   const stops = ramp.steps
@@ -92,7 +96,7 @@ function rampExpression(ramp: ColorRamp): unknown {
     "case",
     ["has", ramp.property],
     ["step", ["get", ramp.property], ramp.steps[0].color, ...stops],
-    ramp.nodata.color,
+    ramp.nodata?.color ?? fallback,
   ];
 }
 
@@ -119,7 +123,7 @@ export function addGeoLayer(map: MapLibreMap, spec: GeoLayerSpec) {
       opacity: whenSelected(highlightIds, SELECTED.opacity, baseOpacity),
       // 級距上色的圖層（水庫蓄水率）用表達式取代單一色；`color` 仍然是圖層的
       // 身分色，圖例與抽屜色塊照樣用它。**選取狀態一樣不碰顏色**，見 whenSelected。
-      color: (render.colorRamp ? rampExpression(render.colorRamp) : color) as string,
+      color: (render.colorRamp ? rampExpression(render.colorRamp, color) : color) as string,
     };
 
     if (map.getLayer(id)) {

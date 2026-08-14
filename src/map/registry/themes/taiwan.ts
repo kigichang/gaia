@@ -3,6 +3,7 @@ import {
   CROP_COLORS,
   MAX_SIMULTANEOUS_SPECIES,
   MONUMENT_LEVEL_COLORS,
+  POPULATION_DENSITY_RAMP,
   RESERVOIR_FILL_RAMP,
   SPECIES_COLORS,
 } from "../../thematicColors.ts";
@@ -396,11 +397,55 @@ export const taiwanTheme: ThemeDefinition = {
       id: "tw-population",
       label: "人口與都市體系",
       group: "人文",
-      status: "planned",
-      render: { kind: "circle" },
-      detail: { type: "none" },
-      description: "各縣市人口規模與都市層級，看西部走廊的人口集中。",
-      sources: ["內政部戶政司"],
+      status: "ready",
+      source: { type: "remote", path: "data/geo/tw-population.geojson" },
+      /**
+       * 兩個量各佔一個視覺通道：**半徑＝年底人口數**（這裡住了幾個人），
+       * **顏色＝人口密度**（擠得多擠）。這一層的教學重點就是那兩件事會分開——
+       * 人口最多的板橋區 55.0 萬密度是 23,761，而密度最高的永和區 37,022 只有
+       * 21.2 萬人；新店區 30.7 萬人但密度只有 2,553，因為轄區大半是山。
+       *
+       * 半徑跟水庫一樣**不是**嚴格的面積正比：真的照比例畫，烏坵鄉（593 人）
+       * 會小到看不見也點不到。改成「√人口 線性內插到 2.5–11 px」——大小關係
+       * 仍然單調，最小的那幾個保有可點擊的下限。上限比水庫的 14 px 小，是因為
+       * 這一層有 368 個點而水庫只有 40 個，14 px 在新北會糊成一整片。
+       */
+      render: {
+        kind: "circle",
+        radius: [
+          "interpolate",
+          ["linear"],
+          ["sqrt", ["coalesce", ["get", "population"], 0]],
+          0,
+          2.5,
+          750,
+          11,
+        ],
+        colorRamp: POPULATION_DENSITY_RAMP,
+      },
+      // 顏色由 ramp 決定，但圖例與抽屜的色塊要有一個身分色（見 thematicColors.ts）
+      colorRole: "population",
+      detail: { type: "geo", collection: "tw-population" },
+      /**
+       * 清單依**行政層級**分組（區／縣轄市／鎮／鄉），層級之內依人口由多到少。
+       * 這就是圖層名稱裡「都市體系」那一半：《地方制度法》的層級本身就是官方的
+       * 都市階層，而且從鄉鎮名末字就讀得出來，不必另外找一份資料。
+       *
+       * ⚠️ `groupBy` 依序切、不排序，所以 geojson 的 feature 必須讓同一層級連續
+       * ——排序在 build-geodata.mjs 的 transform 裡做掉了。
+       */
+      browse: { groupBy: "level", zoom: 11 },
+      // 368 個點擠在一座島上，小比例尺會糊成一團。zoom 6 大約是整個臺灣剛好
+      // 填滿畫面的尺度，比照水庫。
+      minzoom: 6,
+      description:
+        "內政部戶政司 114 年底統計，368 個鄉鎮市區的人口。" +
+        "圓點大小是年底人口數、顏色是人口密度——兩個量會分開：板橋區人口最多（55.0 萬），" +
+        "但密度最高的是永和區（37,022 人/km²，人口只有 21.2 萬）。" +
+        "清單依《地方制度法》的行政層級（區／縣轄市／鎮／鄉）分組，那是官方的都市階層。" +
+        "⚠️ 行政層級不等於主計總處定義的「都會區」——「區」只代表它隸屬直轄市或市，" +
+        "不代表那裡就是都會中心。",
+      sources: ["內政部戶政司 114年各鄉鎮市區人口密度", "內政部國土測繪中心"],
     },
     {
       id: "tw-transport",
