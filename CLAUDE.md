@@ -948,7 +948,13 @@ maplibre 的四個角落容器是 map container 內的 `position: absolute; z-in
 
 #### ⚠️ 全站唯一掛在 document 上的 Escape
 
-抽屜與詳情面板現在可以同時開著，關的順序要有人仲裁（**先關最上層的詳情，再關抽屜**），所以那一個 Escape 由 `ThemeMapPage` 的一個 effect 統一處理，抽屜的 `usePopover` 用 `dismissOnEscape: false` 把自己那份讓出來。
+抽屜與詳情面板現在可以同時開著，關的順序要有人仲裁，所以那一個 Escape 由 `ThemeMapPage` 的一個 effect 統一處理，抽屜的 `usePopover` 用 `dismissOnEscape: false` 把自己那份讓出來。**由上往下逐層退出，一次一層**：
+
+1. 詳情面板開著 → 關詳情（抽屜不動）
+2. 否則抽屜開著 → 關抽屜
+3. 兩個都關著（畫面上只剩地圖）→ **清掉所有疊圖**（`activeLayerIds` 與 `activeItemIds` 一起清），回到一張乾淨的底圖
+
+第 3 層的兩個 setter 都用函式形式在沒東西可清時回傳原值，這樣「地圖上什麼都沒有時再按 Escape」是真正的 no-op，不會產生新的 `Set`／物件而白重算一次 `active` → `instances`。⚠️ 它清的是**主題圖層**：等高線、地形陰影、3D 地形屬於底圖層級（`MapView` 加的），不在這個範圍裡，也不該進來。
 
 - **必須掛在 document**，這一條跟上面的既有規則相反：焦點不一定在面板裡——點地圖圖徵之後焦點還在 canvas（甚至 body）上，面板層級的 `onKeyDown` 根本收不到，而詳情面板在改動前**完全沒有鍵盤關閉方式**就是這個原因。
 - **不會出現當初排除 document 監聽時擔心的「一次關掉兩層」**：仲裁一次只關一層。
@@ -1248,11 +1254,24 @@ m.isSourceLoaded('contour-source')
      ```
    - 鍵盤：Tab 到 ☰ → Enter 開啟 → Escape 關閉且焦點回到 ☰；⋮⋮⋮ 同理；⋮⋮⋮ 開著時點「圖層」磚會關掉 ⋮⋮⋮ 但**不會**關掉抽屜
      （⚠️ `MapView` 是第一個子節點，所以 Tab 會先走過 canvas 與 maplibre 自己的縮放鈕才輪到 ☰）
-   - **Escape 是兩段式的，而且四種焦點位置都要驗**（見「全站唯一掛在 document 上的 Escape」）：
-     - 焦點在抽屜清單的按鈕上（點過一列之後最常見的位置）→ 第一次 Escape 關**詳情**、抽屜還在；第二次才關抽屜，之後 `localStorage.getItem('gaia-layer-drawer') === 'closed'`
+   - **Escape 是三段式的，而且要連著按到底**（見「全站唯一掛在 document 上的 Escape」）。
+     勾幾個圖層、點清單一列開詳情之後，焦點停在那顆按鈕上（最常見的位置），然後連按：
+     ```js
+     const m = window.__gaiaMaps.at(-1), shell = document.querySelector('.map-shell');
+     const themeLayers = () => m.getStyle().layers.map(l => l.id)
+       .filter(id => /^tw-|^places-|^indigenous-|^species-|^quakes/.test(id));
+     // Esc #1 → detailOpen false、drawerOpen 仍 true、themeLayers() 不變
+     // Esc #2 → drawerOpen false、themeLayers() 仍不變、localStorage 為 'closed'
+     // Esc #3 → themeLayers() 是 []、.map-legend 消失，但 contour-lines 與 hillshade 仍在
+     // Esc #4 → 完全的 no-op（圖層數與 __gaiaMaps.length 都不變）
+     ```
+     清完之後重開抽屜：核取方塊要**全部**是未勾的；把有子項目的圖層（古蹟）再勾回來時，
+     三個級別的子項目也必須是未勾的——那是 `activeItemIds` 真的被清掉、而不只是被隱藏的唯一證據
+   - **Escape 不越級**，四種情況都要驗：
      - 焦點在 `BODY`／canvas 上（點完地圖圖徵的位置）→ Escape 一樣關得掉詳情。**這是加 document 監聽的唯一理由，一定要驗**
      - 焦點在搜尋輸入框、建議清單開著 → Escape 只收清單，`shell.dataset.detailOpen` **不變**
      - ⋮⋮⋮ 開著 → Escape 只關選單，`shell.dataset.detailOpen` **不變**
+     - 左下「圖層」磚的彈出層開著 → Escape 只關彈出層，**已勾選的圖層一個都不能掉**
    - 面板閃避：抽屜或詳情開啟時 `document.querySelector('.map-bottom-left').getBoundingClientRect().left >= 360`
    - 面板開關**不得**改變 canvas 尺寸（證明不需要 `resize()`）：
      ```js

@@ -107,7 +107,8 @@ function ThemeMapView({ theme, chrome }: { theme: ThemeDefinition; chrome: Chrom
   }, []);
 
   /**
-   * Escape：先關最上層的詳情，再關抽屜。
+   * Escape：由上往下逐層退出——先關最上層的詳情，再關抽屜，兩個都關著（畫面上
+   * 只剩地圖）時清掉所有疊圖，回到一張乾淨的底圖。
    *
    * ⚠️ 這是全站唯一一個掛在 document 上的 Escape，跟 usePopover 的既有規則相反，
    * 理由是**焦點不一定在面板裡**：點地圖圖徵之後焦點還在 canvas（甚至 body）上，
@@ -122,11 +123,21 @@ function ThemeMapView({ theme, chrome }: { theme: ThemeDefinition; chrome: Chrom
    * 主動的動作，語意跟點 ✕ 一樣。
    */
   useEffect(() => {
-    if (!selected && !drawerOpen) return;
     const onKeyDown = (e: KeyboardEvent) => {
       if (e.key !== "Escape") return;
-      if (selected) setSelected(null);
-      else setDrawerOpen(false);
+      if (selected) {
+        setSelected(null);
+        return;
+      }
+      if (drawerOpen) {
+        setDrawerOpen(false);
+        return;
+      }
+      // 兩個面板都關著＝畫面上只剩地圖，這一層是「把疊圖全部取消」。
+      // 用函式形式回傳原值，沒有東西可清時就不會產生新的 Set／物件而白重算一次
+      // active → instances。
+      setActiveLayerIds((prev) => (prev.size ? new Set() : prev));
+      setActiveItemIds((prev) => (Object.keys(prev).length ? {} : prev));
     };
     document.addEventListener("keydown", onKeyDown);
     return () => document.removeEventListener("keydown", onKeyDown);
