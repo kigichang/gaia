@@ -1,0 +1,28 @@
+{
+  "id": "zhongsha-islands",
+  "collection": "tw-territory",
+  "name": { "zh": "中沙群島", "en": "Zhongsha (Macclesfield Bank) Islands" },
+  "subtitle": "南海諸島中唯一幾乎全部沉在海面下的一群",
+  "stats": [
+    { "label": "緯度", "value": "13°50′–19°35′N" },
+    { "label": "經度", "value": "113°00′–117°55′E" },
+    { "label": "露出水面", "value": "僅黃岩島" }
+  ],
+  "facts": [
+    {
+      "label": "地形",
+      "value": "除黃岩島露出水面外，全為隱沒在海水下的珊瑚礁——所以它有位置卻幾乎沒有陸地"
+    },
+    {
+      "label": "圓點位置",
+      "value": "標在中沙大環礁中央，那一片礁體整個在海面下，地圖與衛星影像上都看不到島"
+    },
+    {
+      "label": "對照",
+      "value": "同屬南海諸島的東沙有 1.79 平方公里的東沙島、南沙有 0.51 平方公里的太平島，中沙則一塊陸地都沒有"
+    }
+  ],
+  "curriculum": { "unit": "臺灣的位置與範圍" },
+  "schematic": true,
+  "sources": ["行政院 國情簡介－土地", "內政部"]
+}

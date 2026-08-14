@@ -22,15 +22,79 @@ export const taiwanTheme: ThemeDefinition = {
   id: "taiwan",
   label: "臺灣地理",
   subtitle: "從行政區、山系水系到原住民族與特有種，看臺灣這座島的組成。",
-  // 開在玉山、zoom 12：等高線要 zoom ≥ 9 才畫得出來（CONTOUR_MIN_ZOOM），
-  // 開在全島尺度會讓進站第一眼看不到本站的招牌功能。
-  // TODO(縣市界)：縣市界那類小比例尺面圖層上線後要重新評估這個預設視角，
-  //   它們的合理 zoom 範圍跟等高線是相反的。
-  camera: { center: [120.957, 23.47], zoom: 12 },
+  /**
+   * 進站第一眼：全島視角 + 臺灣地理中心碑的詳情卡。
+   *
+   * ⚠️ **三件事必須一起改，不然第一眼就是壞的**（曾經開在玉山 zoom 12 + 玉山主峰的
+   * 詳情卡，那時 `defaultOn` 是五大山脈）：
+   *
+   * 1. `camera` 要看得到 `initialSelection` 指的那個圖徵——這裡用 zoom 7，跟該筆
+   *    feature 自己的 `properties.zoom` 一致（全島剛好填滿畫面）。
+   * 2. `initialSelection` 指到的圖層必須 `defaultOn`，否則卡片在講一個地圖上不存在
+   *    的東西（`tw-territory` 因此要標 defaultOn）。
+   * 3. ⚠️ **zoom 7 看不到等高線**（`CONTOUR_MIN_ZOOM` 是 9）。這是刻意的取捨：這個
+   *    主題現在的開場是「臺灣有多大、範圍到哪裡」，等高線在使用者放大之後就會出現。
+   *    要改回以地形為開場，就得把上面三件事一起換回去。
+   */
+  camera: { center: [120.9797, 23.9739], zoom: 7 },
   recommendedBasemap: "nlsc-emap",
-  groups: ["行政區", "地形", "水系", "人文", "植被生態", "農業物產"],
-  initialSelection: { detail: { type: "place" }, featureId: "yushan" },
+  groups: ["臺灣123", "行政區", "地形", "水系", "人文", "植被生態", "農業物產"],
+  initialSelection: {
+    detail: { type: "geo", collection: "tw-territory" },
+    featureId: "taiwan-main-island",
+  },
   layers: [
+    {
+      id: "tw-territory",
+      label: "土地與島群",
+      group: "臺灣123",
+      status: "ready",
+      // 手繪示意幾何（六個代表點），所以放 geo-manual——那個目錄 build:geodata 永遠
+      // 不會碰。⚠️ 每個點是「這個島群在哪裡」，不是島群的範圍，所以 schematic。
+      source: { type: "remote", path: "data/geo-manual/tw-territory.geojson" },
+      render: { kind: "circle" },
+      /**
+       * 沿用 `place` 藍，跟五大山脈的主峰、縣市政府同一個理由：POINT 色票已經飽和
+       * （見 thematicColors.ts），而藍在語意上是一致的——「藍點＝地圖上一個有詳情卡
+       * 的地點」。要換色請先重跑 `validate_palette.js --pairs all` 明暗兩模式。
+       */
+      colorRole: "place",
+      detail: { type: "geo", collection: "tw-territory" },
+      /**
+       * 清單分成「臺灣本島及附屬島嶼」與「離島」兩組（`groupBy: "category"` 依序切、
+       * **不排序**，所以 geojson 的 feature 必須讓同一組連續）。
+       *
+       * 12 個點散布在北緯 10–26 度、東經 114–123 度，一次框不進同一個畫面（框了就
+       * 只剩一片海）。所以**每個 feature 自己帶 `zoom`**（geojson 的 properties.zoom，
+       * `flyToFeature` 會優先讀它）：本島 7、中沙 8、澎湖與馬祖 10、金門 11、東沙 12、
+       * 其餘小島 13。這裡的 10 只是沒帶 zoom 時的預設。
+       */
+      browse: { groupBy: "category", zoom: 10 },
+      // 進站就開著：`initialSelection` 指的是這一層的臺灣本島，圖層沒開的話卡片會在
+      // 講一個地圖上不存在的東西（見上面 camera 那段的三件事）
+      defaultOn: true,
+      schematic: true,
+      description:
+        "臺灣本島與它的四個極點，五座主要附屬島嶼（蘭嶼、綠島、琉球嶼、釣魚臺、龜山島），" +
+        "加上澎湖、金門、馬祖與南海的東沙、中沙、南沙六個離島群。面積、島嶼數與經緯度" +
+        "範圍取自行政院《國情簡介》「土地」一章——把「我國領土有多大、南北跨多遠」這件事" +
+        "從課本的數字變成地圖上的距離：點極北點與極南點，兩次取景之間跨過的就是 394 公里。",
+      notes: [
+        "⚠️ 圓點是**代表位置，不是島嶼或島群的範圍**。南沙群島跨了 8 個緯度、澎湖有 64 " +
+          "個島，一個點畫不出來。蘭嶼、綠島、琉球嶼、釣魚臺、龜山島五個點是用內政部國土" +
+          "測繪中心的鄉鎮界幾何算形心；東沙用行政院該頁給的北緯 20°42′、東經 116°43′；" +
+          "其餘標在主島上的知名地點（埔里地理中心碑、馬公、金城、南竿、太平島）。",
+        "⚠️ **面積的來源不只一個**：六個島群與本島的數字出自行政院《國情簡介》（該頁" +
+          "標的資料來源是內政部），五座附屬島嶼的面積官方那頁沒有列，取自維基百科的" +
+          "島嶼列表（次級來源），所以寫成「約」。兩者不要混為一談。",
+        "⚠️ 中沙群島**除黃岩島外全在海面下**，圓點標的是中沙大環礁中央，那裡沒有陸地" +
+          "——地圖與衛星影像上都看不到島，這不是資料缺漏。",
+        "⚠️ 四個極點是**臺灣本島**的極點，不是我國領土的極點：把附屬島嶼算進來，最北是" +
+          "基隆市的彭佳嶼、最東是宜蘭縣的釣魚臺、最南是南沙的太平島。座標由內政部國土" +
+          "測繪中心的縣市界幾何取極值算出，誤差約 90 公尺（該圖資的簡化容差）。",
+      ],
+      sources: ["行政院 國情簡介－土地", "內政部", "維基百科", "內政部國土測繪中心"],
+    },
     {
       id: "tw-counties",
       label: "縣市界",

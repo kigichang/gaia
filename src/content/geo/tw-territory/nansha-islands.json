@@ -1,0 +1,26 @@
+{
+  "id": "nansha-islands",
+  "collection": "tw-territory",
+  "name": { "zh": "南沙群島（太平島）", "en": "Nansha (Spratly) Islands – Taiping Island" },
+  "subtitle": "最南的一群島嶼，太平島是南沙最大的自然生成島嶼",
+  "stats": [
+    { "label": "太平島面積", "value": "約 0.51 km²" },
+    { "label": "群島緯度", "value": "3°45′–12°00′N" },
+    { "label": "群島經度", "value": "109°35′–117°50′E" },
+    { "label": "行政", "value": "高雄市旗津區" }
+  ],
+  "facts": [
+    { "label": "太平島", "value": "南沙群島中最大的自然生成島嶼，面積約 0.51 平方公里" },
+    {
+      "label": "南海諸島",
+      "value": "南沙、中沙、東沙合稱南海諸島。中沙除黃岩島外全在海面下，是三者中唯一沒有陸地的一群"
+    },
+    {
+      "label": "圓點位置",
+      "value": "標在太平島，代表整個南沙群島——那一片海域跨了 8 個緯度，一個點畫不出它的範圍"
+    }
+  ],
+  "curriculum": { "unit": "臺灣的位置與範圍" },
+  "schematic": true,
+  "sources": ["行政院 國情簡介－土地", "內政部", "維基百科"]
+}

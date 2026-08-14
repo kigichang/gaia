@@ -1,0 +1,25 @@
+{
+  "id": "matsu-islands",
+  "collection": "tw-territory",
+  "name": { "zh": "馬祖列島", "en": "Matsu Islands" },
+  "subtitle": "最北的一群島嶼，扼閩江口、控制臺灣海峽",
+  "stats": [
+    { "label": "面積", "value": "28.8 km²" },
+    { "label": "島嶼數", "value": "36" },
+    { "label": "緯度", "value": "約 26.2°N" }
+  ],
+  "facts": [
+    {
+      "label": "組成",
+      "value": "南竿、北竿、高登、東莒、西莒、東引、西引及其附屬小島，共 36 個島嶼"
+    },
+    { "label": "位置", "value": "扼閩江咽喉，控制臺灣海峽" },
+    {
+      "label": "行政",
+      "value": "全境屬連江縣，是全臺面積最小的縣；緯度比基隆還北，所以縣市清單把離島另外排在最後"
+    }
+  ],
+  "curriculum": { "unit": "臺灣的位置與範圍" },
+  "schematic": true,
+  "sources": ["行政院 國情簡介－土地", "內政部"]
+}

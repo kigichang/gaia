@@ -1,0 +1,32 @@
+{
+  "id": "taiwan-north-point",
+  "collection": "tw-territory",
+  "name": { "zh": "富貴角（最北端）", "en": "Fugui Cape – Northernmost Point of Taiwan Island" },
+  "subtitle": "臺灣本島最北端，大屯火山群噴出的熔岩延伸到海裡",
+  "stats": [
+    { "label": "座標", "value": "25.30°N 121.54°E" },
+    { "label": "地標", "value": "富貴角" },
+    { "label": "行政區", "value": "新北市石門區" }
+  ],
+  "facts": [
+    {
+      "label": "地形",
+      "value": "大屯火山群的安山岩流入海形成的岬角，海岸有風稜石；富貴角燈塔 1897 年建成，是本島最北的燈塔"
+    },
+    {
+      "label": "跟最南端比",
+      "value": "與屏東鵝鑾鼻相差約 3.4 個緯度，這段距離就是本島「南北縱長 394 公里」的由來"
+    },
+    {
+      "label": "注意",
+      "value": "這是臺灣本島的最北；如果把附屬島嶼算進來，最北是基隆市的彭佳嶼（25.63°N）"
+    },
+    {
+      "label": "座標怎麼來的",
+      "value": "由內政部國土測繪中心的縣市界幾何取頂點極值算出，誤差約 90 公尺（該圖資的簡化容差）"
+    }
+  ],
+  "curriculum": { "unit": "臺灣的位置與範圍" },
+  "schematic": true,
+  "sources": ["維基百科", "交通部航港局", "內政部國土測繪中心"]
+}

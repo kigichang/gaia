@@ -1,0 +1,28 @@
+{
+  "id": "taiwan-east-point",
+  "collection": "tw-territory",
+  "name": { "zh": "三貂角（最東端）", "en": "Sanciao Cape – Easternmost Point of Taiwan Island" },
+  "subtitle": "臺灣本島最東端，看得到太平洋日出的岬角",
+  "stats": [
+    { "label": "座標", "value": "25.01°N 122.01°E" },
+    { "label": "地標", "value": "三貂角" },
+    { "label": "行政區", "value": "新北市貢寮區" }
+  ],
+  "facts": [
+    {
+      "label": "地形",
+      "value": "東北角海岸的岬角，往東就是太平洋；岬角上的三貂角燈塔 1935 年建成，是本島最東的燈塔"
+    },
+    {
+      "label": "跟最西端比",
+      "value": "與臺南七股相差約 2 個經度，這段距離就是本島「東西最大寬度 144 公里」的由來"
+    },
+    {
+      "label": "座標怎麼來的",
+      "value": "由內政部國土測繪中心的縣市界幾何取頂點極值算出，誤差約 90 公尺（該圖資的簡化容差）"
+    }
+  ],
+  "curriculum": { "unit": "臺灣的位置與範圍" },
+  "schematic": true,
+  "sources": ["維基百科", "內政部國土測繪中心"]
+}

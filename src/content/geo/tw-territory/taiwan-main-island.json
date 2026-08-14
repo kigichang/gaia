@@ -1,0 +1,26 @@
+{
+  "id": "taiwan-main-island",
+  "collection": "tw-territory",
+  "name": { "zh": "臺灣本島（地理中心碑）", "en": "Taiwan Island" },
+  "subtitle": "呈紡錘形的主島，北回歸線從中間穿過",
+  "stats": [
+    { "label": "南北縱長", "value": "394 km" },
+    { "label": "東西最大寬", "value": "144 km" },
+    { "label": "海岸線", "value": "1,150.95 km" },
+    { "label": "緯度", "value": "21°–26°N" }
+  ],
+  "facts": [
+    { "label": "北回歸線", "value": "通過嘉義縣水上鄉，把本島分成熱帶與副熱帶兩半" },
+    {
+      "label": "含附屬島嶼的面積",
+      "value": "本島與 21 個附屬島嶼合計 35,887.1325 平方公里（行政院《國情簡介》）"
+    },
+    {
+      "label": "圓點位置",
+      "value": "標在南投埔里的臺灣地理中心碑，代表整座本島，不是它的範圍"
+    }
+  ],
+  "curriculum": { "unit": "臺灣的位置與範圍" },
+  "schematic": true,
+  "sources": ["行政院 國情簡介－土地", "內政部"]
+}

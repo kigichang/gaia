@@ -1,0 +1,28 @@
+{
+  "id": "taiwan-south-point",
+  "collection": "tw-territory",
+  "name": { "zh": "鵝鑾鼻（最南端）", "en": "Eluanbi – Southernmost Point of Taiwan Island" },
+  "subtitle": "恆春半島的南端，臺灣本島最南、已經在熱帶裡",
+  "stats": [
+    { "label": "座標", "value": "21.90°N 120.86°E" },
+    { "label": "地標", "value": "鵝鑾鼻・臺灣最南點" },
+    { "label": "行政區", "value": "屏東縣恆春鎮" }
+  ],
+  "facts": [
+    {
+      "label": "位置",
+      "value": "在墾丁國家公園範圍內；鵝鑾鼻燈塔 1881 年建成，是臺灣少見的武裝燈塔"
+    },
+    {
+      "label": "跟北回歸線的關係",
+      "value": "北回歸線在嘉義水上（23.44°N），所以這裡到北回歸線之間整段都屬熱帶——本地的氣候型是 Aw"
+    },
+    {
+      "label": "座標怎麼來的",
+      "value": "由內政部國土測繪中心的縣市界幾何取頂點極值算出，誤差約 90 公尺（該圖資的簡化容差）"
+    }
+  ],
+  "curriculum": { "unit": "臺灣的位置與範圍" },
+  "schematic": true,
+  "sources": ["維基百科", "內政部國土測繪中心"]
+}
