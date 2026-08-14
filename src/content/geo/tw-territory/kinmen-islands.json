@@ -1,0 +1,22 @@
+{
+  "id": "kinmen-islands",
+  "collection": "tw-territory",
+  "name": { "zh": "金門群島", "en": "Kinmen Islands" },
+  "subtitle": "離中國大陸最近的一群島嶼，最短距離只有約 2,300 公尺",
+  "stats": [
+    { "label": "面積", "value": "150.46 km²" },
+    { "label": "島嶼數", "value": "12" },
+    { "label": "距中國大陸", "value": "約 2,300 m" }
+  ],
+  "facts": [
+    {
+      "label": "有效管轄島嶼",
+      "value": "金門本島、小金門、大膽、二膽、東碇、北碇等 12 個島嶼"
+    },
+    { "label": "位置", "value": "位於福建九龍江口外，與廈門相望" },
+    { "label": "行政", "value": "全境屬金門縣，福建省的兩個縣之一" }
+  ],
+  "curriculum": { "unit": "臺灣的位置與範圍" },
+  "schematic": true,
+  "sources": ["行政院 國情簡介－土地", "內政部"]
+}

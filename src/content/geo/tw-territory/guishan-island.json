@@ -1,0 +1,25 @@
+{
+  "id": "guishan-island",
+  "collection": "tw-territory",
+  "name": { "zh": "龜山島", "en": "Guishan Island (Turtle Island)" },
+  "subtitle": "宜蘭外海的活火山島，形狀像一隻浮在海上的龜",
+  "stats": [
+    { "label": "面積", "value": "約 2.8 km²" },
+    { "label": "行政區", "value": "宜蘭縣頭城鎮" },
+    { "label": "成因", "value": "活火山島" }
+  ],
+  "facts": [
+    {
+      "label": "地質",
+      "value": "位於琉球島弧的西端，島上仍有硫氣孔與海底噴氣口，海水因此呈現乳白色的「牛奶海」"
+    },
+    { "label": "位置", "value": "在頭城外海約 10 公里，從蘭陽平原望出去就是它" },
+    {
+      "label": "圓點位置",
+      "value": "用內政部國土測繪中心的鄉鎮界幾何算出的形心，面積數字則取自維基百科的島嶼列表"
+    }
+  ],
+  "curriculum": { "unit": "臺灣的位置與範圍" },
+  "schematic": true,
+  "sources": ["維基百科", "內政部國土測繪中心"]
+}

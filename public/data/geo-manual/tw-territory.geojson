@@ -1,0 +1,288 @@
+{
+  "type": "FeatureCollection",
+  "metadata": {
+    "collection": "tw-territory",
+    "source": [
+      "https://www.ey.gov.tw/state/4447F4A951A1EC45/094b1d53-de8d-4393-bde6-ab092969cce4",
+      "https://zh.wikipedia.org/zh-tw/中華民國臺灣地區島嶼列表"
+    ],
+    "license": "行政院全球資訊網（國情簡介－土地與人民－土地，資料來源：內政部）／維基百科 CC BY-SA",
+    "generatedAt": "2026-08-14",
+    "featureCount": 16,
+    "note": "手繪示意幾何：每座島、每個島群或每個極點一個代表點，不是範圍。極東、極南、極北三個點的座標是用 public/data/geo/tw-counties.geojson（內政部國土測繪中心）本島各縣市多邊形的頂點取極值算出來的（濾掉面積小於 50 km² 的離島與沙洲），誤差約 90 公尺（那份幾何的簡化容差 0.0008°）；最西端改標在國聖港燈塔（23°06′02.6″N 120°02′09.6″E，交通部航港局），官方海岸線真正的最西頂點在它西南方沙洲上的 120.0269°E／23.0679°N。蘭嶼、綠島、琉球嶼、釣魚臺、龜山島五個點是用 tw-townships.geojson 對應多邊形的面積加權形心；東沙島用行政院該頁給的北緯20度42分、東經116度43分；臺灣本島標在埔里的臺灣地理中心碑；澎湖、金門、馬祖標在馬公、金城、南竿；中沙群島標在中沙大環礁中央（全在海面下）；南沙群島標在太平島。"
+  },
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "taiwan-main-island",
+        "name": "臺灣本島（地理中心碑）",
+        "category": "臺灣本島",
+        "meta": "南北 394 km・海岸線 1,150.95 km",
+        "zoom": 7
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.9797,
+          23.9739
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "taiwan-east-point",
+        "name": "三貂角（最東端）",
+        "category": "臺灣本島",
+        "meta": "新北市貢寮區・122.01°E",
+        "zoom": 13
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          122.0075,
+          25.0117
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "taiwan-west-point",
+        "name": "國聖港燈塔（最西端）",
+        "category": "臺灣本島",
+        "meta": "臺南市七股區・120.04°E",
+        "zoom": 13
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.036,
+          23.1007
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "taiwan-south-point",
+        "name": "鵝鑾鼻（最南端）",
+        "category": "臺灣本島",
+        "meta": "屏東縣恆春鎮・21.90°N",
+        "zoom": 13
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.8586,
+          21.8956
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "taiwan-north-point",
+        "name": "富貴角（最北端）",
+        "category": "臺灣本島",
+        "meta": "新北市石門區・25.30°N",
+        "zoom": 13
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.5375,
+          25.3
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "lanyu-island",
+        "name": "蘭嶼",
+        "category": "臺灣附屬島嶼",
+        "meta": "臺東縣蘭嶼鄉・約 46.8 km²",
+        "zoom": 12
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.5503,
+          22.0471
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "lyudao-island",
+        "name": "綠島",
+        "category": "臺灣附屬島嶼",
+        "meta": "臺東縣綠島鄉・約 15.1 km²",
+        "zoom": 13
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.4904,
+          22.6597
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "liuqiu-island",
+        "name": "琉球嶼",
+        "category": "臺灣附屬島嶼",
+        "meta": "屏東縣琉球鄉・約 6.8 km²",
+        "zoom": 13
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.3713,
+          22.3405
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "diaoyutai-islands",
+        "name": "釣魚臺",
+        "category": "臺灣附屬島嶼",
+        "meta": "宜蘭縣頭城鎮・約 4.4 km²",
+        "zoom": 13
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          123.4745,
+          25.7439
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "guishan-island",
+        "name": "龜山島",
+        "category": "臺灣附屬島嶼",
+        "meta": "宜蘭縣頭城鎮・約 2.8 km²",
+        "zoom": 13
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.9509,
+          24.8424
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "penghu-islands",
+        "name": "澎湖群島",
+        "category": "離島",
+        "meta": "64 島・126.86 km²",
+        "zoom": 10
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          119.5664,
+          23.5655
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "kinmen-islands",
+        "name": "金門群島",
+        "category": "離島",
+        "meta": "12 島・150.46 km²",
+        "zoom": 11
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          118.3171,
+          24.4327
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "matsu-islands",
+        "name": "馬祖列島",
+        "category": "離島",
+        "meta": "36 島・28.8 km²",
+        "zoom": 10
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          119.9497,
+          26.1608
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "dongsha-islands",
+        "name": "東沙群島",
+        "category": "離島",
+        "meta": "南海諸島・東沙島 1.79 km²",
+        "zoom": 12
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          116.7167,
+          20.7
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "zhongsha-islands",
+        "name": "中沙群島",
+        "category": "離島",
+        "meta": "南海諸島・除黃岩島外全在海面下",
+        "zoom": 8
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          114.3,
+          15.82
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "nansha-islands",
+        "name": "南沙群島（太平島）",
+        "category": "離島",
+        "meta": "南海諸島・太平島 0.51 km²",
+        "zoom": 13
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          114.3658,
+          10.3772
+        ]
+      }
+    }
+  ]
+}

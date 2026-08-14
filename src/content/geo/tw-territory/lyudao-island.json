@@ -1,0 +1,22 @@
+{
+  "id": "lyudao-island",
+  "collection": "tw-territory",
+  "name": { "zh": "綠島", "en": "Lyudao (Green Island)" },
+  "subtitle": "臺東外海的火山島，舊稱火燒島",
+  "stats": [
+    { "label": "面積", "value": "約 15.1 km²" },
+    { "label": "行政區", "value": "臺東縣綠島鄉" },
+    { "label": "成因", "value": "火山島" }
+  ],
+  "facts": [
+    { "label": "位置", "value": "在臺東外海約 33 公里，與蘭嶼同屬海岸山脈延伸的火山島鏈" },
+    { "label": "地景", "value": "周圍有隆起的珊瑚礁台地與海蝕地形，朝日溫泉是少見的海底溫泉" },
+    {
+      "label": "圓點位置",
+      "value": "用內政部國土測繪中心的鄉鎮界幾何算出的形心，面積數字則取自維基百科的島嶼列表"
+    }
+  ],
+  "curriculum": { "unit": "臺灣的位置與範圍" },
+  "schematic": true,
+  "sources": ["維基百科", "內政部國土測繪中心"]
+}

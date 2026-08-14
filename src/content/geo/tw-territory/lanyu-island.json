@@ -1,0 +1,26 @@
+{
+  "id": "lanyu-island",
+  "collection": "tw-territory",
+  "name": { "zh": "蘭嶼", "en": "Lanyu (Orchid Island)" },
+  "subtitle": "臺灣最大的附屬島嶼，達悟族的家鄉",
+  "stats": [
+    { "label": "面積", "value": "約 46.8 km²" },
+    { "label": "行政區", "value": "臺東縣蘭嶼鄉" },
+    { "label": "成因", "value": "火山島" }
+  ],
+  "facts": [
+    { "label": "位置", "value": "在臺東外海約 90 公里，是臺灣本島以外最大的附屬島嶼" },
+    {
+      "label": "人文",
+      "value": "達悟族（雅美族）的傳統領域，是十六族裡唯一主要聚落在離島的一族——可以打開「原住民族分佈」對照"
+    },
+    { "label": "鄰島", "value": "東南方還有無人居住的小蘭嶼，同屬蘭嶼鄉" },
+    {
+      "label": "圓點位置",
+      "value": "用內政部國土測繪中心的鄉鎮界幾何算出的形心，面積數字則取自維基百科的島嶼列表"
+    }
+  ],
+  "curriculum": { "unit": "臺灣的位置與範圍" },
+  "schematic": true,
+  "sources": ["維基百科", "內政部國土測繪中心"]
+}

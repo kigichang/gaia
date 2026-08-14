@@ -11,7 +11,12 @@
  */
 export const SOURCE_LINKS: Record<string, string> = {
   交通部中央氣象署: "https://www.cwa.gov.tw/",
+  內政部: "https://www.moi.gov.tw/",
   內政部國土測繪中心: "https://www.nlsc.gov.tw/",
+  // 「臺灣123」那一組島群數字的出處（該頁自己標的資料來源是內政部）。
+  // 連的是那一頁本身：面積、島嶼數、經緯度全在這一頁，連到行政院首頁等於追不到。
+  "行政院 國情簡介－土地":
+    "https://www.ey.gov.tw/state/4447F4A951A1EC45/094b1d53-de8d-4393-bde6-ab092969cce4",
   "內政部 114年第6週內政統計通報（113年底原住民人口數）":
     "https://www.moi.gov.tw/News_Content.aspx?n=2905&s=325345",
   "內政部戶政司 114年各鄉鎮市區人口密度":
@@ -33,6 +38,8 @@ export const SOURCE_LINKS: Record<string, string> = {
   北海岸及觀音山國家風景區管理處: "https://www.northguan-nsa.gov.tw/",
   澎湖國家風景區管理處: "https://www.penghu-nsa.gov.tw/",
   交通部觀光署: "https://www.taiwan.net.tw/",
+  // 燈塔的主管機關（本島四極的地標有三個是燈塔）
+  交通部航港局: "https://www.motcmpb.gov.tw/",
   經濟部水利署: "https://www.wra.gov.tw/",
   農業部農田水利署: "https://www.ia.gov.tw/",
   農業部林業及自然保育署: "https://www.forest.gov.tw/",

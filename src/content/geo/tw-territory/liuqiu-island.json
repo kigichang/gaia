@@ -1,0 +1,25 @@
+{
+  "id": "liuqiu-island",
+  "collection": "tw-territory",
+  "name": { "zh": "琉球嶼", "en": "Liuqiu Island (Lamay)" },
+  "subtitle": "俗稱小琉球，臺灣唯一的珊瑚礁島",
+  "stats": [
+    { "label": "面積", "value": "約 6.8 km²" },
+    { "label": "行政區", "value": "屏東縣琉球鄉" },
+    { "label": "成因", "value": "隆起珊瑚礁" }
+  ],
+  "facts": [
+    {
+      "label": "為什麼特別",
+      "value": "臺灣周邊的離島多半是火山島或大陸島，琉球嶼是唯一由珊瑚礁隆起形成的島"
+    },
+    { "label": "位置", "value": "在高屏溪口西南方外海，從東港搭船約 30 分鐘" },
+    {
+      "label": "圓點位置",
+      "value": "用內政部國土測繪中心的鄉鎮界幾何算出的形心，面積數字則取自維基百科的島嶼列表"
+    }
+  ],
+  "curriculum": { "unit": "臺灣的位置與範圍" },
+  "schematic": true,
+  "sources": ["維基百科", "內政部國土測繪中心"]
+}
