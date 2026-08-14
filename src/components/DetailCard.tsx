@@ -150,13 +150,12 @@ export function DetailCard({
       }))
       .filter((h): h is { layer: LayerDefinition; feature: GeoJSON.Feature } => Boolean(h.feature));
     const best = hits.find((h) => h.feature.properties?.name) ?? hits[0];
-    return best ? (
-      <QuakeCard
-        feature={best.feature}
-        description={fullDescription(best.layer)}
-        sources={best.layer.sources}
-      />
-    ) : null;
+    /**
+     * ⚠️ 刻意**不傳圖層說明**：那段字在 762 個震央上逐字相同，而且跟圖層抽屜那一列
+     * 重複。圖層層級的話留在抽屜（說明在核取方塊下面、資料限制在 ⚠️ 小視窗），卡片
+     * 只講這一次地震自己的事。見 `QuakeCard` 的說明。
+     */
+    return best ? <QuakeCard feature={best.feature} sources={best.layer.sources} /> : null;
   }
   if (detail.type === "reservoir") {
     // 水庫沒有內容檔，卡片的資料就在圖層的 geojson 裡（基本資料 + join 進來的
