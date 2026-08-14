@@ -74,7 +74,8 @@ export function FeatureCard({ feature, fallback }: FeatureCardProps) {
         <>
           {fallback.meta && <p className="feature-subtitle">{fallback.meta}</p>}
           {fallback.detail && <p className="feature-detail-line">{fallback.detail}</p>}
-          <p className="feature-fallback">{fallback.description}</p>
+          {/* 空字串＝圖層宣告了 hideLayerDescription（見 DetailCard）：不要留一個空的 <p> */}
+          {fallback.description && <p className="feature-fallback">{fallback.description}</p>}
         </>
       )}
 

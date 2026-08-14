@@ -76,7 +76,13 @@ export function DetailCard({
                 ? props.top
                 : undefined,
           layerLabel: owner?.label ?? detail.collection,
-          description: owner ? fullDescription(owner) : "",
+          /**
+           * ⚠️ `hideLayerDescription` 的圖層（活動斷層）不印這一段：33 條斷層的卡片
+           * 上那段字逐字相同，而且就是圖層抽屜那一列的說明。圖層層級的話全部留在
+           * 抽屜（說明在核取方塊下面、資料限制在 ⚠️ 小視窗），卡片只講這一條斷層
+           * 自己的事。見 registry/types.ts 的說明。
+           */
+          description: detail.hideLayerDescription || !owner ? "" : fullDescription(owner),
           sources: owner?.sources ?? [],
           schematic: owner?.schematic,
         }}
