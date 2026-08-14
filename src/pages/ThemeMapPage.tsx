@@ -492,7 +492,22 @@ function ThemeMapView({ theme, chrome }: { theme: ThemeDefinition; chrome: Chrom
         .flatMap((layer) => {
           if (layer.items) {
             const items = layerItems(layer);
-            return (activeItemIds[layer.id] ?? [])
+            const selected = activeItemIds[layer.id] ?? [];
+            /**
+             * ⚠️ **圖例依註冊表順序列，不是依勾選順序。**
+             *
+             * `activeItemIds` 是**勾選順序**（那是 palette 圖層指派顏色用的，見下面的
+             * `itemColorOf`），直接拿來算繪的話，圖例的排列會隨使用者先勾哪一個而變。
+             * 垂直植被帶最明顯：六帶的名稱都帶著海拔（「櫟林帶（1,500–2,500 m）」），
+             * 高度沒有由低到高排就很難讀，而且跟抽屜裡的順序對不起來。
+             *
+             * 顏色仍然用**勾選順序**當索引（`selected.indexOf`），特有種那種依 palette
+             * 指派的圖層行為才不會變——抽屜的子項目清單本來就是這樣：註冊表順序 +
+             * 勾選順序配色。
+             */
+            return items
+              .map((it) => it.id)
+              .filter((id) => selected.includes(id))
               /**
                * 一般子項目圖層一個子項目一個 instance，資料還沒到就先不要進圖例。
                * ⚠️ 高程分帶例外：六帶共用**一個** instance（instanceId 就是圖層 id）
@@ -507,7 +522,8 @@ function ThemeMapView({ theme, chrome }: { theme: ThemeDefinition; chrome: Chrom
               .map((id, index) => ({
                 key: `${layer.id}-${id}`,
                 label: items.find((it) => it.id === id)?.label ?? id,
-                color: itemColorOf(layer, id, index),
+                // ⚠️ 顏色的索引是**勾選順序**，不是這裡的顯示順序（見上）
+                color: itemColorOf(layer, id, selected.indexOf(id)),
                 kind: layer.render.kind,
                 // ⚠️ 示意警語**只掛在第一列**。schematic 是圖層層級的性質，六帶各掛
                 // 一個「（示意）」會變成一整排重複的字，而且讀起來像在說「只有這一帶

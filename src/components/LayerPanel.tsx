@@ -1,7 +1,6 @@
 import { useEffect, useLayoutEffect, useState } from "react";
 import { createPortal } from "react-dom";
-import { layerItems } from "../map/registry/resolve";
-import { colorOf } from "../map/registry/resolve";
+import { colorOf, itemColorOf, layerItems } from "../map/registry/resolve";
 import { MAX_ACTIVE_BY_KIND } from "../map/registry/types";
 import type { GeometryKind, LayerDefinition, ThemeDefinition } from "../map/registry/types";
 import { usePopover } from "../usePopover";
@@ -313,9 +312,17 @@ function ItemList({
       {items.map((item) => {
         const checked = selectedIds.includes(item.id);
         const count = counts[item.id];
-        const color = checked
-          ? layer.items!.palette[selectedIds.indexOf(item.id) % layer.items!.palette.length]
-          : undefined;
+        /**
+         * ⚠️ **一定要走 `itemColorOf()`，不可以自己算 `palette[index % len]`。**
+         *
+         * 那支會讓固定色優先（`LayerItem.color`）。抽屜自己算的話，古蹟、作物、垂直
+         * 植被帶這些「顏色綁在子項目上」的圖層會**跟地圖與圖例對不起來**：實測先勾
+         * 「國定古蹟」時，抽屜畫的是 palette[0]（#aa604e，其實是縣(市)定的顏色），
+         * 地圖與圖例畫的是固定色 #7d3827，於是抽屜裡「越深＝級別越高」當場失效。
+         *
+         * 索引仍然是**勾選順序**，那是 palette 圖層（特有種）分辨物種的唯一線索。
+         */
+        const color = checked ? itemColorOf(layer, item.id, selectedIds.indexOf(item.id)) : undefined;
 
         return (
           <div key={item.id} className="species-select-row">
