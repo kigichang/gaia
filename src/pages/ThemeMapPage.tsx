@@ -432,8 +432,15 @@ function ThemeMapView({ theme, chrome }: { theme: ThemeDefinition; chrome: Chrom
       return;
     }
 
+    /**
+     * ⚠️ 高程分帶圖層（垂直植被帶）的 `data` **永遠是 null**——顏色由 DEM 逐像素
+     * 算出來，它沒有 geojson，`instanceId` 也只有圖層 id 這一個（見 expandActive
+     * 的 elevation 特例）。照原本那條守衛會一路 return 到 8 秒死線，搜到「冷杉林帶」
+     * 點下去**完全沒反應**：圖層勾起來了，卡片卻不會開。
+     */
+    const isElevation = layer.render.kind === "elevation";
     const inst = instances.find((i) => i.instanceId === hitInstanceId(pendingHit));
-    if (!inst?.data) return; // 資料還沒到
+    if (!isElevation && !inst?.data) return; // 資料還沒到
 
     if (pendingHit.kind === "feature") {
       // 附屬圖徵（主峰）的詳情卡與 zoom 都在 attach 上，不是母圖層的
@@ -445,7 +452,9 @@ function ThemeMapView({ theme, chrome }: { theme: ThemeDefinition; chrome: Chrom
         setSelected({ detail, featureId: pendingHit.featureId });
       }
       flyToFeature(layer, pendingHit.featureId, attached, pendingHit.itemId);
-    } else {
+    } else if (inst?.data) {
+      // 圖層本身的結果：框住整份資料。⚠️ 這裡要容忍 inst 不存在——上面那條守衛
+      // 現在會放高程分帶過（它沒有 data），雖然有 items 的圖層在更早就 return 了。
       const bounds = bboxOf(inst.data);
       if (bounds) map.fitBounds(bounds, { padding: 48, duration: 1200, maxZoom: 12 });
     }
