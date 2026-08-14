@@ -1392,6 +1392,16 @@ input {
   color: var(--text-muted);
 }
 
+/* 高程分帶的色塊（圖例與圖層抽屜的六帶）。⚠️ 邊框刻意用 --text-muted 而不是
+   .layer-swatch 預設的 rgba(0,0,0,0.15)：最高那一帶（高山寒原 #f0e6da）在淺色
+   面板上只有 1.20:1，靠這圈邊框才描得出來，理由見 thematicColors.ts。 */
+.layer-swatch-elevation {
+  width: 12px;
+  height: 10px;
+  border-radius: 2px;
+  border: 1px solid var(--text-muted);
+}
+
 /* ---------- 鄉鎮市區共用詳情卡 ---------- */
 
 /* 沿用古蹟沿革那組小標的視覺層級——同樣是「卡片裡的一個次區塊」 */
@@ -1498,7 +1508,10 @@ input {
   padding: 8px 10px;
   font-size: 12px;
   box-shadow: var(--float-shadow);
-  max-width: 180px;
+  /* 224 而不是原本的 180：垂直植被帶的六列（最長的是「鐵杉雲杉林帶（2,500–3,100 m）」）
+     在 180 下會折行，一列變兩行、六帶就佔掉半個畫面高。224 是實測不折行所需的寬度
+     （最寬那一列 199px + 左右內距）。 */
+  max-width: 224px;
   /* 主題一忙起來圖例會很長，不能讓它把「圖層」磚頂出畫面。
      父層不再是絕對定位，百分比高度失效，改用視窗單位。 */
   max-height: 34dvh;
@@ -1508,6 +1521,9 @@ input {
 .map-legend-row {
   display: flex;
   align-items: center;
+  /* 圖層名（尤其是垂直植被帶那六帶帶著海拔範圍）折行會讓圖例暴長，
+     寧可讓 .map-legend 的 max-width 去配合它 */
+  white-space: nowrap;
   gap: 6px;
   padding: 2px 0;
   color: var(--text-secondary);

@@ -15,6 +15,12 @@ export interface GeoLayerInstance {
   /** 尚未載入完成時傳 null——hook 先略過，資料到齊後 instances 改變會自動補上 */
   data: GeoJSON.FeatureCollection | null;
   detail: DetailSpec;
+  /**
+   * 勾選中的子項目 id。目前只有高程分帶（垂直植被帶）用得到——它六帶共用**一個**
+   * instance，靠這份清單決定哪幾帶要畫、哪幾帶畫成透明（見 registry/resolve.ts
+   * 的特例與 layers/geo.ts 的 elevation 分支）。
+   */
+  activeItems?: readonly string[];
 }
 
 /**
@@ -156,7 +162,9 @@ export function useGeoLayers(
 
     const apply = () => {
       // 讀 ref 而不是 closure，這才是 style.load 重套時能看到最新資料的原因
-      const list = instancesRef.current.filter((i) => i.data);
+      // ⚠️ 高程設色（垂直植被帶）**沒有 geojson**，`data` 永遠是 null，
+      // 但它照樣要加上去——這道守衛原本的用意是「資料還沒抓回來就先別加圖層」。
+      const list = instancesRef.current.filter((i) => i.data || i.render.kind === "elevation");
       const want = new Set(list.map((i) => i.instanceId));
 
       for (const [instanceId, render] of applied.current) {
@@ -169,9 +177,10 @@ export function useGeoLayers(
       for (const i of list) {
         addGeoLayer(map, {
           instanceId: i.instanceId,
-          data: i.data!,
+          data: i.data,
           color: i.color,
           render: i.render,
+          activeItems: i.activeItems,
           minzoom: i.minzoom,
           maxzoom: i.maxzoom,
           highlightIds: highlightIdsRef.current,

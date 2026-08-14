@@ -23,7 +23,11 @@ import type { DataDrivenPropertyValueSpecification, FilterSpecification } from "
  * 由 `registry/resolve.ts` 在瀏覽器端解析成實際資料。這是這裡最重要的一個決定。
  */
 
-export type GeometryKind = "circle" | "line" | "fill";
+/**
+ * ⚠️ `elevation` 不要改叫 `relief`：`ColorRole` 已經有一個 `relief`，那是**山脈稜線的
+ * 洋紅**，兩個 union 雖然不會撞型別，但讀起來會以為是同一件事。
+ */
+export type GeometryKind = "circle" | "line" | "fill" | "elevation";
 
 /**
  * 語意色角色。元件永遠透過角色取色，不直接寫 hex。
@@ -44,7 +48,8 @@ export type ColorRole =
   | "population"
   // 非分類的固定角色，不參與色票驗證（見 thematicColors.ts）
   | "reference"
-  | "hazard";
+  | "hazard"
+  | "vegetation";
 
 /** `src/content` 底下用 import.meta.glob 載入、已經打包進 bundle 的內容集合。 */
 export type BundledContentId =
@@ -88,7 +93,17 @@ export type LayerSource =
   | { type: "bundled"; content: BundledContentId }
   | { type: "generated"; generator: GeneratorId }
   | { type: "remote"; path: string }
-  | { type: "derived"; derived: DerivedId };
+  | { type: "derived"; derived: DerivedId }
+  /**
+   * 共用的 DEM（`layers/ids.ts` 的 `DEM_SOURCE_ID`），給 `kind: "elevation"` 用。
+   *
+   * ⚠️ 這是唯一一個**不會產生任何 feature** 的來源：`resolveLayerData()` 對它一律回
+   * `null`，圖層直接掛在 hillshade 已經建好的 raster-dem source 上。所以
+   * `useGeoLayers` 那道「`data` 是 null 就先不要加圖層」的守衛要放它過，而
+   * `removeGeoLayer` **絕對不能**順手移除這個 source——它是 hillshade 與 3D 地形
+   * 共用的，移掉會讓那兩個一起消失。
+   */
+  | { type: "dem" };
 
 type NumberValue = DataDrivenPropertyValueSpecification<number>;
 
@@ -172,6 +187,29 @@ export type LayerRender =
        */
       outlineWidth?: number;
       outlineColorRole?: ColorRole;
+    }
+  | {
+      /**
+       * 依 DEM 高程直接設色的連續場（maplibre 的 `color-relief` 圖層）。
+       *
+       * 跟前三種**根本不同**：它沒有 geojson、沒有 feature、點不到也搜不到，
+       * 顏色由每個像素的高程決定而不是由資料屬性決定。目前只有垂直植被帶用。
+       *
+       * 教學上它幾乎一定要配 3D 地形才看得出意義（平面上只是一片色塊），
+       * 所以圖層要一起宣告 `requiresTerrain`。
+       */
+      kind: "elevation";
+      /** 由低到高的分帶，最後一段的 `below` 是 null（開放上界）。 */
+      bands: readonly {
+        /** 對應 `items` 的子項目 id：勾了哪幾個就只畫哪幾帶 */
+        readonly id: string;
+        readonly below: number | null;
+        readonly color: string;
+        readonly label: string;
+        readonly note: string;
+      }[];
+      /** 預設 0.45。太高會把底圖的地名與等高線一起蓋掉。 */
+      opacity?: number;
     };
 
 /** 點擊圖徵之後開哪一種詳情卡。 */
@@ -334,6 +372,15 @@ export interface LayerItems {
    * （ThemeMapPage 的 `!l.items`），搜尋是這一層唯一的檢索入口。
    */
   indexFeatures?: boolean;
+  /**
+   * 勾選母圖層時**自動把所有子項目一起勾起來**（目前只有垂直植被帶）。
+   *
+   * 一般的子項目圖層（特有種、古蹟、作物）預設全不勾是對的：那些子項目各自要抓
+   * 一份資料，一次全開既慢又看不清楚。植被帶相反——六帶是同一張圖的六個區段，
+   * 勾了圖層卻什麼都不顯示只會讓人以為壞了，而且它們共用同一個 DEM，全開不多花
+   * 任何成本。取消勾選單一帶才是「只看某一種植被」那個用法。
+   */
+  defaultAll?: boolean;
 }
 
 interface LayerBase {
@@ -372,6 +419,17 @@ interface LayerBase {
    * 不得暗示精確性。這是內容誠信的承諾，不是裝飾用的旗標。
    */
   schematic?: boolean;
+  /**
+   * 勾選這個圖層時**自動打開 3D 地形**。
+   *
+   * 目前只有垂直植被帶用：它在正射俯視下只是一片色塊，要斜角看才看得出「顏色隨
+   * 高度分帶」這件事——而那正是整層要教的東西。
+   *
+   * ⚠️ 這是本站唯一一個「勾圖層會動到 ChromeState」的旗標，刻意做成宣告式的，
+   * 不要在 `ThemeMapPage` 裡寫死圖層 id。取消勾選時**不會**把 3D 關回去：那時
+   * 使用者可能已經自己在用 3D 看別的東西了，替他關掉比替他打開更冒犯。
+   */
+  requiresTerrain?: boolean;
 }
 
 /**
@@ -437,4 +495,6 @@ export const MAX_ACTIVE_BY_KIND: Record<GeometryKind, number> = {
   circle: 4,
   line: 3,
   fill: 2,
+  // 蓋滿全島的高程設色，兩層疊起來沒有任何意義（後畫的整片蓋掉先畫的）
+  elevation: 1,
 };

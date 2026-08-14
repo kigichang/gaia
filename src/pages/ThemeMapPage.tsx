@@ -144,6 +144,26 @@ function ThemeMapView({ theme, chrome }: { theme: ThemeDefinition; chrome: Chrom
   }, [selected, drawerOpen, setDrawerOpen]);
 
   /**
+   * 勾到 `requiresTerrain` 的圖層就自動打開 3D 地形。
+   *
+   * 目前只有垂直植被帶：它在正射俯視下只是一片色塊，要斜角看才看得出「顏色隨高度
+   * 分帶」——而那正是整層要教的東西。旗標宣告在註冊表上（見 types.ts），這裡不寫死
+   * 任何圖層 id。
+   *
+   * ⚠️ **只開不關**：取消勾選時不把 3D 收回去，那時使用者可能已經自己在用 3D 看別的
+   * 東西了，替他關掉比替他打開更冒犯。也因此這個 effect 只在「需要 3D 而且現在沒開」
+   * 時才動手，不會跟使用者自己按的開關打架。
+   */
+  useEffect(() => {
+    const needsTerrain = theme.layers.some(
+      (l) => l.requiresTerrain && activeLayerIds.has(l.id),
+    );
+    if (needsTerrain && !chrome.overlays.terrain) {
+      chrome.onOverlaysChange({ ...chrome.overlays, terrain: true });
+    }
+  }, [theme, activeLayerIds, chrome]);
+
+  /**
    * 要在地圖上強調的圖徵：選取的那一筆，加上它「順帶指名」的關聯圖徵。
    *
    * 母子關聯（五大山脈 ↔ 主峰、縣市界 ↔ 縣市政府）**兩個方向都成立**：選了主峰要
@@ -227,7 +247,19 @@ function ThemeMapView({ theme, chrome }: { theme: ThemeDefinition; chrome: Chrom
       else next.add(layerId);
       return next;
     });
-  }, []);
+    /**
+     * `items.defaultAll` 的圖層（垂直植被帶）在開啟時把六帶一起勾起來。
+     * 勾了圖層卻什麼都不顯示只會讓人以為壞了——而那六帶共用同一個 DEM，
+     * 全開不多花任何成本（見 types.ts 的說明）。**只在還沒選過時才補**，
+     * 否則使用者取消勾選幾帶之後重開圖層會被打回全開。
+     */
+    const layer = theme.layers.find((l) => l.id === layerId);
+    if (layer?.items?.defaultAll) {
+      setActiveItemIds((prev) =>
+        prev[layerId]?.length ? prev : { ...prev, [layerId]: layerItems(layer).map((it) => it.id) },
+      );
+    }
+  }, [theme]);
 
   const toggleItem = useCallback((layerId: string, itemId: string) => {
     setActiveItemIds((prev) => {
@@ -452,13 +484,26 @@ function ThemeMapView({ theme, chrome }: { theme: ThemeDefinition; chrome: Chrom
           if (layer.items) {
             const items = layerItems(layer);
             return (activeItemIds[layer.id] ?? [])
-              .filter((id) => instances.some((i) => i.instanceId === layerInstanceId(layer.id, id) && i.data))
+              /**
+               * 一般子項目圖層一個子項目一個 instance，資料還沒到就先不要進圖例。
+               * ⚠️ 高程分帶例外：六帶共用**一個** instance（instanceId 就是圖層 id）
+               * 而且它本來就沒有 geojson（`data` 永遠是 null），照原本的條件過濾會讓
+               * 六帶全部從圖例上消失——而圖例是那一層唯一解釋顏色的地方。
+               */
+              .filter((id) =>
+                layer.render.kind === "elevation"
+                  ? instances.some((i) => i.instanceId === layer.id)
+                  : instances.some((i) => i.instanceId === layerInstanceId(layer.id, id) && i.data),
+              )
               .map((id, index) => ({
                 key: `${layer.id}-${id}`,
                 label: items.find((it) => it.id === id)?.label ?? id,
                 color: itemColorOf(layer, id, index),
                 kind: layer.render.kind,
-                schematic: layer.schematic,
+                // ⚠️ 示意警語**只掛在第一列**。schematic 是圖層層級的性質，六帶各掛
+                // 一個「（示意）」會變成一整排重複的字，而且讀起來像在說「只有這一帶
+                // 是示意的」。抽屜那一列本來就有圖層層級的附註。
+                schematic: index === 0 ? layer.schematic : undefined,
               }));
           }
           if (!layer.colorRole) return [];

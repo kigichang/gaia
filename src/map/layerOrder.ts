@@ -42,6 +42,11 @@ import type { LayerRender } from "./registry/types.ts";
  */
 
 const BAND: Record<string, number> = {
+  // 依 DEM 高程設色的連續場（垂直植被帶）。它是**地形的著色**而不是疊在地形上的
+  // 資料，所以排在所有主題圖層最下面——不然縣市界的外框、河川、圓點會被一整片
+  // 半透明色蓋住。它仍然在 contour-lines 之上（整個主題區塊都是），但 45% 的
+  // 不透明度讓等高線照樣透得出來，跟主題面的處境相同。
+  elevation: -1,
   fill: 0,
   outline: 1,
   line: 1,

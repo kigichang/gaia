@@ -190,6 +190,8 @@ const KIND_LABELS: Record<GeometryKind, string> = {
   circle: "點",
   line: "線",
   fill: "面",
+  // 高程設色不是一種幾何，是蓋滿全島的連續場
+  elevation: "高程",
 };
 
 const BASEMAP_HINTS: Record<string, string> = {
@@ -199,7 +201,7 @@ const BASEMAP_HINTS: Record<string, string> = {
 };
 
 function countActiveByKind(theme: ThemeDefinition, activeLayerIds: Set<string>) {
-  const counts: Record<GeometryKind, number> = { circle: 0, line: 0, fill: 0 };
+  const counts: Record<GeometryKind, number> = { circle: 0, line: 0, fill: 0, elevation: 0 };
   for (const layer of theme.layers) {
     if (activeLayerIds.has(layer.id)) counts[layer.render.kind] += 1;
   }

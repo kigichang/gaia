@@ -554,6 +554,104 @@ sources」的對照，由卡片自己挑。
 依賴人口資料集，而人口層又依賴鄉鎮幾何——為了一行副標付這個循環相依不划算。人口在
 卡片第一行就看得到。
 
+### 垂直植被帶：全站唯一一個沒有幾何的圖層
+
+`tw-vegetation-belts` 不是點、線、面——它是 maplibre 的 **`color-relief`** 圖層，
+顏色由**每個像素的 DEM 高程**直接算出來。所以它：
+
+- **沒有任何產物檔案**，也不增加一個位元組的下載量（DEM 圖磚是等高線與地形陰影
+  本來就在抓的那一份）
+- **點不到、搜不到、沒有詳情卡**（`detail: { type: "none" }`）——教學內容全部由
+  圖例的六條分帶與圖層說明承擔，所以**圖例是這一層唯一的入口**，不能省
+- 需要一個新的 `GeometryKind`：**`elevation`**。⚠️ 不要改叫 `relief`，`ColorRole`
+  已經有一個 `relief`（山脈稜線的洋紅），兩個 union 雖然不撞型別但讀起來像同一件事
+
+#### ⚠️ 每一帶必須是「平的」，界線另外畫一條線
+
+最初的版本讓相鄰兩帶平滑漸變（`interpolate` 直接內插兩個代表色），結果是**一片糊掉
+的暖色調——「分帶」這件事在畫面上根本看不出來**，而那正是整層唯一要教的東西。
+
+現在 `beltExpression()` 讓每一帶在自己的高程範圍內是同一個顏色，並在界線高程前後各留
+`BELT_EDGE_M`（10 公尺）、中間插進 `BELT_EDGE_COLOR`。**那條線天生就是一條等高線**：
+沿著該高程繞著山走，陡坡上細、緩坡上寬。
+
+⚠️ 這也是為什麼**不需要、也沒辦法**另外開一個 maplibre-contour 來源畫界線：
+`contourProtocolUrl` 只吃 `thresholds`（「每隔幾公尺」的等距間隔），而植被帶的界線是
+500／1,500／2,500／3,100／3,600 這種**不等距**的高程。（`IndividualContourTileOptions`
+的 `levels` 可以指定任意高程，但 `DemSource` 沒有把它接出來。）
+
+⚠️ interpolate 的 stop 必須嚴格遞增。改 `BELT_EDGE_M` 或界線值時要確認相鄰的
+`hi - W` 與下一帶的 `lo + W` 不會交叉——最窄的一帶是冷杉林帶，只有 500 公尺。
+
+#### 六帶是子項目，可以只顯示單一種植被
+
+六帶做成 `items`，所以取消其他五個核取方塊就只剩那一帶，一眼看出它在山上分佈到哪裡。
+
+⚠️ 跟其他子項目圖層（特有種、古蹟、作物）**根本不同**：這六個**沒有 `source`**，
+它們不是六份資料，而是同一個 DEM 上的六個高程區段。所以：
+
+- `expandActive` 對 `kind: "elevation"` **走特例**：只產生**一個** instance
+  （`instanceId` 就是圖層 id、`data` 是 null），把勾選的帶放在 `activeItems` 上，由
+  `addGeoLayer` 在同一條表達式裡把沒勾的畫成透明。六個各自成層的話，界線會被相鄰兩帶
+  **各畫一次而變深**，而且要多跑五次 shader。
+- 界線只在**兩側至少有一帶是開的**時候才畫，否則關掉的區域會憑空浮出一條線。
+- `items.defaultAll: true`：勾圖層時六帶一起勾起來。勾了圖層卻什麼都不顯示只會讓人
+  以為壞了，而六帶共用同一個 DEM，全開不多花任何成本。**只在還沒選過時才補**，
+  否則取消幾帶之後重開圖層會被打回全開。
+- ⚠️ **圖例的 items 分支要放它過**：那裡原本要求 `instance.data` 存在才列出子項目，
+  而這一層的 data 永遠是 null——照原本的條件過濾會讓六帶全部從圖例上消失，
+  **而圖例是這一層唯一解釋顏色的地方**。
+- ⚠️ **示意警語只掛在第一列**。`schematic` 是圖層層級的性質，六帶各掛一個「（示意）」
+  會變成一整排重複的字，讀起來還像在說「只有這一帶是示意的」。
+
+`.map-legend` 的 `max-width` 因此從 180 放寬到 **224px**（最寬那一列是
+「鐵杉雲杉林帶（2,500–3,100 m）」，實測 199px + 內距），並給 `.map-legend-row` 加了
+`white-space: nowrap`——折行的話一列變兩行、六帶就佔掉半個畫面高。
+
+#### 六帶的界線是官方的，但它是個模型
+
+界線取自**農業部**「農業兒童網」的山地植群帶（依林務局與臺大生物多樣性研究中心
+的資料庫，即蘇鴻傑分類）：榕楠 0–500、楠櫧 500–1,500、櫟 1,500–2,500、
+鐵杉雲杉 2,500–3,100、冷杉 3,100–3,600、高山寒原 3,600 以上。
+
+⚠️ **兩件事讓它必須標 `schematic: true`**，圖層說明兩點都要講：
+
+1. 官方那組界線是**以中部地區海拔為準**。同一個植群帶在北部會下降、南部會上升
+   （緯度與山體效應），單一組全島適用的高程界線是簡化。
+2. 它畫的是「這個高度**原本**會長什麼森林」，**不是地表現在真正長什麼**——西部
+   平原被畫成榕楠林帶，但那裡現在是農田與城市。這一點在畫面上很醒目，不講清楚
+   會讓學生把它讀成實測的植群圖。
+
+要真正的植群圖得用林業保育署的植群調查多邊形，那是另一件事（而且跟 3D 無關）。
+
+#### 勾選時自動打開 3D 地形
+
+`requiresTerrain: true`（宣告在註冊表上，`ThemeMapPage` 不寫死圖層 id）。理由是
+這一層在正射俯視下只是一片色塊，要斜角看才看得出「同一條山脈從山腳到山頂換過
+四五種森林」——那正是整層要教的東西。
+
+⚠️ **只開不關**：取消勾選時不把 3D 收回去。那時使用者可能已經自己在用 3D 看別的
+東西了，替他關掉比替他打開更冒犯。這也是全站唯一一個「勾圖層會動到 ChromeState」
+的地方。
+
+#### 三個接線上的坑
+
+- **`source: { type: "dem" }`** 是唯一一個**不產生任何 feature** 的來源，
+  `resolveLayerData()` 對它一律回 `null`。所以 `useGeoLayers` 那道
+  「`data` 是 null 就先不要加圖層」的守衛要**放它過**，否則圖層永遠不會出現而且
+  完全靜默。
+- **`removeGeoLayer` 絕對不能順手移除那個 source**：它是 hillshade 與 3D 地形
+  共用的 raster-dem，移掉會讓那兩個一起消失。
+- **`addGeoLayer` 裡 elevation 分支一定要在建 geojson source 之前 return**，
+  不然會用 `data: null` 建出一個空的 geojson source。
+
+#### 排序：在所有主題圖層之下
+
+`layerOrder.ts` 的 `BAND.elevation = -1`。它是**地形的著色**而不是疊在地形上的資料，
+排在主題區塊最下面，否則縣市界外框、河川、圓點會被一整片半透明色蓋住。它仍然在
+`contour-lines` 之上（整個主題區塊都是），但 45% 的不透明度讓等高線照樣透得出來，
+跟主題面的處境相同。`npm run test:order` 已經把這一條加進回歸測試。
+
 ## 硬性禁止事項
 
 1. **不得引入任何需要 API key、token 或付費金鑰的服務。** MapTiler、Mapbox、Google Maps 一律不用。純靜態站沒有地方藏金鑰。
@@ -607,6 +705,7 @@ ID 常數定義在 `src/map/layers/*.ts`，**一律 import 常數，不要寫死
 | `tw-monuments-<level>-points` | circle，三個級別各自一組（`national`／`municipal`／`county`） |
 | `tw-crops-<crop>-points` | circle，三種作物各自一組（`fruit`／`vegetable`／`tea`） |
 | `tw-population-points` | circle（半徑＝人口、顏色＝依人口密度分級的 ramp） |
+| `tw-vegetation-belts-elevation` | **color-relief**（不是幾何圖層，見「垂直植被帶」） |
 
 `dem` 與 `dem-terrain` 是兩個來源但都指向同一個 shared DEM protocol：maplibre 會警告 hillshade 與 terrain 共用來源會降低算繪品質，拆開可消除警告，而底層圖磚快取仍然共用、不會重複下載。
 
@@ -639,7 +738,7 @@ maplibre-contour 把 worker 以 Blob URL 內嵌，**不需要額外部署 worker
 
 | 主題 | 路由 | 內容 |
 |---|---|---|
-| 臺灣地理 | `/theme/taiwan` | 行政區（縣市、鄉鎮市區）、地形、水系（118 個列管水系、水庫即時水情、河川流域分區）、人文（原住民族、交通軸線、古蹟、人口與都市體系）、植被生態（特有種、國家公園與保護區）、農業物產（主要作物分布） |
+| 臺灣地理 | `/theme/taiwan` | 行政區（縣市、鄉鎮市區）、地形、水系（118 個列管水系、水庫即時水情、河川流域分區）、人文（原住民族、交通軸線、古蹟、人口與都市體系）、植被生態（特有種、國家公園與保護區、垂直植被帶）、農業物產（主要作物分布） |
 | 世界地理 | `/theme/world` | 世界重要城市、國界與大洲、地形水系、人文專題 |
 | 全球地理形貌 | `/theme/global` | 緯度參考線、氣候與生物群系、洋流、板塊與地震帶 |
 
@@ -896,6 +995,35 @@ ramp）後，兩關全過的**只剩色相 310–332° 的紫／洋紅那一族*
 理由相同。**已經實測過**（NLSC 底圖、zoom 10）：全臺形心真的落在保護區面上的人口點只有
 兩個——花蓮縣卓溪鄉（玉山國家公園）與秀林鄉（太魯閣國家公園），都是最淺那一階，白色外框
 把圓點跟底下的紫色面切得乾淨、讀得出來。**要改這個顏色的話再疊一次。**
+
+#### 第四組色階：垂直植被帶的暈渲設色（規則不一樣）
+
+`VEGETATION_BELTS`（`#246135` → `#53803c` → `#949938` → `#cead59` → `#e7c89f` → `#f0e6da`，
+由低海拔到高海拔）。⚠️ **它跟前三條色階不是同一類東西**：水庫、古蹟、人口是**序位
+色階**（單一色相由淺到深）；這一條是**暈渲設色**（hypsometric tint）——蓋滿全島、
+半透明、由 DEM 高程直接驅動的連續場，跟 hillshade 的棕色與等高線的棕色同屬
+「非分類的固定角色」，**不參與 POINT／LINE／FILL 那三組 all-pairs 驗證**。
+
+該驗的是「六帶讀不讀得出順序」：
+
+```bash
+node <dataviz-skill>/scripts/validate_palette.js "#f0e6da,#e7c89f,#cead59,#949938,#53803c,#246135" --ordinal --mode light|dark
+# → 亮度單調 PASS、相鄰 ΔL 全部 ≥0.06 PASS（兩個模式）
+```
+
+⚠️ **另外兩項是預期會 FAIL 的，不要為了讓它們過而改壞色階**：
+
+- **Single hue（色相跨度 77°）**：暈渲設色本來就是多色相。綠→黃→白對應
+  「闊葉林 → 針葉林 → 裸岩與雪」，那正是這一層要教的；改成單一色相就講不出來了。
+- **Light-end contrast（`#f0e6da` 淺色模式只有 1.20:1）**：那一項量的是「色塊 vs
+  圖表底色」，而這條 ramp **從來不畫在面板上**，只有圖例的小色塊會碰到面板。
+  高山寒原就是要接近裸岩與雪的顏色，壓深它等於謊報。比照保護區紫帶著 WARN 上線的
+  既有判例：色塊一律緊接著帶名文字，從來不是唯一線索；另外圖例色塊用
+  `.layer-swatch-band` 把邊框換成 `var(--text-muted)` 的實線補償。
+
+**真正該驗的是它疊在 NLSC 底圖上讀不讀得出來**，驗證器測不到——NLSC 的山區底色
+本來就是綠的（山脈線與保護區不能用綠就是這個原因）。改色前先在玉山一帶打開 3D
+地形實際疊一次。
 
 #### 主要作物三色，以及「物種三色全數 PASS」這句話已經不成立
 
@@ -1815,6 +1943,52 @@ m.isSourceLoaded('contour-source')
     - **缺資料不填 0**：南竿鄉沒有作物區塊（不是「果樹 0 公頃」）；基隆市信義區
       只有蔬菜一列（沒有果樹與茶那兩列）
     - 切底圖之後重驗連動強調（`reapply` 會重建圖層）
+
+25. **垂直植被帶**（`/theme/taiwan`，勾「垂直植被帶」，見「全站唯一一個沒有幾何的圖層」）：
+    ```js
+    const m = window.__gaiaMaps.at(-1);
+    m.jumpTo({ center: [120.92, 23.35], zoom: 10.2, pitch: 62, bearing: 20 });
+    m.getLayer('tw-vegetation-belts-elevation')          // 存在（type 是 color-relief）
+    m.getPaintProperty('tw-vegetation-belts-elevation', 'color-relief-opacity')  // 0.45
+    ```
+    - **勾選時 3D 地形要自動打開**：`!!m.getTerrain()` 是 true、`m.getPitch()` 約 55。
+      ⚠️ **取消勾選時 3D 不該關掉**（只開不關，見上）
+    - **勾圖層時六帶要自動全勾**（`items.defaultAll`）：抽屜裡六個子核取方塊全是打勾的。
+      勾了圖層卻什麼都不顯示只會讓人以為壞了
+      ```js
+      [...document.querySelectorAll('.layer-drawer .species-select-row')]
+        .map(r => [r.textContent.trim(), r.querySelector('input').checked])
+      // 六列全 true，label 是「榕楠林帶（500 m 以下）」這種格式
+      ```
+    - **只顯示單一種植被**：取消其他五帶 → 畫面上只剩那一段高程被染色，其餘露出底圖。
+      表達式裡沒勾的帶會變成 `rgba(0,0,0,0)`
+    - **圖例是這一層唯一解釋顏色的地方**（點不到任何東西），六列都要在、**不折行**：
+      ```js
+      [...document.querySelectorAll('.map-legend-row')].map(r => r.textContent.trim())
+      const lg = document.querySelector('.map-legend');
+      lg.scrollWidth <= lg.clientWidth   // true（max-width 224px 就是為這六列調的）
+      ```
+      ⚠️ **「（示意）」只能出現一次**（在第一列），不是六列都掛
+    - ⚠️ **帶與帶之間要看得出界線**：那條線是同一條 color-relief 表達式畫出來的，
+      行為就是一條等高線（陡坡細、緩坡寬）。表達式裡要找得到 `BELT_EDGE_COLOR`：
+      ```js
+      JSON.stringify(m.getPaintProperty('tw-vegetation-belts-elevation','color-relief-color'))
+        .includes('#3d3021')   // true
+      ```
+    - **一定要有示意警語**：圖例那一列有「（示意）」徽章，圖層說明講「原本會長什麼」
+      而不是實際地表覆蓋——這是這一層最容易被讀錯的地方
+    - ⚠️ **視覺驗證是這一層的主檢查，不是附加項**：斜角看要看得出綠（平原丘陵）→
+      黃綠（中海拔）→ 黃褐（針葉林）→ 近白（主脊）**清楚分段**，而且帶與帶之間有一條
+      沿著山勢繞的界線。糊成一片暖色調就是回到了最初那個「分帶看不出來」的版本
+    - 排序：它必須在**所有主題圖層之下**、`contour-lines` 之上
+      ```js
+      const ids = m.getStyle().layers.map(l => l.id), at = id => ids.indexOf(id);
+      at('contour-lines') < at('tw-vegetation-belts-elevation')   // true
+      // 同時勾縣市界時：at('tw-vegetation-belts-elevation') < at('tw-counties-fill')
+      ```
+    - 切底圖之後重驗：圖層還在、排序仍在等高線之上、**只勾單一帶的狀態不能丟**
+      （比對切換前後的 `color-relief-color` 字串長度），而且共用的 `dem` source 與
+      3D 地形都還在（`removeGeoLayer` 不可以把它們一起帶走）
 
 ### ⚠️ 用瀏覽器自動化點 UI 的三個陷阱
 

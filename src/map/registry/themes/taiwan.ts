@@ -6,6 +6,7 @@ import {
   POPULATION_DENSITY_RAMP,
   RESERVOIR_FILL_RAMP,
   SPECIES_COLORS,
+  VEGETATION_BELTS,
 } from "../../thematicColors.ts";
 import type { ThemeDefinition } from "../types.ts";
 
@@ -202,10 +203,10 @@ export const taiwanTheme: ThemeDefinition = {
       sources: ["文化部文化資產局"],
     },
 
-    // ── 以下混著已上線與尚未有資料的圖層 ──────────────────────────────
-    // `status: "planned"` 的會顯示成停用的核取方塊，但 description 仍然要寫清楚
-    // ——一個沒有文字的停用選項什麼都沒教到。目前還是 planned 的只剩
-    // tw-vegetation-belts 一個。
+    // ── 以下是後來陸續補上的圖層 ────────────────────────────────────
+    // `status: "planned"` 會顯示成停用的核取方塊，但 description 仍然要寫清楚
+    // ——一個沒有文字的停用選項什麼都沒教到。**目前已經沒有 planned 的圖層了**，
+    // 這條規則留著給下一個佔位用。
     {
       id: "tw-townships",
       label: "鄉鎮市區界",
@@ -488,10 +489,57 @@ export const taiwanTheme: ThemeDefinition = {
       id: "tw-vegetation-belts",
       label: "垂直植被帶",
       group: "植被生態",
-      status: "planned",
-      render: { kind: "fill" },
+      status: "ready",
+      render: { kind: "elevation", bands: VEGETATION_BELTS, opacity: 0.5 },
+      /**
+       * 六帶做成子項目，所以可以**只顯示單一種植被**——取消其他五個核取方塊，
+       * 畫面上就只剩那一帶，一眼看出它在山上分佈到哪裡。
+       *
+       * ⚠️ 跟其他子項目圖層不同，這六個**沒有 `source`**：它們不是六份資料，而是
+       * 同一個 DEM 上的六個高程區段。`expandActive` 因此對 `kind: "elevation"` 走
+       * 特例——只產生**一個** instance，把勾選的帶帶在 `activeItems` 上，由
+       * `addGeoLayer` 在同一條 color-relief 表達式裡把沒勾的畫成透明。六個各自成層
+       * 的話界線會被相鄰兩帶各畫一次而變深，而且要多跑五次 shader。
+       */
+      items: {
+        from: {
+          type: "inline",
+          list: VEGETATION_BELTS.map((b) => ({
+            id: b.id,
+            // 海拔範圍寫進 label：圖例與抽屜都直接用它，不必另外做一套 note 排版
+            label: `${b.label}（${b.note}）`,
+            color: b.color,
+          })),
+        },
+        maxActive: VEGETATION_BELTS.length,
+        palette: VEGETATION_BELTS.map((b) => b.color),
+        // 勾了圖層就六帶全開，見 types.ts 的說明
+        defaultAll: true,
+      },
       detail: { type: "none" },
-      description: "由海拔決定的植被垂直分帶，與等高線圖層一起看最清楚。",
+      /**
+       * 勾了就自動打開 3D 地形：正射俯視下這一層只是一片色塊，要斜角看才看得出
+       * 「顏色隨高度分帶」——那正是它要教的東西。見 types.ts 的 requiresTerrain。
+       */
+      requiresTerrain: true,
+      // 等高線是 zoom 9 才畫，但這一層在全島尺度就有意義（一眼看出中央山脈是
+      // 一條由綠轉黃再轉白的脊）。6 大約是整個臺灣填滿畫面。
+      minzoom: 6,
+      /**
+       * ⚠️ 這一層是**依海拔推導的示意分帶，不是實測植群圖**，所以一定要標
+       * schematic。界線取自農業部的山地植群帶，但那組數字是「以中部地區海拔為準」
+       * ——同一個帶在北部會下降、南部會上升（緯度與山體效應）。
+       */
+      schematic: true,
+      description:
+        "依海拔劃分的六個植群帶（蘇鴻傑分類）。顏色由地形高程直接算出來，帶與帶之間畫一條界線" +
+        "——那條線就是該高程的等高線，所以它會沿著山勢繞。勾選時會自動打開 3D 地形，" +
+        "斜角看才看得出「同一條山脈從山腳到山頂換過四五種森林」。" +
+        "取消其他幾帶的勾選，就能只看單一種植被分佈到哪裡。" +
+        "⚠️ 這張圖畫的是「這個高度**原本**會長什麼森林」，不是地表現在真正長什麼——" +
+        "西部平原被畫成榕楠林帶，但那裡現在是農田與城市。而且官方那組界線是" +
+        "**以中部地區為準**，同一個植群帶在北部會降低、南部會升高（緯度與山體效應）。" +
+        "所以這是依海拔推導的示意分帶，不是實測的植群分布圖。",
       sources: ["農業部林業及自然保育署"],
     },
     {

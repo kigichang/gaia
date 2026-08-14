@@ -70,6 +70,8 @@ const SUFFIXES: Record<GeometryKind, readonly string[]> = {
   circle: ["points"],
   line: ["line"],
   fill: ["fill", "outline"],
+  // 沒有幾何、也沒有外框：一整個 color-relief 圖層就是它的全部
+  elevation: ["elevation"],
 };
 
 /** 一個 instance 展開出來的所有 maplibre 圖層 id（由下往上排）。 */
@@ -89,6 +91,8 @@ export function geoLayerIds(instanceId: string, render: LayerRender): string[] {
  *   標註與線來自同一個 source、同一個 feature，所以兩邊拿到的 id 一定相同。
  */
 export function geoHitLayerIds(instanceId: string, render: LayerRender): string[] {
+  // 高程設色沒有 feature，點不到也不該綁互動（綁了 maplibre 會直接報錯）
+  if (render.kind === "elevation") return [];
   if (render.kind === "fill") return [`${instanceId}-fill`];
   if (render.kind === "circle") return [`${instanceId}-points`];
   return render.label

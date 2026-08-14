@@ -37,6 +37,9 @@ function fakeMap(ids) {
 }
 
 const INSTANCES = [
+  // 高程設色（垂直植被帶）：整片半透明的地形著色，必須排在所有主題圖層**最下面**，
+  // 否則縣市界的外框、河川與圓點會被它整片蓋掉
+  { instanceId: "tw-vegetation-belts", render: { kind: "elevation" } },
   { instanceId: "tw-counties", render: { kind: "fill" } },
   { instanceId: "latitude-lines", render: { kind: "line", label: { property: "name" } } },
   { instanceId: "places", render: { kind: "circle" } },
@@ -44,6 +47,7 @@ const INSTANCES = [
 ];
 
 const THEME_IDS = [
+  "tw-vegetation-belts-elevation",
   "tw-counties-fill",
   "tw-counties-outline",
   "latitude-lines-line",
@@ -55,6 +59,8 @@ const THEME_IDS = [
 function assertStack(map, label) {
   const at = (id) => map.ids.indexOf(id);
   console.log(`\n${label}\n  → ${map.ids.join(" · ")}`);
+  check("高程設色在等高線之上", at("contour-lines") < at("tw-vegetation-belts-elevation"));
+  check("高程設色在面之下", at("tw-vegetation-belts-elevation") < at("tw-counties-fill"));
   check("面在等高線之上", at("contour-lines") < at("tw-counties-fill"));
   check("面在線之下", at("tw-counties-fill") < at("latitude-lines-line"));
   check("線在點之下", at("latitude-lines-line") < at("places-points"));

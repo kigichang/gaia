@@ -1,6 +1,8 @@
 import type { GeoJSONSource, Map as MapLibreMap, MapLayerMouseEvent } from "maplibre-gl";
 import { geoLayerIds, geoSourceId } from "../registry/index.ts";
 import type { ColorRamp, LayerRender } from "../registry/types.ts";
+import { BELT_EDGE_COLOR, BELT_EDGE_M } from "../thematicColors";
+import { DEM_SOURCE_ID, addDemSource } from "./hillshade";
 
 /**
  * 通用主題圖層 helper（circle / line / fill）。
@@ -26,7 +28,8 @@ import type { ColorRamp, LayerRender } from "../registry/types.ts";
 export interface GeoLayerSpec {
   /** maplibre id 的前綴，例如 "places"、"species-mikado-pheasant" */
   instanceId: string;
-  data: GeoJSON.FeatureCollection;
+  /** `kind: "elevation"` 沒有 geojson，這裡是 null（見 addGeoLayer 的說明） */
+  data: GeoJSON.FeatureCollection | null;
   color: string;
   render: LayerRender;
   minzoom?: number;
@@ -36,6 +39,8 @@ export interface GeoLayerSpec {
    * 它的主峰一起帶進來——主峰是另一個圖層的點，兩層各自比對這份清單即可。
    */
   highlightIds?: readonly string[];
+  /** 勾選中的高程分帶 id（只有 `kind: "elevation"` 會用，見 useGeoLayers）。 */
+  activeItems?: readonly string[];
 }
 
 /**
@@ -100,17 +105,97 @@ function rampExpression(ramp: ColorRamp, fallback: string): unknown {
   ];
 }
 
-export function addGeoLayer(map: MapLibreMap, spec: GeoLayerSpec) {
-  const { instanceId, data, color, render, minzoom, maxzoom, highlightIds } = spec;
-  const sourceId = geoSourceId(instanceId);
+/**
+ * 高程分帶的 `color-relief-color` 表達式。
+ *
+ * ## 為什麼每一帶要「平的」，而不是相鄰兩色平滑漸變
+ *
+ * 最初的版本直接在兩個代表色之間內插，結果是一片糊掉的暖色調——**「分帶」這件事
+ * 在畫面上根本看不出來**，而那正是整層唯一要教的東西。現在每一帶在自己的高程範圍
+ * 內是同一個顏色，界線另外插一條深色。
+ *
+ * ## 那條界線就是一條等高線
+ *
+ * 界線是在界線高程前後各留 `BELT_EDGE_M` 公尺、中間插進 `BELT_EDGE_COLOR` 畫出來的，
+ * 所以它天生沿著那個高程繞著山走：陡坡上細、緩坡上寬，跟真的等高線行為一模一樣。
+ * 也因此**不需要（也沒辦法）另外開一個 maplibre-contour 來源**——它的
+ * `contourProtocolUrl` 只吃「每隔幾公尺」的等距間隔，而植被帶的界線是
+ * 500／1,500／2,500／3,100／3,600 這種不等距的高程。
+ *
+ * ## 只顯示某幾帶
+ *
+ * `activeItems` 沒列到的帶畫成全透明。界線只在**兩側至少有一帶是開的**時候才畫，
+ * 否則關掉的區域會憑空浮出一條線。`undefined`（不是 items 圖層）視為全開。
+ *
+ * ⚠️ interpolate 的 stop 必須嚴格遞增，改動 `BELT_EDGE_M` 或界線值時要確認相鄰的
+ * `hi - W` 與下一帶的 `lo + W` 不會交叉（最窄的一帶是冷杉林帶的 500 公尺）。
+ */
+function beltExpression(
+  render: Extract<LayerRender, { kind: "elevation" }>,
+  activeItems?: readonly string[],
+): unknown {
+  const on = (id: string) => !activeItems || activeItems.includes(id);
+  const W = BELT_EDGE_M;
+  const TRANSPARENT = "rgba(0,0,0,0)";
 
-  if (map.getSource(sourceId)) {
-    (map.getSource(sourceId) as GeoJSONSource).setData(data);
-  } else {
-    map.addSource(sourceId, { type: "geojson", data });
+  const stops: (number | string)[] = [];
+  let lo = -500;
+  render.bands.forEach((band, i) => {
+    const hi = band.below ?? 9000;
+    const fill = on(band.id) ? band.color : TRANSPARENT;
+    stops.push(lo + W, fill, hi - W, fill);
+    if (band.below != null) {
+      const next = render.bands[i + 1];
+      const edge = on(band.id) || (next && on(next.id)) ? BELT_EDGE_COLOR : TRANSPARENT;
+      stops.push(hi, edge);
+    }
+    lo = hi;
+  });
+  return ["interpolate", ["linear"], ["elevation"], ...stops];
+}
+
+export function addGeoLayer(map: MapLibreMap, spec: GeoLayerSpec) {
+  const { instanceId, data, color, render, minzoom, maxzoom, highlightIds, activeItems } = spec;
+  const zoom = { ...(minzoom != null && { minzoom }), ...(maxzoom != null && { maxzoom }) };
+
+  if (render.kind === "elevation") {
+    /**
+     * 依 DEM 高程設色（maplibre 的 `color-relief`）。跟前三種完全不同：
+     * **不建 geojson source**，直接掛在 hillshade 已經建好的共用 raster-dem 上，
+     * 所以這裡用 `DEM_SOURCE_ID` 而不是 `geoSourceId(instanceId)`。
+     */
+    const id = `${instanceId}-elevation`;
+    const colorExpr = beltExpression(render, activeItems);
+    const opacity = render.opacity ?? 0.45;
+    addDemSource(map, DEM_SOURCE_ID);
+
+    if (map.getLayer(id)) {
+      // 勾選／取消單一帶只要換表達式，不必把圖層拆掉重加（比照 circle 的既有處理）
+      map.setPaintProperty(id, "color-relief-color", colorExpr as never);
+      map.setPaintProperty(id, "color-relief-opacity", opacity);
+    } else {
+      map.addLayer({
+        id,
+        type: "color-relief",
+        source: DEM_SOURCE_ID,
+        ...zoom,
+        paint: {
+          "color-relief-color": colorExpr,
+          "color-relief-opacity": opacity,
+        },
+      } as never);
+    }
+    return;
   }
 
-  const zoom = { ...(minzoom != null && { minzoom }), ...(maxzoom != null && { maxzoom }) };
+  // 以下三種都有 geojson source。⚠️ elevation 一定要在這之前 return：
+  // 它的 data 是 null，走到這裡會建出一個空的 geojson source。
+  const sourceId = geoSourceId(instanceId);
+  if (map.getSource(sourceId)) {
+    (map.getSource(sourceId) as GeoJSONSource).setData(data!);
+  } else {
+    map.addSource(sourceId, { type: "geojson", data: data! });
+  }
 
   if (render.kind === "circle") {
     const id = `${instanceId}-points`;
@@ -266,6 +351,9 @@ export function removeGeoLayer(map: MapLibreMap, instanceId: string, render: Lay
   for (const id of geoLayerIds(instanceId, render)) {
     if (map.getLayer(id)) map.removeLayer(id);
   }
+  // ⚠️ 高程設色掛的是 **hillshade 與 3D 地形共用的** raster-dem source，
+  // 順手移除會讓那兩個一起消失。它沒有自己的 geojson source，什麼都不用清。
+  if (render.kind === "elevation") return;
   const sourceId = geoSourceId(instanceId);
   if (map.getSource(sourceId)) map.removeSource(sourceId);
 }

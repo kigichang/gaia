@@ -197,7 +197,9 @@ const cacheKey = (source: LayerSource) =>
       ? `bundled:${source.content}`
       : source.type === "derived"
         ? `derived:${source.derived}`
-        : `generated:${source.generator}`;
+        : source.type === "dem"
+          ? "dem"
+          : `generated:${source.generator}`;
 
 /**
  * 三種來源一律回傳 Promise，即使 bundled/generated 其實是同步的。
@@ -220,6 +222,10 @@ export function resolveLayerData(
     promise = DERIVED_LOADERS[source.derived]();
   } else if (source.type === "generated") {
     promise = Promise.resolve(generateLayer(source.generator));
+  } else if (source.type === "dem") {
+    // 共用 DEM 沒有任何 feature：圖層直接掛在 hillshade 建好的 raster-dem 上。
+    // 回 null 讓 expandActive 照常把 key 寫進 data（否則它會一直留在 pending）。
+    promise = Promise.resolve(null);
   } else if (source.path.startsWith("data/species/")) {
     // 走既有的 loadSpeciesOccurrence，沿用它的快取，避免同一份 geojson 抓兩次
     const speciesId = source.path.slice("data/species/".length).replace(/\.geojson$/, "");
@@ -276,6 +282,28 @@ export function expandActive(
     if (layer.items) {
       const items = layerItems(layer);
       const selected = active.itemIds[layer.id] ?? [];
+
+      /**
+       * ⚠️ 高程分帶的子項目**不是六份資料，是同一個 DEM 上的六個高程區段**，
+       * 所以只產生一個 instance，把勾選的帶帶下去讓 `addGeoLayer` 在同一條
+       * color-relief 表達式裡處理。六個各自成層的話，界線會被相鄰兩帶各畫一次
+       * 而變深，而且要多跑五次 shader。
+       */
+      if (layer.render.kind === "elevation") {
+        instances.push({
+          instanceId: layer.id,
+          render: layer.render,
+          // 顏色在 bands 裡，這個值不會被 elevation 分支用到
+          color: "#000",
+          minzoom: layer.minzoom,
+          maxzoom: layer.maxzoom,
+          data: null,
+          detail: layer.detail,
+          activeItems: selected,
+        });
+        continue;
+      }
+
       selected.forEach((itemId, index) => {
         const item = items.find((it) => it.id === itemId);
         if (!item?.source) return;
