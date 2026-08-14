@@ -1253,7 +1253,11 @@ const SOURCES = [
     id: "tw-quakes",
     label: "臺灣地震",
     /**
-     * 臺灣周邊 M≥5.0、1900 年以來（實測 1,341 筆）。
+     * 臺灣周邊 **M≥5.5**、1900 年以來（實測 612 筆）。
+     *
+     * ⚠️ 門檻從 5.0 拉到 5.5 是**顯示密度**的決定：1,341 個點在本島上疊成一片，
+     * 連底圖的地形都看不見。5.5 之後剩 612 筆，島上還讀得出個別事件。
+     * 這個門檻**只影響這一層**——「重大地震」有自己的 USGS 查詢，見下。
      *
      * ⚠️ **為什麼不用中央氣象署**：CWA 的地震開放資料要申請 API key，直接撞上
      * 硬性禁止事項 #1。USGS 免金鑰、public domain，而且站上「全球地震帶」用的
@@ -1266,11 +1270,11 @@ const SOURCES = [
      */
     url:
       "https://earthquake.usgs.gov/fdsnws/event/1/query" +
-      "?format=geojson&minmagnitude=5&starttime=1900-01-01&orderby=time" +
+      "?format=geojson&minmagnitude=5.5&starttime=1900-01-01&orderby=time" +
       "&minlatitude=21.0&maxlatitude=26.5&minlongitude=118.5&maxlongitude=123.5",
     countUrl:
       "https://earthquake.usgs.gov/fdsnws/event/1/count" +
-      "?format=geojson&minmagnitude=5&starttime=1900-01-01" +
+      "?format=geojson&minmagnitude=5.5&starttime=1900-01-01" +
       "&minlatitude=21.0&maxlatitude=26.5&minlongitude=118.5&maxlongitude=123.5",
     license: "USGS（public domain）",
     sourceLabel: "USGS",
@@ -1321,25 +1325,44 @@ const SOURCES = [
     id: "tw-quakes-major",
     label: "臺灣重大地震",
     /**
-     * 維基百科〈臺灣地震列表〉的災害性地震，對照到 `tw-quakes` 的震央。
+     * 維基百科〈臺灣地震列表〉的災害性地震，對照到 USGS 的震央。
      *
-     * ⚠️ **幾何與規模一律沿用 USGS 那份**（直接讀已經產好的 geojson，不重打一次
-     * USGS），維基百科只提供「這次地震叫什麼、造成什麼災害」。兩份資料各司其職：
-     * 點位與規模要跟母圖層逐位一致，否則同一次地震會在圖上出現兩個位置略異的點。
+     * ⚠️ **自己打一次 USGS，門檻固定 M≥5.0，不讀母圖層的產物。**
      *
-     * ⚠️ 因此**建置順序有相依**：要先有 tw-quakes 才能建這一層。
+     * 早期版本是直接讀已經產好的 `tw-quakes.geojson`（省一次 API 呼叫）。那是錯的
+     * 耦合：母圖層的門檻是**顯示密度**的決定，而這一層是一份**策展清單**——把母圖層
+     * 從 5.0 拉到 5.5 之後，2004 花蓮（M5.2、2 人死亡）、2000 臺中德基（M5.4、
+     * 3 人死亡）這幾筆會憑空消失，理由卻只是「另一個圖層想畫少一點」。
+     *
+     * 實測受影響的是 5 筆。多一次 USGS 查詢便宜得多。
+     *
+     * 兩層對同一次地震仍然拿到**逐位相同**的座標與規模（同一個目錄、同樣的取位），
+     * 所以共用 id 的連動強調照常成立。
      */
-    load: async () => {
-      const path = join(OUT_DIR, "tw-quakes.geojson");
-      let fc;
-      try {
-        fc = JSON.parse(await readFile(path, "utf8"));
-      } catch {
-        throw new Error(
-          "找不到 public/data/geo/tw-quakes.geojson，重大地震的點位與規模都靠它。" +
-            "請先執行 npm run build:geodata -- --only=tw-quakes",
-        );
-      }
+    load: async (fetchWithRetry) => {
+      const res = await fetchWithRetry(
+        "https://earthquake.usgs.gov/fdsnws/event/1/query" +
+          "?format=geojson&minmagnitude=5&starttime=1900-01-01&orderby=time" +
+          "&minlatitude=21.0&maxlatitude=26.5&minlongitude=118.5&maxlongitude=123.5",
+      );
+      const raw = await res.json();
+      // 轉成跟 tw-quakes 一樣的形狀（同樣的取位與 UTC+8 換算），兩層才對得起來
+      const fc = {
+        features: raw.features
+          .filter((f) => f.geometry?.type === "Point" && f.properties.mag != null)
+          .map((f) => ({
+            geometry: {
+              type: "Point",
+              coordinates: f.geometry.coordinates.slice(0, 2).map((v) => Math.round(v * 100) / 100),
+            },
+            properties: {
+              id: slugify(f.id),
+              mag: Math.round(f.properties.mag * 10) / 10,
+              depth_km: Math.round(f.geometry.coordinates[2] ?? 0),
+              date: new Date(f.properties.time + 8 * 3600 * 1000).toISOString().slice(0, 10),
+            },
+          })),
+      };
       return { fc };
     },
     sourceUrl: "https://zh.wikipedia.org/wiki/臺灣地震列表",

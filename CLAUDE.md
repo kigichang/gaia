@@ -728,8 +728,13 @@ USGS 的 `time` 是 UTC epoch。直接 `toISOString()` 會把 **921 大地震**
 `ThemeMapPage` 的 `browseLayers` 過濾），而母圖層**刻意沒有 `browse`**（1,341 筆）。
 獨立成層還多一個好處：可以只看這 92 次，不必背著 1,341 個點。
 
-- **幾何與規模一律沿用 USGS 那一份**（直接讀已經產好的 `tw-quakes.geojson`，
-  不重打一次 USGS），維基百科只提供「叫什麼、造成什麼災害」。所以**建置順序有相依**。
+- **自己打一次 USGS（門檻固定 M≥5.0），不讀母圖層的產物。**
+  ⚠️ 早期版本是直接讀已經產好的 `tw-quakes.geojson`（省一次 API 呼叫）。那是**錯的
+  耦合**：母圖層的門檻是「顯示密度」的決定，這一層是一份**策展清單**——母圖層從 5.0
+  拉到 5.5 之後，2004 花蓮（M5.2、2 人死亡）、2000 臺中德基（M5.4、3 人死亡）這 5 筆
+  會憑空消失，理由卻只是「另一個圖層想畫少一點」。多一次查詢便宜得多。
+  兩層對同一次地震仍拿到**逐位相同**的座標與規模（同一個目錄、同樣的取位），
+  所以共用 id 的連動強調照常成立。
 - **共用同一個 `id`**：`highlightIds` 靠字串比對跨圖層連動，點重大地震時底下那顆
   一般震央也會一起加粗（比照鄉鎮三層共用 id）。
 - **顏色不變、只是更深**：同一個 `hazard` 中性色，不透明度 0.32 → 0.9、半徑加大、
@@ -1593,8 +1598,8 @@ npm run build:geodata -- --force --only=tw-rivers             # 118 個列管水
 npm run build:geodata -- --force --only=tw-crops-fruit        # 作物三種要各跑一次（需先有鄉鎮界）
 npm run build:geodata -- --force --only=tw-population         # 368 個鄉鎮的人口（同樣需先有鄉鎮界）
 npm run build:geodata -- --force --only=tw-faults             # 33 條活動斷層
-npm run build:geodata -- --force --only=tw-quakes             # 臺灣周邊 M≥5.0（1,341 筆）
-npm run build:geodata -- --force --only=tw-quakes-major       # 災害性地震（需先有 tw-quakes）
+npm run build:geodata -- --force --only=tw-quakes             # 臺灣周邊 M≥5.5（612 筆）
+npm run build:geodata -- --force --only=tw-quakes-major       # 災害性地震（自己查 USGS，不依賴 tw-quakes）
 npm run build:geodata -- --force --only=tw-monuments-national   # 古蹟三級要各跑一次
                                        # （municipal／county 同理；歷史沿革分片會一起寫出）
 ```
@@ -2146,7 +2151,9 @@ m.isSourceLoaded('contour-source')
     const m = window.__gaiaMaps.at(-1);
     m.jumpTo({ center: [120.9, 23.7], zoom: 7.4 });   // 兩層 minzoom 都是 6
     new Set(m.queryRenderedFeatures({ layers: ['tw-faults-line'] }).map(f => f.properties.id)).size  // 32/33
-    m.queryRenderedFeatures({ layers: ['tw-quakes-points'] }).length   // 全島視角實測 1,176
+    m.queryRenderedFeatures({ layers: ['tw-quakes-points'] }).length   // 全島視角實測 574
+    m.getPaintProperty('tw-quakes-points','circle-opacity')            // 0.65（不是 0.32）
+    m.getPaintProperty('tw-quakes-points','circle-stroke-width')       // 0.8（白框，不是 0）
     m.getPaintProperty('tw-faults-line', 'line-color')   // "#8f463f"
     m.getPaintProperty('tw-faults-line', 'line-width')   // ["match",["get","classRank"],1,2.4,1.2]
     ```
@@ -2173,12 +2180,16 @@ m.isSourceLoaded('contour-source')
       [...document.querySelectorAll('.search-hit')].map(h => h.innerText.replace(/\n/g,'・'))
       // 只有「臺灣地震・圖層…」「活動斷層・圖層…」「全球地震帶・圖層…」
       ```
+    - ⚠️ **本島上的點要清楚可辨**（這一層最常被抱怨的地方）：
+      `m.jumpTo({ center: [120.95, 23.75], zoom: 8.4 })` 看中部山區，
+      每顆震央都要靠白框從等高線與地形陰影上分得出來，不是沉進背景的灰影
     - **重大地震**（勾「重大地震」，排在「臺灣地震」正下方）：
       ```js
-      m.queryRenderedFeatures({ layers: ['tw-quakes-major-points'] }).length   // 全島視角 91
+      m.queryRenderedFeatures({ layers: ['tw-quakes-major-points'] }).length   // 全島視角 89
       m.getPaintProperty('tw-quakes-major-points','circle-opacity')            // 0.9（母圖層是 0.32）
       ```
-      清單 92 筆、由新到舊；點「南投（集集大地震）」→ 卡片標題就是它（**不是**
+      清單 **92 筆**、由新到舊——⚠️ 母圖層拉到 M≥5.5 之後這裡仍然是 92，掉下去就代表
+      有人把它改回去讀 tw-quakes 的產物了（見「自己打一次 USGS」）；點「南投（集集大地震）」→ 卡片標題就是它（**不是**
       「規模 7.7 地震」，那代表 DetailCard 又只找了第一個 quake 圖層），
       有災害情形「2,415人死亡…」與「中央氣象署的規模是 7.3」那一行
     - **兩層共用 id**：點重大地震時母圖層那顆也要一起加粗
