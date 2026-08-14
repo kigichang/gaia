@@ -416,6 +416,19 @@ interface LayerBase {
    * 那就失去把未完成圖層列出來的意義了。
    */
   description: string;
+  /**
+   * 資料限制與容易讀錯的地方（收錄範圍、目錄完整度、量測基準…）。
+   *
+   * 每一則**必須以 `⚠️ ` 開頭**（驗證器會擋），而 `description` 裡**不可以**再出現
+   * ⚠️——圖層抽屜靠這件事把兩者分開：說明留在核取方塊下面，注意事項收進圖層名稱
+   * 旁邊那顆 ⚠️ 按鈕開出來的小視窗。抽屜要能一路捲到底找圖層，長篇警語擋在路上
+   * 會讓那件事變得很難做。
+   *
+   * ⚠️ **收進小視窗不等於可以省略。** 這些警語是內容誠信的承諾（比照 GBIF 觀測點
+   * 與 ERA5 氣候值的既有做法），詳情卡的 fallback 仍然把它們接在說明後面一起顯示，
+   * 見 `DetailCard` 的 `fullDescription()`。
+   */
+  notes?: string[];
   /** 對應 `src/content/sourceLinks.ts` 的 key；對不到就顯示純文字 */
   sources: string[];
   minzoom?: number;
