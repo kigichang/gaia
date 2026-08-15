@@ -1,0 +1,36 @@
+{
+  "id": "cailiao-river",
+  "collection": "tw-rivers",
+  "name": {
+    "zh": "菜寮溪",
+    "en": "Cailiao River"
+  },
+  "subtitle": "主要支流・曾文溪水系",
+  "stats": [
+    {
+      "label": "流域面積",
+      "value": "121.31 km²"
+    },
+    {
+      "label": "分類",
+      "value": "主要支流"
+    }
+  ],
+  "facts": [
+    {
+      "label": "發源地",
+      "value": "南化區分水山北麓"
+    },
+    {
+      "label": "所屬水系",
+      "value": "曾文溪水系"
+    }
+  ],
+  "curriculum": {
+    "unit": "臺灣的水文"
+  },
+  "sources": [
+    "OpenStreetMap",
+    "維基百科 菜寮溪"
+  ]
+}

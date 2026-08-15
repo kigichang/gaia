@@ -1,0 +1,36 @@
+{
+  "id": "jingshan-river",
+  "collection": "tw-rivers",
+  "name": {
+    "zh": "景山溪",
+    "en": "Jingshan River"
+  },
+  "subtitle": "主要支流・大安溪水系",
+  "stats": [
+    {
+      "label": "幹流長度",
+      "value": "19 km"
+    },
+    {
+      "label": "流域面積",
+      "value": "96.69 km²"
+    },
+    {
+      "label": "分類",
+      "value": "主要支流"
+    }
+  ],
+  "facts": [
+    {
+      "label": "所屬水系",
+      "value": "大安溪水系"
+    }
+  ],
+  "curriculum": {
+    "unit": "臺灣的水文"
+  },
+  "sources": [
+    "OpenStreetMap",
+    "維基百科 景山溪"
+  ]
+}

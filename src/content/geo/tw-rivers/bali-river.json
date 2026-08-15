@@ -1,0 +1,40 @@
+{
+  "id": "bali-river",
+  "collection": "tw-rivers",
+  "name": {
+    "zh": "八里溪",
+    "en": "Bali River"
+  },
+  "subtitle": "縣(市)管河川・臺東縣",
+  "stats": [
+    {
+      "label": "幹流長度",
+      "value": "4 km"
+    },
+    {
+      "label": "流域面積",
+      "value": "17.73 km²"
+    },
+    {
+      "label": "分類",
+      "value": "縣(市)管河川"
+    }
+  ],
+  "facts": [
+    {
+      "label": "發源地",
+      "value": "東河鄉都蘭村都禿山東南側"
+    },
+    {
+      "label": "流經",
+      "value": "台東縣東河鄉"
+    }
+  ],
+  "curriculum": {
+    "unit": "臺灣的水文"
+  },
+  "sources": [
+    "OpenStreetMap",
+    "維基百科 八里溪"
+  ]
+}

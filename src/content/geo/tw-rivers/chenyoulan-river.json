@@ -1,0 +1,40 @@
+{
+  "id": "chenyoulan-river",
+  "collection": "tw-rivers",
+  "name": {
+    "zh": "陳有蘭溪",
+    "en": "Chenyoulan River"
+  },
+  "subtitle": "主要支流・濁水溪水系",
+  "stats": [
+    {
+      "label": "幹流長度",
+      "value": "42 km"
+    },
+    {
+      "label": "流域面積",
+      "value": "448 km²"
+    },
+    {
+      "label": "分類",
+      "value": "主要支流"
+    }
+  ],
+  "facts": [
+    {
+      "label": "流經",
+      "value": "南投縣信義鄉望美村久美部落"
+    },
+    {
+      "label": "所屬水系",
+      "value": "濁水溪水系"
+    }
+  ],
+  "curriculum": {
+    "unit": "臺灣的水文"
+  },
+  "sources": [
+    "OpenStreetMap",
+    "維基百科 陳有蘭溪"
+  ]
+}

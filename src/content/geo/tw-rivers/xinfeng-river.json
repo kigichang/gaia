@@ -1,0 +1,44 @@
+{
+  "id": "xinfeng-river",
+  "collection": "tw-rivers",
+  "name": {
+    "zh": "新豐溪",
+    "en": "Xinfeng River"
+  },
+  "subtitle": "縣(市)管河川・新竹縣",
+  "stats": [
+    {
+      "label": "幹流長度",
+      "value": "33.98 km"
+    },
+    {
+      "label": "流域面積",
+      "value": "94.75 km²"
+    },
+    {
+      "label": "分類",
+      "value": "縣(市)管河川"
+    }
+  ],
+  "facts": [
+    {
+      "label": "發源地",
+      "value": "楊梅區東流里老窩山北側"
+    },
+    {
+      "label": "出海口",
+      "value": "紅毛港注入台灣海峽"
+    },
+    {
+      "label": "流經",
+      "value": "新竹縣新豐鄉、湖口鄉及桃園市楊梅區"
+    }
+  ],
+  "curriculum": {
+    "unit": "臺灣的水文"
+  },
+  "sources": [
+    "OpenStreetMap",
+    "維基百科 新豐溪"
+  ]
+}

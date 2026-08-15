@@ -1,0 +1,44 @@
+{
+  "id": "shangping-river",
+  "collection": "tw-rivers",
+  "name": {
+    "zh": "上坪溪",
+    "en": "Shangping River"
+  },
+  "subtitle": "主要支流・頭前溪水系",
+  "stats": [
+    {
+      "label": "幹流長度",
+      "value": "44 km"
+    },
+    {
+      "label": "流域面積",
+      "value": "253 km²"
+    },
+    {
+      "label": "分類",
+      "value": "主要支流"
+    }
+  ],
+  "facts": [
+    {
+      "label": "發源地",
+      "value": "雪山山脈標高2512公尺之檜山西北側"
+    },
+    {
+      "label": "流經",
+      "value": "新竹縣竹東鎮東部、橫山鄉西部及五峰鄉全境"
+    },
+    {
+      "label": "所屬水系",
+      "value": "頭前溪水系"
+    }
+  ],
+  "curriculum": {
+    "unit": "臺灣的水文"
+  },
+  "sources": [
+    "OpenStreetMap",
+    "維基百科 上坪溪"
+  ]
+}

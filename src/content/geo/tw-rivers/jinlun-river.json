@@ -1,0 +1,44 @@
+{
+  "id": "jinlun-river",
+  "collection": "tw-rivers",
+  "name": {
+    "zh": "金崙溪",
+    "en": "Jinlun River"
+  },
+  "subtitle": "縣(市)管河川・臺東縣",
+  "stats": [
+    {
+      "label": "幹流長度",
+      "value": "26.4 km"
+    },
+    {
+      "label": "流域面積",
+      "value": "151.94 km²"
+    },
+    {
+      "label": "分類",
+      "value": "縣(市)管河川"
+    }
+  ],
+  "facts": [
+    {
+      "label": "發源地",
+      "value": "金峰鄉歷坵村衣丁山東麓"
+    },
+    {
+      "label": "出海口",
+      "value": "金崙村南側的金崙大橋注入太平洋"
+    },
+    {
+      "label": "流經",
+      "value": "台東縣太麻里鄉、金峰鄉"
+    }
+  ],
+  "curriculum": {
+    "unit": "臺灣的水文"
+  },
+  "sources": [
+    "OpenStreetMap",
+    "維基百科 金崙溪"
+  ]
+}

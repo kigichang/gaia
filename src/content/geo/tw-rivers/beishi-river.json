@@ -1,0 +1,44 @@
+{
+  "id": "beishi-river",
+  "collection": "tw-rivers",
+  "name": {
+    "zh": "北勢溪",
+    "en": "Beishi River"
+  },
+  "subtitle": "主要支流・淡水河水系",
+  "stats": [
+    {
+      "label": "幹流長度",
+      "value": "50 km"
+    },
+    {
+      "label": "流域面積",
+      "value": "310 km²"
+    },
+    {
+      "label": "分類",
+      "value": "主要支流"
+    }
+  ],
+  "facts": [
+    {
+      "label": "發源地",
+      "value": "三方向山"
+    },
+    {
+      "label": "流經",
+      "value": "新北市雙溪區、坪林區、石碇區、新店區等行政區"
+    },
+    {
+      "label": "所屬水系",
+      "value": "淡水河水系"
+    }
+  ],
+  "curriculum": {
+    "unit": "臺灣的水文"
+  },
+  "sources": [
+    "OpenStreetMap",
+    "維基百科 北勢溪 (新北市)"
+  ]
+}

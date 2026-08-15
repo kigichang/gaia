@@ -1,0 +1,44 @@
+{
+  "id": "dafu-river",
+  "collection": "tw-rivers",
+  "name": {
+    "zh": "大富溪",
+    "en": "Dafu River"
+  },
+  "subtitle": "縣(市)管河川・花蓮縣",
+  "stats": [
+    {
+      "label": "幹流長度",
+      "value": "3 km"
+    },
+    {
+      "label": "流域面積",
+      "value": "5.83 km²"
+    },
+    {
+      "label": "分類",
+      "value": "縣(市)管河川"
+    }
+  ],
+  "facts": [
+    {
+      "label": "又稱",
+      "value": "小清水溪"
+    },
+    {
+      "label": "發源地",
+      "value": "秀林鄉崇德村清水山東南側"
+    },
+    {
+      "label": "流經",
+      "value": "花蓮縣秀林鄉"
+    }
+  ],
+  "curriculum": {
+    "unit": "臺灣的水文"
+  },
+  "sources": [
+    "OpenStreetMap",
+    "維基百科 大富溪"
+  ]
+}

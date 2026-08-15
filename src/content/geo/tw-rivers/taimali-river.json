@@ -1,0 +1,40 @@
+{
+  "id": "taimali-river",
+  "collection": "tw-rivers",
+  "name": {
+    "zh": "太麻里溪",
+    "en": "Taimali River"
+  },
+  "subtitle": "縣(市)管河川・臺東縣",
+  "stats": [
+    {
+      "label": "幹流長度",
+      "value": "35 km"
+    },
+    {
+      "label": "流域面積",
+      "value": "226.3 km²"
+    },
+    {
+      "label": "分類",
+      "value": "縣(市)管河川"
+    }
+  ],
+  "facts": [
+    {
+      "label": "發源地",
+      "value": "北大武山"
+    },
+    {
+      "label": "流經",
+      "value": "臺東縣"
+    }
+  ],
+  "curriculum": {
+    "unit": "臺灣的水文"
+  },
+  "sources": [
+    "OpenStreetMap",
+    "維基百科 太麻里溪"
+  ]
+}

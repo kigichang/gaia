@@ -1,0 +1,40 @@
+{
+  "id": "lele-river",
+  "collection": "tw-rivers",
+  "name": {
+    "zh": "樂樂溪",
+    "en": "Lele River"
+  },
+  "subtitle": "主要支流・秀姑巒溪水系",
+  "stats": [
+    {
+      "label": "幹流長度",
+      "value": "53.76 km"
+    },
+    {
+      "label": "流域面積",
+      "value": "628.4 km²"
+    },
+    {
+      "label": "分類",
+      "value": "主要支流"
+    }
+  ],
+  "facts": [
+    {
+      "label": "發源地",
+      "value": "中央山脈最高峰秀姑巒山東側"
+    },
+    {
+      "label": "所屬水系",
+      "value": "秀姑巒溪水系"
+    }
+  ],
+  "curriculum": {
+    "unit": "臺灣的水文"
+  },
+  "sources": [
+    "OpenStreetMap",
+    "維基百科 樂樂溪"
+  ]
+}

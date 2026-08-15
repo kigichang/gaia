@@ -1,0 +1,40 @@
+{
+  "id": "yuanli-river",
+  "collection": "tw-rivers",
+  "name": {
+    "zh": "苑裡溪",
+    "en": "Yuanli River"
+  },
+  "subtitle": "縣(市)管河川・苗栗縣",
+  "stats": [
+    {
+      "label": "幹流長度",
+      "value": "16.5 km"
+    },
+    {
+      "label": "流域面積",
+      "value": "13.38 km²"
+    },
+    {
+      "label": "分類",
+      "value": "縣(市)管河川"
+    }
+  ],
+  "facts": [
+    {
+      "label": "發源地",
+      "value": "苑裡鎮蕉埔里蕉埔東南側山谷"
+    },
+    {
+      "label": "流經",
+      "value": "苗栗縣"
+    }
+  ],
+  "curriculum": {
+    "unit": "臺灣的水文"
+  },
+  "sources": [
+    "OpenStreetMap",
+    "維基百科 苑裡溪"
+  ]
+}
