@@ -711,12 +711,56 @@ sources」的對照，由卡片自己挑。
 ⚠️ 那是一個**沒有文件的內部端點**，沒有版本與格式承諾。`lib/faults.mjs` 因此加了
 線段數（100）與斷層數（33）的硬檢查——上游改版時要**直接失敗**，不要靜默少畫幾條。
 
-#### ⚠️ 這是 33 條的版本，不是最新的 36 條
+#### ⚠️ 這是 33 條的版本，不是官方現行的 36 條
 
-2021 年改版把活動斷層從 33 增為 36（新增初鄉、口宵里、車瓜林）。這個端點回的是
-**改版前的 33 條**（實測搜尋不到那三個名字）。三條都是後來才補列、課本不會點名的
-小斷層，課本會講的（車籠埔、山腳、梅山、新化、池上、潮州…）一條都沒少——但
-**圖層說明必須寫明是 33 條的版本**，不能寫「最新」。
+這個端點回的是**改版前的 33 條**。逐條比對官方現行的〈活動斷層分布圖〉
+（`fault.gsmma.gov.tw/About/Fault_map`，2026-08 實測 36 條）之後，差異是**兩個方向**的，
+不是單純「少了三條」：
+
+| 方向 | 內容 |
+|---|---|
+| 官方多、我們沒有 | 初鄉、九芎坑、口宵里、車瓜林（**四條**，不是三條） |
+| 我們有、官方不再單列 | 三義斷層之分支斷層（已併回三義斷層） |
+
+33 − 1 + 4 = 36，數字對得起來。四條都是後來才補列、課本不會點名的小斷層，課本會講的
+（車籠埔、山腳、梅山、新化、池上、潮州…）一條都沒少——但**圖層說明必須寫明是 33 條的
+版本**，不能寫「最新」。
+
+⚠️ **嶺頂斷層的分類兩邊不一致**：本站圖資（33 條版本）是**第一類**，官方現行的說明頁
+寫「暫列為**第二類**活動斷層」。那條斷層的內容檔有一則「分類差異」把這件事講出來，
+**不要為了「看起來一致」去改 geojson 的 classRank**——那份幾何與分類是同一次發布的，
+改一半會讓線寬與分類說明對不起來。
+
+#### 33 份內容檔逐條取自官方說明頁
+
+每一條斷層在官網都有一頁詳細說明（`/About/FaultMore/<32 位 hash>`），內容是
+「分布 → 總結與評估」的正文段落。33 份 `src/content/geo/tw-faults/fault-*.json` 就是
+從那裡整理的，每一份的 `sources` 是 `地質調查及礦業管理中心 <斷層名>`，連結登記在
+`sourceLinks.ts`——走既有的 `sources` 機制而不是另開欄位，比照 43 處保留區與 22 個
+縣市政府的既有決定。實測 32 個網址全部回 200（**三義斷層之分支斷層與三義斷層共用
+同一頁**，所以是 32 不是 33）。
+
+⚠️ 幾件跟一般內容檔不同的地方：
+
+- **`id` 是 `fault-<slug>`，不是 `<slug>`。** geojson 的 `properties.id` 帶了 `fault-`
+  前綴（`lib/faults.mjs` 的 `FAULT_IDS` 只存 slug，前綴是 build 時加的），內容檔的檔名
+  必須跟 geojson 一致，否則 `validate-content.mjs` 會擋下來。
+- **`subtitle` 一律照抄 geojson 的 `meta`**（`第一類・全新世（一萬年內）曾活動`）。
+  有內容檔之後 `FeatureCard` **不再顯示 fallback 的 `meta` 與 `detail`**，那兩行的資訊
+  必須自己搬進來——分類進 `subtitle`、觀察方式進 `圖上線形` 那一則 fact。少搬就是靜默
+  掉資訊，卡片看起來還是好好的。
+- **`stats` 的「斷層類型」只放主要類型**（正移／逆移／左移／右移）。官方原文的完整說法
+  （「逆移斷層兼具左移分量」這種）放進 facts 的「運動形式」——10 個字塞進 stat 的小方塊
+  會折成三行，實測很難讀。「走向」同理，多段的寫成「東北東轉東北」，分段細節留在「分布」。
+- **官方原文用改制前的縣市名**（臺中縣豐原市、臺南縣新化鎮、高雄縣阿蓮鄉…），內容檔
+  **改寫成現行行政區名**，學生對照現在的地圖才找得到。這件事寫在圖層的 `notes` 裡。
+  官方原文的「台」一律改成「臺」（既有的內文規範）。
+- 圖層的 `hideLayerDescription` **今天是 no-op**（33 條都有內容檔了），掛著是為了規則
+  一致，比照 `tw-protected-areas`。
+
+⚠️ **官網索引頁的 `class="list t1"` 不是分類**：36 條全部都是 `t1`，那只是版面樣式。
+分類要看各斷層說明頁的內文，而**只有嶺頂斷層那一頁真的寫出了類別**（實測 36 頁裡就
+這一頁出現「第一類／第二類」字樣）。想從官網自動推分類是行不通的。
 
 #### ⚠️ `slugify()` 對中文會回空字串
 
@@ -1222,6 +1266,27 @@ registry/
 （a）把那一層的抽屜清單灌成 **771 列**，每個颱風底下掛著五十幾個沒有名字的子項目；
 （b）讓聚焦搜尋框多抓 117 KB 卻產不出任何結果。兩處都已改成看 `attach.browse`，
 主峰與縣市政府（都有宣告）行為不變。
+
+#### ⚠️ 線／面的取景上限必須從圖層自己的 `maxzoom` 算，不可以寫死
+
+`browse.zoom` 只管**點**圖層（`flyTo`）；線與面走 `fitBounds`，上限是那個 `maxZoom` 選項。
+`ThemeMapPage` 的 `fitMaxZoom()` 因此取 `min(12, layer.maxzoom - 0.5)`——**寫死 12 是壞的**。
+
+maplibre 的 `maxzoom` 是**開區間**（`zoom >= maxzoom` 整層不畫），所以拿寫死的 12 去框
+一個 `maxzoom: 12` 的圖層時，只要圖徵夠小、`fitBounds` 撞到上限，相機就停在**正好 12**，
+剛選的那一塊面憑空消失：`getLayer()` 有東西、詳情卡照樣開、相機也飛對了位置，
+`queryRenderedFeatures` 卻是 **0**，**完全靜默**——跟上面政府點那個坑是同一種病。
+
+⚠️ **這不是邊角案例，而且症狀會隨視窗寬度改變**（`fitBounds` 的 zoom 跟畫布大小相依）。
+實測 1920×929 的畫布，368 個鄉鎮有 **290 個**的 `fitBounds` zoom ≥ 12（板橋區、永和區、
+臺北市大安區…），臺東縣關山鎮剛好卡在門檻上（11.94）——所以會收到「成功鎮看得到、
+換成關山鎮整層不見」這種看起來毫無道理的回報，而同一個操作在小一點的視窗上是正常的。
+縣市界（`maxzoom: 11`）的嘉義市、新竹市、臺北市同理。
+
+⚠️ 附屬圖層要傳 **`attach.maxzoom`**，不是母圖層的（縮放範圍不繼承，見上）。
+
+⚠️ 留 0.5 級餘裕而不是剛好停在 `maxzoom` 下面一點點：11.99 雖然畫得出來，但那是圖層
+即將消失的邊緣，使用者再往前捲一格滾輪剛選的東西就又不見了。
 
 ⚠️ **母子連動強調的兩個方向都從 `attach.parentProperty` 推，不要寫死屬性名。** 早期版本在 `ThemeMapPage` 寫死 `["peakId", "rangeId"]`，加了縣市政府之後立刻壞掉——`countyId` 不在清單裡，點縣市政府時所屬縣市不會被強調，而卡片與相機都正常，所以這件事在畫面上非常容易被忽略過去。母 → 子的方向也不需要母圖徵身上有任何屬性：反過來找「哪個子項目指向我」就好（`tw-ranges.geojson` 的 `peakId` 現在只用於 resolve.ts 的 join）。
 
@@ -1955,7 +2020,8 @@ npm run validate        # zod 驗證內容 + 圖層註冊表交叉檢查
 npm run test:order      # 圖層堆疊順序的回歸測試（不需瀏覽器）
 npm run build           # validate → test:order → typecheck → vite build → postbuild
 npm run build:debug     # 帶地圖除錯掛勾的 production build（驗證用，見下）
-npm run preview         # 預覽 production build
+npm run preview         # 預覽 production build（4173）。⚠️ 代理人驗證一律用這台，
+                        #   5173／5174 是開發者自己的 dev server，不要動（見「驗證方式」）
 npm run build:climate   # 產生氣候 JSON（已存在會跳過）
 npm run build:climate -- --force   # 全部重抓
 npm run build:species   # 產生特有種觀測點 geojson（已存在會跳過）
@@ -1986,6 +2052,24 @@ npm run build:geodata -- --force --only=tw-monuments-national   # 古蹟三級�
 ---
 
 ## 驗證方式
+
+### ⚠️ 自己起伺服器、用 4173，不要碰 5173
+
+要驗證就**自己跑 npm 指令起一台自己的伺服器**，一律用 `npm run preview` 的
+**`http://localhost:4173/`**：
+
+```bash
+npm run build:debug && npm run preview     # 帶 __gaiaMaps 掛勾，開在 4173
+```
+
+⚠️ **`5173`（`npm run dev` 的預設埠）是開發者自己開著的，絕對不要動它**——不要接管、
+不要重啟，更不要 `pkill -f vite` 或任何會把它一起殺掉的收尾動作。驗證完只收掉自己
+那台（用 `run_in_background` 起的就停自己那個工作，不要用會掃到別人程序的 pattern）。
+踩過一次：驗完隨手 `pkill -f vite`，把開發者正在用的 dev server 一起關掉了。
+
+⚠️ 順帶一提，`npm run dev` 起在 5173 被佔用時會自動跳 5174 —— 那台**也可能是別人的**，
+看到不是自己起的埠一律不要碰。而且 dev 模式驗不到 worker 檔案沒被複製那個坑
+（檢查清單第 7 項），本來就該用 `preview`。
 
 ### ⚠️ 用瀏覽器自動化驗證時，分頁一定要在前景
 
@@ -2386,6 +2470,17 @@ m.isSourceLoaded('contour-source')
     - 縣市界與鄉鎮界**同時勾選**時兩層都在——`MAX_ACTIVE_BY_KIND.fill` 是 2，
       這兩層剛好用滿，再勾第三個面圖層會踢掉先勾的那個
     - zoom 13 以上鄉鎮面消失（`maxzoom: 12`），這是刻意的，不是壞掉
+    - ⚠️ **點小鄉鎮之後那一層還要在**（`fitMaxZoom()` 的回歸判準，見「線／面的取景上限」）。
+      只點一個大鄉鎮是驗不到的——大的框不到上限。一定要挑**小的**，而且要看
+      `queryRenderedFeatures` 不是只看 `getLayer()`：
+      ```js
+      // 依序點：成功鎮（大，本來就沒事）→ 關山鎮 → 板橋區 → 永和區 → 臺北市大安區
+      // 每一個都要 zoom <= 11.5 且 queryRenderedFeatures 大於 0
+      m.getZoom() <= 11.5 && m.queryRenderedFeatures({layers:['tw-townships-fill']}).length > 0
+      ```
+      縣市界同理（`maxzoom: 11` → 夾在 10.5）：點嘉義市、新竹市、臺北市，
+      `tw-counties-fill` 都要算繪得出來；點臺東縣則要停在自然的 zoom 8 左右
+      （`maxZoom` 只是上限，大圖徵不受影響）
     - 點任一鄉鎮 → 開的是**三層共用的 `TownshipCard`**（不是 FeatureCard fallback），
       而且**人口與作物那兩層沒勾也要有數字**——卡片會自己抓（見「三層共用 id」）
     - 抽屜可點清單**依縣市分組**：22 個組名（不可點）＋底下縮排的鄉鎮，
@@ -2564,10 +2659,30 @@ m.isSourceLoaded('contour-source')
         g.textContent + ':' + g.nextElementSibling.querySelectorAll('.place-btn').length)
       // ["第一類:22","第二類:11"]
       ```
-    - 點車籠埔斷層 → 卡片**只有四行**：「車籠埔斷層」「第一類・全新世（一萬年內）曾活動」
-      「觀察」「資料來源：經濟部地質調查及礦業管理中心」。⚠️ **不該再出現圖層說明**
-      （`detail.hideLayerDescription`，見上）——那段字 33 條逐字相同、跟抽屜那一列重複。
+    - 點車籠埔斷層 → 開的是**內容檔**（33 條都有）：副標「第一類・全新世（一萬年內）
+      曾活動」、三個 stat（斷層類型／長度／走向）、分布／地震紀錄／古地震／滑移速率／
+      圖上線形五則，最後一行是連到官方說明頁的「地質調查及礦業管理中心 車籠埔斷層」。
+      ⚠️ **不該出現圖層說明**（那段「公告的 33 條活動斷層…」是 fallback 才有的）。
       相機飛到約 120.77/24.01，線寬表達式含 `fault-chelongpu`
+    - **33 條逐條掃過一遍**，每一張卡都要有官方連結、stat 與 facts（回歸判準：
+      內容檔的 id 是 `fault-<slug>`，少一個前綴就會靜默退回 fallback）：
+      ```js
+      const row = [...document.querySelectorAll('.layer-drawer .layer-row')]
+        .find(r => r.innerText.startsWith('活動斷層'));
+      const bad = [];
+      for (const b of [...row.querySelectorAll('.place-btn')]) {
+        b.click(); await new Promise(r => setTimeout(r, 220));
+        const p = document.querySelector('.map-detail-panel');
+        const a = [...p.querySelectorAll('.detail-sources a')];
+        if (a.length !== 1 || !/fault\.gsmma\.gov\.tw\/About\/FaultMore\//.test(a[0]?.href)
+          || p.querySelectorAll('.detail-stats > *').length < 2
+          || p.querySelectorAll('.detail-facts li').length < 4
+          || /公告的 33 條活動斷層/.test(p.innerText)) bad.push(b.innerText.split('\n')[0]);
+      }
+      bad   // 必須是 []
+      ```
+    - 點嶺頂斷層 → facts 要有「分類差異」那一則（本站第一類 vs 官方說明頁的第二類），
+      點三義斷層之分支斷層 → 來源連的是**三義斷層**那一頁（兩者共用）
     - **第一類的線要看得出比第二類粗**（那是唯一的分類通道，沒有第二個顏色）
     - **沿線標註要實測數量，而且要依 zoom 換長短名**（見上）。1440×663 畫布實測：
       ```js
