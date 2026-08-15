@@ -76,7 +76,12 @@ const SUFFIXES: Record<GeometryKind, readonly string[]> = {
 
 /** 一個 instance 展開出來的所有 maplibre 圖層 id（由下往上排）。 */
 export function geoLayerIds(instanceId: string, render: LayerRender): string[] {
-  const ids = SUFFIXES[render.kind].map((s) => `${instanceId}-${s}`);
+  const ids =
+    render.kind === "line" && render.casing
+      ? // 白框墊在線底下，所以排在前面（這個陣列是由下往上）。
+        // layerOrder.ts 的 BAND 也要跟著把 casing 排在 fill 與 line 之間。
+        [`${instanceId}-casing`, `${instanceId}-line`]
+      : SUFFIXES[render.kind].map((s) => `${instanceId}-${s}`);
   // 線與圓點都可以帶標註（圓點的目前只有颱風定位點用，見 types.ts）
   if ((render.kind === "line" || render.kind === "circle") && render.label) {
     ids.push(`${instanceId}-label`);
@@ -101,7 +106,10 @@ export function geoHitLayerIds(instanceId: string, render: LayerRender): string[
     // 圓點的標註同理要一起綁：文字比圓點大，使用者會去點字
     return render.label ? [`${instanceId}-points`, `${instanceId}-label`] : [`${instanceId}-points`];
   }
-  return render.label
-    ? [`${instanceId}-line`, `${instanceId}-label`]
+  // 白框比線本身寬，使用者看到的「那條線」其實有一半是白框——不綁的話，
+  // 點在線的邊緣會整個落空，而畫面上沒有任何反應可以解釋為什麼（比照標註）。
+  const line = render.casing
+    ? [`${instanceId}-casing`, `${instanceId}-line`]
     : [`${instanceId}-line`];
+  return render.label ? [...line, `${instanceId}-label`] : line;
 }

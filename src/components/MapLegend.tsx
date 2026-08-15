@@ -7,6 +7,14 @@ export interface LegendEntry {
   kind: GeometryKind;
   schematic?: boolean;
   /**
+   * 這條線在地圖上是虛線（交通軸線的軌道類）。
+   *
+   * ⚠️ 線型在這一層是**語意通道**不是裝飾——公路實線／軌道虛線是色盲使用者分辨
+   * 兩者的唯一線索（見 thematicColors.ts 的 TRANSPORT_COLORS）。圖例照樣畫成實線
+   * 的話，那個線索就只存在於地圖上而沒有地方解釋它。
+   */
+  dash?: boolean;
+  /**
    * 這個圖層是依數值分級上色的（水庫蓄水率）。有 ramp 就必須把級距畫出來——
    * 只給一個代表色的圖例，等於告訴讀者「顏色代表圖層身分」，那正好是這一層
    * 唯一的例外，會讓深淺不同的圓點變成看不懂的雜訊。
@@ -33,11 +41,14 @@ export function MapLegend({ entries }: MapLegendProps) {
         <div key={e.key}>
           <div className="map-legend-row">
             <span
-              className={`layer-swatch layer-swatch-${e.kind}`}
+              className={`layer-swatch layer-swatch-${e.kind}${e.dash ? " is-dashed" : ""}`}
               style={
                 e.kind === "fill"
                   ? { backgroundColor: e.color, borderColor: e.color }
-                  : { backgroundColor: e.color }
+                  : e.dash
+                    ? // 虛線色塊靠 gradient 畫，才不必為了一條 3px 的線多一個元素
+                      { backgroundImage: `linear-gradient(90deg, ${e.color} 60%, transparent 60%)` }
+                    : { backgroundColor: e.color }
               }
             />
             <span>

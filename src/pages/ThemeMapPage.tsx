@@ -3,7 +3,7 @@ import { Navigate, useNavigate, useParams } from "react-router-dom";
 import type { Map as MapLibreMap } from "maplibre-gl";
 import { MapView } from "../map/MapView";
 import { LayerPanel } from "../components/LayerPanel";
-import { MapLegend } from "../components/MapLegend";
+import { MapLegend, type LegendEntry } from "../components/MapLegend";
 import { AppMenu } from "../components/AppMenu";
 import { MapLayersPopover } from "../components/MapLayersPopover";
 import { LayerDrawer } from "../components/LayerDrawer";
@@ -606,7 +606,7 @@ function ThemeMapView({ theme, chrome }: { theme: ThemeDefinition; chrome: Chrom
     () =>
       theme.layers
         .filter((l) => l.status === "ready" && activeLayerIds.has(l.id))
-        .flatMap((layer) => {
+        .flatMap((layer): LegendEntry[] => {
           if (layer.items) {
             const items = layerItems(layer);
             const selected = activeItemIds[layer.id] ?? [];
@@ -642,6 +642,8 @@ function ThemeMapView({ theme, chrome }: { theme: ThemeDefinition; chrome: Chrom
                 // ⚠️ 顏色的索引是**勾選順序**，不是這裡的顯示順序（見上）
                 color: itemColorOf(layer, id, selected.indexOf(id)),
                 kind: layer.render.kind,
+                // 線型是語意通道（公路實線／軌道虛線），圖例要畫得出來，見 MapLegend.tsx
+                dash: items.find((it) => it.id === id)?.dash != null,
                 // ⚠️ 示意警語**只掛在第一列**。schematic 是圖層層級的性質，六帶各掛
                 // 一個「（示意）」會變成一整排重複的字，而且讀起來像在說「只有這一帶
                 // 是示意的」。抽屜那一列本來就有圖層層級的附註。

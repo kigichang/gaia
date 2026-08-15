@@ -262,6 +262,37 @@ export interface PendingSource {
  * 呼叫端拿 `pending` 去 `resolveLayerData()`，結果放進 `data` 再算一次——
  * 資料到齊時 instances 會自然帶上 data，`useGeoLayers` 就會把圖層加上去。
  */
+/**
+ * 從母圖層的資料切出屬於某個子項目的圖徵（交通軸線的七條）。
+ *
+ * ⚠️ **一定要記憶化。** `expandActive` 每次算繪都會被呼叫，每次都產生新的
+ * FeatureCollection 物件的話，`useGeoLayers` 的 Effect 2 會因為 `instances` 變了
+ * 而把整組圖層移除再重加——畫面會閃，而且互動監聽的記帳也跟著churn。
+ * 母圖層的資料本身是 `resolveLayerData()` 快取來的、物件identity穩定，所以
+ * 用「母圖層 cacheKey ＋ 子項目 id」當 key 就足夠；資料重抓時 key 相同但來源
+ * 物件會換人，因此另外比對來源物件的 identity 才決定要不要重切。
+ */
+const splitCache = new Map<string, { from: GeoJSON.FeatureCollection; fc: GeoJSON.FeatureCollection }>();
+
+function splitByFeatureIds(
+  parentKey: string,
+  parent: GeoJSON.FeatureCollection | null,
+  item: LayerItem,
+): GeoJSON.FeatureCollection | null {
+  if (!parent) return null;
+  const key = `${parentKey}#${item.id}`;
+  const hit = splitCache.get(key);
+  if (hit && hit.from === parent) return hit.fc;
+
+  const wanted = new Set(item.featureIds);
+  const fc: GeoJSON.FeatureCollection = {
+    ...parent,
+    features: parent.features.filter((f) => wanted.has(String(f.properties?.id))),
+  };
+  splitCache.set(key, { from: parent, fc });
+  return fc;
+}
+
 export function expandActive(
   theme: ThemeDefinition,
   active: ActiveState,
@@ -306,16 +337,35 @@ export function expandActive(
 
       selected.forEach((itemId, index) => {
         const item = items.find((it) => it.id === itemId);
-        if (!item?.source) return;
+        if (!item) return;
+
+        /**
+         * 子項目的資料有兩種來法：各自一份（特有種、古蹟、作物），或從母圖層
+         * 那一份切出來（交通軸線的七條）。兩種都沒有就跳過——那是註冊表寫錯了，
+         * 而 `validate-content.mjs` 會在建置期擋下來。
+         */
+        let itemData: GeoJSON.FeatureCollection | null = null;
+        if (item.source) {
+          itemData = take(item.source);
+        } else if (item.featureIds && layer.source) {
+          itemData = splitByFeatureIds(cacheKey(layer.source), take(layer.source), item);
+        } else {
+          return;
+        }
+
         instances.push({
           instanceId: layerInstanceId(layer.id, item.id),
-          render: layer.render,
+          // 線型是子項目層級的（軌道虛線／公路實線），見 types.ts 的 LayerItem.dash
+          render:
+            item.dash && layer.render.kind === "line"
+              ? { ...layer.render, dash: item.dash }
+              : layer.render,
           // 依勾選順序指派色票，這是多物種疊圖時分辨物種的唯一線索。
           // 子項目之間有序位時（古蹟三級）改用固定色，見 itemColorOf。
           color: itemColorOf(layer, item.id, index),
           minzoom: layer.minzoom,
           maxzoom: layer.maxzoom,
-          data: take(item.source),
+          data: itemData,
           detail: layer.detail,
         });
       });

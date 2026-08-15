@@ -1,8 +1,4 @@
-import type {
-  DataDrivenPropertyValueSpecification,
-  ExpressionSpecification,
-  FilterSpecification,
-} from "maplibre-gl";
+import type { DataDrivenPropertyValueSpecification, ExpressionSpecification } from "maplibre-gl";
 
 /**
  * 主題圖層註冊表的型別定義。
@@ -179,6 +175,20 @@ export type LayerRender =
     }
   | {
       kind: "line";
+      /**
+       * 在線底下再墊一條白色粗線（製圖上的 casing／halo），讓線不會沒入底圖。
+       *
+       * ⚠️ **這不是裝飾，是實測逼出來的。** 交通軸線的高鐵朱紅 `#ff7360` 疊在
+       * NLSC 通用電子地圖上時，離底圖自己的公路色（淡粉紅 `#f8c0c0`／`#f8b8b8`）
+       * 只有 **ΔE 14.0**，而其他六條軸線是 25–48——實測在全島 zoom 8 單獨開高鐵
+       * 時**根本找不到那條線**。而暖色端已經被行政區橘（L 0.62）與斷層磚紅
+       * （L 0.48）夾住兩個亮度層，掃過整個色域也找不到可用的紅／橘紅替代色。
+       *
+       * 白框把線從底圖裡拉出來，與色相無關，所以高鐵得以維持「官方識別色」的語意。
+       * 色票驗證器測不到這件事（它只比較色票內部與面板底色），**改動交通軸線的
+       * 顏色之後一定要在 NLSC 底圖上重新目視確認**。
+       */
+      casing?: boolean;
       /** 預設 1.4 */
       width?: NumberValue;
       dash?: [number, number];
@@ -200,8 +210,8 @@ export type LayerRender =
         /**
          * 標註文字的來源屬性名。
          *
-         * 也可以直接給一段 maplibre 表達式（純陣列字面值，`themes/*.ts` 仍然是純資料
-         * ——`LayerItem.filter` 早就這樣做了）。活動斷層用它依 zoom 切換長短名：
+         * 也可以直接給一段 maplibre 表達式（純陣列字面值，`themes/*.ts` 因此仍然
+         * 是純資料，Node 讀得動）。活動斷層用它依 zoom 切換長短名：
          * 遠看用短名才排得下，近看換回全名才不會跟底圖的地名混淆。
          */
         property: string | ExpressionSpecification;
@@ -393,9 +403,42 @@ export interface LayerAttachment {
 export interface LayerItem {
   id: string;
   label: string;
-  /** 子項目各自有一份資料（特有種）；沒填就用母圖層的 source 加 filter 切分 */
+  /** 子項目各自有一份資料（特有種、古蹟、作物）。與 `featureIds` 二擇一。 */
   source?: LayerSource;
-  filter?: FilterSpecification;
+  /**
+   * 從**母圖層的 source** 切出屬於這個子項目的圖徵（交通軸線的七條）。
+   * 與 `source` 二擇一，兩個都沒有的話 `expandActive` 會直接跳過這個子項目。
+   *
+   * ⚠️ **這是在 `resolve.ts` 切資料，不是下 maplibre 的 filter。** 全站唯一寫
+   * `map.setFilter` 的地方是 `layers/geo.ts` 的 `applySoloFilter()`，「只顯示這一筆」
+   * 整個功能靠它；子項目再下一道 filter 就得用 `["all", …]` 合併兩者，從此兩個功能
+   * 互相糾纏。切資料則是 `geo.ts` 一行都不用改。
+   *
+   * ⚠️ 早期版本這裡宣告的是 `filter?: FilterSpecification`，**宣告了但全站零實作**
+   * ——而 `expandActive` 對沒有 source 的子項目是靜默跳過的，所以寫了 filter 的圖層
+   * 會什麼都不顯示也不報錯。改成 `featureIds` 同時解掉這件事：它是宣告式的、Node
+   * 讀得懂，`validate-content.mjs` 因此能在建置期交叉檢查每個 id 真的存在於母圖層的
+   * geojson（打錯一個字的後果是那個子項目從地圖上靜默消失）。
+   */
+  featureIds?: readonly string[];
+  /**
+   * 這個子項目的線型，覆蓋掉母圖層 `render.dash`。
+   *
+   * ⚠️ 交通軸線用它當**無障礙的第二通道**（軌道虛線／公路實線），不是裝飾：
+   * 高鐵朱紅與國道綠橫跨紅綠軸，色盲下的 ΔE 必然低於門檻，見 thematicColors.ts
+   * 的 `TRANSPORT_COLORS`。
+   */
+  dash?: [number, number];
+  /**
+   * 額外進搜尋 haystack 的字串。
+   *
+   * ⚠️ 靠 `featureIds` 切分的子項目**必須填**：那種圖層的圖徵不會被索引
+   * （`items.indexFeatures` 是給有自己 source 的子項目用的），所以圖徵的
+   * `shortName`／`name`／`meta` 一個都進不了搜尋。而 `shortName` 正是地圖上沿線
+   * 印出來的字——「高鐵」不是子項目 label「臺灣高速鐵路」的子字串，少了它，
+   * 使用者搜自己在畫面上看到的那兩個字會什麼都搜不到。
+   */
+  keywords?: readonly string[];
   /**
    * 固定顏色，覆蓋掉「依勾選順序從 `items.palette` 指派」的預設行為。
    *
@@ -517,8 +560,13 @@ interface LayerBase {
 }
 
 /**
- * `source` 與 `items` 互斥；`planned` 兩者都不需要，也還不需要顏色。
+ * `planned` 不需要資料，也還不需要顏色。
  * 用 union 在型別層面就擋掉寫錯的組合，不必等到執行期才發現。
+ *
+ * ⚠️ **`items` 變體的 `source` 是選填的，那兩者不再互斥。** 子項目有兩種切法：
+ * 各自一份資料（特有種、古蹟、作物 → 子項目自己的 `source`），或從母圖層那一份
+ * 切出來（交通軸線 → 母圖層 `source` ＋ 子項目的 `featureIds`）。後者的母圖層
+ * 仍然**沒有** `colorRole`：顏色在子項目身上，母圖層那一個色塊解釋不了畫面。
  */
 export type LayerDefinition =
   | (LayerBase & {
@@ -540,7 +588,8 @@ export type LayerDefinition =
       status: "ready";
       /** items 有自己的 palette，母圖層不需要 colorRole */
       colorRole?: never;
-      source?: never;
+      /** 子項目靠 `featureIds` 從母圖層切分時才需要；各自有資料的圖層不填 */
+      source?: LayerSource;
       /** items 與 attach 是兩種不同的展開方式，不同時使用（見 LayerAttachment） */
       attach?: never;
       items: LayerItems;

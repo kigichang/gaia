@@ -42,6 +42,12 @@ const INSTANCES = [
   { instanceId: "tw-vegetation-belts", render: { kind: "elevation" } },
   { instanceId: "tw-counties", render: { kind: "fill" } },
   { instanceId: "latitude-lines", render: { kind: "line", label: { property: "name" } } },
+  // 帶白框的線（交通軸線）：白框必須夾在面與線之間——壓在面之下會被面染蓋掉，
+  // 壓在線之上則會把線本身整條蓋成白色
+  {
+    instanceId: "tw-transport-thsr",
+    render: { kind: "line", casing: true, label: { property: "shortName" } },
+  },
   { instanceId: "places", render: { kind: "circle" } },
   { instanceId: "indigenous", render: { kind: "circle" } },
 ];
@@ -52,6 +58,9 @@ const THEME_IDS = [
   "tw-counties-outline",
   "latitude-lines-line",
   "latitude-lines-label",
+  "tw-transport-thsr-casing",
+  "tw-transport-thsr-line",
+  "tw-transport-thsr-label",
   "places-points",
   "indigenous-points",
 ];
@@ -63,6 +72,8 @@ function assertStack(map, label) {
   check("高程設色在面之下", at("tw-vegetation-belts-elevation") < at("tw-counties-fill"));
   check("面在等高線之上", at("contour-lines") < at("tw-counties-fill"));
   check("面在線之下", at("tw-counties-fill") < at("latitude-lines-line"));
+  check("白框在面之上", at("tw-counties-fill") < at("tw-transport-thsr-casing"));
+  check("白框在線之下", at("tw-transport-thsr-casing") < at("tw-transport-thsr-line"));
   check("線在點之下", at("latitude-lines-line") < at("places-points"));
   check("點在沿線標註之下", at("places-points") < at("latitude-lines-label"));
   check("全部在等高線標註之下", at("latitude-lines-label") < at("contour-labels"));
@@ -109,6 +120,7 @@ function assertStack(map, label) {
   console.log("\n情境 3：等高線尚未加回（不能爆掉，且主題圖層彼此順序要正確）");
   console.log(`  → ${map.ids.join(" · ")}`);
   check("面在線之下", at("tw-counties-fill") < at("latitude-lines-line"));
+  check("白框在線之下", at("tw-transport-thsr-casing") < at("tw-transport-thsr-line"));
   check("線在點之下", at("latitude-lines-line") < at("places-points"));
   check("點在沿線標註之下", at("places-points") < at("latitude-lines-label"));
 }

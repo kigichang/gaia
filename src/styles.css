@@ -1365,6 +1365,14 @@ input {
   border: none;
 }
 
+/* 虛線色塊（交通軸線的軌道類）。線型在那一層是語意通道不是裝飾，見 MapLegend.tsx。
+   圓角會把 gradient 的斷點磨掉，所以這裡拿掉 border-radius。 */
+.layer-swatch-line.is-dashed {
+  border-radius: 0;
+  background-repeat: repeat-x;
+  background-size: 5px 100%;
+}
+
 .layer-swatch-fill {
   width: 12px;
   height: 10px;

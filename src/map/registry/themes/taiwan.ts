@@ -6,6 +6,8 @@ import {
   POPULATION_DENSITY_RAMP,
   RESERVOIR_FILL_RAMP,
   SPECIES_COLORS,
+  TRANSPORT_COLORS,
+  TRANSPORT_DASH,
   TYPHOON_INTENSITY_RAMP,
   VEGETATION_BELTS,
 } from "../../thematicColors.ts";
@@ -578,15 +580,115 @@ export const taiwanTheme: ThemeDefinition = {
       render: {
         kind: "line",
         width: 2.2,
+        /**
+         * ⚠️ 白框不是裝飾。NLSC 通用電子地圖把國道與省道畫成淡粉紅
+         * （`#f8c0c0`／`#f8b8b8`），而高鐵的朱紅離它們只有 ΔE 14.0——實測在全島
+         * zoom 8 單獨開高鐵時**找不到那條線**（其他六條離底圖是 25–48）。
+         * 暖色端已被行政區橘與斷層磚紅夾住，掃過整個色域也沒有可用的紅系替代色，
+         * 所以改用與色相無關的白框把線拉出來，高鐵才得以維持官方識別色。
+         */
+        casing: true,
         label: { property: "shortName", spacing: 400 },
       },
-      colorRole: "transport",
+      /**
+       * 七條軸線各自一色、各自一個核取方塊。
+       *
+       * ⚠️ 子項目**沒有自己的 source**，是用 `featureIds` 從母圖層那一份切出來的
+       * （見 types.ts 的 `LayerItem.featureIds`）——這一層的七條本來就在同一個
+       * geojson 裡，拆成七個檔案只會讓學生多付七次請求。
+       *
+       * ⚠️ 三個 id 是**同一個字串**：geojson 的 `properties.id`、這裡的 item id、
+       * 以及 `src/content/geo/tw-transport/<id>.json` 的檔名。三者一致，點子項目
+       * 名稱才會開出那條軸線的內容檔（`handleItemNameClick` → `flyToFeature` 的
+       * `targetsItemItself` 分支會 fitBounds 到那條線）。
+       *
+       * ⚠️ 顏色是**固定色**不是依勾選順序指派的（比照古蹟三級）：先勾南迴線再勾
+       * 高鐵時，高鐵仍然必須是朱紅，否則「綠＝公路、靛＝鐵路」的圖例當場失效。
+       * `palette` 只是型別上的備援。
+       *
+       * ⚠️ 鐵路的 `dash` 是**無障礙的第二通道，不是裝飾**：高鐵朱紅與國道綠橫跨
+       * 紅綠軸，色盲下必然分不出來，理由與量測值見 thematicColors.ts 的
+       * `TRANSPORT_COLORS`。拿掉它等於讓色盲使用者分不出公路與鐵路。
+       */
+      items: {
+        from: {
+          type: "inline",
+          list: [
+            {
+              id: "thsr",
+              label: "臺灣高速鐵路",
+              featureIds: ["thsr"],
+              // keywords 逐字取自 geojson 的 shortName 與 meta——那是改成子項目
+              // 之前搜得到的字串，不補這一份等於讓既有的搜尋行為悄悄退步
+              keywords: ["高鐵", "南港—左營・西部走廊"],
+              color: TRANSPORT_COLORS.thsr,
+              dash: TRANSPORT_DASH,
+            },
+            {
+              id: "freeway-1",
+              label: "國道一號",
+              featureIds: ["freeway-1"],
+              keywords: ["國道1", "中山高速公路", "基隆—高雄・臺灣第一條高速公路"],
+              color: TRANSPORT_COLORS["freeway-1"],
+            },
+            {
+              id: "freeway-3",
+              label: "國道三號",
+              featureIds: ["freeway-3"],
+              keywords: ["國道3", "福爾摩沙高速公路", "基隆—林邊・沿西部丘陵臺地"],
+              color: TRANSPORT_COLORS["freeway-3"],
+            },
+            {
+              id: "freeway-5",
+              label: "國道五號",
+              featureIds: ["freeway-5"],
+              keywords: ["國道5", "蔣渭水高速公路", "南港—蘇澳・雪山隧道穿越雪山山脈"],
+              color: TRANSPORT_COLORS["freeway-5"],
+            },
+            {
+              id: "tra-west",
+              label: "臺鐵西部幹線",
+              featureIds: ["tra-west"],
+              keywords: ["西部幹線", "基隆—枋寮・縱貫線＋山線＋海線＋屏東線"],
+              color: TRANSPORT_COLORS["tra-west"],
+              dash: TRANSPORT_DASH,
+            },
+            {
+              id: "tra-east",
+              label: "臺鐵東部幹線",
+              featureIds: ["tra-east"],
+              keywords: ["東部幹線", "八堵—臺東・宜蘭線＋北迴線＋臺東線"],
+              color: TRANSPORT_COLORS["tra-east"],
+              dash: TRANSPORT_DASH,
+            },
+            {
+              id: "tra-south-link",
+              label: "臺鐵南迴線",
+              featureIds: ["tra-south-link"],
+              keywords: ["南迴線", "枋寮—臺東・唯一連接西部與東部的鐵路"],
+              color: TRANSPORT_COLORS["tra-south-link"],
+              dash: TRANSPORT_DASH,
+            },
+          ],
+        },
+        maxActive: 7,
+        palette: Object.values(TRANSPORT_COLORS),
+        defaultAll: true,
+      },
       detail: { type: "geo", collection: "tw-transport" },
-      browse: {},
       description:
-        "高鐵、三條主要國道與臺鐵三大幹線。這一層要對照的是地形：西部走廊上五條路線幾乎重疊，" +
+        "高鐵、三條主要國道與臺鐵三大幹線，七條各自一色：綠色是公路、靛色是鐵路、朱紅是高鐵，" +
+        "鐵路畫成虛線。這一層要對照的是地形：西部走廊上五條路線幾乎重疊，" +
         "而東部只有一條鐵路沿海岸擠在山與海之間，南迴線是唯一從南端把兩側接起來的鐵路。" +
         "線位取自 OpenStreetMap 的路線關聯，上下行只取單一方向。",
+      notes: [
+        "⚠️ 鐵路畫成虛線不只是好看：高鐵的朱紅與國道的綠正好橫跨紅綠軸，紅綠色盲" +
+          "無法分辨這兩個顏色（這是色彩空間的限制，換任何一組橘綠都一樣）。線型是" +
+          "「公路／鐵路」在色盲下唯一分得出來的線索。",
+        "⚠️ 這一層的七個顏色是全站唯一不與其他線圖層一起做分離度驗證的一組，" +
+          "為的是讓高鐵、國道、臺鐵各自對應到接近官方識別色的色相。代價是同時開啟" +
+          "「活動斷層」時，國道一號的深綠與斷層的磚紅在色盲下不易分辨。",
+      ],
       sources: ["OpenStreetMap"],
     },
     {
