@@ -326,6 +326,41 @@ for (const relDir of GEO_DATA_DIRS) {
       }
     }
 
+    /**
+     * 用 `featureIds` 從母圖層切分的子項目（交通軸線），每一個 id 都要真的存在。
+     *
+     * 打錯一個字的後果是**那條軸線從地圖上靜默消失**：切出來的 FeatureCollection
+     * 是空的，`useGeoLayers` 照樣把圖層加上去，只是什麼都不畫，console 也沒有東西。
+     * 順便擋掉「兩者都沒填」——`expandActive` 對那種子項目是直接跳過的。
+     */
+    if (layer.items?.from.type === "inline" && layer.source?.type === "remote") {
+      let ids = null;
+      for (const item of layer.items.from.list) {
+        if (item.source) continue;
+        if (!item.featureIds?.length) {
+          errors.push(
+            `registry/${theme.id} → 圖層「${layer.id}」的子項目「${item.id}」既沒有 source 也沒有 featureIds，執行期會被靜默跳過`,
+          );
+          continue;
+        }
+        if (ids === null) {
+          try {
+            const fc = JSON.parse(await readFile(join(ROOT, "public", layer.source.path), "utf8"));
+            ids = new Set(fc.features.map((f) => String(f.properties?.id)));
+          } catch {
+            ids = new Set(); // 母圖層檔案不存在的錯誤上面那段已經報過了
+          }
+        }
+        for (const fid of item.featureIds) {
+          if (!ids.has(fid)) {
+            errors.push(
+              `registry/${theme.id} → 圖層「${layer.id}」的子項目「${item.id}」宣告的 featureId「${fid}」不在 public/${layer.source.path} 裡（那個子項目會變成空圖層）`,
+            );
+          }
+        }
+      }
+    }
+
     // detail.collection 要有對應的內容目錄或 geojson
     if (layer.detail?.type === "geo") {
       const known =

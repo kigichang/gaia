@@ -130,6 +130,15 @@ const whenSelected = <T>(
 };
 
 /** 選取狀態的倍率／固定值，集中在這裡方便一起調整。 */
+/**
+ * 白框的參數。加寬 2.6px（線寬 2.2 → 白框 4.8）是實測值：再窄看不出來，
+ * 再寬會讓相鄰的軸線在西部走廊擠成一片白。不透明度略低於 1，避免白框在
+ * 正射影像底圖上變成一條刺眼的實白線。
+ */
+const CASING_COLOR = "#ffffff";
+const CASING_EXTRA = 2.6;
+const CASING_OPACITY = 0.85;
+
 const SELECTED = {
   radiusScale: 2,
   strokeWidth: 3,
@@ -402,6 +411,53 @@ function addGeoLayerShapes(map: MapLibreMap, spec: GeoLayerSpec) {
     const baseOpacity = render.opacity ?? 0.9;
     const lineWidth = whenSelected(highlightIds, (b) => ["*", b, SELECTED.lineScale], baseWidth);
     const lineOpacity = whenSelected(highlightIds, () => SELECTED.opacity, baseOpacity);
+
+    /**
+     * 白框（casing）：墊在線底下的一條白色粗線，把線從底圖裡拉出來。
+     * 理由與實測值見 registry/types.ts 的 `LayerRender.casing`。
+     *
+     * ⚠️ **不加 `line-dasharray`**：虛線的白框要是也跟著斷，白色只會出現在
+     * 有色線段的正下方，斷開處仍然直接壓在底圖上——那正是要解決的問題。
+     * 連續的白框同時也讓虛線的「斷開處」讀得出來，比實心線更需要它。
+     */
+    if (render.casing) {
+      const casingId = `${instanceId}-casing`;
+      /**
+       * ⚠️ `baseWidth` 本身可能是一條 zoom 曲線。直接寫 `["+", 曲線, 2.6]` 會把
+       * zoom 塞進運算子裡面，違反 maplibre「zoom 只能是最外層 step／interpolate
+       * 的輸入」——失敗的樣子是白框加不上去、線卻還在，只有 console 一行紅字
+       * （見 CLAUDE.md 的「關鍵坑三」）。所以走 mapZoomStops 把加法推進每個輸出值。
+       */
+      const casingBase =
+        typeof baseWidth === "number"
+          ? baseWidth + CASING_EXTRA
+          : ((mapZoomStops(baseWidth, (b) => ["+", b, CASING_EXTRA]) ?? [
+              "+",
+              baseWidth,
+              CASING_EXTRA,
+            ]) as typeof baseWidth);
+      const casingWidth = whenSelected(
+        highlightIds,
+        (b) => ["*", b, SELECTED.lineScale],
+        casingBase,
+      );
+      if (map.getLayer(casingId)) {
+        map.setPaintProperty(casingId, "line-width", casingWidth);
+      } else {
+        map.addLayer({
+          id: casingId,
+          type: "line",
+          source: sourceId,
+          ...zoom,
+          layout: { "line-join": "round", "line-cap": "round" },
+          paint: {
+            "line-color": CASING_COLOR,
+            "line-width": casingWidth,
+            "line-opacity": CASING_OPACITY,
+          },
+        });
+      }
+    }
 
     if (map.getLayer(id)) {
       map.setPaintProperty(id, "line-color", color);

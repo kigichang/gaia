@@ -384,6 +384,63 @@ OSM 是眾人編輯的資料庫，關聯被拆開、改名或重建都可能發�
 
 幾條臺鐵幹線在 OSM 裡是依「線名」拆開的（縱貫線、臺中線、海岸線、屏東線各一個關聯），但課本講的是「西部幹線」這一整條，所以註冊表用 `parts` 把它們併成一個圖徵。
 
+#### 七條軸線各自一色：全站唯一一個不參與線／面色票 all-pairs 的分類圖層
+
+七條共用一個翠綠時，圖上分不出高鐵、國道與臺鐵——而「西部走廊五條路線幾乎重疊、
+東部只有一條鐵路」正是這一層要教的。但**七個彼此分得開的顏色在現行規則下不存在**，
+這是量出來的：用 `validate_palette.js` 同一組判準掃過整個 OKLCH 色域，在保留現有五個
+線／面色的前提下，全色域只剩三座色相孤島（**146–209°、264–275°、304–322°**），
+能再加的顏色數是 **4 色**（允許 WARN）／**3 色**（對比嚴格 ≥3:1）／**2 色**（再要求
+彩度 ≥0.13，也就是地圖上 2.2px 細線畫得出來）。
+
+⚠️ **上限的來源要記住，免得下次又從頭掃一遍**：四個約束疊加，其中**雙模式是最大的
+單一項**——淺色模式允許 L∈[0.43,0.77]、深色只允許 [0.48,0.67]，交集只剩 **0.19**，
+砍掉 44% 的亮度範圍；再疊上 CVD ΔE≥8、all-pairs ΔE≥15（難度隨 N² 成長）與彩度下限。
+**不是「已知的配色用完了」**——顏色一路是算出來的，交通翠綠與斷層磚紅的註解本身就
+記著這件事。
+
+所以這一層改成**三族色相 × 族內三階**，並宣告它不參與線／面色票的 all-pairs：
+高鐵朱紅 h30、國道綠 h154（高速公路指示牌綠）三階、臺鐵靛 h278 三階。
+色碼與完整的驗證紀錄在 `thematicColors.ts` 的 `TRANSPORT_COLORS`。
+
+⚠️ **兩個色相刻意偏離官方識別色，換色前要重跑這兩個距離**：臺鐵從官方 h254 移到
+h278，因為 h254 時東部幹線對水系藍 `#2a78d6` 的 ΔE 只有 **1.8**（同一個顏色，而鐵路
+與河川在花東縱谷、西部平原大量並行）；高鐵用朱紅 h30 而非企業識別橘 h43，因為 h43
+對行政區橘 `#d95926` 的 ΔE 只有 **2.5**。
+
+⚠️ **橘綠在色盲下必然不可分，線型是必要補償不是裝飾。** 高鐵朱紅與國道綠正好橫跨
+紅綠軸，**任何「高鐵橘 ＋ 國道綠」組合的 CVD ΔE 都是 2.8–6.5，永遠低於 8**——這是
+色彩空間的性質，不是搜尋不夠努力（把高鐵推亮橘反而更糟，2.8）。所以軌道類一律畫成
+虛線、公路實線（`LayerItem.dash`），比照斷層用線寬分第一／二類的既有判例。
+**不要為了視覺乾淨拿掉它。** 同理國道深綠 ↔ 斷層磚紅的 CVD 是 3.9。
+
+##### ⚠️ 白框（casing）是實測逼出來的，不是好看
+
+高鐵朱紅離 **NLSC 底圖自己的公路色**（淡粉紅 `#f8c0c0`／`#f8b8b8`）只有 **ΔE 14.0**，
+而其他六條是 **25–48**。實測在全島 zoom 8 **單獨開高鐵時根本找不到那條線**。而暖色端
+已經被行政區橘（L 0.62）與斷層磚紅（L 0.48）夾住兩個亮度層，掃過整個色域**沒有任何
+紅／橘紅替代色**能同時避開底圖與既有圖層（次佳的是桃紅 h354，但撞五大山脈洋紅 12.3，
+而山脈是 `defaultOn`）。
+
+所以改用與色相無關的 `LayerRender.casing`：線底下墊一條白色粗線（線寬 +2.6px、
+不透明度 0.85）。**色票驗證器測不到這件事**——它只比較色票內部與面板底色，不知道
+底圖長什麼樣。**改動交通軸線的顏色之後一定要在 NLSC 底圖上重新目視確認**，而且要
+**單獨開一條**看，七條一起看時會因為旁邊有綠色與靛色當參照而看不出問題。
+
+⚠️ 白框**不跟著畫虛線**：虛線的白框要是也斷開，白色只會出現在有色線段的正下方，
+斷開處仍然直接壓在底圖上——那正是要解決的問題。
+⚠️ `layerOrder.ts` 的 `BAND.casing = 0.5`（夾在 fill 與 line 之間）：壓在面之下會被
+面染蓋掉，壓在線之上會把線整條蓋白。`npm run test:order` 已經加了對應的回歸情境。
+⚠️ 白框**要綁進 `geoHitLayerIds()`**：它比線本身寬，使用者看到的「那條線」有一半是
+白框，不綁的話點在邊緣會整個落空（跟沿線標註同一個理由）。
+
+##### 「只顯示這一筆」對這一層是 no-op，那是預期的
+
+七條拆成七個子圖層之後，每個子圖層只有一條線，聚焦時沒有同層鄰居可以隱藏（實測
+chip 不會出現、`setFilter` 也不會下）。這與古蹟／作物那些子項目圖層的行為一致
+（爆炸半徑只有命中的那一層）。**要只看一條請用子項目的核取方塊**，那本來就是更直接
+的工具。solo 功能本身沒有壞——同一次實測裡搜「桃園市」仍然正確隱藏同層 21 筆。
+
 ---
 
 ### 古蹟：全站唯一一個「一份上游資料產出四個檔」的圖層
@@ -400,10 +457,15 @@ OSM 是眾人編輯的資料庫，關聯被拆開、改名或重建都可能發�
 三筆 SOURCES 共用 `monuments.mjs` 的 module-level 快取，所以上游那 8.1 MB 一個 process
 只下載一次。
 
-⚠️ 直覺上會想用 `LayerItem.filter`（一個檔案 + 三個 filter），**那條路目前不能走**：
-`filter` 只在 `types.ts` 有型別宣告，**全站沒有任何地方實作或使用它**，而 `resolve.ts`
-的 `if (!item?.source) return;` 會把沒有 `source` 的子項目**靜默跳過**——圖層什麼都不會
-出現，也不會報錯。
+⚠️ 直覺上會想把三級塞進一個檔案再切分（現在有 `LayerItem.featureIds` 這條路了，
+見交通軸線那節），**但古蹟仍然要分三個檔**：級別是三個獨立的核取方塊，而**只勾
+「國定古蹟」就只該付 50 KB**，不是整包 483 KB。`featureIds` 是「母圖層那一份本來就
+要整包下載」時才划算的做法（交通軸線 34 KB／7 條）。
+
+⚠️ 歷史包袱一則：`LayerItem` 原本宣告的是 `filter?: FilterSpecification`，**宣告了但
+全站零實作**，而 `resolve.ts` 對沒有 `source` 的子項目是靜默跳過的——寫了 filter 的
+圖層會什麼都不顯示也不報錯。那個欄位已經換成 `featureIds`（在 `resolve.ts` 切資料，
+不是下 maplibre filter，理由見交通軸線那節）。
 
 #### 為什麼歷史沿革不進 geojson
 
@@ -850,7 +912,7 @@ zoom 8.5 的南部是 8 → 16。`symbol-spacing` 從 400 調到 120 幾乎沒�
 ——**zoom < 10 用短名**（先看得出哪裡有斷層），**zoom ≥ 10 換回全名**（那時線在畫面上
 夠長，全名放得出來，也不會有人把「車籠埔斷層」讀成地名）。這也是 `LayerRender.label`
 的 `property` 除了屬性名之外**還接受 maplibre 表達式**的唯一理由（純陣列字面值，
-`themes/*.ts` 仍然是純資料，比照 `LayerItem.filter`）。
+`themes/*.ts` 仍然是純資料，Node 讀得動）。
 
 `shortName` 是 **build 時算的**（`build-geodata.mjs` 的 transform：`name` 去掉尾綴
 「斷層」），比照交通軸線的 `shortName`（「國道1」）。33 條裡只有「三義斷層之分支斷層」
@@ -1164,7 +1226,7 @@ ID 常數定義在 `src/map/layers/*.ts`，**一律 import 常數，不要寫死
 | `latitude-lines-line` / `latitude-lines-label` | line + symbol |
 | `quakes-points` | circle |
 | `tw-reservoirs-points` | circle（顏色是**依蓄水率分級的表達式**，不是單一色，見下） |
-| `tw-transport-line` / `tw-transport-label` | line + symbol（標註用 `shortName`，不是 `name`） |
+| `tw-transport-<axis>-casing` / `-line` / `-label` | line + line + symbol，**七條軸線各自一組**（`thsr`／`freeway-1`／`freeway-3`／`freeway-5`／`tra-west`／`tra-east`／`tra-south-link`）。`-casing` 是墊在線底下的白框，全站只有這一層用；標註用 `shortName`，不是 `name` |
 | `tw-rivers-line` / `tw-rivers-label` | line + symbol |
 | `tw-basins-fill` / `tw-basins-outline` | fill + line |
 | `tw-monuments-<level>-points` | circle，三個級別各自一組（`national`／`municipal`／`county`） |
@@ -1992,8 +2054,9 @@ source 是**觀測點** geojson（五份共 262 KB，properties 只有日期與�
 站上原本**只有一條**逐圖徵通道：`geo.ts` 的 `whenSelected()`，那是 **paint**
 （全部照畫、只把命中的加粗，顏色不准動）。這次新增的是 **filter**：
 `applySoloFilter()` 對 `geoLayerIds()` 回傳的每一個圖層下
-`["in", ["get","id"], ["literal", ids]]`。⚠️ **在此之前全站沒有任何 `map.setFilter`**
-（`LayerItem.filter` 至今仍然只是型別宣告，見 `types.ts`）。
+`["in", ["get","id"], ["literal", ids]]`。⚠️ **它至今仍是全站唯一寫 `map.setFilter`
+的地方**——子項目的切分刻意改在 `resolve.ts` 切資料而不是再下一道 filter，就是為了
+不跟這個功能糾纏（見交通軸線那節的 `LayerItem.featureIds`）。
 
 - ⚠️ **不 solo 時一定要主動 `setFilter(id, null)`。** `addGeoLayer` 是 upsert（既有圖層
   走 `setPaintProperty`，從不重建），少了這一手，解除之後圖層會永遠停在上一次的過濾
@@ -2424,24 +2487,43 @@ m.isSourceLoaded('contour-source')
     - 切底圖之後重驗一次
     - ⚠️ 搜尋索引會多抓 `tw-protected-areas.geojson`(182 KB)，驗第 12 項的 Network
       期望值時要算進去
-17. **主要交通軸線**（`/theme/taiwan`，勾「主要交通軸線」）：
+17. **主要交通軸線**（`/theme/taiwan`，勾「主要交通軸線」，七條各自一個核取方塊）：
     ```js
     const m = window.__gaiaMaps.at(-1);
     m.jumpTo({ center: [120.9, 23.6], zoom: 7.3 });
-    // 7 條軸線都要出現（distinct id，不是 feature 數——一條軸線是 MultiLineString）
-    [...new Set(m.queryRenderedFeatures({ layers: ['tw-transport-line'] }).map(f => f.properties.id))]
-    // 沿線標註用 shortName（「國道1」），用 name 會因為字串太長而放置數歸零
-    m.queryRenderedFeatures({ layers: ['tw-transport-label'] }).map(f => f.properties.shortName)
+    const AX = ['thsr','freeway-1','freeway-3','freeway-5','tra-west','tra-east','tra-south-link'];
+    // 21 個圖層：七條 × (casing + line + label)
+    m.getStyle().layers.map(l => l.id).filter(i => /transport/.test(i)).length   // 21
+    // 每個子圖層剛好一條軸線，且顏色是固定色
+    AX.map(k => k + ' ' + m.getPaintProperty(`tw-transport-${k}-line`, 'line-color')
+            + ' dash=' + JSON.stringify(m.getPaintProperty(`tw-transport-${k}-line`, 'line-dasharray'))
+            + ' n=' + new Set(m.queryRenderedFeatures({layers:[`tw-transport-${k}-line`]}).map(f=>f.properties.id)).size)
     ```
-    - 標註**數量要實測**，不能只確認圖層存在（見「沿線標註很脆弱」）。實測值（跟視窗大小相依）：
-      全島視角 `jumpTo([120.9,23.6], 7.3)` 在 1500×723 下是 **4** 個；
-      `jumpTo([121.6,24.75], 9.5)` 在 1440×703 下是 **10** 個、涵蓋 6 條軸線。
-      ⚠️ 重點是**同一條軸線不會在同一段路上重複冒出來**——`spacing` 是 400 就是為了這件事，
-      臺鐵幹線在 OSM 裡是十幾條分段折線，用預設的 120 會讓「西部幹線」四個字連續出現一整排
-    - 點線或點標註都要開卡（`geoHitLayerIds` 對有標註的線會回傳兩層）
-    - 抽屜可點清單 7 筆，順序是高鐵 → 國道1／3／5 → 西部幹線 → 東部幹線 → 南迴線
-    - 搜「高鐵」「國道」「南迴」都要找得到；跨主題搜尋會多抓 `tw-transport.geojson`
-    - 切底圖之後重驗一次
+    - **顏色不可以隨勾選順序改變**（回歸判準，比照古蹟三級）：先勾「臺鐵南迴線」再勾
+      「臺灣高速鐵路」，高鐵仍然必須是 `#ff7360`。地圖、圖例、抽屜三處色塊要一致
+    - **軌道類是虛線、公路是實線**：`thsr`／`tra-*` 的 `line-dasharray` 是 `[2.4,1.6]`，
+      `freeway-*` 是 `undefined`。⚠️ 那是色盲下唯一分得出公路／鐵路的線索，不是裝飾
+    - **白框（casing）在線之下、在面之上**，三種底圖切完都要還在：
+      ```js
+      const ids = m.getStyle().layers.map(l => l.id);
+      AX.every(k => ids.indexOf(`tw-transport-${k}-casing`) < ids.indexOf(`tw-transport-${k}-line`))
+      ```
+    - ⚠️ **白框的效果只有目視驗得到，而且要單獨開一條**。切到 NLSC 通用電子地圖、
+      只勾「臺灣高速鐵路」、`jumpTo([120.85,23.9], 8)`——那條朱紅虛線必須看得出來。
+      七條一起看時會因為旁邊有綠色與靛色當參照而看不出問題（實測踩過）
+    - 標註**數量要實測**（見「沿線標註很脆弱」）。1920×873 實測：全島
+      `jumpTo([120.9,23.6], 7.3)` 是 **4** 個；`jumpTo([121.6,24.75], 9.5)` 是 **9** 個、
+      涵蓋 5 條軸線。⚠️ 重點是**同一條軸線不會在同一段路上重複冒出來**（`spacing` 400）
+    - **點在白框上也要開得了卡**（白框比線寬，那是新增的命中範圍）。要用**真的滑鼠點擊**，
+      而且要先掃出「命中 casing 但不命中 line」的像素，否則測不到
+    - 抽屜七個子核取方塊，勾圖層時**七條要自動全勾**（`defaultAll`）；點子項目名稱要
+      `fitBounds` 到那一條並開出內容檔卡片（來源必須看得到 **OpenStreetMap**，ODbL 署名）
+    - 搜「高鐵」「國道1」「南迴」「中山高」「蔣渭水」都要找得到並飛過去。
+      ⚠️ 「高鐵」**不是**子項目 label「臺灣高速鐵路」的子字串，靠 `LayerItem.keywords`
+      才搜得到——那一欄漏掉的話搜尋會悄悄退步，而畫面上沒有任何線索
+    - ⚠️ **「只顯示這一筆」對這一層是 no-op**（每個子圖層只有一條線），那是預期的，
+      不是壞掉；同一次驗證裡搜「桃園市」仍然要正確隱藏同層 21 筆
+    - 切底圖之後重驗一次（顏色、線型、白框、排序）
 18. **臺灣河川**（`/theme/taiwan`，勾「臺灣河川」）：
     ```js
     const m = window.__gaiaMaps.at(-1);

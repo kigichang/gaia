@@ -48,6 +48,9 @@ const BAND: Record<string, number> = {
   // 不透明度讓等高線照樣透得出來，跟主題面的處境相同。
   elevation: -1,
   fill: 0,
+  // 線底下的白框（交通軸線）。必須在 fill 之上、line 之下：它是線的一部分，
+  // 壓在面之下會被面染蓋掉，壓在線之上則會把線本身整條蓋白。
+  casing: 0.5,
   outline: 1,
   line: 1,
   points: 2,

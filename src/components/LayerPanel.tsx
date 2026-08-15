@@ -334,9 +334,20 @@ function ItemList({
                 onChange={() => onToggle(item.id)}
               />
               {color && (
+                /* 色塊形狀要跟該圖層的幾何一致——形狀說謊的色塊比沒有色塊更糟，
+                   學生會照著圓點去找一條線（比照 MapLegend.tsx 的同一條規則）。
+                   虛線是交通軸線用來區分公路／鐵路的語意通道，也要畫出來。 */
                 <span
-                  className="layer-swatch layer-swatch-circle"
-                  style={{ backgroundColor: color }}
+                  className={`layer-swatch layer-swatch-${layer.render.kind}${
+                    item.dash ? " is-dashed" : ""
+                  }`}
+                  style={
+                    item.dash
+                      ? {
+                          backgroundImage: `linear-gradient(90deg, ${color} 60%, transparent 60%)`,
+                        }
+                      : { backgroundColor: color }
+                  }
                 />
               )}
               <button type="button" className="species-name-btn" onClick={() => onNameClick(item.id)}>

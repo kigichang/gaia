@@ -116,7 +116,14 @@ async function featureHits(
       layerId: layer.id,
       featureId: item.id,
       itemId: item.id,
-      haystack: push([item.label, ...contentKeywords(layer, item.id)]),
+      /**
+       * ⚠️ `item.keywords` 不是可有可無的。子項目靠 `featureIds` 從母圖層切分時
+       * （交通軸線），圖徵本身不會被索引，於是**地圖上沿線印出來的那個短名進不了
+       * haystack**——而使用者看到什麼就會搜什麼。「高鐵」不是「臺灣高速鐵路」的
+       * 子字串，少了 keywords 就會搜不到（見 CLAUDE.md「搜尋索引」那節對
+       * shortName 的要求）。
+       */
+      haystack: push([item.label, ...(item.keywords ?? []), ...contentKeywords(layer, item.id)]),
     }));
     if (!layer.items.indexFeatures) return hits;
 
