@@ -400,6 +400,40 @@ const TRANSPORT_AXES = [
     meta: "南港—蘇澳・雪山隧道穿越雪山山脈",
     parts: ['relation["route"="road"]["network"="TW:freeway"]["ref"="5"]["name"~"北向"]'],
   },
+  /**
+   * 三條橫貫公路（省道臺7／臺8／臺20 線）。
+   *
+   * ⚠️ **選擇器的 network 是 `TW:provincial` 不是 `TW:freeway`**，而且方向詞是
+   * 「東向」而不是國道那組「北向／北上」——OSM 對省道是依東西向拆上下行的。
+   * 沿用國道那條選擇器只會選中 0 個關聯而讓建置失敗（那是好的，但很浪費一次
+   * 40 分鐘的重跑）。
+   *
+   * ⚠️ **臺8線的 `ref=8` 還有第二個關聯**：`台8臨37線(中橫便道)`（青山下線，
+   * `state=temporary`），那是 921 之後接替中斷路段的便道。`["name"~"東向"]`
+   * 正好把它濾掉——但**不要把名稱條件放寬成只比對 ref**，那會讓「剛好一個關聯」
+   * 那道防線在臺8線上失效。
+   */
+  {
+    id: "provincial-7",
+    name: "北部橫貫公路（臺7線）",
+    shortName: "北橫",
+    meta: "大溪—壯圍・沿大漢溪上溯，於明池越嶺後接蘭陽溪",
+    parts: ['relation["route"="road"]["network"="TW:provincial"]["ref"="7"]["name"~"東向"]'],
+  },
+  {
+    id: "provincial-8",
+    name: "中部橫貫公路（臺8線）",
+    shortName: "中橫",
+    meta: "東勢—太魯閣・在大禹嶺翻越中央山脈主脊",
+    parts: ['relation["route"="road"]["network"="TW:provincial"]["ref"="8"]["name"~"東向"]'],
+  },
+  {
+    id: "provincial-20",
+    name: "南部橫貫公路（臺20線）",
+    shortName: "南橫",
+    meta: "臺南—海端・在埡口翻越中央山脈，是三條橫貫公路裡最長的",
+    parts: ['relation["route"="road"]["network"="TW:provincial"]["ref"="20"]["name"~"東向"]'],
+  },
   {
     id: "tra-west",
     name: "臺鐵西部幹線",
@@ -984,7 +1018,8 @@ const SOURCES = [
     tolerance: 0.0005,
     digits: 4,
     // ⚠️ feature 順序＝圖層抽屜可點清單的順序（LayerBrowseList 不排序）。
-    // 依「高鐵 → 國道 → 台鐵」排，跟課本介紹西部走廊的順序一致。
+    // 依「高鐵 → 國道 → 橫貫公路 → 臺鐵」排：先把同屬公路的併在一起，再接鐵路，
+    // 跟課本先講西部走廊、再講「山脈把東西兩側隔開」的順序一致。
     transform: (axes) =>
       axes.map(({ id, name, shortName, meta, lines }) => ({
         type: "Feature",
