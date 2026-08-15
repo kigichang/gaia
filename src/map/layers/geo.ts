@@ -1,4 +1,9 @@
-import type { GeoJSONSource, Map as MapLibreMap, MapLayerMouseEvent } from "maplibre-gl";
+import type {
+  FilterSpecification,
+  GeoJSONSource,
+  Map as MapLibreMap,
+  MapLayerMouseEvent,
+} from "maplibre-gl";
 import { geoLayerIds, geoSourceId } from "../registry/index.ts";
 import type { ColorRamp, LayerRender } from "../registry/types.ts";
 import { BELT_EDGE_COLOR, BELT_EDGE_M } from "../thematicColors";
@@ -39,6 +44,15 @@ export interface GeoLayerSpec {
    * 它的主峰一起帶進來——主峰是另一個圖層的點，兩層各自比對這份清單即可。
    */
   highlightIds?: readonly string[];
+  /**
+   * 「只顯示這一筆」：有值時這個 instance 的所有 maplibre 圖層都只畫
+   * `properties.id` 落在清單裡的圖徵，其餘**不算繪**（跟 `highlightIds` 那條
+   * paint 通道不同——那條是全部照畫、只把命中的加粗）。
+   *
+   * 目前唯一的來源是搜尋命中後的 A/B（見 ThemeMapPage 的 `solo`）。沒有值就是
+   * 解除過濾，**這件事必須主動做**，見 `applySoloFilter`。
+   */
+  soloIds?: readonly string[];
   /** 勾選中的高程分帶 id（只有 `kind: "elevation"` 會用，見 useGeoLayers）。 */
   activeItems?: readonly string[];
 }
@@ -200,7 +214,45 @@ function beltExpression(
   return ["interpolate", ["linear"], ["elevation"], ...stops];
 }
 
+/**
+ * 建立（或就地更新）一個 instance 的所有 maplibre 圖層，然後套用「只顯示這一筆」的過濾。
+ *
+ * ⚠️ 過濾**只有這一個呼叫點**：底下 `addGeoLayerShapes` 的三個幾何分支各自 early-return，
+ * 在每個分支裡各補一次呼叫，將來加第五種幾何時一定會漏掉其中一個。
+ */
 export function addGeoLayer(map: MapLibreMap, spec: GeoLayerSpec) {
+  addGeoLayerShapes(map, spec);
+  applySoloFilter(map, spec.instanceId, spec.render, spec.soloIds);
+}
+
+/**
+ * 「只顯示這一筆」的過濾通道。這是站上**第二條**逐圖徵通道——第一條是
+ * `whenSelected()` 那條 paint 通道（全部照畫、只改大小與外框）。
+ *
+ * ⚠️ **沒有 soloIds 時一定要主動 `setFilter(id, null)` 把過濾解除。**
+ * `addGeoLayerShapes` 是 upsert（既有圖層走 `setPaintProperty`，從不重建），
+ * 少了這一手，解除選取之後圖層會永遠停在上一次的過濾狀態、其餘圖徵再也不出現。
+ *
+ * ⚠️ `map.getLayer(id)` 的守衛不可以拿掉：`setFilter` 對不存在的圖層會拋錯，
+ * 而切底圖的瞬間圖層是真的不存在的。（同樣的迴圈形狀見 `removeGeoLayer`。）
+ */
+function applySoloFilter(
+  map: MapLibreMap,
+  instanceId: string,
+  render: LayerRender,
+  soloIds: readonly string[] | undefined,
+) {
+  // 高程設色沒有 geojson、沒有圖徵，filter 無從施力（也沒有 id 可以比對）
+  if (render.kind === "elevation") return;
+  const filter = soloIds?.length
+    ? (["in", ["get", "id"], ["literal", [...soloIds]]] as FilterSpecification)
+    : null;
+  for (const id of geoLayerIds(instanceId, render)) {
+    if (map.getLayer(id)) map.setFilter(id, filter);
+  }
+}
+
+function addGeoLayerShapes(map: MapLibreMap, spec: GeoLayerSpec) {
   const { instanceId, data, color, render, minzoom, maxzoom, highlightIds, activeItems } = spec;
   const zoom = { ...(minzoom != null && { minzoom }), ...(maxzoom != null && { maxzoom }) };
 

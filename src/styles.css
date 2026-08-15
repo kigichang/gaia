@@ -693,8 +693,48 @@ input {
 .map-popover-panel,
 .map-legend,
 .map-search,
-.map-search-results {
+.map-search-results,
+.map-solo-chip {
   pointer-events: auto;
+}
+
+/* 「只顯示這一筆」時的說明 chip，排在圖例上方（見 ThemeMapPage 的說明）。
+   ⚠️ 它必須留在上面那組 pointer-events: auto 裡，.map-bottom-left 容器本身是
+   none，漏掉的話「顯示全部」按鈕按不下去。 */
+.map-solo-chip {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  max-width: 340px;
+  padding: 6px 8px 6px 11px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--surface);
+  box-shadow: var(--float-shadow);
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+.map-solo-chip-text {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.map-solo-chip strong {
+  color: var(--text-primary);
+}
+
+.map-solo-chip button {
+  flex: none;
+  padding: 3px 10px;
+  border: none;
+  border-radius: 999px;
+  background: var(--accent);
+  color: #fff;
+  font-family: inherit;
+  font-size: 12px;
+  cursor: pointer;
 }
 
 /* maplibre 內建控制也要一起讓開面板（右下角那疊：attribution + 縮放 + 比例尺） */
@@ -795,6 +835,23 @@ input {
 }
 
 .map-menu .theme-toggle {
+  justify-content: center;
+}
+
+/* 搜尋結果呈現方式的切換（常設偏好，見 useSoloSearch.ts）。
+   兩段的字比淺／深／自動長，所以給它一行小標而不是硬擠在同一列。 */
+.solo-search-toggle {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.solo-search-toggle-label {
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+.solo-search-toggle .theme-toggle {
   justify-content: center;
 }
 
