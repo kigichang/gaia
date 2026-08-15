@@ -2198,7 +2198,8 @@ Node 24 原生支援 TypeScript type stripping，所以 `.mjs` 腳本可以直�
 ## 開發指令
 
 ```bash
-npm run dev             # http://localhost:5173
+npm run dev             # http://localhost:5173（**開發者專用**，代理人不要動）
+npm run dev:agent       # http://localhost:5199（代理人專用，--strictPort 不會偷跳埠）
 npm run typecheck       # tsc --noEmit
 npm run validate        # zod 驗證內容 + 圖層註冊表交叉檢查
 npm run test:order      # 圖層堆疊順序的回歸測試（不需瀏覽器）
@@ -2237,23 +2238,35 @@ npm run build:geodata -- --force --only=tw-monuments-national   # 古蹟三級�
 
 ## 驗證方式
 
-### ⚠️ 自己起伺服器、用 4173，不要碰 5173
+### ⚠️ 自己起伺服器，用 5199 或 4173，不要碰 5173
 
-要驗證就**自己跑 npm 指令起一台自己的伺服器**，一律用 `npm run preview` 的
-**`http://localhost:4173/`**：
+要驗證就**自己跑 npm 指令起一台自己的伺服器**，而且分兩段：
 
 ```bash
-npm run build:debug && npm run preview     # 帶 __gaiaMaps 掛勾，開在 4173
+npm run dev:agent                          # 5199，改一行看一次用這台（HMR，免重建）
+npm run build:debug && npm run preview     # 4173，收尾／出貨前的最終驗證用這台
 ```
+
+**迭代期用 `dev:agent`（5199）。** 除錯掛勾在 dev 模式**本來就是開的**——
+`MAP_DEBUG = import.meta.env.DEV || import.meta.env.VITE_DEBUG_MAPS === "1"`，
+第一個運算元在 dev 是 true，所以 `window.__gaiaMaps` 與 `preserveDrawingBuffer`
+（canvas `readPixels` 讀像素量色差要靠它）在 dev 一樣可用。調顏色、數圖徵、數沿線
+標註、測點擊這些都不必等重新建置。`--strictPort` 是刻意加的：沒有它，埠被佔用時
+vite 會**安靜地跳到下一個埠**，而下一個埠可能是別人的。
+
+**收尾一定要再用 `build:debug` + `preview`（4173）跑一次。** dev 走的是原始 ESM，
+驗不到只有打包後才出現的那一類問題——maplibre 的 worker 檔案沒被複製進 `dist/`
+（檢查清單第 7 項，切到向量底圖會整片空白而且零錯誤訊息），以及 chunk 切分相關的
+問題。**只在 dev 驗過就出貨等於沒驗過那一類。**
 
 ⚠️ **`5173`（`npm run dev` 的預設埠）是開發者自己開著的，絕對不要動它**——不要接管、
 不要重啟，更不要 `pkill -f vite` 或任何會把它一起殺掉的收尾動作。驗證完只收掉自己
-那台（用 `run_in_background` 起的就停自己那個工作，不要用會掃到別人程序的 pattern）。
+那台（用 `run_in_background` 起的就停自己那個工作，或用 `lsof -ti :5199`／`:4173`
+這種**指名埠號**的方式，不要用會掃到別人程序的 pattern）。
 踩過一次：驗完隨手 `pkill -f vite`，把開發者正在用的 dev server 一起關掉了。
 
-⚠️ 順帶一提，`npm run dev` 起在 5173 被佔用時會自動跳 5174 —— 那台**也可能是別人的**，
-看到不是自己起的埠一律不要碰。而且 dev 模式驗不到 worker 檔案沒被複製那個坑
-（檢查清單第 7 項），本來就該用 `preview`。
+⚠️ `npm run dev`（不帶 `--strictPort`）在 5173 被佔用時會自動跳 5174——那台**也可能
+是別人的**，看到不是自己起的埠一律不要碰。這正是 `dev:agent` 要固定 5199 的理由。
 
 ### ⚠️ 用瀏覽器自動化驗證時，分頁一定要在前景
 

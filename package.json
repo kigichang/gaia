@@ -9,6 +9,7 @@
   },
   "scripts": {
     "dev": "vite",
+    "dev:agent": "vite --port 5199 --strictPort",
     "typecheck": "tsc --noEmit",
     "validate": "node scripts/validate-content.mjs",
     "test:order": "node scripts/test-layer-order.mjs",
