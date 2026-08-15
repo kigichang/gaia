@@ -6,6 +6,7 @@ import {
   POPULATION_DENSITY_RAMP,
   RESERVOIR_FILL_RAMP,
   SPECIES_COLORS,
+  TYPHOON_INTENSITY_RAMP,
   VEGETATION_BELTS,
 } from "../../thematicColors.ts";
 import type { ThemeDefinition } from "../types.ts";
@@ -38,7 +39,16 @@ export const taiwanTheme: ThemeDefinition = {
    */
   camera: { center: [120.9797, 23.9739], zoom: 7 },
   recommendedBasemap: "nlsc-emap",
-  groups: ["臺灣123", "行政區", "地形", "水系", "人文", "植被生態", "農業物產"],
+  /**
+   * ⚠️ 「天然災害」是後來從「地形」拆出來的：活動斷層、臺灣地震、重大地震
+   * 原本都掛在地形底下，但它們講的不是地貌而是**災害**——加了颱風之後，
+   * 「地形」會變成一個什麼都放的雜物櫃，而颱風更是連地形都不算。
+   * 拆完「地形」剩地形景點與五大山脈，兩邊的語意都乾淨了。
+   *
+   * 排在「水系」之後、「人文」之前：前面三組是這座島的自然骨架，
+   * 災害是發生在那副骨架上的事，之後才輪到人。
+   */
+  groups: ["臺灣123", "行政區", "地形", "水系", "天然災害", "人文", "植被生態", "農業物產"],
   initialSelection: {
     detail: { type: "geo", collection: "tw-territory" },
     featureId: "taiwan-main-island",
@@ -576,7 +586,7 @@ export const taiwanTheme: ThemeDefinition = {
     {
       id: "tw-faults",
       label: "活動斷層",
-      group: "地形",
+      group: "天然災害",
       status: "ready",
       source: { type: "remote", path: "data/geo/tw-faults.geojson" },
       /**
@@ -654,7 +664,7 @@ export const taiwanTheme: ThemeDefinition = {
     {
       id: "tw-quakes",
       label: "臺灣地震",
-      group: "地形",
+      group: "天然災害",
       status: "ready",
       source: { type: "remote", path: "data/geo/tw-quakes.geojson" },
       /**
@@ -707,7 +717,7 @@ export const taiwanTheme: ThemeDefinition = {
     {
       id: "tw-quakes-major",
       label: "重大地震",
-      group: "地形",
+      group: "天然災害",
       status: "ready",
       source: { type: "remote", path: "data/geo/tw-quakes-major.geojson" },
       /**
@@ -743,6 +753,174 @@ export const taiwanTheme: ThemeDefinition = {
           "那是兩個地震目錄的真實差異，不是畫錯了。",
       ],
       sources: ["交通部中央氣象署", "維基百科", "USGS"],
+    },
+    {
+      id: "tw-typhoons",
+      label: "颱風路徑與災損",
+      group: "天然災害",
+      status: "ready",
+      source: { type: "remote", path: "data/geo/tw-typhoons.geojson" },
+      /**
+       * ⚠️ **沿線標註的參數是實測調出來的，不要套預設值。**
+       *
+       * - `spacing: 900`（預設 120，交通軸線與斷層用 400）：颱風路徑是幾千公里長的
+       *   **單一條線**，比站上任何其他線都長好幾倍。實測 1920×873 畫布，同一個名字
+       *   最多重複幾次／不重複的颱風數／標註總數：
+       *
+       *   | spacing | zoom 4.2 | zoom 6 | zoom 8 |
+       *   |---|---|---|---|
+       *   | 400 | 32 個／14 條／重複 3 | 31／13／5 | 34／13／5 |
+       *   | **900** | **19／14／3** | **28／14／3** | **21／13／4** |
+       *   | 1400 | 14／14／1 | 4／4／1 | 2／2／1 |
+       *
+       *   1400 在全域視角是完美的（每條剛好一個），但**放大到臺灣就只剩 2–4 個標註**
+       *   ——那正是最需要分辨哪條線是哪個颱風的尺度。900 是唯一在三個尺度都讓 13–14
+       *   條全部標得到名字的值。
+       * - `maxAngle: 150`（預設 60）：路徑在轉向點會急彎（納莉在琉球外海打轉、
+       *   柯羅莎在花蓮外海打轉），60 度會讓放置演算法把整條線拒絕掉。
+       * - 文字用 `name`（「莫拉克」），不是「莫拉克（2009）」——`symbol-placement: line`
+       *   對字串長度極度敏感（見 CLAUDE.md「沿線標註很脆弱」）。年份在清單與搜尋的
+       *   副標裡看得到。
+       *
+       * 線寬與不透明度都壓得比其他線圖層低（0.9–2.4px／0.55 對預設 1.4／0.9）：
+       * 這一層真正要看的是**上面那串依強度上色的定位點**，線只是把它們串起來。
+       */
+      render: {
+        kind: "line",
+        width: ["interpolate", ["linear"], ["zoom"], 3, 0.9, 6, 1.6, 9, 2.4],
+        opacity: 0.55,
+        label: { property: "name", size: 12, spacing: 900, maxAngle: 150 },
+      },
+      /**
+       * 路徑線用 `hazard` 中性色，**不佔分類線色票**。
+       *
+       * 這是「臺灣地震／重大地震」那條既有判例的延伸：災害家族一律中性色，
+       * 由尺寸或級距色去承載「多強」。線／面色票已經是六色、餘裕只剩 ΔE 15.8
+       * （見 thematicColors.ts），第七個色相沒有位置；而且路徑線本來就該退到背景，
+       * 讓底下的附屬定位點（依強度分級上色）成為讀圖的主角。
+       */
+      colorRole: "hazard",
+      detail: { type: "geo", collection: "tw-typhoons" },
+      /**
+       * 可點清單依**侵臺路徑分類**分組（氣象署的九類＋特殊）。
+       * ⚠️ `groupBy` 依序切、不排序，所以 geojson 的 feature 必須讓同一類連續
+       * ——排序在 build-geodata.mjs 的 transform 裡做掉了（分類 → 年份）。
+       */
+      browse: { groupBy: "category" },
+      /**
+       * 每 6 小時一筆的中心定位點，跟路徑一起開關（比照五大山脈 → 主峰）。
+       *
+       * **這才是這一層真正在教的東西**：半徑與顏色都由近中心最大風速驅動，
+       * 所以「在洋面上一路增強、掃過中央山脈之後迅速減弱」是看得見的，而不是
+       * 只能在卡片上讀一個數字。
+       *
+       * ⚠️ **定位點跟路徑共用同一個 `properties.id`**（757 個點只有 14 個不重複的
+       * id），所以點任何一個定位點開出來的就是那個颱風的卡片，選取時整條路徑連同
+       * 它所有的定位點一起加粗——那是 CLAUDE.md「三層共用 id」的同一條規則：
+       * 同一個實體就該是同一個 id。也因此 `parentProperty` 退化成 `"id"`：
+       * 母子關係已經由 id 本身表達，不需要再存 757 筆 `typhoonId`。
+       *
+       * ⚠️ 早期版本給每個點唯一 id ＋ `detail: { type: "none" }`，想讓點擊穿透到
+       * 底下的線。**實測那條路是壞的**：圓點半徑比線寬大得多，點在圓點的外圈上會
+       * 落在線的命中範圍之外，於是**什麼都不會發生**——沒有卡片、沒有錯誤、
+       * 畫面毫無反應。
+       *
+       * ⚠️ **min/maxzoom 不會從母圖層繼承**（縣市政府那次踩過），這裡跟著母圖層一起
+       * 從 zoom 3 起——路徑本來就要拉遠才看得全。
+       */
+      attach: {
+        id: "tw-typhoon-centers",
+        label: "颱風中心定位點",
+        source: { type: "remote", path: "data/geo/tw-typhoon-centers.geojson" },
+        render: {
+          kind: "circle",
+          /**
+           * ⚠️ **半徑必須同時吃 zoom 與風速，只吃風速會把臺灣整個蓋住。**
+           *
+           * 實測踩過：固定「8→58 m/s 對應 2.5→8 px」的話，全域視角（zoom 4.2）下
+           * 14 條路徑在臺灣與呂宋島之間收斂成一團不透明的橘色，**底圖上的臺灣完全
+           * 看不見**——而這一層的重點正是「這些颱風都往臺灣來」。
+           *
+           * 現在是巢狀 interpolate：zoom 3 時最大只有 3.2px（強度梯度還讀得出來，
+           * 但不糊成一片），zoom 10 回到 9px（單一颱風的逐筆定位看得清楚）。
+           */
+          radius: [
+            "interpolate",
+            ["linear"],
+            ["zoom"],
+            3, ["interpolate", ["linear"], ["get", "wind"], 8, 1.0, 58, 3.2],
+            5, ["interpolate", ["linear"], ["get", "wind"], 8, 1.6, 58, 4.6],
+            7, ["interpolate", ["linear"], ["get", "wind"], 8, 2.2, 58, 6.5],
+            10, ["interpolate", ["linear"], ["get", "wind"], 8, 2.8, 58, 9],
+          ],
+          /**
+           * 細白框把相鄰的點分開，也讓點從忙碌的底圖上浮出來（比照臺灣地震那一層）。
+           * ⚠️ 但 zoom 3–4 時點本身只有 1–3px，白框會比點還粗、把顏色整個吃掉，
+           * 所以低縮放直接關掉。
+           */
+          strokeWidth: ["interpolate", ["linear"], ["zoom"], 3, 0, 6, 0.5, 9, 0.8],
+          opacity: 0.95,
+          colorRamp: TYPHOON_INTENSITY_RAMP,
+          /**
+           * **選了某個颱風之後，才在它的定位點旁邊標出臺灣時間。**
+           *
+           * 這是讀「走向」唯一的辦法：一條線本身沒有方向，而 1986 韋恩在同一張圖上
+           * 來回三次，不標時間根本分不出先後。⚠️ `onlyWhenSelected` 不能拿掉——
+           * 757 個點同時標會蓋滿整個西北太平洋。
+           *
+           * 文字依 zoom 分兩段：
+           * - **zoom < 7 只標「日標」**（臺灣時間每天 08:00 那一筆，每個颱風 6–21 個），
+           *   而且只印日期。全域視角要的是「幾號到哪裡」，時刻是雜訊。
+           * - **zoom ≥ 7 每一筆都標日期＋時刻**。那是看颱風怎麼掃過臺灣的尺度，
+           *   近年的颱風在警報期間是 1 小時一筆，時刻才是重點。
+           *
+           * ⚠️ 這條 `step` 的輸入是 `["zoom"]`，所以它必須留在最外層——`addGeoLayer`
+           * 會用 `mapZoomStops()` 把「有沒有被選取」的判斷推進每個 stop 的輸出裡，
+           * 不要改成在外面再包一層（見 layers/geo.ts 的說明）。
+           */
+          label: {
+            property: [
+              "step",
+              ["zoom"],
+              ["case", ["has", "day"], ["get", "date"], ""],
+              7,
+              ["concat", ["get", "date"], " ", ["get", "hour"], "時"],
+            ],
+            size: 10,
+            onlyWhenSelected: true,
+          },
+        },
+        colorRole: "hazard",
+        // 共用 id，所以開出來的就是母圖層那張颱風卡（見上）
+        detail: { type: "geo", collection: "tw-typhoons" },
+        parentProperty: "id",
+        minzoom: 3,
+        description:
+          "中央氣象署最佳路徑資料裡每一筆颱風中心定位，圓點的大小與顏色都是當時的近中心最大風速。",
+        sources: ["交通部中央氣象署 颱風資料庫"],
+      },
+      // 路徑跨越整個西北太平洋，拉遠才看得出「從哪裡生成、被什麼導引過來」
+      minzoom: 3,
+      description:
+        "1986 年以來 14 個對臺灣造成重大災害的颱風，路徑取自中央氣象署的官方最佳路徑資料。" +
+        "清單依氣象署的「侵臺颱風路徑分類」分組——同樣是侵臺，第 1 類從北部海面擦過、" +
+        "第 3 類從中部橫越、特殊路徑則連方向都不固定，登陸地點與致災範圍完全不同。" +
+        "點選任一個颱風可看它的登陸地段、行進過程與官方災情統計。",
+      notes: [
+        "⚠️ 這 14 個是**編者依課綱與災損量級挑選的**，不是官方排名。中央氣象署自 1958 年" +
+          "以來共列了 454 個發布過警報的颱風。",
+        "⚠️ 災情文字節錄自中央氣象署颱風資料庫的「颱風概況表」，該表自己註明是取自" +
+          "**內政部消防署與行政院農業委員會**的資料。各次統計的截止時間不同——近年那幾筆" +
+          "官方原文就寫著「截至 8 月 5 日統計」。",
+        "⚠️ **1990 年以前的災情只有定性描述**（「損失慘重，有人員傷亡、失蹤」），沒有死亡" +
+          "人數與農損金額。那是當年的統計制度，不是資料漏抓；1994 年提姆以後每一筆都有數字。",
+        "⚠️ **定位點的時間解析度不一致**：平時 6 小時一筆，2002 年以後海上警報期間 3 小時，" +
+          "2019 年以後陸上警報期間 1 小時。近年的颱風路徑點明顯比早年密，那是取樣變密，" +
+          "不是路徑比較曲折。早年的颱風也有不少中心氣壓是缺值的。",
+        "⚠️ 一個颱風可能**多次侵臺**（1986 韋恩三次、2001 納莉兩次）。地圖上是完整的一條" +
+          "路徑，而登陸地段與路徑分類取的是主要那一次。",
+      ],
+      sources: ["交通部中央氣象署 颱風資料庫", "內政部消防署", "農業部"],
     },
     {
       id: "tw-vegetation-belts",

@@ -60,14 +60,60 @@ export interface GeoLayerSpec {
  * 是另一個圖層（地形景點）的點——兩個圖層各自拿同一份清單去比對就好，不需要知道
  * 對方存不存在。
  *
- * `base` 可能本身就是表達式（地震用震級驅動半徑），所以倍率用 `["*", base, n]`
- * 而不是先算成數字。
+ * `base` 可能本身就是表達式（地震用震級驅動半徑），所以倍率是一個**函式**
+ * （`(b) => ["*", b, n]`）而不是先算好的值——下面的 zoom 特例要對每一個 stop
+ * 各套一次。
+ *
+ * ## ⚠️ zoom 表達式只能是最外層，所以 `case` 要推到 stop 裡面
+ *
+ * maplibre 有兩條硬規則：`["zoom"]` 只能當**最外層** `step`／`interpolate` 的輸入，
+ * 而且一個屬性裡**只能有一個** zoom 曲線。天真的做法
+ * `["case", cond, ["*", ZOOM曲線, 2], ZOOM曲線]` 兩條都違反，maplibre 會在
+ * `addLayer` 丟錯：
+ *
+ * ```
+ * layers.tw-typhoons-line.paint.line-width:
+ *   Only one zoom-based "step" or "interpolate" subexpression may be used in an expression.
+ * ```
+ *
+ * ⚠️ **失敗的樣子非常難認**：`addGeoLayer` 是一路往下加圖層的，線加不上去、
+ * 但它後面的沿線標註照樣加上去了——畫面上看到名字浮在半空中、線與點都不見，
+ * 而 React、詳情卡、圖例全都正常。只有 console 有一行紅字。實測踩過
+ * （颱風路徑把半徑改成依 zoom 縮放的那次）。
+ *
+ * 所以偵測到 base 是一條**最外層的 zoom 曲線**時，改成把 `case` 套進它的每一個
+ * 輸出值裡——zoom 仍然留在最外層，而且整條式子只有一個 zoom 曲線。
+ * base 不是 zoom 曲線時，行為跟以前逐字相同。
  */
 type Expr = unknown;
-const whenSelected = <T>(ids: readonly string[] | undefined, selected: Expr, base: T): T =>
-  (ids?.length
-    ? ["case", ["in", ["get", "id"], ["literal", [...ids]]], selected, base]
-    : base) as T;
+
+const isZoomInput = (e: Expr) => Array.isArray(e) && e.length === 1 && e[0] === "zoom";
+
+/**
+ * 把一條最外層 zoom 曲線的每個輸出值都換掉，其餘結構原封不動。
+ * 不是 zoom 曲線就回 null，由呼叫端走一般路徑。
+ *
+ * - `["interpolate", <內插法>, ["zoom"], z1, out1, z2, out2, …]` → 輸出在偶數位（4、6…）
+ * - `["step", ["zoom"], out0, z1, out1, z2, out2, …]` → 輸出在 2、4、6…
+ */
+function mapZoomStops(base: Expr, map: (out: Expr) => Expr): Expr[] | null {
+  if (!Array.isArray(base)) return null;
+  const firstOut =
+    base[0] === "interpolate" && isZoomInput(base[2]) ? 4 : base[0] === "step" && isZoomInput(base[1]) ? 2 : -1;
+  if (firstOut < 0) return null;
+  return base.map((part, i) => (i >= firstOut && (i - firstOut) % 2 === 0 ? map(part) : part));
+}
+
+const whenSelected = <T>(
+  ids: readonly string[] | undefined,
+  selected: (base: Expr) => Expr,
+  base: T,
+): T => {
+  if (!ids?.length) return base;
+  const cond = ["in", ["get", "id"], ["literal", [...ids]]];
+  const wrap = (b: Expr) => ["case", cond, selected(b), b];
+  return (mapZoomStops(base, wrap) ?? wrap(base)) as T;
+};
 
 /** 選取狀態的倍率／固定值，集中在這裡方便一起調整。 */
 const SELECTED = {
@@ -203,9 +249,9 @@ export function addGeoLayer(map: MapLibreMap, spec: GeoLayerSpec) {
     const baseStroke = render.strokeWidth ?? 1.5;
     const baseOpacity = render.opacity ?? 0.85;
     const paint = {
-      radius: whenSelected(highlightIds, ["*", baseRadius, SELECTED.radiusScale], baseRadius),
-      stroke: whenSelected(highlightIds, SELECTED.strokeWidth, baseStroke),
-      opacity: whenSelected(highlightIds, SELECTED.opacity, baseOpacity),
+      radius: whenSelected(highlightIds, (b) => ["*", b, SELECTED.radiusScale], baseRadius),
+      stroke: whenSelected(highlightIds, () => SELECTED.strokeWidth, baseStroke),
+      opacity: whenSelected(highlightIds, () => SELECTED.opacity, baseOpacity),
       // 級距上色的圖層（水庫蓄水率）用表達式取代單一色；`color` 仍然是圖層的
       // 身分色，圖例與抽屜色塊照樣用它。**選取狀態一樣不碰顏色**，見 whenSelected。
       color: (render.colorRamp ? rampExpression(render.colorRamp, color) : color) as string,
@@ -235,6 +281,66 @@ export function addGeoLayer(map: MapLibreMap, spec: GeoLayerSpec) {
         },
       });
     }
+
+    /**
+     * 圓點旁邊的文字（目前只有颱風的中心定位點用，見 registry/types.ts）。
+     *
+     * ⚠️ `onlyWhenSelected` 時，**沒有任何圖徵被選取就把 `text-field` 設成空字串**，
+     * 而不是把圖層拆掉——拆掉的話每次換選取都要重建 symbol 圖層，還得再排一次序。
+     * 空字串是 maplibre 認得的「不畫任何字」，成本接近零。
+     */
+    if (render.label) {
+      const labelId = `${instanceId}-label`;
+      const field =
+        typeof render.label.property === "string"
+          ? ["get", render.label.property]
+          : render.label.property;
+      /**
+       * ⚠️ 這裡跟 `whenSelected` 踩同一個坑：`property` 常常是一條依 zoom 切換的
+       * `step`（颱風的定位點低縮放只標日期、放大才加時刻），把它整條包進 `case`
+       * 會違反「zoom 只能在最外層」。所以一樣用 `mapZoomStops()` 把選取判斷推進
+       * 每個 stop 的輸出裡。
+       */
+      const selectedOnly = (b: Expr) => [
+        "case",
+        ["in", ["get", "id"], ["literal", [...(highlightIds ?? [])]]],
+        b,
+        "",
+      ];
+      const textField = render.label.onlyWhenSelected
+        ? highlightIds?.length
+          ? mapZoomStops(field, selectedOnly) ?? selectedOnly(field)
+          : ""
+        : field;
+
+      if (map.getLayer(labelId)) {
+        map.setLayoutProperty(labelId, "text-field", textField as never);
+        map.setPaintProperty(labelId, "text-color", color);
+      } else {
+        map.addLayer({
+          id: labelId,
+          type: "symbol",
+          source: sourceId,
+          ...zoom,
+          layout: {
+            "text-field": textField as never,
+            // 只有 "Noto Sans Bold" 確定存在於借用的 glyph 端點上（見上面的線標註）
+            "text-font": ["Noto Sans Bold"],
+            "text-size": render.label.size ?? 10,
+            // 標在圓點正上方，才不會蓋住它自己代表的那個點
+            "text-offset": render.label.offset ?? [0, -1.1],
+            // ⚠️ 不設 `text-allow-overlap`：定位點很密（近年颱風的警報期間是
+            // 1 小時一筆），要讓 maplibre 的碰撞偵測自己把擠在一起的那些丟掉
+            "text-padding": 2,
+          },
+          paint: {
+            "text-color": color,
+            "text-halo-color": "#fff",
+            "text-halo-width": 1.4,
+          },
+        });
+      }
+    }
     return;
   }
 
@@ -242,8 +348,8 @@ export function addGeoLayer(map: MapLibreMap, spec: GeoLayerSpec) {
     const id = `${instanceId}-line`;
     const baseWidth = render.width ?? 1.4;
     const baseOpacity = render.opacity ?? 0.9;
-    const lineWidth = whenSelected(highlightIds, ["*", baseWidth, SELECTED.lineScale], baseWidth);
-    const lineOpacity = whenSelected(highlightIds, SELECTED.opacity, baseOpacity);
+    const lineWidth = whenSelected(highlightIds, (b) => ["*", b, SELECTED.lineScale], baseWidth);
+    const lineOpacity = whenSelected(highlightIds, () => SELECTED.opacity, baseOpacity);
 
     if (map.getLayer(id)) {
       map.setPaintProperty(id, "line-color", color);
@@ -308,7 +414,7 @@ export function addGeoLayer(map: MapLibreMap, spec: GeoLayerSpec) {
   // fill：面 + 獨立的外框線圖層
   const fillId = `${instanceId}-fill`;
   const baseFillOpacity = render.fillOpacity ?? 0.18;
-  const fillOpacity = whenSelected(highlightIds, SELECTED.fillOpacity, baseFillOpacity);
+  const fillOpacity = whenSelected(highlightIds, () => SELECTED.fillOpacity, baseFillOpacity);
   if (map.getLayer(fillId)) {
     map.setPaintProperty(fillId, "fill-color", color);
     map.setPaintProperty(fillId, "fill-opacity", fillOpacity);
@@ -330,7 +436,7 @@ export function addGeoLayer(map: MapLibreMap, spec: GeoLayerSpec) {
   const baseOutline = render.outlineWidth ?? 1;
   const outlineWidth = whenSelected(
     highlightIds,
-    ["*", baseOutline, SELECTED.outlineScale],
+    (b) => ["*", b, SELECTED.outlineScale],
     baseOutline,
   );
   if (map.getLayer(outlineId)) {

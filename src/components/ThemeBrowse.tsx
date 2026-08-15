@@ -50,9 +50,17 @@ export function browseLayerExtra({
     const fc = dataOf(layer.id);
     if (!fc) return null;
 
-    // 附屬圖徵（五大山脈 → 主峰）巢狀排在各自的母圖徵底下。資料還沒到就先不巢狀，
-    // 清單本身照常顯示——這跟母圖層資料未到時整個不畫是一致的處理。
-    const attach = layer.attach;
+    /**
+     * 附屬圖徵（五大山脈 → 主峰）巢狀排在各自的母圖徵底下。資料還沒到就先不巢狀，
+     * 清單本身照常顯示——這跟母圖層資料未到時整個不畫是一致的處理。
+     *
+     * ⚠️ **附屬圖層沒有宣告 `browse` 就不列**，跟一般圖層的規則一致：沒有 `browse`
+     * 就代表「這些圖徵不是一份可以逐一點選的清單」。曾經寫成 `attach.browse ?? {}`
+     * 而無條件巢狀，颱風的 757 個中心定位點因此全部灌進抽屜——**一個圖層的清單
+     * 變成 771 列**，每個颱風底下掛著五十幾個沒有名字、`detail` 又是 `none`
+     * （點了什麼都不會發生）的子項目。實測踩過。
+     */
+    const attach = layer.attach?.browse ? layer.attach : undefined;
     const attachData = attach ? dataOf(attach.id) : null;
 
     return (

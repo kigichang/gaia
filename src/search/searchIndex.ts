@@ -155,9 +155,17 @@ async function featureHits(
 
   const hits: SearchHit[] = [];
 
-  // 附屬圖徵（五大山脈 → 主峰）也要搜得到：主峰以前在「地形景點」圖層裡、本來就
-  // 進得了索引，搬家之後不補這一段，搜「玉山」就會突然找不到。
-  if (layer.attach) {
+  /**
+   * 附屬圖徵（五大山脈 → 主峰）也要搜得到：主峰以前在「地形景點」圖層裡、本來就
+   * 進得了索引，搬家之後不補這一段，搜「玉山」就會突然找不到。
+   *
+   * ⚠️ **但要跟一般圖層同一條規則：沒有 `browse` 就不索引。** 索引一份資料代表
+   * 建索引時就得把它抓下來，而搜尋索引是 lazy 的（見檔頭）——颱風的中心定位點
+   * 有 757 筆、118 KB，而且**沒有 `name`**，抓下來一筆搜尋結果也產不出來，
+   * 等於讓每個學生白付那 118 KB。這跟特有種觀測點要靠 `items.indexFeatures`
+   * 明確開啟是同一個判斷。
+   */
+  if (layer.attach?.browse) {
     const attachFc = await resolveLayerData(layer.attach.source);
     for (const feature of attachFc?.features ?? []) {
       const props = feature.properties ?? {};
