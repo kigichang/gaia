@@ -135,6 +135,18 @@ try {
 }
 
 // ── 產生／手繪的 geojson ────────────────────────────────────────────────
+/**
+ * 刻意跟另一個圖層共用 `properties.id` 的產物，因此**允許重複**。
+ *
+ * 颱風的 757 個中心定位點共用母圖層那 14 個颱風的 id——那是 CLAUDE.md
+ * 「三層共用 id」的同一條規則：同一個實體就該是同一個 id，點定位點才會開出
+ * 那個颱風的卡片、選取時整條路徑才會連同它所有的定位點一起加粗。
+ *
+ * ⚠️ 這是白名單不是開關：其他檔案的 id 重複幾乎都是 bug（`slugify()` 把中文
+ * 剝成空字串是最常見的一種），照樣要讓驗證失敗。
+ */
+const SHARED_ID_COLLECTIONS = new Set(["data/geo/tw-typhoon-centers.geojson"]);
+
 /** 相對於 public/ 的路徑 → 該檔案裡所有 feature 的 id */
 const geoCollectionIds = new Map();
 for (const relDir of GEO_DATA_DIRS) {
@@ -157,7 +169,7 @@ for (const relDir of GEO_DATA_DIRS) {
     }
     const ids = result.data.features.map((f) => f.properties.id);
     const dupes = ids.filter((id, i) => ids.indexOf(id) !== i);
-    if (dupes.length) {
+    if (dupes.length && !SHARED_ID_COLLECTIONS.has(publicPath)) {
       errors.push(`${publicPath} → properties.id 重複：${[...new Set(dupes)].join("、")}`);
     }
     geoCollectionIds.set(publicPath, new Set(ids));

@@ -77,7 +77,10 @@ const SUFFIXES: Record<GeometryKind, readonly string[]> = {
 /** 一個 instance 展開出來的所有 maplibre 圖層 id（由下往上排）。 */
 export function geoLayerIds(instanceId: string, render: LayerRender): string[] {
   const ids = SUFFIXES[render.kind].map((s) => `${instanceId}-${s}`);
-  if (render.kind === "line" && render.label) ids.push(`${instanceId}-label`);
+  // 線與圓點都可以帶標註（圓點的目前只有颱風定位點用，見 types.ts）
+  if ((render.kind === "line" || render.kind === "circle") && render.label) {
+    ids.push(`${instanceId}-label`);
+  }
   return ids;
 }
 
@@ -94,7 +97,10 @@ export function geoHitLayerIds(instanceId: string, render: LayerRender): string[
   // 高程設色沒有 feature，點不到也不該綁互動（綁了 maplibre 會直接報錯）
   if (render.kind === "elevation") return [];
   if (render.kind === "fill") return [`${instanceId}-fill`];
-  if (render.kind === "circle") return [`${instanceId}-points`];
+  if (render.kind === "circle") {
+    // 圓點的標註同理要一起綁：文字比圓點大，使用者會去點字
+    return render.label ? [`${instanceId}-points`, `${instanceId}-label`] : [`${instanceId}-points`];
+  }
   return render.label
     ? [`${instanceId}-line`, `${instanceId}-label`]
     : [`${instanceId}-line`];

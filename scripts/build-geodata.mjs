@@ -91,6 +91,15 @@ import {
   fetchReservoirBasics,
   formatCapacity,
 } from "./lib/reservoirs.mjs";
+import {
+  CATEGORY_ORDER as TYPHOON_CATEGORY_ORDER,
+  LICENSE as TYPHOON_LICENSE,
+  PATH_CATEGORIES,
+  SOURCE_LABEL as TYPHOON_SOURCE_LABEL,
+  SOURCE_PAGE as TYPHOON_SOURCE_PAGE,
+  categoryLabel,
+  fetchTyphoons,
+} from "./lib/typhoons.mjs";
 import { BASIN_URL, BASIN_IDS, RIVERS, RIVER_CATEGORY_ORDER } from "./lib/rivers.mjs";
 
 const exists = (p) => access(p).then(() => true).catch(() => false);
@@ -1388,7 +1397,138 @@ const SOURCES = [
         // feature 順序＝可點清單的順序。由新到舊——學生想找的多半是近年那幾次。
         .sort((a, b) => b.properties.date.localeCompare(a.properties.date)),
   },
+
+  {
+    id: "tw-typhoons",
+    label: "颱風路徑",
+    /**
+     * 14 個侵臺颱風的官方最佳路徑（見 lib/typhoons.mjs 的檔頭）。
+     *
+     * ⚠️ **`tolerance: 0`——這一層絕對不能簡化。** 最佳路徑本來就是每 6 小時
+     * 一個定位點（近年警報期間才加密到 1–3 小時），本來就稀疏；Douglas–Peucker
+     * 會把「在花蓮登陸、橫越中央山脈、從桃園出海」那幾個轉折點抹平，而那正是
+     * 這一層唯一要教的東西。整份也只有二十幾 KB，沒有簡化的理由。
+     */
+    load: async (fetchWithRetry) => fetchTyphoons(fetchWithRetry),
+    sourceUrl: TYPHOON_SOURCE_PAGE,
+    license: TYPHOON_LICENSE,
+    sourceLabel: TYPHOON_SOURCE_LABEL,
+    tolerance: 0,
+    digits: 3,
+    transform: ({ typhoons }) =>
+      typhoons
+        .map((t) => ({
+          type: "Feature",
+          geometry: { type: "LineString", coordinates: t.track.map((p) => [p.lng, p.lat]) },
+          properties: {
+            id: t.id,
+            /**
+             * ⚠️ 必須叫 `name`（searchIndex 的 featureHits() 只認它），而且**只放
+             * 中文名**。放成「莫拉克（2009）」的話沿線標註會長一倍——`symbol-placement:
+             * line` 對字串長度極度敏感（見 CLAUDE.md「沿線標註很脆弱」）。年份在
+             * `meta` 裡，清單與搜尋副標都看得到。
+             */
+            name: t.name,
+            // 上游的英文名，進搜尋 haystack（搜 MORAKOT 也要找得到）
+            en: t.en,
+            year: t.year,
+            /**
+             * 可點清單的組名。⚠️ `browse.groupBy` **依序切、不排序**，所以下面的
+             * sort 必須讓同一類的颱風連續。
+             */
+            category: categoryLabel(t.primary.category),
+            categoryNote: PATH_CATEGORIES[t.primary.category],
+            ...(t.primary.landfall && { landfall: t.primary.landfall }),
+            ...(t.primary.intensity && { intensity: t.primary.intensity }),
+            // ⚠️ 缺值一律不寫這個 key，不可以寫 null——`["has", prop]` 會判成 true，
+            // 把資料缺漏當成 0（水庫蓄水率那次的坑）
+            ...(t.primary.maxWind != null && { maxWind: t.primary.maxWind }),
+            ...(t.minPressure != null && { minPressure: t.minPressure }),
+            ...(t.visits.length > 1 && { visits: t.visits.length }),
+            meta: `${t.year} 年・${t.primary.landfall ? `${t.primary.landfall}登陸` : "未登陸"}`,
+          },
+        }))
+        .sort(
+          (a, b) =>
+            TYPHOON_CATEGORY_ORDER.indexOf(String(rawCategory(a))) -
+              TYPHOON_CATEGORY_ORDER.indexOf(String(rawCategory(b))) ||
+            a.properties.year - b.properties.year,
+        ),
+  },
+
+  {
+    id: "tw-typhoon-centers",
+    label: "颱風定位點",
+    // ⚠️ 757 個定位點刻意共用母圖層那 14 個颱風的 id，見下面 properties 的說明
+    sharedIds: true,
+    /**
+     * 每一筆官方定位的颱風中心（14 條路徑共 757 點）。
+     *
+     * 這是註冊表裡 `tw-typhoons` 的**附屬圖層**（`attach`），沒有自己的核取方塊
+     * ——一串沒有路徑的點，跟一條沒有強度變化的線，都只講了一半。強度沿路徑的
+     * 變化（在洋面上增強、過中央山脈之後減弱）是這一組真正的教學內容。
+     *
+     * ⚠️ **`detail` 是 `none`，所以這些點不綁點擊**（見 useGeoLayers 的 Effect 1）。
+     * 那是刻意的：點在線上，不綁的話點擊會穿透到底下的路徑線、開出颱風的卡片；
+     * 綁了反而要為 757 個「某年某月某日某時的中心位置」各寫一張卡。
+     *
+     * ⚠️ **因此 properties 裡不放任何給人看的字串**（沒有 name／meta）。
+     * 那是 QuakeCard 那次 190 KB → 400 KB 的教訓：能從數值重算的東西不要存兩份。
+     */
+    load: async (fetchWithRetry) => fetchTyphoons(fetchWithRetry),
+    sourceUrl: TYPHOON_SOURCE_PAGE,
+    license: TYPHOON_LICENSE,
+    sourceLabel: TYPHOON_SOURCE_LABEL,
+    tolerance: 0,
+    digits: 3,
+    transform: ({ typhoons }) =>
+      typhoons.flatMap((t) =>
+        t.track.map((p, i) => ({
+          type: "Feature",
+          geometry: { type: "Point", coordinates: [p.lng, p.lat] },
+          properties: {
+            /**
+             * ⚠️ **刻意跟母圖層那條路徑共用同一個 id**（所以這份檔案裡有 757 筆
+             * 但只有 14 個不重複的 id，`sharedIds` 就是為它開的）。
+             *
+             * 這是 CLAUDE.md「三層共用 id」那條既有規則的同一件事：定位點與路徑
+             * 講的是**同一個颱風**，共用 id 之後三件事自動成立——點定位點會開出
+             * 那個颱風的卡片、選取時整條路徑連同它所有的定位點一起加粗、
+             * `highlightIds` 只需要一個字串而不是 55 個。
+             *
+             * ⚠️ 早期版本給每個點一個唯一 id（`morakot-2009-012`）＋ `detail: none`，
+             * 想讓點擊穿透到底下的線。**實測那條路是壞的**：圓點半徑比線寬大得多，
+             * 點在圓點的外圈上會落在線的命中範圍之外，於是**什麼都不會發生**
+             * ——沒有卡片、沒有錯誤、畫面毫無反應。
+             */
+            id: t.id,
+            /**
+             * ⚠️ **臺灣時間**（UTC+8），在 `lib/typhoons.mjs` 換算好。
+             *
+             * 這是產物裡唯一一組給人看的字串，理由見那裡：maplibre 的表達式做不了
+             * 時區換算，而選取路徑之後要在圓點旁邊標時刻——那是「這條路徑往哪個
+             * 方向走」唯一讀得出來的方式，尤其 1986 韋恩來回三次。
+             *
+             * ⚠️ 原始的 UTC 時戳**不放進產物**：兩份時間並存遲早會有人拿錯一份，
+             * 而 `date`/`hour` 是從它算出來的、可以重跑 `--force` 重建。
+             */
+            date: p.date,
+            hour: p.hour,
+            // 每天一個的日標（＝臺灣時間 08:00），低縮放時只標這些
+            ...(p.day && { day: true }),
+            ...(p.wind != null && { wind: p.wind }),
+            ...(p.pressure != null && { pressure: p.pressure }),
+            // 0＝未發布警報、1＝海上警報、2＝海上陸上警報（早年缺值時整個不寫）
+            ...(p.warn != null && { warn: p.warn }),
+          },
+        })),
+      ),
+  },
 ];
+
+/** 從 `category`（「第 3 類」／「特殊路徑」）取回官方原始代碼，只給上面的 sort 用。 */
+const rawCategory = (f) =>
+  f.properties.category === "特殊路徑" ? "特殊" : f.properties.category.replace(/[^0-9]/g, "");
 
 /**
  * 鄉鎮的形心與官方 id，給人口與作物兩層用：鄉鎮中文名（含縣市）→ `{ id, centroid }`。
@@ -1519,8 +1659,15 @@ async function build(source) {
     return false;
   }
 
+  /**
+   * id 重複多半代表 slugify 把中文剝成空字串、或上游的識別碼欄位變了，所以預設
+   * 直接失敗（活動斷層那次就是靠這道檢查擋下 33 筆同 id 的產物）。
+   *
+   * ⚠️ `sharedIds` 是**明確**的例外：附屬圖層刻意跟母圖層共用 id 時（颱風的
+   * 中心定位點），重複是設計而不是 bug。不要為了讓某個資料集過而隨手加這個旗標。
+   */
   const ids = features.map((f) => f.properties.id);
-  if (new Set(ids).size !== ids.length) {
+  if (!source.sharedIds && new Set(ids).size !== ids.length) {
     console.error(`\n✗ ${source.id}：properties.id 有重複`);
     return false;
   }

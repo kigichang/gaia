@@ -532,6 +532,16 @@ function ThemeMapView({ theme, chrome }: { theme: ThemeDefinition; chrome: Chrom
               }));
           }
           if (!layer.colorRole) return [];
+          /**
+           * ⚠️ 附屬圖層（`attach`）**原則上不進圖例**：它沿用母圖層的語意，多一列
+           * 只會讓「主峰」「縣市政府」這種本來就跟母圖層同色的東西佔掉圖例高度。
+           *
+           * 唯一的例外是**它自己有色階**——那時候母圖層那一列的單一色塊解釋不了畫面上
+           * 的顏色，而「有 ramp 就必須把級距畫出來」是既有規則（見 MapLegend.tsx）。
+           * 目前只有颱風的中心定位點（依強度分級）符合。
+           */
+          const attachRamp =
+            layer.attach?.render.kind === "circle" ? layer.attach.render.colorRamp : undefined;
           return [
             {
               key: layer.id,
@@ -542,6 +552,19 @@ function ThemeMapView({ theme, chrome }: { theme: ThemeDefinition; chrome: Chrom
               // 依數值分級上色的圖層要把級距一起畫進圖例（見 MapLegend.tsx）
               ramp: layer.render.kind === "circle" ? layer.render.colorRamp : undefined,
             },
+            ...(attachRamp && layer.attach
+              ? [
+                  {
+                    key: layer.attach.id,
+                    label: layer.attach.label,
+                    color: colorOf(layer.attach.colorRole),
+                    kind: layer.attach.render.kind,
+                    // 示意警語只掛母圖層那一列（比照植被帶六帶只掛第一列）
+                    schematic: undefined,
+                    ramp: attachRamp,
+                  },
+                ]
+              : []),
           ];
         }),
     [theme, activeLayerIds, activeItemIds, instances],

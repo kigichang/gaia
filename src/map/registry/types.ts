@@ -156,6 +156,26 @@ export type LayerRender =
        * 沒有這個屬性的 feature 畫成 `nodata.color`（資料缺漏 ≠ 數值很低）。
        */
       colorRamp?: ColorRamp;
+      /**
+       * 圓點旁邊的文字標註（另外開一個 `${instanceId}-label` symbol 圖層）。
+       *
+       * ⚠️ **`onlyWhenSelected` 幾乎一定要開。** 點圖層的圖徵數通常是三位數以上
+       * （颱風的中心定位點有 757 個），全部標出來只會蓋滿畫面；而真正需要文字的
+       * 時機是「使用者已經挑了一個圖徵、想讀出它的順序或數值」。沒有任何圖徵被
+       * 選取時，`text-field` 會是空字串（圖層仍然存在，只是不畫任何字）。
+       *
+       * 目前只有颱風的中心定位點用：選了某個颱風之後，路徑上的圓點會標出臺灣
+       * 時間的日期與時刻——那是「這條路徑往哪個方向走」唯一讀得出來的方式，
+       * 尤其 1986 韋恩在同一張圖上來回三次。
+       */
+      label?: {
+        /** 屬性名，或直接給一段 maplibre 表達式（比照 line 的 label） */
+        property: string | ExpressionSpecification;
+        size?: number;
+        /** 文字相對於圓點的偏移，單位是 em（預設 `[0, -1.1]`，標在點的正上方） */
+        offset?: [number, number];
+        onlyWhenSelected?: boolean;
+      };
     }
   | {
       kind: "line";
@@ -342,6 +362,13 @@ export interface LayerAttachment {
   colorRole: ColorRole;
   detail: DetailSpec;
   parentProperty: string;
+  /**
+   * 有宣告才會在母圖徵底下列出巢狀的可點清單（跟一般圖層的規則一致：沒有 `browse`
+   * 就代表這些圖徵不是一份可以逐一點選的清單）。
+   *
+   * ⚠️ 颱風的中心定位點刻意**不宣告**：757 個沒有名字、`detail` 又是 `none` 的點
+   * 灌進抽屜會把那一層的清單變成 771 列。
+   */
   browse?: LayerBrowse;
   /**
    * ⚠️ 縮放範圍**不會**從母圖層繼承，附屬圖層要自己宣告。
