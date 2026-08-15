@@ -4,6 +4,7 @@ import { ComparePage } from "./compare/ComparePage";
 import { ThemeMapPage } from "./pages/ThemeMapPage";
 import { DEFAULT_THEME_ID, getTheme } from "./map/registry/index";
 import { useTheme } from "./useTheme";
+import { useSoloSearch } from "./useSoloSearch";
 import type { ChromeState } from "./chrome";
 import type { BasemapId } from "./map/basemaps";
 import type { OverlayState } from "./map/MapView";
@@ -45,6 +46,7 @@ export function App() {
   }, [geoThemeId]);
 
   const { theme, setTheme } = useTheme();
+  const { soloSearch, setSoloSearch } = useSoloSearch();
 
   const chrome = useMemo<ChromeState>(
     () => ({
@@ -59,8 +61,10 @@ export function App() {
       },
       themePref: theme,
       onThemePrefChange: setTheme,
+      soloSearch,
+      onSoloSearchChange: setSoloSearch,
     }),
-    [overlays, basemap, geoThemeId, theme, setTheme],
+    [overlays, basemap, geoThemeId, theme, setTheme, soloSearch, setSoloSearch],
   );
 
   return (

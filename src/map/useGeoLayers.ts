@@ -75,6 +75,15 @@ export function useGeoLayers(
    * 各自拿同一份清單去比對就好。
    */
   highlightIds: readonly string[],
+  /**
+   * 「只顯示這一筆」：instanceId → 允許算繪的圖徵 id 清單。沒有列在裡面的
+   * instance 完全不受影響（那正是「只收自己那一層」的意思）。
+   *
+   * ⚠️ 跟 `highlightIds` 不同，這個**必須**知道是哪個 instance：過濾會讓其餘圖徵
+   * 消失，套錯層就是把別的圖層清空。目前唯一的來源是搜尋命中後的 A/B
+   * （見 ThemeMapPage 的 `soloFilters`）。
+   */
+  soloFilters: Readonly<Record<string, readonly string[]>> = {},
 ): () => void {
   const instancesRef = useRef(instances);
   instancesRef.current = instances;
@@ -85,6 +94,12 @@ export function useGeoLayers(
   highlightIdsRef.current = highlightIds;
   // 陣列每次算繪都是新的，用內容當 effect 依賴才不會白重跑（比照 instanceKey）
   const highlightKey = highlightIds.join("|");
+  // 同理，切底圖重套時也要帶著當下的過濾（否則 setStyle 之後所有圖徵會全部回來）
+  const soloFiltersRef = useRef(soloFilters);
+  soloFiltersRef.current = soloFilters;
+  const soloKey = Object.entries(soloFilters)
+    .map(([id, ids]) => `${id}=${ids.join(",")}`)
+    .join("|");
 
   // 只有「有哪些 instance」會影響互動綁定，資料載入完成不會。
   const instanceKey = instances.map((i) => i.instanceId).join("|");
@@ -184,6 +199,7 @@ export function useGeoLayers(
           minzoom: i.minzoom,
           maxzoom: i.maxzoom,
           highlightIds: highlightIdsRef.current,
+          soloIds: soloFiltersRef.current[i.instanceId],
         });
         applied.current.set(i.instanceId, i.render);
       }
@@ -194,8 +210,8 @@ export function useGeoLayers(
     applyRef.current = apply;
     apply();
     // 強調清單也要在這裡重跑：它只改 paint，addGeoLayer 對既有圖層走
-    // setPaintProperty，不會把圖層拆掉重加。
-  }, [map, instances, highlightKey]);
+    // setPaintProperty，不會把圖層拆掉重加。過濾（soloKey）同理走 setFilter。
+  }, [map, instances, highlightKey, soloKey]);
 
   // 換地圖實例時清掉記帳，否則新地圖會以為圖層已經加過
   useEffect(() => {

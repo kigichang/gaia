@@ -39,6 +39,18 @@ interface ThemeMapPageProps {
 }
 
 /**
+ * 「只顯示這一筆」的目標。`featureId` 同時是**解除的判準**：選取換成別的圖徵
+ * （或被清成 null）就代表這次聚焦結束，見底下那條唯一的解除規則。
+ */
+interface SoloTarget {
+  layerId: string;
+  itemId?: string;
+  featureId: string;
+  /** chip 上要顯示的名稱，直接取自搜尋結果的標題 */
+  label: string;
+}
+
+/**
  * 主題地圖頁：`/theme/:themeId`。
  *
  * 整頁由 `src/map/registry` 的圖層註冊表驅動，加一個新主題或新圖層只要加一筆
@@ -64,6 +76,11 @@ function ThemeMapView({ theme, chrome }: { theme: ThemeDefinition; chrome: Chrom
   const [selected, setSelected] = useState<Selection>(() => theme.initialSelection ?? null);
   const [data, setData] = useState<Record<string, GeoJSON.FeatureCollection | null>>({});
   const [pendingHit, setPendingHit] = useState<SearchHit | null>(null);
+  /**
+   * 「只顯示這一筆」的目標（A/B 的 B 那一邊）。**只有搜尋命中會設定它**——點地圖
+   * 圖徵、點抽屜清單一列都維持現行行為，兩個 arm 一樣。
+   */
+  const [solo, setSolo] = useState<SoloTarget | null>(null);
   const { open: drawerOpen, setOpen: setDrawerOpen } = useDrawerOpen();
 
   // 抽屜的開關繫結。刻意上提到這裡：☰ 住在搜尋藥丸裡、面板是抽屜，兩者不再
@@ -209,8 +226,61 @@ function ThemeMapView({ theme, chrome }: { theme: ThemeDefinition; chrome: Chrom
     return ids;
   }, [selected, instances, parentProperties]);
 
+  /**
+   * 解除「只顯示這一筆」。**全站只有這一條規則**，不要把解除散到各個事件處理器裡。
+   *
+   * 聚焦的生命週期綁在 `selected` 上，所以這一條同時涵蓋：點地圖上別的圖徵、點抽屜
+   * 清單的別一列、關掉詳情面板（✕）、按 Escape 的第一段、換主題（`selected` 會被
+   * 清成 null）。另外再看一眼圖層還在不在，把「聚焦中卻把該圖層取消勾選」也收掉，
+   * 否則重新勾選時會幽靈復活成只剩一筆。
+   *
+   * ⚠️ 因此 Escape 階梯**不需要、也不可以**多一段。那個三段式仲裁（詳情 → 抽屜 →
+   * 清空疊圖）是刻意設計的，見上面那個 document 監聽的說明。
+   */
+  useEffect(() => {
+    if (!solo) return;
+    if (selected?.featureId !== solo.featureId || !activeLayerIds.has(solo.layerId)) {
+      setSolo(null);
+    }
+  }, [solo, selected, activeLayerIds]);
+
+  /**
+   * 哪些 instance 要套過濾，以及各自允許哪些圖徵。
+   *
+   * **只收命中的那一層**加上它的附屬圖層（主峰／縣市政府／颱風中心定位點）——其他
+   * 勾選中的圖層完全不動。
+   *
+   * 允許的 id 直接重用 `highlightIds`，附屬關係就自動成立了：那份清單已經用
+   * `attach.parentProperty` 雙向解出母子（山脈↔主峰、縣市↔縣市政府），而颱風的
+   * `parentProperty` 退化成 `"id"`（路徑與定位點共用同一個 id），三種情況都涵蓋。
+   */
+  const soloFilters = useMemo<Record<string, readonly string[]>>(() => {
+    if (!solo) return {};
+    const layer = theme.layers.find((l) => l.id === solo.layerId);
+    const ids = [layerInstanceId(solo.layerId, solo.itemId)];
+    if (layer?.attach) ids.push(layer.attach.id);
+    return Object.fromEntries(ids.map((id) => [id, highlightIds]));
+  }, [solo, theme, highlightIds]);
+
+  /**
+   * 聚焦時被藏起來的圖徵數，給 chip 講清楚「少掉的是多少」。
+   *
+   * 只數母圖層那一份（附屬圖徵是它的一部分，另外數會變成「隱藏 13＋13」這種讀不懂
+   * 的數字）。資料本身沒有被過濾，所以這是從 `instances` 的原始 features 算的。
+   */
+  const soloHidden = useMemo(() => {
+    if (!solo) return 0;
+    const instanceId = layerInstanceId(solo.layerId, solo.itemId);
+    const features = instances.find((i) => i.instanceId === instanceId)?.data?.features;
+    if (!features) return 0;
+    return features.filter((f) => {
+      const id = f.properties?.id;
+      return typeof id === "string" && !highlightIds.includes(id);
+    }).length;
+  }, [solo, instances, highlightIds]);
+
   // 切底圖之後由 MapView 明確回呼重套主題圖層（見 useGeoLayers 的說明）。
-  const reapplyLayers = useGeoLayers(map, instances, handleSelect, highlightIds);
+  const reapplyLayers = useGeoLayers(map, instances, handleSelect, highlightIds, soloFilters);
 
   // 換主題：重設圖層開關與詳情卡，並把相機飛過去。
   //
@@ -394,6 +464,15 @@ function ThemeMapView({ theme, chrome }: { theme: ThemeDefinition; chrome: Chrom
     (hit: SearchHit) => {
       pendingHitRef.current = hit;
       setPendingHit(hit);
+      /**
+       * ⚠️ 新的一次搜尋就是新的意圖，先把上一次的聚焦放掉。
+       *
+       * 不能只靠底下那條「`selected` 換人就解除」的規則：**圖層本身**的搜尋結果
+       * （搜「河流」）與高程分帶都會在設定 `selected` 之前就 return，`selected`
+       * 原封不動，於是上一次聚焦的圖層會**繼續只畫一筆**——使用者明明要求看整層。
+       * 命中圖徵的那條路徑會在下面重新設定它。
+       */
+      setSolo(null);
       if (hit.themeId !== theme.id) navigate(`/theme/${hit.themeId}`);
     },
     [theme, navigate],
@@ -452,6 +531,32 @@ function ThemeMapView({ theme, chrome }: { theme: ThemeDefinition; chrome: Chrom
       if (detail && detail.type !== "none") {
         setSelected({ detail, featureId: pendingHit.featureId });
       }
+      /**
+       * A/B 的 B 那一邊：只畫命中的這一筆。三個排除條件都是必要的——
+       *
+       * - `detail.type === "none"`（緯度參考線）不開卡片，而聚焦的生命週期綁在
+       *   `selected` 上，設了會被上面那條解除規則立刻清掉，變成閃一下。
+       * - 高程分帶沒有 geojson、沒有圖徵可比對（`applySoloFilter` 也會擋一次）。
+       * - 「子項目本身」那種命中（搜一個物種）目標是整份觀測點，那些點的 id 不是
+       *   物種 id，過濾下去會**整層消失**。判準沿用 `flyToFeature` 的同一條。
+       */
+      const targetsItemItself =
+        layer.items && (pendingHit.itemId === undefined || pendingHit.itemId === pendingHit.featureId);
+      const canSolo =
+        chrome.soloSearch === "solo" &&
+        !isElevation &&
+        !targetsItemItself &&
+        Boolean(detail && detail.type !== "none");
+      setSolo(
+        canSolo
+          ? {
+              layerId: layer.id,
+              itemId: pendingHit.itemId,
+              featureId: pendingHit.featureId,
+              label: pendingHit.title,
+            }
+          : null,
+      );
       flyToFeature(layer, pendingHit.featureId, attached, pendingHit.itemId);
     } else if (inst?.data) {
       // 圖層本身的結果：框住整份資料。⚠️ 這裡要容忍 inst 不存在——上面那條守衛
@@ -462,7 +567,16 @@ function ThemeMapView({ theme, chrome }: { theme: ThemeDefinition; chrome: Chrom
       }
     }
     clearPending();
-  }, [pendingHit, theme, map, instances, enableLayer, flyToFeature, clearPending]);
+  }, [
+    pendingHit,
+    theme,
+    map,
+    instances,
+    enableLayer,
+    flyToFeature,
+    clearPending,
+    chrome.soloSearch,
+  ]);
 
   // 資料抓失敗時 instance 的 data 永遠是 null，effect 不會再被觸發，pending 會
   // 一直卡著（並讓下一次換主題誤以為還有待處理的目標）。給它一條死線。
@@ -633,10 +747,35 @@ function ThemeMapView({ theme, chrome }: { theme: ThemeDefinition; chrome: Chrom
       </div>
 
       <div className="map-top-right">
-        <AppMenu themePref={chrome.themePref} onThemePrefChange={chrome.onThemePrefChange} />
+        <AppMenu
+          themePref={chrome.themePref}
+          onThemePrefChange={chrome.onThemePrefChange}
+          soloSearch={chrome.soloSearch}
+          onSoloSearchChange={chrome.onSoloSearchChange}
+        />
       </div>
 
       <div className="map-bottom-left">
+        {/*
+          ⚠️ 聚焦時畫面上會少掉十幾條線，而**畫面本身沒有任何線索說明為什麼**——
+          這是這個功能唯一真正的風險，所以這個 chip 不是裝飾，是它的前提。
+
+          放在左下角而不是搜尋框底下：這一欄本來就會用 --left-panel-w／
+          --bottom-sheet-h 閃避抽屜與詳情面板（「面板閃避只有一個機制」），不必寫
+          任何新的定位規則；而且抽屜開著時被收起來的是 .map-top-left，不是這一欄，
+          所以逃生按鈕在抽屜開著時仍然按得到。
+        */}
+        {solo && (
+          <div className="map-solo-chip">
+            <span className="map-solo-chip-text">
+              只顯示：<strong>{solo.label}</strong>
+              {soloHidden > 0 && `（已隱藏同層 ${soloHidden} 筆）`}
+            </span>
+            <button type="button" onClick={() => setSolo(null)}>
+              顯示全部
+            </button>
+          </div>
+        )}
         <MapLegend entries={legendEntries} />
         <MapLayersPopover chrome={chrome} />
       </div>
