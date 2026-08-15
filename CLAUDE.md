@@ -59,7 +59,7 @@ Node ≥ 22.12（vite 8 要求）。開發機與 CI 都用 Node 24。
 | 鄉鎮別人口與人口密度 | `data.gov.tw` 資料集 **8410**「各鄉鎮市區人口密度」→ `opdadm.moi.gov.tw` 的年度 CSV | **只在建置期呼叫**，內政部戶政司。⚠️ **前兩列都是標頭**，年份寫死不自動取最新，見下 |
 | 鄉鎮別作物種植面積 | `data.gov.tw` 資料集 **7302**「農情調查」→ `data.moa.gov.tw/Service/OpenData/FromM/TownCropData.aspx` | **只在建置期呼叫**（有 CORS 但 43,538 筆不該讓瀏覽器自己聚合）。⚠️ **不帶篩選只回 9999 筆**，且**不含水稻**，見下 |
 | 臺灣鄉鎮市區界線 | `data.gov.tw/api/v2/rest/dataset/**7441**` → TGOS 的 **SHP** zip（同一個單位） | **只在建置期呼叫**。⚠️ 這份**沒有 GML 只有 SHP**，而且 zip 裡有兩份 shapefile，見下 |
-| 世界行政區／河流幾何 | `raw.githubusercontent.com/nvkelso/natural-earth-vector`（Natural Earth） | **只在建置期呼叫**，public domain |
+| 世界行政區／河流幾何、國際換日線 | `raw.githubusercontent.com/nvkelso/natural-earth-vector`（Natural Earth） | **只在建置期呼叫**，public domain。換日線在 `ne_10m_geographic_lines`，見下 |
 | 地震目錄 | `earthquake.usgs.gov/fdsnws/event/1/query`（USGS） | **只在建置期呼叫**，免金鑰、`ACAO: *`。全球與臺灣兩層共用這一個端點 |
 | 臺灣活動斷層 | `geologycloud.tw/data/zh-tw/ActiveFault`（經濟部地質調查及礦業管理中心「地質雲」） | **只在建置期呼叫**。⚠️ data.gov.tw 那份**只有 WMS 影像**，拿不到向量；而且這是 **33 條的舊版**，見下 |
 | 交通軸線幾何（高鐵／國道／臺鐵幹線）、河川幹流河道 | `overpass-api.de/api/interpreter`（OpenStreetMap Overpass） | **只在建置期呼叫**，ODbL 1.0。⚠️ **沒有 User-Agent 一律回 HTTP 406**；河川的選擇器**不能寫 `waterway=river`**（一半以上是 `stream`），要用 `type=waterway`＋`ref`，見下 |
@@ -1326,7 +1326,7 @@ maplibre-contour 把 worker 以 Blob URL 內嵌，**不需要額外部署 worker
 |---|---|---|
 | 臺灣地理 | `/theme/taiwan` | 臺灣123（土地與島群）、行政區（縣市、鄉鎮市區）、地形、天然災害（活動斷層、地震、颱風路徑與災損）、水系（118 個列管水系、水庫即時水情、河川流域分區）、人文（原住民族、交通軸線、古蹟、人口與都市體系）、植被生態（特有種、國家公園與保護區、垂直植被帶）、農業物產（主要作物分布） |
 | 世界地理 | `/theme/world` | 世界重要城市、國界與大洲、地形水系、人文專題 |
-| 全球地理形貌 | `/theme/global` | 緯度參考線、氣候與生物群系、洋流、板塊與地震帶 |
+| 全球地理形貌 | `/theme/global` | 參考線（緯度參考線、國際換日線）、氣候與生物群系、洋流、板塊與地震帶 |
 
 三個主題頁都是**滿版地圖 + 浮動控制**（仿 Google Map），沒有頁首也沒有側欄——版面機制見下面的「全螢幕地圖外框與浮動控制」。
 
@@ -1767,6 +1767,29 @@ CVD 9.1、一般視覺 22.9。也就是說本檔案舊版寫的「物種三色 a
 
 `reference`（緯度參考線）與 `hazard`（地震帶）是**非分類的固定角色**，比照 hillshade 的棕色，刻意排除在色票驗證之外。地震帶尤其不該給分類色相：2800 個依震級縮放的點是**密度場**，教學內容是「地震帶沿板塊邊緣浮現」，不是「這個色相代表地震」；給它色相不但擠爆色票驗證，2800 個不透明白框圓點在投影機上也只是一坨糊的（所以 `strokeWidth: 0` 必須是可設定的）。
 
+#### ⚠️ 但中性色的另一頭是「看不見」，那不是「低調」是壞掉
+
+「全球地震帶」初版是 `radius: mag 6.5→1.5, 9→6` ＋ `opacity: 0.35`，實測在**主題預設
+視角**（`center [0,10]`、`zoom 1.8`，也就是勾起圖層之後看到的第一眼）幾乎完全看不見，
+使用者的回報是「勾了圖層但地圖上沒有任何資料」。三件事疊在一起：
+
+1. 那個視角正中央是**非洲與大西洋**——全球最沒有地震的地方——環太平洋全被推到畫面兩側；
+2. 絕大多數圖徵落在 M6.5–7，半徑只有 **1.5–2 px**，而且半徑不隨 zoom 變，低縮放時就是
+   這麼小；
+3. 0.35 的深灰在淺色底圖上本來就接近看不出來。
+
+現在是 `2.6→7` ＋ `0.55`（實測 zoom 1.8 讀得出安地斯、中美洲、印尼、日本、喜馬拉雅與
+地中海－伊朗各條帶，zoom 4 的印尼一帶仍是一顆顆分得開的點）。
+
+⚠️ **`queryRenderedFeatures` 完全抓不到這種問題**：出事的時候它照樣回 1,829 筆，圖層在、
+source 也 loaded。這一類「畫得出來但看不見」的缺陷**只能看畫面**，而且要在**圖層自己的
+預設視角**看——換個地方看（跳到環太平洋）它一直都是好的。
+
+⚠️ **也不要用白框去救。** 同一個視角實測 `strokeWidth: 0.6`：日本海溝與印尼一帶變成一片
+白色雜訊、連底圖地名都被吃掉，正是這一層當初決定不畫外框的原因。要提高可讀性請動
+**不透明度與半徑下限**，不要動外框。（「臺灣地震」相反——612 筆疊在忙碌的 NLSC 底圖上，
+白框才是關鍵。兩層的判準不同，不要互相照抄。）
+
 ### 選取中的圖徵怎麼強調
 
 同一個圖層裡所有圖徵都是同一個顏色（顏色代表**圖層身分**，不是個別圖徵），所以選了 16 族裡的某一族之後，地圖上根本認不出哪一顆紅點是它。
@@ -1866,6 +1889,27 @@ CVD 9.1、一般視覺 22.9。也就是說本檔案舊版寫的「物種三色 a
 
 - **縣市界的簡化容差是 0.0008°（≈89 公尺），不是別的圖層那個 0.0005°。** NLSC 原始資料有 33 萬個點，不簡化是 570 KB；0.0008 落在 192 KB，在 maxzoom 11 約 1.3 px、在實際教學會用的 zoom 7–10 都是次像素。這個檔案會被搜尋索引 lazy 抓取，一個班 30 個學生同時開站時的成本是選它的主要理由。
 - **Natural Earth 的河流沒有中文名欄位**，中文名靠 `build-geodata.mjs` 裡的 `RIVER_NAMES_ZH` 對照表。對不到就沿用原名。注意 NE 把黃河的 name 寫成 `"Huang"`（不是 `"Huang He"`）。
+
+- **國際換日線（`date-line`）不是 180° 經線，不要自己畫一條直線交差。** 它為了不讓同一個
+  國家跨在兩個日期上，繞開了楚科奇、阿留申群島、吉里巴斯與薩摩亞——那個折線形狀正是這
+  一層唯一要教的東西（吉里巴斯 1995 年把萊恩群島改到線的西側，才有現在往東凸到西經 150°
+  的那一大塊）。幾何取自 Natural Earth 的 `ne_10m_geographic_lines`（`featurecla` 就是
+  `Date line`），是製圖界的標準畫法，所以這一層**不標 `schematic`**；但「沒有國際條約規定
+  它在哪」仍然要講，寫在註冊表的 `notes` 裡。
+
+  ⚠️ **上游把它切成 5 段是必要的，不是資料髒。** 折線橫跨 ±180，接成一段的話某兩個相鄰
+  節點會從 179.99 跳到 -179.99，maplibre 會照著畫一條**繞過整個地球**的橫線，而且不會有
+  任何錯誤訊息。`build-geodata.mjs` 的 transform 因此逐段檢查經度跨距 < 180°。
+
+  ⚠️ **沿線標註的 `spacing` 不可以照抄緯度參考線的 320。** 那是給九條各自很長的橫線用的；
+  換日線被切成 5 段、單段在畫面上經常短於 320px——實測主題預設視角（zoom 1.8）用 320 是
+  **0 個標註**、240 是 1 個，200 才穩定拿到 2 個。標註是垂直排列的（maplibre 對 CJK 的
+  `line` 放置會自動直排，字是正的不是側躺），跟紙本地圖的習慣一致。
+
+  ⚠️ **搜「國際換日線」只會勾起圖層、相機不會動**，那是 `kind: "layer"` 搜尋結果的**既有
+  行為**（`ThemeMapPage` 的 pendingHit effect 在 `!pendingHit.featureId` 就 return，
+  fitBounds 那一段永遠走不到），不是這一層特有的——實測搜「全球地震帶」也一樣。要修的話
+  是那條守衛，不是這個圖層。
 - **相鄰的面各自簡化會在共用邊界開出次像素縫隙**（Douglas–Peucker 不保拓樸）。免依賴的緩解方式是設 `maxzoom`（縣市界設 11），讓它在縫隙變得可解析之前就停止繪製。
 - **「農業分區」是刻意移除的，不要再加回來。** 那一層原本的說明是「依氣候與地形
   劃分的農業經營型態分區」，但**沒有這種官方圖資**——查過農業部各平臺，有的是
@@ -2268,6 +2312,7 @@ npm run build:geodata -- --force --only=tw-quakes             # 臺灣周邊 M�
 npm run build:geodata -- --force --only=tw-quakes-major       # 災害性地震（自己查 USGS，不依賴 tw-quakes）
 npm run build:geodata -- --force --only=tw-typhoons           # 14 個侵臺颱風的官方最佳路徑
 npm run build:geodata -- --force --only=tw-typhoon-centers    # 同一份資料的 757 個中心定位點
+npm run build:geodata -- --force --only=date-line            # 國際換日線（Natural Earth）
 npm run build:geodata -- --force --only=tw-monuments-national   # 古蹟三級要各跑一次
                                        # （municipal／county 同理；歷史沿革分片會一起寫出）
 ```
@@ -3103,6 +3148,23 @@ m.isSourceLoaded('contour-source')
     - ⚠️ **一定要在 production build 驗一次**（`npm run build:debug` + `npm run preview`）：
       這一項動到的是**向量底圖**的載入路徑，正好是檢查清單第 7 項那個「worker 檔案沒被
       複製就整片空白、而且零錯誤訊息」的地方
+
+29. **國際換日線**（`/theme/global` → 參考線，見上）：
+    ```js
+    const m = window.__gaiaMaps.at(-1);
+    m.jumpTo({ center: [-175, 15], zoom: 2.6 });
+    m.queryRenderedFeatures({ layers: ['date-line-line'] }).length          // 5（一段一筆）
+    m.queryRenderedFeatures({ layers: ['date-line-label'] }).length         // 2
+    m.getPaintProperty('date-line-line', 'line-dasharray')                  // [3,3]，跟緯度參考線同一組樣式
+    ```
+    - ⚠️ **形狀是這一層的全部**：那條線必須在吉里巴斯處往東凸到西經 150°、在薩摩亞附近往回折，
+      不可以是一條直的 180° 經線。**只數圖徵是驗不到的**，一定要看畫面
+    - ⚠️ **不可以出現一條橫貫整個地球的橫線**（某一段跨過 ±180 的症狀，建置期已擋，但改動
+      `tolerance` 或上游改版後要再看一次）
+    - 標註是**直排的正體字**（maplibre 對 CJK 的 line 放置會自動直排），不是側躺的
+    - 圖例要有兩列（緯度參考線、國際換日線），色塊同色是刻意的——`reference` 是非分類的固定角色
+    - 切底圖之後重驗存在、顏色、虛線與排序（在 `contour-lines` 之上、`contour-labels` 之下）
+    - ⚠️ 搜「國際換日線」會勾起圖層但**相機不動**，那是 `kind: "layer"` 結果的既有行為（見上）
 
 ### ⚠️ 用瀏覽器自動化點 UI 的三個陷阱
 

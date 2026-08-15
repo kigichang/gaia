@@ -613,6 +613,59 @@ const SOURCES = [
         })),
   },
   {
+    id: "date-line",
+    label: "國際換日線",
+    /**
+     * 換日線**不是** 180° 經線：它為了不讓同一個國家跨兩天而繞開楚科奇、阿留申、
+     * 吉里巴斯與薩摩亞，所以幾何是折線而不是一條直的經線。自己畫一條 180° 直線
+     * 交差，等於把這一層唯一要教的東西抹掉。
+     *
+     * 這份幾何用 Natural Earth 的 `geographic_lines`（public domain，站上世界主題
+     * 本來就在用同一個 repo）。它的 `featurecla` 就是 `Date line`，是製圖界的標準
+     * 畫法——所以這一層**不標 `schematic`**，跟五大山脈那種手繪示意幾何不同。
+     *
+     * ⚠️ 但「沒有國際條約規定它在哪」這件事仍然成立（各國自訂時區），那屬於內容
+     * 誠信的範圍，寫在註冊表的 `notes` 裡。
+     */
+    url: `${NE}/ne_10m_geographic_lines.geojson`,
+    license: "Natural Earth（public domain）",
+    sourceLabel: "Natural Earth",
+    // 沿 180° 的那幾段是每 0.5° 一個節點的密集直線，簡化掉不影響形狀；
+    // 真正有轉折的白令海峽與吉里巴斯段 Douglas–Peucker 會保留。
+    tolerance: 0.01,
+    digits: 3,
+    transform: (raw) => {
+      const f = raw.features.find((x) => x.properties?.name === "International Date Line");
+      if (!f) throw new Error("Natural Earth 的 geographic_lines 裡找不到 International Date Line");
+      if (f.geometry.type !== "MultiLineString") {
+        throw new Error(`換日線的幾何型別是 ${f.geometry.type}，預期 MultiLineString`);
+      }
+      /**
+       * ⚠️ 唯一真正該檢查的事：**每一段都不可以跨越換日線本身**。
+       *
+       * 上游已經把折線在 ±180 切成 5 段，所以每段的經度都落在同一側。哪天上游把
+       * 它們接成一段，某兩個相鄰節點就會從 179.99 跳到 -179.99——maplibre 會照著
+       * 畫一條**繞過整個地球**的橫線，而且不會有任何錯誤訊息。用經度跨距抓得到。
+       */
+      for (const part of f.geometry.coordinates) {
+        const lngs = part.map((p) => p[0]);
+        const span = Math.max(...lngs) - Math.min(...lngs);
+        if (span >= 180) {
+          throw new Error(`換日線有一段的經度跨距是 ${span.toFixed(1)}°，代表它跨過了 ±180`);
+        }
+      }
+      return [
+        {
+          type: "Feature",
+          geometry: f.geometry,
+          // 上游的 `name_zht` 也是「國際換日線」，但顯示名不外包給上游欄位——
+          // 那個欄位消失時應該是名稱寫死在這裡照樣正確，而不是整層變成英文。
+          properties: { id: "date-line", name: "國際換日線" },
+        },
+      ];
+    },
+  },
+  {
     id: "tw-reservoirs",
     label: "臺灣主要水庫",
     /**
