@@ -282,6 +282,7 @@ function ThemeMapView({ theme, chrome }: { theme: ThemeDefinition; chrome: Chrom
       if (!map) return;
       const attach = layer.attach;
       const browse = attached ? attach?.browse : layer.browse;
+      const maxZoom = fitMaxZoom(attached ? attach?.maxzoom : layer.maxzoom);
       // ⚠️ 子項目圖層有**兩種**目標，不能都當成「選了一個子項目」：
       //   - 子項目本身（特有種）：featureId 就是 itemId
       //   - 子項目裡的單一圖徵（古蹟）：featureId 是圖徵 id，itemId 另外給
@@ -301,7 +302,7 @@ function ThemeMapView({ theme, chrome }: { theme: ThemeDefinition; chrome: Chrom
       if (targetsItemItself && !attached) {
         // 子項目整份就是一個圖層（例如一個物種的所有觀測點），框住全部
         const bounds = bboxOf(fc);
-        if (bounds) map.fitBounds(bounds, { padding: 48, duration: 1200, maxZoom: 12 });
+        if (bounds) map.fitBounds(bounds, { padding: 48, duration: 1200, maxZoom });
         return;
       }
 
@@ -314,7 +315,7 @@ function ThemeMapView({ theme, chrome }: { theme: ThemeDefinition; chrome: Chrom
         map.flyTo({ center: [lng, lat], zoom, duration: 1200 });
       } else {
         const bounds = bboxOf({ type: "FeatureCollection", features: [feature] });
-        if (bounds) map.fitBounds(bounds, { padding: 48, duration: 1200, maxZoom: 12 });
+        if (bounds) map.fitBounds(bounds, { padding: 48, duration: 1200, maxZoom });
       }
     },
     [map, instances],
@@ -456,7 +457,9 @@ function ThemeMapView({ theme, chrome }: { theme: ThemeDefinition; chrome: Chrom
       // 圖層本身的結果：框住整份資料。⚠️ 這裡要容忍 inst 不存在——上面那條守衛
       // 現在會放高程分帶過（它沒有 data），雖然有 items 的圖層在更早就 return 了。
       const bounds = bboxOf(inst.data);
-      if (bounds) map.fitBounds(bounds, { padding: 48, duration: 1200, maxZoom: 12 });
+      if (bounds) {
+        map.fitBounds(bounds, { padding: 48, duration: 1200, maxZoom: fitMaxZoom(layer.maxzoom) });
+      }
     }
     clearPending();
   }, [pendingHit, theme, map, instances, enableLayer, flyToFeature, clearPending]);
@@ -646,6 +649,39 @@ function ThemeMapView({ theme, chrome }: { theme: ThemeDefinition; chrome: Chrom
       </LayerDrawer>
     </div>
   );
+}
+
+/** 取景的預設 zoom 上限：再近就只剩街廓，看不出圖徵本身的形狀了 */
+const FIT_MAX_ZOOM = 12;
+
+/**
+ * 取景時 zoom 要留給圖層 maxzoom 的餘裕。
+ *
+ * 不是剛好停在 maxzoom 下面一點點（例如 11.99）：那是圖層即將消失的邊緣，使用者
+ * 只要再往前捲一格滾輪，剛剛選中的東西就又不見了。半級是「看得到，而且還有得縮放」。
+ */
+const FIT_ZOOM_HEADROOM = 0.5;
+
+/**
+ * `fitBounds` 的 `maxZoom`：預設 12，但**不可以超過圖層自己的 `maxzoom`**。
+ *
+ * ⚠️ maplibre 的 `maxzoom` 是**開區間**——`zoom >= maxzoom` 整層就不畫。所以拿一個
+ * 寫死的 12 去框一個 `maxzoom: 12` 的圖層時，只要圖徵夠小、`fitBounds` 撞到上限，
+ * 相機就會停在**正好 12**，於是剛選的那一塊面憑空消失：圖層還在
+ * （`getLayer()` 有東西）、詳情卡照樣開、相機也飛對了位置，`queryRenderedFeatures`
+ * 卻是 0，**完全靜默**。
+ *
+ * 這不是邊角案例。實測 1920×929 的畫布，368 個鄉鎮有 290 個的 `fitBounds` zoom
+ * ≥ 12（板橋區、永和區、臺北市大安區…），臺東縣關山鎮（11.94）就卡在門檻上，
+ * 所以「成功鎮看得到、換成關山鎮整層不見」這種看起來毫無道理的回報是**視窗寬度
+ * 決定的**——同一個操作在小一點的視窗上是正常的。縣市界（`maxzoom: 11`）的嘉義市、
+ * 新竹市同理。
+ *
+ * ⚠️ 附屬圖層要傳 `attach.maxzoom`，不是母圖層的（縮放範圍不繼承，見 types.ts）。
+ */
+function fitMaxZoom(maxzoom?: number): number {
+  if (maxzoom === undefined) return FIT_MAX_ZOOM;
+  return Math.min(FIT_MAX_ZOOM, maxzoom - FIT_ZOOM_HEADROOM);
 }
 
 function defaultOnIds(theme: ThemeDefinition): Set<string> {
