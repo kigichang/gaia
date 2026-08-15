@@ -1,0 +1,53 @@
+{
+  "id": "laojie-river",
+  "collection": "tw-rivers",
+  "name": {
+    "zh": "老街溪",
+    "en": "Laojie River"
+  },
+  "subtitle": "直轄市管河川・桃園市",
+  "stats": [
+    {
+      "label": "幹流長度",
+      "value": "21.94 km"
+    },
+    {
+      "label": "流域面積",
+      "value": "84.85 km²"
+    },
+    {
+      "label": "分類",
+      "value": "直轄市管河川"
+    }
+  ],
+  "facts": [
+    {
+      "label": "發源地",
+      "value": "桃園市龍潭區深窩子"
+    },
+    {
+      "label": "主要支流",
+      "value": "洽溪、龍南溪、大坑缺溪"
+    },
+    {
+      "label": "流經",
+      "value": "桃園市（龍潭區、平鎮區、中壢區、大園區）"
+    },
+    {
+      "label": "河床平均坡降",
+      "value": "中上游 1:200、下游 1:300"
+    },
+    {
+      "label": "特色",
+      "value": "因流經中壢老街得名；中壢市區段曾被加蓋成停車場，後來掀蓋整治成親水廊道，是都市河川再生的教學案例"
+    }
+  ],
+  "curriculum": {
+    "unit": "臺灣的水文"
+  },
+  "sources": [
+    "OpenStreetMap",
+    "維基百科",
+    "經濟部水利署 老街溪"
+  ]
+}

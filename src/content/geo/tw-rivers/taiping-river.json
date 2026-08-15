@@ -1,0 +1,53 @@
+{
+  "id": "taiping-river",
+  "collection": "tw-rivers",
+  "name": {
+    "zh": "太平溪",
+    "en": "Taiping River"
+  },
+  "subtitle": "縣(市)管河川・臺東縣",
+  "stats": [
+    {
+      "label": "幹流長度",
+      "value": "21.56 km"
+    },
+    {
+      "label": "流域面積",
+      "value": "93.82 km²"
+    },
+    {
+      "label": "分類",
+      "value": "縣(市)管河川"
+    }
+  ],
+  "facts": [
+    {
+      "label": "發源地",
+      "value": "中央山脈馬里山"
+    },
+    {
+      "label": "主要支流",
+      "value": "太巴六九溪"
+    },
+    {
+      "label": "流經",
+      "value": "臺東縣（卑南鄉、臺東市）"
+    },
+    {
+      "label": "河床平均坡降",
+      "value": "上游 1:30、下游 1:200"
+    },
+    {
+      "label": "特色",
+      "value": "舊名大巴六九溪，貫穿臺東市區後注入太平洋"
+    }
+  ],
+  "curriculum": {
+    "unit": "臺灣的水文"
+  },
+  "sources": [
+    "OpenStreetMap",
+    "維基百科",
+    "經濟部水利署 太平溪"
+  ]
+}
