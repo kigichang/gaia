@@ -80,6 +80,48 @@ Node ≥ 22.12（vite 8 要求）。開發機與 CI 都用 Node 24。
 
 NLSC WMTS 是 `{z}/{y}/{x}`——**y 在 x 前面**，跟絕大多數 XYZ 服務相反。寫成 `{z}/{x}/{y}` 仍然會回 HTTP 200，只是拿到位置完全錯亂的圖磚，不會有任何錯誤訊息。
 
+### 世界底圖的地名一律改成繁體中文（只換表達式，不換資料源）
+
+「世界地圖」（OpenFreeMap Liberty）原本的 `text-field` 是 `拉丁名\n當地文字`，於是德國寫
+`Deutschland`、埃及寫 `مصر`——一張給國中小學生看的地圖上有一半的地名讀不出來。
+
+修法**不需要另一份資料**：OpenMapTiles schema（OpenFreeMap 與 Carto 都是這個 schema）
+本來就把 OSM 的 `name:*` 多語名稱原樣放進圖磚，包含 `name:zh-Hant`／`name:zh`／
+`name:zh-Hans`。所以 `basemaps.ts` 的 `localizeStyle()` 在樣式套用前，把每一個「用地名
+當文字」的 symbol 圖層換成一條繁體中文優先的表達式（判準是原本的 `text-field` 有沒有
+提到 `name`——公路盾牌用 `ref`、門牌用 `{housenumber}`，兩者都不該被改寫）。
+
+⚠️ **順序不能改成先 `name:zh`**：那一欄在 OSM 上簡繁混雜，只有 `name:zh-Hant` 保證是
+繁體。實測世界尺度的 171 個國家有 154 個帶 `name:zh-Hant`。
+
+⚠️ **`index-of` 的參數順序是 `[要找的東西, 被搜尋的字串]`**，跟 `slice` 與 JS 的
+`indexOf` 相反。寫反了 `index-of` 一律回 -1，而 `slice` 的 end 吃到負數是**從尾巴倒數**
+——結果是**每一個地名都少掉最後一個字**（德國→德、埃及→埃），`tsc` 抓不到（表達式是
+斷言進型別的）、console 也一個字都不會印。實測踩過，只有把地圖畫出來看才發現得了。
+
+⚠️ **多值名稱要切掉第二段以後**。`name:zh-Hant` 會出現「德拉瓦州;特拉華州」
+「斯威士兰 / 史瓦蒂尼」這種一格塞好幾個譯名的寫法（世界尺度約 1.5% 的標籤）。
+`NAME_SEPARATORS` 把帶空白的 `" ;"`／`" /"` 排在前面一起比，否則會留下尾隨空白。
+
+⚠️ **`ZH_HANT_OVERRIDES` 是逐筆改寫，不是簡繁轉換器**——maplibre 的表達式沒有辦法逐字
+換字形，所以這份表**不可能補完**，收錄範圍必須是一條講得出來的界線。現在的界線是機械掃
+出來的：`place` 圖層的 `country`／`continent` 加上整個 `water_name` 圖層，在 **zoom 2–5**
+（攤開整個世界時字最大的那一層標籤）的所有圖磚裡，逐筆看過選出來的名稱。實測 171 國 +
+9 大洲 + 116 個水體，其中 47 筆要改（簡體殘留，外加危地馬拉→瓜地馬拉這種非臺灣譯名）。
+
+⚠️ **省、州與城市刻意不收**：那個尺度有上萬筆、長尾沒有盡頭（悉尼／孟买／奥克兰……），
+硬編一份維護不起來。**放大到單一國家之後仍會看到簡體城市名，那是已知限制，不是漏掉。**
+
+⚠️ 備援底圖（Carto Positron）**也要改寫，所以它不能再只回網址字串**——`loadBasemapStyle`
+現在兩份向量樣式都先抓成 JSON。Positron 用的是舊式的 `"{name_en}"` 字串樣板（甚至有
+stops 物件），JSON 化之後一樣比對得到 `name`。實測它的 28 個 symbol 圖層改寫了 26 個，
+沒被動到的是門牌與本站自己的 `contour-labels`。
+
+⚠️ 中文字形靠 `MapView` 既有的 `localIdeographFontFamily`（OpenFreeMap 的 glyph 端點沒有
+中日韓字）。**那個選項不能拿掉**，拿掉之後標註會整片變成空白方塊。
+
+三種 NLSC 底圖是 raster 的臺灣官方地圖，本來就是中文，不經過這條路徑。
+
 ### 氣候資料為什麼要預先產製
 
 `scripts/build-climate.mjs` 在建置期抓 1991–2020 逐日資料，聚合成 12 個月的均溫與月雨量，輸出到 `public/data/climate/<place-id>.json`。網站執行期只讀本地 JSON。
@@ -3035,6 +3077,32 @@ m.isSourceLoaded('contour-source')
     - 搜「莫拉克」「MORAKOT」「納莉」都要找得到並飛過去（`movestart` 剛好 1 次）；
       搜尋索引**只多抓 `tw-typhoons.geojson`(13 KB)，不可以出現 `tw-typhoon-centers.geojson`**
     - 切底圖（三種都切）之後重驗存在、顏色、排序與強調
+
+28. **世界底圖的地名語系**（`/theme/world`，底圖維持「世界地圖」，見上）：
+    ```js
+    const m = window.__gaiaMaps.at(-1);
+    m.jumpTo({ center: [10, 25], zoom: 2.6 });
+    // 每個「用地名當文字」的 symbol 圖層都要被改寫，ref 與門牌不可以被動到
+    const sym = m.getStyle().layers.filter(l => l.type === 'symbol');
+    sym.filter(l => !(Array.isArray(l.layout?.['text-field']) && l.layout['text-field'][0] === 'let'))
+       .map(l => l.id + '=' + JSON.stringify(l.layout?.['text-field']))
+    // 期望只剩公路盾牌（["to-string",["get","ref"]]）、單向箭頭與本站的 contour-labels
+    ```
+    - ⚠️ **這一項只能用眼睛驗，`queryRenderedFeatures` 是看不出來的**——它回的是圖徵的
+      原始 properties，不是算繪出來的字串。截圖看歐洲與北非那一帶：德國、法國、義大利、
+      西班牙、土耳其、埃及、沙烏地阿拉伯全部要是**完整的**繁體中文
+    - ⚠️ **回歸判準是「最後一個字有沒有被吃掉」**（`index-of` 參數順序寫反的症狀，
+      見上）。德國變「德」、埃及變「埃」時 console 一個字都不會印
+    - **多值名稱要只剩第一段**：阿拉伯聯合大公國不可以畫成「阿拉伯聯合大公國;阿拉伯聯合酋長國」
+    - **`ZH_HANT_OVERRIDES` 要生效**：同一個視角要看得到剛果民主共和國、中非共和國、
+      迦納、幾內亞、幾內亞灣、瓜地馬拉、吉爾吉斯、奧地利（而不是刚果民主共和国、加纳、
+      几内亚湾、危地馬拉……）
+    - **備援底圖也要localize**：把 `BASEMAP_STYLES.liberty` 暫時改成一個會 404 的網址、
+      重載，`m.getStyle().sources` 應該有 `carto`，而地名一樣是繁體中文。驗完記得改回來
+    - **切到 NLSC 再切回世界地圖**，改寫必須還在（`setStyle` 會清光樣式）
+    - ⚠️ **一定要在 production build 驗一次**（`npm run build:debug` + `npm run preview`）：
+      這一項動到的是**向量底圖**的載入路徑，正好是檢查清單第 7 項那個「worker 檔案沒被
+      複製就整片空白、而且零錯誤訊息」的地方
 
 ### ⚠️ 用瀏覽器自動化點 UI 的三個陷阱
 
