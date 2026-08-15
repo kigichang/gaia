@@ -1,5 +1,6 @@
 import type { BasemapId } from "./map/basemaps";
 import type { OverlayState } from "./map/MapView";
+import type { SoloSearchMode } from "./useSoloSearch";
 import type { ThemePreference } from "./useTheme";
 
 /**
@@ -18,4 +19,10 @@ export interface ChromeState {
   onBasemapChange: (next: BasemapId) => void;
   themePref: ThemePreference;
   onThemePrefChange: (next: ThemePreference) => void;
+  /**
+   * 搜尋命中之後要不要只畫那一筆（常設偏好，見 `useSoloSearch`）。
+   * 只有主題頁用得到——`/compare` 沒有搜尋框，所以它收得到卻不會渲染那個開關。
+   */
+  soloSearch: SoloSearchMode;
+  onSoloSearchChange: (next: SoloSearchMode) => void;
 }
