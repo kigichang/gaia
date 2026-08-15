@@ -1,0 +1,53 @@
+{
+  "id": "luodong-river",
+  "collection": "tw-rivers",
+  "name": {
+    "zh": "羅東溪",
+    "en": "Luodong River"
+  },
+  "subtitle": "主要支流・蘭陽溪水系",
+  "stats": [
+    {
+      "label": "幹流長度",
+      "value": "21 km"
+    },
+    {
+      "label": "流域面積",
+      "value": "124 km²"
+    },
+    {
+      "label": "分類",
+      "value": "主要支流"
+    }
+  ],
+  "facts": [
+    {
+      "label": "發源地",
+      "value": "大元山東北麓"
+    },
+    {
+      "label": "匯入",
+      "value": "三星鄉清洲附近、蘭陽大橋前注入蘭陽溪"
+    },
+    {
+      "label": "流經",
+      "value": "宜蘭縣大同鄉、冬山鄉、三星鄉、羅東鎮"
+    },
+    {
+      "label": "河段別名",
+      "value": "上游稱寒溪，中游又名廣興溪"
+    },
+    {
+      "label": "主要支流",
+      "value": "番社坑溪（古魯溪）、打狗溪、安農溪、大坑溪"
+    },
+    {
+      "label": "特色",
+      "value": "蘭陽溪南岸最大的支流，也是三星鄉與冬山鄉的界河；支流安農溪流經三星鄉精華區，是當地農業灌溉的水源，也可泛舟"
+    }
+  ],
+  "curriculum": {
+    "unit": "臺灣的水文"
+  },
+  "sources": ["OpenStreetMap", "維基百科 羅東溪"]
+}

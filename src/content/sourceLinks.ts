@@ -158,6 +158,8 @@ export const SOURCE_LINKS: Record<string, string> = {
   "維基百科 大堀溪": "https://zh.wikipedia.org/wiki/%E5%A4%A7%E5%A0%80%E6%BA%AA",
   "維基百科 大富溪": "https://zh.wikipedia.org/wiki/%E5%A4%A7%E5%AF%8C%E6%BA%AA",
   "維基百科 大溪川": "https://zh.wikipedia.org/wiki/%E5%A4%A7%E6%BA%AA%E5%B7%9D",
+  "維基百科 冬山河": "https://zh.wikipedia.org/wiki/%E5%86%AC%E5%B1%B1%E6%B2%B3",
+  "維基百科 羅東溪": "https://zh.wikipedia.org/wiki/%E7%BE%85%E6%9D%B1%E6%BA%AA",
   "維基百科 外雙溪": "https://zh.wikipedia.org/wiki/%E5%A4%96%E9%9B%99%E6%BA%AA",
   "維基百科 大德溪": "https://zh.wikipedia.org/wiki/%E5%A4%A7%E5%BE%B7%E6%BA%AA",
   "維基百科 小坑溪 (石門區)": "https://zh.wikipedia.org/wiki/%E5%B0%8F%E5%9D%91%E6%BA%AA%20(%E7%9F%B3%E9%96%80%E5%8D%80)",

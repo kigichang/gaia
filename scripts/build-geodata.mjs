@@ -998,7 +998,9 @@ const SOURCES = [
       for (const [officialName, river] of Object.entries(RIVERS)) {
         // 支流沒有自己的流域面——集水區是依水系劃的，支流的集水區本來就包在
         // 母水系那一片裡。`BASIN_IDS` 也是這樣過濾的，兩邊要一致。
-        if (!river.ref.endsWith("000")) continue;
+        // ⚠️ 判準是 category 不是「代碼結尾 000」：冬山河（255000）已改列區域排水、
+        // 由編者收進「主要支流」，照舊判準會被當成獨立水系去找流域面。
+        if (river.category === "主要支流") continue;
         const id = BASIN_IDS[officialName];
         if (!id) {
           throw new Error(`河川「${officialName}」不在 BASIN_IDS 對照表裡，請先決定它的 id`);
@@ -1050,7 +1052,7 @@ const SOURCES = [
       }
 
       if (missing.length) {
-        const systems = Object.values(RIVERS).filter((r) => r.ref.endsWith("000")).length;
+        const systems = Object.values(RIVERS).filter((r) => r.category !== "主要支流").length;
         console.log(
           `\n  ⓘ 對到 ${features.length}／${systems} 個獨立水系，` +
             `以下 ${missing.length} 條上游沒有發布個別流域面：${missing.join("、")}`,
