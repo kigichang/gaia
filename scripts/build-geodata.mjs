@@ -893,7 +893,7 @@ const SOURCES = [
                 ]
                   .filter(Boolean)
                   .join("・"),
-            // FeatureCard 的 fallback 專用（144 條裡有 97 條沒有內容檔）：
+            // FeatureCard 的 fallback 專用（145 條全部都有內容檔，這裡是留給沒有內容檔時的退路）：
             // `meta` 已經被別名、縣市／母水系與長度佔滿，等級改由這一行交代
             detail: HEADLINE_NUMBER_CATEGORIES.has(river.category) ? undefined : river.category,
           },
