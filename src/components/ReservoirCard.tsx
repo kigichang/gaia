@@ -1,3 +1,4 @@
+import { useId } from "react";
 import { RESERVOIR_FILL_RAMP } from "../map/thematicColors";
 import { SourceLinks } from "./SourceLinks";
 import { Stat } from "./PlaceCard";
@@ -45,6 +46,65 @@ function rampColor(percent: number): string {
  */
 const isBarrage = (name: string | undefined) => /[壩堰]$/.test(name ?? "");
 
+/**
+ * 圓形水球（仿 water.taiwanstat.com 的 liquid gauge，但用純 SVG 自繪，不加依賴）。
+ *
+ * - 水面高度＝蓄水率；超過 100%（滿庫溢流）時水面停在滿格，**數字照實顯示**
+ *   ——夾住的是幾何，不是資料（比照長條時代的既有規則）。
+ * - 水色取自 RESERVOIR_FILL_RAMP 的級距色，跟地圖上那顆圓點一致。
+ * - 百分比畫兩層：底層用水色（露在水面上的部分）、上層用近白色並以水面
+ *   高度的 rect 裁切（泡在水裡的部分）。級距色低蓄水率是淺藍、高蓄水率是
+ *   深藍，而低蓄水率時字多半在水面上、高蓄水率時字泡在水裡，兩種配對的
+ *   對比天然成立。
+ * - 波浪是一條寬兩個週期（240）的 path 做 translateX 循環，只有裝飾作用，
+ *   所以 prefers-reduced-motion 時直接停掉，水位資訊完全不受影響。
+ */
+function WaterGauge({ percent, color }: { percent: number; color: string }) {
+  const uid = useId();
+  const fill = Math.max(0, Math.min(percent, 100));
+  // 水球內圈：cx 60 / cy 60 / r 52 → 頂 8、底 112、直徑 104
+  const levelY = 112 - (fill / 100) * 104;
+  const wave = "M0 4 Q 30 -4 60 4 T 120 4 T 180 4 T 240 4 V 130 H 0 Z";
+  const label = `${percent}%`;
+  return (
+    <div
+      className="reservoir-gauge"
+      role="meter"
+      aria-valuenow={percent}
+      aria-valuemin={0}
+      aria-valuemax={100}
+      aria-label="蓄水百分比"
+    >
+      <svg viewBox="0 0 120 120" aria-hidden="true">
+        <clipPath id={`${uid}-ball`}>
+          <circle cx="60" cy="60" r="52" />
+        </clipPath>
+        <clipPath id={`${uid}-water`}>
+          <rect x="0" y={levelY} width="120" height={120 - levelY} />
+        </clipPath>
+        {/* 外圈與球體底色 */}
+        <circle cx="60" cy="60" r="57" fill="none" stroke={color} strokeWidth="2.5" />
+        <circle cx="60" cy="60" r="52" className="reservoir-gauge-track" />
+        {/* 水體（帶波浪的面，裁在球內） */}
+        <g clipPath={`url(#${uid}-ball)`}>
+          <g transform={`translate(0 ${levelY - 4})`}>
+            <path className="reservoir-wave" d={wave} fill={color} />
+          </g>
+        </g>
+        {/* 百分比：底層（水面上）＋裁切層（水面下） */}
+        <text x="60" y="60" dy=".35em" className="reservoir-gauge-text" fill={color}>
+          {label}
+        </text>
+        <g clipPath={`url(#${uid}-water)`}>
+          <text x="60" y="60" dy=".35em" className="reservoir-gauge-text reservoir-gauge-text-in">
+            {label}
+          </text>
+        </g>
+      </svg>
+    </div>
+  );
+}
+
 export function ReservoirCard({ properties }: { properties: Record<string, unknown> }) {
   const p = properties;
   const name = str(p.name) ?? "水庫";
@@ -63,33 +123,19 @@ export function ReservoirCard({ properties }: { properties: Record<string, unkno
       <section className="reservoir-live" aria-label="即時水情">
         {percent != null ? (
           <>
-            <div className="reservoir-meter">
-              <div
-                className="reservoir-meter-track"
-                role="meter"
-                aria-valuenow={percent}
-                aria-valuemin={0}
-                aria-valuemax={100}
-                aria-label="蓄水百分比"
-              >
-                {/* 超過 100%（滿庫溢流）時長條停在滿格，但數字照實顯示 */}
-                <div
-                  className="reservoir-meter-fill"
-                  style={{
-                    width: `${Math.min(percent, 100)}%`,
-                    backgroundColor: rampColor(percent),
-                  }}
-                />
-              </div>
-              <span className="reservoir-percent">{percent}%</span>
+            <WaterGauge percent={percent} color={rampColor(percent)} />
+            {/* 蓄水量與容量各佔一行（仿 taiwanstat 的排法），數字不塞進 stat
+                格子——四位數的「萬立方公尺」在 90px 寬的格子裡會斷成兩行 */}
+            <div className="reservoir-figures">
+              <p>
+                有效蓄水量：<strong>{storage?.toLocaleString("zh-TW") ?? "—"}</strong>{" "}
+                萬立方公尺
+              </p>
+              <p>
+                有效容量：<strong>{capacity?.toLocaleString("zh-TW") ?? "—"}</strong>{" "}
+                萬立方公尺
+              </p>
             </div>
-            {/* 蓄水量與容量刻意排成一行分數，不塞進 stat 格子——四位數的「萬立方
-                公尺」在 90px 寬的格子裡會斷成兩行，而這兩個數字要並排才讀得出比例 */}
-            <p className="reservoir-volume">
-              有效蓄水量 <strong>{storage?.toLocaleString("zh-TW") ?? "—"}</strong>
-              {/* JSX 會把換行縮排變成一個空格，所以斜線前後不能斷行 */}
-              {`／有效容量 ${capacity?.toLocaleString("zh-TW") ?? "—"} 萬立方公尺`}
-            </p>
             <div className="detail-stats">
               <Stat label="水位" value={num(p.waterLevel_m) != null ? `${num(p.waterLevel_m)} m` : "—"} />
               <Stat

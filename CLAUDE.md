@@ -1953,7 +1953,7 @@ m.isSourceLoaded('contour-source')
     m.queryRenderedFeatures({ layers: ['tw-reservoirs-points'] })
       .filter(f => f.properties.percent === undefined).map(f => f.properties.name)
     ```
-    - 點曾文水庫 → 卡片有蓄水率長條、蓄水量／容量、水位、進出流量、**觀測時間**
+    - 點曾文水庫 → 卡片有蓄水率水球（仿 water.taiwanstat.com 的圓形水位計，SVG 自繪）、蓄水量／容量、水位、進出流量、**觀測時間**
     - 點白河水庫（常態缺水情）→ 卡片顯示「暫無即時資料」而不是 0%
     - 點集集攔河堰 → 卡片底部出現「這是攔河堰／壩」的警語
     - 圖例底下要有四段色階 + 「暫無資料」灰：`document.querySelectorAll('.map-legend-ramp-step').length // 5`
@@ -2456,7 +2456,7 @@ src/
    ├─ MapDetailPanel.tsx  # 左側詳情面板外框（≤860px 變底部卡）
    ├─ DetailCard.tsx      # 選取 → 對應詳情卡的分派
    ├─ ThemeBrowse.tsx     # 圖層抽屜裡的可點清單（browseLayerExtra）
-   ├─ ReservoirCard.tsx   # 水庫詳情卡（即時水情長條 + 基本資料，資料全來自 geojson）
+   ├─ ReservoirCard.tsx   # 水庫詳情卡（即時水情水球 + 基本資料，資料全來自 geojson）
    ├─ MonumentCard.tsx    # 古蹟詳情卡（基本資料來自 geojson，歷史沿革按縣市延遲載入）
    ├─ QuakeCard.tsx       # 單次地震的震央卡片（規模／震源深度／震央經緯度，字串在這裡組）
    ├─ TownshipCard.tsx    # 鄉鎮市區詳情卡（鄉鎮界／人口／作物三層共用，五份資料自己抓）
