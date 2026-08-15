@@ -60,6 +60,7 @@ Node ≥ 22.12（vite 8 要求）。開發機與 CI 都用 Node 24。
 | 鄉鎮別作物種植面積 | `data.gov.tw` 資料集 **7302**「農情調查」→ `data.moa.gov.tw/Service/OpenData/FromM/TownCropData.aspx` | **只在建置期呼叫**（有 CORS 但 43,538 筆不該讓瀏覽器自己聚合）。⚠️ **不帶篩選只回 9999 筆**，且**不含水稻**，見下 |
 | 臺灣鄉鎮市區界線 | `data.gov.tw/api/v2/rest/dataset/**7441**` → TGOS 的 **SHP** zip（同一個單位） | **只在建置期呼叫**。⚠️ 這份**沒有 GML 只有 SHP**，而且 zip 裡有兩份 shapefile，見下 |
 | 世界行政區／河流幾何、國際換日線 | `raw.githubusercontent.com/nvkelso/natural-earth-vector`（Natural Earth） | **只在建置期呼叫**，public domain。換日線在 `ne_10m_geographic_lines`，見下 |
+| 板塊與板塊邊界 | `raw.githubusercontent.com/fraxen/tectonicplates`（Bird 2003／Nordpil 轉製） | **只在建置期呼叫**，ODC-BY 1.0（**必須標示出處**）。邊界的三分類在 10 MB 的 `PB2002_steps.json` 裡，見下 |
 | 地震目錄 | `earthquake.usgs.gov/fdsnws/event/1/query`（USGS） | **只在建置期呼叫**，免金鑰、`ACAO: *`。全球與臺灣兩層共用這一個端點 |
 | 臺灣活動斷層 | `geologycloud.tw/data/zh-tw/ActiveFault`（經濟部地質調查及礦業管理中心「地質雲」） | **只在建置期呼叫**。⚠️ data.gov.tw 那份**只有 WMS 影像**，拿不到向量；而且這是 **33 條的舊版**，見下 |
 | 交通軸線幾何（高鐵／國道／臺鐵幹線）、河川幹流河道 | `overpass-api.de/api/interpreter`（OpenStreetMap Overpass） | **只在建置期呼叫**，ODbL 1.0。⚠️ **沒有 User-Agent 一律回 HTTP 406**；河川的選擇器**不能寫 `waterway=river`**（一半以上是 `stream`），要用 `type=waterway`＋`ref`，見下 |
@@ -79,6 +80,116 @@ Node ≥ 22.12（vite 8 要求）。開發機與 CI 都用 Node 24。
 ### ⚠️ NLSC 的路徑順序陷阱
 
 NLSC WMTS 是 `{z}/{y}/{x}`——**y 在 x 前面**，跟絕大多數 XYZ 服務相反。寫成 `{z}/{x}/{y}` 仍然會回 HTTP 200，只是拿到位置完全錯亂的圖磚，不會有任何錯誤訊息。
+
+### 板塊與板塊邊界：全站第一個「面帶名字」的圖層
+
+「地體構造」群組底下的 `plates`（52 塊板塊，面）與 `plate-boundaries`（三種邊界，線）
+是同一份資料的兩層，取得邏輯關在 `scripts/lib/plates.mjs`。
+
+#### 為什麼是 Bird (2003) 而不是 USGS 或 Natural Earth
+
+`plate-boundaries` 原本掛著 `status: "planned"`、`sources: ["USGS"]`，但 USGS 只有靜態
+圖片、Natural Earth 沒有板塊。**Bird (2003) 的 PB2002 是唯一一份公開、帶完整幾何、
+而且每一小段邊界都標了種類的全球模型**——課本講的「聚合、張裂、錯動三種板塊邊界」
+要畫得出來就得有那個分類欄位。幾何取自 Hugo Ahlenius / Nordpil 轉製的 GeoJSON 版。
+
+⚠️ **授權是 ODC-BY 1.0，要求標示出處**，所以兩層的 `sources` 都必須同時列
+`Peter Bird (2003) 板塊模型` 與 `Nordpil 板塊資料集`，少一個就違反授權（比照
+`tw-rivers` 對 OpenStreetMap 的 ODbL 署名義務）。
+
+#### ⚠️ 不要改用 `PB2002_boundaries.json`，那份分不出三種邊界
+
+同一個資料夾裡的 `PB2002_boundaries.json` 只有 241 條乾淨的線、檔案也小得多，很容易
+以為它才是對的來源。但它的 `Type` 欄位**只分得出 subduction（65 條）與空字串
+（176 條）**，畫不出三分類。三分類在 10 MB 的 `PB2002_steps.json` 裡（5,824 段，
+每段帶 `STEPCLASS`：OSR／CRB → 張裂、SUB／OCB／CCB → 聚合、OTF／CTF → 錯動）。
+10 MB 只在建置期下載，產物是 87 KB。
+
+#### ⚠️ 邊界的產物**刻意只有三筆圖徵**
+
+每一種邊界是一個 MultiLineString，裡面有幾百段（張裂 661、聚合 205、錯動 716）。
+一段一筆會壞掉一件事：註冊表用 `LayerItem.featureIds` 把子項目從母圖層切出來，而那是
+一份**寫在 `themes/global.ts` 裡的 id 清單**——1,582 行 id 是不能接受的。這一層
+`detail: "none"`，逐段點選本來就沒有教學意義，所以三筆剛剛好。
+
+串接規則：相同 `PLATEBOUND`、相同分類、而且前一段的終點等於後一段的起點，就併成一條線
+（實測 5,613 對接得上、只有 8 對接不上）。不併的話會得到 5,824 條各三十幾個點的碎線，
+Douglas–Peucker 幾乎砍不掉任何東西。
+
+⚠️ 跟國際換日線同一個坑：**每一段都不可以跨越 ±180**，跨了 maplibre 會畫一條繞過整個
+地球的橫線而且不報錯。transform 逐段檢查經度跨距（實測最長的一段只跨 57.5°）。
+
+#### ⚠️ 面積一定要用球面公式，而且總和就是自我檢查
+
+`geometryAreaKm2()` 用的是球面多邊形面積（standard spherical excess）。**不可以用平面
+shoelace**：那算出來的單位是「平方度」，高緯度會嚴重高估，南極板塊會變得比太平洋板塊
+還大。
+
+**52 塊板塊鋪滿整個地球，所以面積總和必須等於地球表面積**——實測 510.1 百萬 km²，
+誤差 -0.01%。build 時對不上就直接失敗。那是唯一能抓到「投影或幾何弄錯」的檢查，
+比照國家公園的 `officialHa` 交叉比對。
+
+⚠️ **算出來的面積跟課本／維基百科的數字對不起來是正常的**，不要「修正」它：那些數字
+多半把子板塊算進母板塊（北美板塊 7,590 萬 km² 含鄂霍次克與格陵蘭，Bird 分開算是
+5,543 萬；歐亞 6,780 萬 vs 4,856 萬）。圖層的 `notes` 有交代。
+
+#### ⚠️ 主要板塊是 8 塊，不是課本說的 7 塊
+
+Bird 把課本合稱的「印澳板塊」分成印度板塊與澳洲板塊兩塊。**不要為了湊 7 塊把其中一塊
+降級**——那會讓清單跟地圖上的界線對不起來。這件事寫在 `notes` 裡。
+
+中文名與「主要／次要／微板塊」的分類逐筆取自維基百科〈板塊列表〉（zh-tw），對照表在
+`lib/plates.mjs` 的 `PLATES`（52 筆，代碼對不到就讓建置失敗）。比照五大山脈與颱風的
+既有做法：維基百科是次級來源，只拿來查名稱，數值一律自己算。
+
+⚠️ 分類是**依維基百科的傳統分法**，不是依面積——索馬利亞板塊（次要，1,915 萬 km²）比
+印度板塊（主要，1,243 萬）還大。那不是排序錯了。
+
+#### 面圖層的標註是新加的算繪能力
+
+`LayerRender` 的 fill 變體多了 `label`，`geo.ts` 的 fill 分支因此會多開一個
+`${instanceId}-label` 的 symbol 圖層（`symbol-placement: point`）。這是全站第一個
+用到它的圖層——「標出各板塊」如果沒有名字就等於沒做。
+
+- **不需要在建置期算形心**：maplibre 對多邊形會自己算錨點。
+- ⚠️ **MultiPolygon 的每一塊都會拿到一個標註。** 實測只有 4 塊板塊是 MultiPolygon
+  （太平洋 3 塊、澳洲 2 塊、克馬德克與巴爾莫勒爾礁各 2 塊），其中太平洋的兩大塊是
+  ±180 兩側的真實兩半、標兩次是對的，真正多餘的只有兩個小碎塊。**這是已知行為，
+  不是 bug。**
+- ⚠️ **文字色刻意不用圖層色**（`geo.ts` 的 `FILL_LABEL_COLOR`）：面已經是那個色相的
+  半透明色塊，字再同色就糊進自己的底色裡。線與圓點沒有這個問題。
+- `label.minzoom: 2` 是實測調的：zoom 1 的全球視角上 52 個板塊名互相碰撞到只剩幾個。
+- ⚠️ `geoHitLayerIds()` **要把面的標註一起綁**：標註的文字方塊會溢出到鄰接板塊上，
+  不綁的話點在字上會開到旁邊那一塊的卡片。
+
+#### ⚠️ `plates` 的 `fillOpacity` 是 0，那不是忘了設
+
+52 塊板塊**鋪滿每一個像素**，任何均勻的面染都只是把整張圖壓暗一階，資訊量是零
+（跟縣市界那種「面染標出範圍」的處境完全相反）。這一層畫出來的是**外框與名字**；
+面留給「選取時 0.38」那個互動——點一下才看得出這塊板塊有多大，那才是重點。
+`fill-opacity: 0` 不影響點擊命中（maplibre 的 hit test 不看不透明度，實測過）。
+
+⚠️ 兩層的簡化容差**必須一致**（都是 0.02）：不一致的話兩層一起打開時，板塊外框與
+彩色的邊界線會被各自簡化到差幾個像素，沿線露出一圈暖褐色毛邊。
+
+#### 顏色
+
+`plates` 用 `PLATE_COLOR`（暖褐 `#7d6b4f`），跟 reference／hazard 同屬**非分類的固定
+角色**，不參與色票驗證——52 塊板塊全同色，它不是一個要跟別人比色相的類別。
+
+三種邊界用 `PLATE_BOUNDARY_COLORS`（橘 `#c95c1c`／藍 `#2f74c9`／綠 `#159c6b`），
+**比照交通軸線宣告不參與線／面色票的 all-pairs**：同框對象只有兩條中性灰的參考線、
+板塊的暖褐外框與地震帶的中性灰圓點，一個彩色分類色都沒有（臺灣與世界主題的那六個
+線／面色不可能同時出現，`ThemeMapPage` 只算繪當前主題）。組內 all-pairs 實測明暗兩
+模式**五項全數 PASS、零 WARN**：
+
+```bash
+node <dataviz-skill>/scripts/validate_palette.js "#c95c1c,#2f74c9,#159c6b" --pairs all --mode light|dark
+# → CVD 最差 8.8（綠↔橘，deutan）、一般視覺最差 21.2（綠↔藍）
+```
+
+⚠️ 綠色在臺灣主題是禁忌（NLSC 底圖的山區底色就是綠的），這裡可以，理由與交通軸線相同
+——**地理分佈相反**：板塊邊界絕大多數在洋底，而世界底圖在海上是藍的。
 
 ### 世界底圖的地名一律改成繁體中文（只換表達式，不換資料源）
 
@@ -1326,7 +1437,7 @@ maplibre-contour 把 worker 以 Blob URL 內嵌，**不需要額外部署 worker
 |---|---|---|
 | 臺灣地理 | `/theme/taiwan` | 臺灣123（土地與島群）、行政區（縣市、鄉鎮市區）、地形、天然災害（活動斷層、地震、颱風路徑與災損）、水系（118 個列管水系、水庫即時水情、河川流域分區）、人文（原住民族、交通軸線、古蹟、人口與都市體系）、植被生態（特有種、國家公園與保護區、垂直植被帶）、農業物產（主要作物分布） |
 | 世界地理 | `/theme/world` | 世界重要城市、國界與大洲、地形水系、人文專題 |
-| 全球地理形貌 | `/theme/global` | 參考線（緯度參考線、國際換日線）、氣候與生物群系、洋流、板塊與地震帶 |
+| 全球地理形貌 | `/theme/global` | 參考線（緯度參考線、國際換日線）、氣候與生物群系、洋流、地體構造（板塊、板塊邊界、地震帶） |
 
 三個主題頁都是**滿版地圖 + 浮動控制**（仿 Google Map），沒有頁首也沒有側欄——版面機制見下面的「全螢幕地圖外框與浮動控制」。
 
@@ -2313,6 +2424,8 @@ npm run build:geodata -- --force --only=tw-quakes-major       # 災害性地震�
 npm run build:geodata -- --force --only=tw-typhoons           # 14 個侵臺颱風的官方最佳路徑
 npm run build:geodata -- --force --only=tw-typhoon-centers    # 同一份資料的 757 個中心定位點
 npm run build:geodata -- --force --only=date-line            # 國際換日線（Natural Earth）
+npm run build:geodata -- --force --only=plates               # 52 塊板塊（含球面面積）
+npm run build:geodata -- --force --only=plate-boundaries    # 三種板塊邊界（下載 10 MB 的 step 檔）
 npm run build:geodata -- --force --only=tw-monuments-national   # 古蹟三級要各跑一次
                                        # （municipal／county 同理；歷史沿革分片會一起寫出）
 ```
@@ -3165,6 +3278,38 @@ m.isSourceLoaded('contour-source')
     - 圖例要有兩列（緯度參考線、國際換日線），色塊同色是刻意的——`reference` 是非分類的固定角色
     - 切底圖之後重驗存在、顏色、虛線與排序（在 `contour-lines` 之上、`contour-labels` 之下）
     - ⚠️ 搜「國際換日線」會勾起圖層但**相機不動**，那是 `kind: "layer"` 結果的既有行為（見上）
+
+30. **板塊與板塊邊界**（`/theme/global` → 地體構造，兩層一起勾，見上）：
+    ```js
+    const m = window.__gaiaMaps.at(-1);
+    m.jumpTo({ center: [-40, 10], zoom: 2.2 });
+    new Set(m.queryRenderedFeatures({layers:['plates-fill']}).map(f=>f.properties.id)).size  // 23
+    m.queryRenderedFeatures({ layers: ['plates-label'] }).length                              // 20
+    ['divergent','convergent','transform'].map(k =>
+      m.getPaintProperty(`plate-boundaries-${k}-line`, 'line-color'))
+    // 期望 ["#c95c1c","#2f74c9","#159c6b"]，**不可以隨勾選順序改變**
+    ```
+    - ⚠️ **這一層的正確性只能用眼睛驗**：大西洋中脊必須是橘（張裂）與綠（錯動）交錯的
+      階梯狀、祕魯－智利海溝與日本海溝必須是藍（聚合）。數字全對但顏色配錯是看得出來的
+    - **顏色綁在邊界種類上，不是勾選順序**（回歸判準，比照古蹟三級與交通軸線）：
+      先勾「錯動型」再勾「張裂型」，張裂仍然必須是橘色；圖例色塊要跟地圖一致
+    - **勾母圖層時三種要自動全勾**（`items.defaultAll`）。⚠️ 但**只在還沒選過時才補**
+      ——搜「錯動型邊界」只打開那一種之後，再去勾母圖層不會被打回全開，那是刻意的
+    - **點板塊要開得了卡**（`fill-opacity` 是 0，但 maplibre 的 hit test 不看不透明度）：
+      點菲律賓海板塊 → 標題「菲律賓海板塊」、副標「次要板塊・544 萬 km²」，
+      **選取時整塊面要浮出 0.38 的暖褐**：
+      ```js
+      JSON.stringify(m.getPaintProperty('plates-fill','fill-opacity'))
+      // ["case",["in",["get","id"],["literal",["plate-ps"]]],0.38,0]
+      ```
+    - 抽屜清單依分類分三組：`["主要板塊:8","次要板塊:14","微板塊:30"]`，組內依面積由大
+      到小（開頭是太平洋板塊 1.05 億 km²）。⚠️ **主要是 8 塊不是 7 塊**，見上
+    - 搜「太平洋板塊」「Pacific」都要找得到；搜「錯動」要出現「錯動型邊界」子項目
+    - 資料來源那一行**必須有三個連結**（Bird、Nordpil、維基百科）——ODC-BY 要求標示出處，
+      少一個就違反授權
+    - ⚠️ **不可以出現一條橫貫整個地球的橫線**（某一段跨過 ±180 的症狀，建置期已擋）
+    - 切底圖之後重驗存在、顏色與排序（面 < 線 < 標註，全部在 `contour-lines` 之上、
+      `contour-labels` 之下）
 
 ### ⚠️ 用瀏覽器自動化點 UI 的三個陷阱
 

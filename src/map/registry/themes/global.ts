@@ -1,5 +1,7 @@
 // .ts 副檔名是必要的：Node 直接載入註冊表時不會自己補副檔名（見 ../types.ts）
 import type { ThemeDefinition } from "../types.ts";
+// value-import 只允許 thematicColors（零 import 的常數模組），見 ../types.ts 的說明
+import { PLATE_BOUNDARY_COLORS } from "../../thematicColors.ts";
 
 /**
  * 全球地理形貌。純資料——限制見 ../types.ts。
@@ -120,14 +122,102 @@ export const globalTheme: ThemeDefinition = {
       sources: ["USGS"],
     },
     {
+      id: "plates",
+      label: "板塊",
+      group: "地體構造",
+      status: "ready",
+      source: { type: "remote", path: "data/geo/plates.geojson" },
+      /**
+       * ⚠️ **`fillOpacity: 0` 不是忘了設。** 52 塊板塊鋪滿整個地球，任何均勻的面染
+       * 都只是把整張圖壓暗一階，資訊量是零（跟縣市界那種「面染標出範圍」的處境
+       * 完全相反）。這一層畫出來的是**外框（板塊界線）與名字**；面本身留給
+       * 「選取時 0.38」那個互動——點一下才看得出這塊板塊有多大，那才是重點。
+       */
+      render: {
+        kind: "fill",
+        fillOpacity: 0,
+        outlineWidth: 1,
+        /**
+         * ⚠️ 面的標註是新加的算繪能力（見 types.ts 的 `LayerRender.fill.label`）。
+         * `minzoom: 2` 是實測調的：zoom 1 的全球視角上 52 個板塊名互相碰撞，
+         * 放得出來的只剩幾個，而那個尺度使用者本來就還在看整體形狀。
+         */
+        label: { property: "name", size: 12, minzoom: 2 },
+      },
+      colorRole: "plate",
+      detail: { type: "geo", collection: "plates" },
+      // 清單依分類分三組（主要 8／次要 14／微板塊 30），組內依面積由大到小
+      browse: { groupBy: "category" },
+      maxzoom: 8,
+      description:
+        "地球表面分成 52 塊板塊。點一下任何一塊會標出它的範圍與面積，配合「板塊邊界」就看得出來它跟鄰居是相撞、分開還是錯開。",
+      notes: [
+        "⚠️ 主要板塊在這裡是 8 塊而不是課本說的 7 塊：本站採用的 Bird (2003) 模型把課本合稱的「印澳板塊」分成印度板塊與澳洲板塊兩塊。",
+        "⚠️ 面積由幾何算出來，跟課本或維基百科上的數字對不起來是正常的——那些數字多半把子板塊算進母板塊（例如北美板塊 7,590 萬 km² 含鄂霍次克與格陵蘭，本站分開算是 5,543 萬）。52 塊的面積總和實測 5.101 億 km²，正好是地球表面積。",
+        "⚠️ 微板塊要不要算成獨立板塊，學界沒有共識，不同模型的數量從 20 幾塊到 100 多塊都有。",
+      ],
+      sources: ["Peter Bird (2003) 板塊模型", "Nordpil 板塊資料集", "維基百科 板塊列表"],
+    },
+    {
       id: "plate-boundaries",
       label: "板塊邊界",
       group: "地體構造",
-      status: "planned",
-      render: { kind: "line" },
+      status: "ready",
+      source: { type: "remote", path: "data/geo/plate-boundaries.geojson" },
+      render: { kind: "line", width: 1.6 },
+      /**
+       * 三種邊界各一個核取方塊，用 `featureIds` 從母圖層那一份資料切出來
+       * （交通軸線的既有作法）。
+       *
+       * ⚠️ 產物**刻意只有三筆圖徵**——每一種邊界是一個 MultiLineString，裡面有
+       * 幾百段。`featureIds` 是寫在這個檔案裡的 id 清單，一段一筆的話那份清單會
+       * 有 1,582 行；而這一層 `detail: "none"`，逐段點選本來就沒有教學意義。
+       */
+      items: {
+        from: {
+          type: "inline",
+          list: [
+            {
+              id: "divergent",
+              label: "張裂型邊界",
+              featureIds: ["boundary-divergent"],
+              color: PLATE_BOUNDARY_COLORS[0],
+              keywords: ["張裂", "分離", "中洋脊", "裂谷", "divergent"],
+            },
+            {
+              id: "convergent",
+              label: "聚合型邊界",
+              featureIds: ["boundary-convergent"],
+              color: PLATE_BOUNDARY_COLORS[1],
+              keywords: ["聚合", "碰撞", "隱沒", "海溝", "convergent", "subduction"],
+            },
+            {
+              id: "transform",
+              label: "錯動型邊界",
+              featureIds: ["boundary-transform"],
+              color: PLATE_BOUNDARY_COLORS[2],
+              keywords: ["錯動", "轉形", "平移", "transform"],
+            },
+          ],
+        },
+        maxActive: 3,
+        palette: PLATE_BOUNDARY_COLORS,
+        /**
+         * 勾圖層時三種一起打開。理由同垂直植被帶：三種是同一份資料的三個切面，
+         * 勾了圖層卻什麼都不顯示只會讓人以為壞了，而且它們共用同一個檔案，
+         * 全開不多花任何成本。
+         */
+        defaultAll: true,
+      },
       detail: { type: "none" },
-      description: "聚合、張裂與錯動三種板塊邊界，對照地震帶與火山帶的位置。",
-      sources: ["USGS"],
+      maxzoom: 8,
+      description:
+        "張裂型（板塊分開，中洋脊與裂谷）、聚合型（板塊相撞，海溝與造山帶）、錯動型（板塊錯開，轉形斷層）。跟「全球地震帶」一起打開，就看得出地震沿著哪一種邊界排列。",
+      notes: [
+        "⚠️ 三種分類直接取自 Bird (2003) 對每一小段邊界的判定（中洋脊、大陸裂谷歸張裂；隱沒帶、海洋與大陸聚合帶歸聚合；海洋與大陸轉形斷層歸錯動），不是本站自己歸的。",
+        "⚠️ 板塊邊界不是一條線而是一個帶：真實的變形區可以寬達數百公里（例如喜馬拉雅、加州），圖上那條線是模型的簡化。",
+      ],
+      sources: ["Peter Bird (2003) 板塊模型", "Nordpil 板塊資料集"],
     },
     {
       id: "volcanoes",

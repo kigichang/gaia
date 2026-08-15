@@ -300,6 +300,44 @@ export const REFERENCE_COLOR = "#5a5852";
 export const HAZARD_COLOR = "#3a3a3a";
 
 /**
+ * 板塊面（`plates`）的顏色。同樣是**非分類的固定角色**，不參與色票驗證。
+ *
+ * 理由跟 reference／hazard 一樣是「它不是一個要跟別人比色相的類別」：52 塊板塊
+ * **鋪滿整個地球**，每一塊都同色——這一層要教的是界線的位置與各塊的名字，不是
+ * 「哪個顏色代表板塊」。
+ *
+ * ⚠️ **因此 `fillOpacity` 是 0，那不是忘了設。** 面既然覆蓋每一個像素，任何均勻的
+ * 底色都只是把整張地圖壓暗一階，資訊量是零。這個顏色實際畫出來的是**外框**（板塊
+ * 界線）與**圖例色塊**，以及選取某一塊時才浮現的 0.38 面染——那個「點一下看這塊
+ * 板塊有多大」才是這一層真正的互動。
+ */
+export const PLATE_COLOR = "#7d6b4f";
+
+/**
+ * 三種板塊邊界的分類色（`plate-boundaries` 的 `items.palette`）。
+ *
+ * ⚠️ **這一組不參與線／面色票的 all-pairs**，比照交通軸線的既有判例。理由是
+ * 同框對象很明確：「全球地理形貌」主題裡其餘的線圖層是緯度參考線與國際換日線
+ * （都是 `reference` 中性灰），加上板塊面的暖褐外框與地震帶的中性灰圓點——
+ * 一個彩色分類色都沒有。臺灣與世界主題的那六個線／面色**不可能同時出現**
+ * （`ThemeMapPage` 只算繪當前主題的圖層）。
+ *
+ * 組內 all-pairs 則是實際驗過的，明暗兩模式**五項全數 PASS、零 WARN**：
+ *
+ *   node <dataviz-skill>/scripts/validate_palette.js "#c95c1c,#2f74c9,#159c6b" --pairs all --mode light|dark
+ *   → CVD 最差 8.8（綠↔橘，deutan）、一般視覺最差 21.2（綠↔藍）
+ *
+ * ⚠️ 橘↔綠的 CVD 8.8 落在 6–8 以上但不算寬裕，**兩者靠得住的第二通道是圖例與
+ * 子項目名稱**（三個核取方塊各自帶著「張裂型／聚合型／錯動型」的文字）。
+ * 換色前先重跑上面那條指令。
+ *
+ * ⚠️ 綠色在臺灣主題是禁忌（NLSC 底圖的山區底色就是綠的），這裡可以，理由與交通
+ * 軸線相同——**地理分佈相反**：板塊邊界絕大多數在洋底（中洋脊、海溝、轉形斷層），
+ * 而世界底圖在海上是藍的。改色前先在 zoom 2 的太平洋實際看一次。
+ */
+export const PLATE_BOUNDARY_COLORS = ["#c95c1c", "#2f74c9", "#159c6b"] as const;
+
+/**
  * 颱風強度的級距色（ordinal ramp），用在颱風路徑上每 6 小時一筆的中心定位點。
  *
  * ## 級距是官方的，不是自己切的
@@ -662,4 +700,9 @@ export const LAYER_COLORS = {
    * 跟 reference／hazard 同屬非分類的固定角色，不參與色票驗證。
    */
   vegetation: VEGETATION_BELTS[2].color,
+  /**
+   * 板塊面。暖褐——同屬非分類的固定角色，見 PLATE_COLOR。
+   * 三種板塊邊界的分類色不走這裡，它們是 `items.palette`（PLATE_BOUNDARY_COLORS）。
+   */
+  plate: PLATE_COLOR,
 };

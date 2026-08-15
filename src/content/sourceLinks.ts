@@ -276,6 +276,13 @@ export const SOURCE_LINKS: Record<string, string> = {
   澎湖縣政府: "https://www.penghu.gov.tw",
   "GBIF Global Biodiversity Information Facility": "https://www.gbif.org/",
   "Natural Earth": "https://www.naturalearthdata.com/",
+  /**
+   * 板塊與板塊邊界。授權是 ODC-BY 1.0，**要求標示出處**，所以原作者（Bird）與
+   * 轉製者（Nordpil）兩個都要列，少一個就違反授權。
+   */
+  "Peter Bird (2003) 板塊模型": "https://doi.org/10.1029/2001GC000252",
+  "Nordpil 板塊資料集": "https://github.com/fraxen/tectonicplates",
+  "維基百科 板塊列表": "https://zh.wikipedia.org/wiki/%E6%9D%BF%E5%A1%8A%E5%88%97%E8%A1%A8",
   // 交通軸線的線位來源。ODbL 1.0 要求標示「© OpenStreetMap 貢獻者」，
   // 這個署名義務不是新增的——世界底圖 OpenFreeMap 本來就是 OSM 衍生的。
   OpenStreetMap: "https://www.openstreetmap.org/copyright",

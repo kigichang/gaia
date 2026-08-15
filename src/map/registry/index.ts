@@ -82,8 +82,8 @@ export function geoLayerIds(instanceId: string, render: LayerRender): string[] {
         // layerOrder.ts 的 BAND 也要跟著把 casing 排在 fill 與 line 之間。
         [`${instanceId}-casing`, `${instanceId}-line`]
       : SUFFIXES[render.kind].map((s) => `${instanceId}-${s}`);
-  // 線與圓點都可以帶標註（圓點的目前只有颱風定位點用，見 types.ts）
-  if ((render.kind === "line" || render.kind === "circle") && render.label) {
+  // 線、圓點與面都可以帶標註（圓點的只有颱風定位點、面的只有板塊，見 types.ts）
+  if (render.kind !== "elevation" && render.label) {
     ids.push(`${instanceId}-label`);
   }
   return ids;
@@ -101,7 +101,12 @@ export function geoLayerIds(instanceId: string, render: LayerRender): string[] {
 export function geoHitLayerIds(instanceId: string, render: LayerRender): string[] {
   // 高程設色沒有 feature，點不到也不該綁互動（綁了 maplibre 會直接報錯）
   if (render.kind === "elevation") return [];
-  if (render.kind === "fill") return [`${instanceId}-fill`];
+  // 面的標註同理要一起綁：使用者看到的是「太平洋板塊」那五個字，會直接去點它，
+  // 而標註可能落在鄰接板塊的面上（maplibre 的錨點只保證在自己的 polygon 裡，
+  // 文字方塊會溢出去）——只綁面的話點在字上會開到旁邊那一塊的卡片。
+  if (render.kind === "fill") {
+    return render.label ? [`${instanceId}-fill`, `${instanceId}-label`] : [`${instanceId}-fill`];
+  }
   if (render.kind === "circle") {
     // 圓點的標註同理要一起綁：文字比圓點大，使用者會去點字
     return render.label ? [`${instanceId}-points`, `${instanceId}-label`] : [`${instanceId}-points`];

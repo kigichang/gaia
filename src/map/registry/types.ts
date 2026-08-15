@@ -50,7 +50,8 @@ export type ColorRole =
   // 非分類的固定角色，不參與色票驗證（見 thematicColors.ts）
   | "reference"
   | "hazard"
-  | "vegetation";
+  | "vegetation"
+  | "plate";
 
 /** `src/content` 底下用 import.meta.glob 載入、已經打包進 bundle 的內容集合。 */
 export type BundledContentId =
@@ -239,6 +240,28 @@ export type LayerRender =
        */
       outlineWidth?: number;
       outlineColorRole?: ColorRole;
+      /**
+       * 面的名稱標註（另外開一個 `${instanceId}-label` symbol 圖層，
+       * `symbol-placement: point`）。
+       *
+       * ⚠️ 跟線的標註**放置方式完全不同**：maplibre 對多邊形會自己算一個錨點
+       * （每個 polygon 一個），所以不需要 `spacing`／`maxAngle`，也不需要在建置期
+       * 算形心。代價是 **MultiPolygon 的每一塊都會拿到一個標註**——太平洋板塊在
+       * ±180 被切成三塊，就會在畫面兩側各出現一次。那在世界地圖上是對的
+       * （那塊板塊本來就橫跨圖幅兩端），但換資料前要先想過這件事。
+       *
+       * 目前只有板塊用：那一層的重點就是「哪一塊是什麼板塊」，沒有名字等於沒做。
+       */
+      label?: {
+        /** 屬性名，或直接給一段 maplibre 表達式（比照 line／circle 的 label） */
+        property: string | ExpressionSpecification;
+        size?: number;
+        /**
+         * 低於這個 zoom 不畫標註。板塊名在 zoom 1 的全球視角會互相碰撞到只剩
+         * 幾個，而那時使用者本來就還在看整體形狀。
+         */
+        minzoom?: number;
+      };
     }
   | {
       /**

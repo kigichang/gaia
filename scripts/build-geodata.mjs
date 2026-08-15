@@ -101,6 +101,18 @@ import {
   fetchTyphoons,
 } from "./lib/typhoons.mjs";
 import { BASIN_URL, BASIN_IDS, RIVERS, RIVER_CATEGORY_ORDER } from "./lib/rivers.mjs";
+import {
+  BOUNDARY_TYPES as PLATE_BOUNDARY_TYPES,
+  CATEGORY_ORDER as PLATE_CATEGORY_ORDER,
+  LICENSE as PLATE_LICENSE,
+  PLATES,
+  PLATES_URL,
+  SOURCE_LABELS as PLATE_SOURCE_LABELS,
+  STEPS_URL as PLATE_STEPS_URL,
+  STEP_CLASS_TO_TYPE,
+  formatArea as formatPlateArea,
+  geometryAreaKm2,
+} from "./lib/plates.mjs";
 
 /**
  * 「這一組的清單順序與副標由官方數字當主角」——`tw-rivers` 與 `tw-basins` 共用。
@@ -663,6 +675,166 @@ const SOURCES = [
           properties: { id: "date-line", name: "國際換日線" },
         },
       ];
+    },
+  },
+  {
+    id: "plates",
+    label: "板塊",
+    url: PLATES_URL,
+    license: PLATE_LICENSE,
+    sourceLabel: PLATE_SOURCE_LABELS[0],
+    /**
+     * ⚠️ **要跟 `plate-boundaries` 用同一個容差**，不然兩層一起打開時，板塊外框
+     * 與彩色的邊界線會被各自簡化到差幾個像素，沿線露出一圈暖褐色毛邊。
+     * 兩份幾何本來就出自同一次數化，容差一致才會疊在一起。
+     */
+    tolerance: 0.02,
+    digits: 3,
+    transform: (raw) => {
+      /**
+       * 上游是 54 筆而不是 52 筆：克馬德克與巴爾莫勒爾礁各自被拆成兩個 Polygon。
+       * 一塊板塊在圖上就該是一個圖徵（一張詳情卡、一個標註目標），所以先依代碼
+       * 合併成 MultiPolygon 再往下走。
+       *
+       * ⚠️ 太平洋與澳洲上游本來就是 MultiPolygon——那是轉製者在 ±180 手動切開的，
+       * **不要試著把它們接回去**，接了會得到一條橫貫地球的圖徵。
+       */
+      const byCode = new Map();
+      for (const f of raw.features) {
+        const code = f.properties.Code;
+        const polygons =
+          f.geometry.type === "Polygon" ? [f.geometry.coordinates] : f.geometry.coordinates;
+        const entry = byCode.get(code) ?? { en: f.properties.PlateName, polygons: [] };
+        entry.polygons.push(...polygons);
+        byCode.set(code, entry);
+      }
+      if (byCode.size !== Object.keys(PLATES).length) {
+        throw new Error(
+          `上游有 ${byCode.size} 塊板塊，對照表有 ${Object.keys(PLATES).length} 筆——請先更新 lib/plates.mjs`,
+        );
+      }
+
+      const rows = [];
+      let totalKm2 = 0;
+      for (const [code, { en, polygons }] of byCode) {
+        const meta = PLATES[code];
+        if (!meta) throw new Error(`板塊代碼「${code}」不在 PLATES 對照表裡，請先決定它的中文名與分類`);
+        const geometry =
+          polygons.length === 1
+            ? { type: "Polygon", coordinates: polygons[0] }
+            : { type: "MultiPolygon", coordinates: polygons };
+        // ⚠️ 面積要在簡化**之前**算（build() 是 transform 之後才簡化的）
+        const areaKm2 = geometryAreaKm2(geometry);
+        totalKm2 += areaKm2;
+        rows.push({
+          type: "Feature",
+          geometry,
+          properties: {
+            id: meta.id,
+            name: meta.name,
+            /** 搜尋 haystack 會收 `en`，讓學生打 Pacific 也找得到 */
+            en,
+            category: meta.category,
+            area_km2: Math.round(areaKm2),
+            meta: `${meta.category}・${formatPlateArea(areaKm2)}`,
+          },
+          _area: areaKm2,
+        });
+      }
+
+      /**
+       * ⚠️ 這是唯一能抓到「投影或幾何弄錯」的檢查：52 塊板塊鋪滿整個地球，
+       * 面積總和必須等於地球表面積（510.1 百萬 km²）。實測誤差 < 0.1%。
+       * 用平面 shoelace 算的話這個數字會離譜到一眼看得出來。
+       */
+      const earthKm2 = 510.1e6;
+      if (Math.abs(totalKm2 / earthKm2 - 1) > 0.01) {
+        throw new Error(
+          `板塊面積總和 ${(totalKm2 / 1e6).toFixed(1)} 百萬 km²，與地球表面積 510.1 差太多`,
+        );
+      }
+      console.log(
+        `\n  · 板塊面積總和 ${(totalKm2 / 1e6).toFixed(1)} 百萬 km²（地球表面積 510.1，誤差 ${(
+          (totalKm2 / earthKm2 - 1) * 100
+        ).toFixed(2)}%）`,
+      );
+
+      // ⚠️ feature 順序就是 `browse.groupBy: "category"` 的切分依據（依序切、不排序），
+      // 所以同一類必須連續；類別之內依面積由大到小，清單開頭就是太平洋與北美板塊。
+      return rows
+        .sort(
+          (a, b) =>
+            PLATE_CATEGORY_ORDER.indexOf(a.properties.category) -
+              PLATE_CATEGORY_ORDER.indexOf(b.properties.category) || b._area - a._area,
+        )
+        .map(({ _area, ...feature }) => feature);
+    },
+  },
+  {
+    id: "plate-boundaries",
+    label: "板塊邊界",
+    url: PLATE_STEPS_URL,
+    license: PLATE_LICENSE,
+    sourceLabel: PLATE_SOURCE_LABELS[0],
+    tolerance: 0.02,
+    digits: 3,
+    /**
+     * 產出**剛好三筆**圖徵（張裂／聚合／錯動），每一筆是一個 MultiLineString。
+     *
+     * 為什麼不是一段一筆：註冊表用 `LayerItem.featureIds` 把子項目從母圖層切出來，
+     * 那是一份寫在 `themes/*.ts` 裡的 id 清單——1,582 段各自一筆的話那份清單就爆了。
+     * 而這一層 `detail: "none"`，逐段點選本來就沒有教學意義，所以三筆剛剛好。
+     */
+    transform: (raw) => {
+      const steps = raw.features
+        .slice()
+        .sort((a, b) => a.properties.SEQNUM - b.properties.SEQNUM);
+      const runs = new Map(PLATE_BOUNDARY_TYPES.map((t) => [t.id, []]));
+      const samePoint = (a, b) => Math.abs(a[0] - b[0]) < 1e-6 && Math.abs(a[1] - b[1]) < 1e-6;
+      let current = null;
+      for (const step of steps) {
+        const cls = step.properties.STEPCLASS;
+        const type = STEP_CLASS_TO_TYPE[cls];
+        if (!type) throw new Error(`未知的 STEPCLASS「${cls}」，請先決定它屬於哪一種邊界`);
+        const coords = step.geometry.coordinates;
+        /**
+         * 相鄰的 step 幾乎都首尾相接（實測 5,613 對接得上、只有 8 對接不上），
+         * 所以同一條邊界、同一種類型的連續 step 併成一條線——不併的話會得到
+         * 5,824 條各三十幾個點的碎線，Douglas–Peucker 幾乎砍不掉任何東西。
+         */
+        if (
+          current &&
+          current.type === type &&
+          current.bound === step.properties.PLATEBOUND &&
+          samePoint(current.coords.at(-1), coords[0])
+        ) {
+          current.coords.push(...coords.slice(1));
+        } else {
+          current = { type, bound: step.properties.PLATEBOUND, coords: [...coords] };
+          runs.get(type).push(current);
+        }
+      }
+
+      return PLATE_BOUNDARY_TYPES.map((t) => {
+        const lines = runs.get(t.id);
+        if (!lines.length) throw new Error(`${t.name}一段都沒有，上游的 STEPCLASS 可能變了`);
+        /**
+         * ⚠️ 每一段都不可以跨越 ±180——跨了的話 maplibre 會畫一條繞過整個地球的
+         * 橫線而且不報錯（跟國際換日線同一個坑）。實測上游最長的一段只跨 57.5°。
+         */
+        for (const line of lines) {
+          const lngs = line.coords.map((p) => p[0]);
+          const span = Math.max(...lngs) - Math.min(...lngs);
+          if (span >= 180) {
+            throw new Error(`${t.name}有一段的經度跨距是 ${span.toFixed(1)}°，代表它跨過了 ±180`);
+          }
+        }
+        return {
+          type: "Feature",
+          geometry: { type: "MultiLineString", coordinates: lines.map((l) => l.coords) },
+          properties: { id: `boundary-${t.id}`, name: t.name, segments: lines.length },
+        };
+      });
     },
   },
   {

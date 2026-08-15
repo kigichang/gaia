@@ -156,6 +156,16 @@ const CASING_COLOR = "#33322e";
 const CASING_EXTRA = 1.6;
 const CASING_OPACITY = 0.85;
 
+/**
+ * 面圖層標註的文字色。
+ *
+ * ⚠️ **刻意不用圖層自己的顏色**：面已經是那個色相的半透明色塊，字再同色就會糊進
+ * 自己的底色裡（線與圓點沒有這個問題，它們的標註旁邊是底圖不是自己）。用一個中性
+ * 的深色配白色 halo，跟底圖自己的地名同一套讀法。它是非分類的固定角色，
+ * 比照 hillshade 的棕色，不參與色票驗證。
+ */
+const FILL_LABEL_COLOR = "#3d3a33";
+
 const SELECTED = {
   radiusScale: 2,
   strokeWidth: 3,
@@ -580,6 +590,46 @@ function addGeoLayerShapes(map: MapLibreMap, spec: GeoLayerSpec) {
         "line-opacity": 0.9,
       },
     });
+  }
+
+  /**
+   * 面的名稱標註。跟線的沿線標註是不同的放置模式：`symbol-placement: point`
+   * 讓 maplibre 自己替每個 polygon 算一個錨點，所以不需要 spacing／maxAngle，
+   * 也不需要在建置期算形心。
+   *
+   * ⚠️ 顏色刻意**不用圖層色**：面已經是那個顏色的半透明色塊，字再同色就糊在一起。
+   * 用一般的文字色 + 白色 halo，比照底圖自己的地名。
+   */
+  if (render.label) {
+    const labelId = `${instanceId}-label`;
+    const textField =
+      typeof render.label.property === "string"
+        ? ["get", render.label.property]
+        : render.label.property;
+    if (map.getLayer(labelId)) {
+      map.setLayoutProperty(labelId, "text-field", textField as never);
+    } else {
+      map.addLayer({
+        id: labelId,
+        type: "symbol",
+        source: sourceId,
+        ...zoom,
+        // 面的標註可以有自己更嚴的 minzoom（板塊名在全球視角會互相碰撞掉）
+        ...(render.label.minzoom !== undefined ? { minzoom: render.label.minzoom } : {}),
+        layout: {
+          "text-field": textField as never,
+          // 只有 "Noto Sans Bold" 確定存在於 basemaps.ts 借用的 glyph 端點上
+          "text-font": ["Noto Sans Bold"],
+          "text-size": render.label.size ?? 12,
+          "text-padding": 4,
+        },
+        paint: {
+          "text-color": FILL_LABEL_COLOR,
+          "text-halo-color": "#fff",
+          "text-halo-width": 1.6,
+        },
+      });
+    }
   }
 }
 
