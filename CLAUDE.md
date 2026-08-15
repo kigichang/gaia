@@ -1044,6 +1044,27 @@ registry/
 
 `browse.zoom` 也要考慮**母圖徵看不看得見**：縣市政府設 10 而不是街廓尺度的 14，是因為這一層的教學重點是「政府設在這個縣市的哪裡」，取景必須讓政府點與所屬縣市的面同時在畫面上，而縣市面的 maxzoom 是 11。
 
+#### ⚠️ 線／面的取景上限必須從圖層自己的 `maxzoom` 算，不可以寫死
+
+`browse.zoom` 只管**點**圖層（`flyTo`）；線與面走 `fitBounds`，上限是那個 `maxZoom` 選項。
+`ThemeMapPage` 的 `fitMaxZoom()` 因此取 `min(12, layer.maxzoom - 0.5)`——**寫死 12 是壞的**。
+
+maplibre 的 `maxzoom` 是**開區間**（`zoom >= maxzoom` 整層不畫），所以拿寫死的 12 去框
+一個 `maxzoom: 12` 的圖層時，只要圖徵夠小、`fitBounds` 撞到上限，相機就停在**正好 12**，
+剛選的那一塊面憑空消失：`getLayer()` 有東西、詳情卡照樣開、相機也飛對了位置，
+`queryRenderedFeatures` 卻是 **0**，**完全靜默**——跟上面政府點那個坑是同一種病。
+
+⚠️ **這不是邊角案例，而且症狀會隨視窗寬度改變**（`fitBounds` 的 zoom 跟畫布大小相依）。
+實測 1920×929 的畫布，368 個鄉鎮有 **290 個**的 `fitBounds` zoom ≥ 12（板橋區、永和區、
+臺北市大安區…），臺東縣關山鎮剛好卡在門檻上（11.94）——所以會收到「成功鎮看得到、
+換成關山鎮整層不見」這種看起來毫無道理的回報，而同一個操作在小一點的視窗上是正常的。
+縣市界（`maxzoom: 11`）的嘉義市、新竹市、臺北市同理。
+
+⚠️ 附屬圖層要傳 **`attach.maxzoom`**，不是母圖層的（縮放範圍不繼承，見上）。
+
+⚠️ 留 0.5 級餘裕而不是剛好停在 `maxzoom` 下面一點點：11.99 雖然畫得出來，但那是圖層
+即將消失的邊緣，使用者再往前捲一格滾輪剛選的東西就又不見了。
+
 ⚠️ **母子連動強調的兩個方向都從 `attach.parentProperty` 推，不要寫死屬性名。** 早期版本在 `ThemeMapPage` 寫死 `["peakId", "rangeId"]`，加了縣市政府之後立刻壞掉——`countyId` 不在清單裡，點縣市政府時所屬縣市不會被強調，而卡片與相機都正常，所以這件事在畫面上非常容易被忽略過去。母 → 子的方向也不需要母圖徵身上有任何屬性：反過來找「哪個子項目指向我」就好（`tw-ranges.geojson` 的 `peakId` 現在只用於 resolve.ts 的 join）。
 
 ### 圖層 id 的組合方式
@@ -1742,7 +1763,8 @@ npm run validate        # zod 驗證內容 + 圖層註冊表交叉檢查
 npm run test:order      # 圖層堆疊順序的回歸測試（不需瀏覽器）
 npm run build           # validate → test:order → typecheck → vite build → postbuild
 npm run build:debug     # 帶地圖除錯掛勾的 production build（驗證用，見下）
-npm run preview         # 預覽 production build
+npm run preview         # 預覽 production build（4173）。⚠️ 代理人驗證一律用這台，
+                        #   5173／5174 是開發者自己的 dev server，不要動（見「驗證方式」）
 npm run build:climate   # 產生氣候 JSON（已存在會跳過）
 npm run build:climate -- --force   # 全部重抓
 npm run build:species   # 產生特有種觀測點 geojson（已存在會跳過）
@@ -1771,6 +1793,24 @@ npm run build:geodata -- --force --only=tw-monuments-national   # 古蹟三級�
 ---
 
 ## 驗證方式
+
+### ⚠️ 自己起伺服器、用 4173，不要碰 5173
+
+要驗證就**自己跑 npm 指令起一台自己的伺服器**，一律用 `npm run preview` 的
+**`http://localhost:4173/`**：
+
+```bash
+npm run build:debug && npm run preview     # 帶 __gaiaMaps 掛勾，開在 4173
+```
+
+⚠️ **`5173`（`npm run dev` 的預設埠）是開發者自己開著的，絕對不要動它**——不要接管、
+不要重啟，更不要 `pkill -f vite` 或任何會把它一起殺掉的收尾動作。驗證完只收掉自己
+那台（用 `run_in_background` 起的就停自己那個工作，不要用會掃到別人程序的 pattern）。
+踩過一次：驗完隨手 `pkill -f vite`，把開發者正在用的 dev server 一起關掉了。
+
+⚠️ 順帶一提，`npm run dev` 起在 5173 被佔用時會自動跳 5174 —— 那台**也可能是別人的**，
+看到不是自己起的埠一律不要碰。而且 dev 模式驗不到 worker 檔案沒被複製那個坑
+（檢查清單第 7 項），本來就該用 `preview`。
 
 ### ⚠️ 用瀏覽器自動化驗證時，分頁一定要在前景
 
@@ -2171,6 +2211,17 @@ m.isSourceLoaded('contour-source')
     - 縣市界與鄉鎮界**同時勾選**時兩層都在——`MAX_ACTIVE_BY_KIND.fill` 是 2，
       這兩層剛好用滿，再勾第三個面圖層會踢掉先勾的那個
     - zoom 13 以上鄉鎮面消失（`maxzoom: 12`），這是刻意的，不是壞掉
+    - ⚠️ **點小鄉鎮之後那一層還要在**（`fitMaxZoom()` 的回歸判準，見「線／面的取景上限」）。
+      只點一個大鄉鎮是驗不到的——大的框不到上限。一定要挑**小的**，而且要看
+      `queryRenderedFeatures` 不是只看 `getLayer()`：
+      ```js
+      // 依序點：成功鎮（大，本來就沒事）→ 關山鎮 → 板橋區 → 永和區 → 臺北市大安區
+      // 每一個都要 zoom <= 11.5 且 queryRenderedFeatures 大於 0
+      m.getZoom() <= 11.5 && m.queryRenderedFeatures({layers:['tw-townships-fill']}).length > 0
+      ```
+      縣市界同理（`maxzoom: 11` → 夾在 10.5）：點嘉義市、新竹市、臺北市，
+      `tw-counties-fill` 都要算繪得出來；點臺東縣則要停在自然的 zoom 8 左右
+      （`maxZoom` 只是上限，大圖徵不受影響）
     - 點任一鄉鎮 → 開的是**三層共用的 `TownshipCard`**（不是 FeatureCard fallback），
       而且**人口與作物那兩層沒勾也要有數字**——卡片會自己抓（見「三層共用 id」）
     - 抽屜可點清單**依縣市分組**：22 個組名（不可點）＋底下縮排的鄉鎮，
