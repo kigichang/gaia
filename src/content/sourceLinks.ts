@@ -148,4 +148,46 @@ export const SOURCE_LINKS: Record<string, string> = {
   "林業保育署 關山臺灣海棗自然保護區": "https://www.forest.gov.tw/0008040",
   "林業保育署 海岸山脈臺東蘇鐵自然保護區": "https://www.forest.gov.tw/0008041",
   "林業保育署 大武台灣油杉自然保護區": "https://www.forest.gov.tw/0008042",
+  // 圖層層級的署名（活動斷層、臺灣地震的斷層底圖）。首頁會 302 到 /nss/p/index，
+  // 直接寫最終網址免得多一次跳轉。
+  經濟部地質調查及礦業管理中心: "https://www.gsmma.gov.tw/nss/p/index",
+  "經濟部地質調查及礦業管理中心 臺灣活動斷層分布圖":
+    "https://fault.gsmma.gov.tw/About/Fault_map",
+  /**
+   * 33 條活動斷層各自的官方詳細說明頁（「臺灣活動斷層」網站，編號依官網現行的
+   * 36 條分布圖）。⚠️ 三義斷層之分支斷層在 36 條的版本裡沒有單列，它跟三義斷層
+   * 共用同一頁。
+   */
+  "地質調查及礦業管理中心 山腳斷層": "https://fault.gsmma.gov.tw/About/FaultMore/0f0ba96791b44c849d9515ef3df9fd7c",
+  "地質調查及礦業管理中心 湖口斷層": "https://fault.gsmma.gov.tw/About/FaultMore/be5c5a21d104434280f17a88d8c2cbca",
+  "地質調查及礦業管理中心 新竹斷層": "https://fault.gsmma.gov.tw/About/FaultMore/d85876f69018479196f28121e5176de5",
+  "地質調查及礦業管理中心 新城斷層": "https://fault.gsmma.gov.tw/About/FaultMore/1e36747a19b048aa910f81220c8a393a",
+  "地質調查及礦業管理中心 獅潭斷層": "https://fault.gsmma.gov.tw/About/FaultMore/3fd6c05b2efd4d91b35847c0b3d71c77",
+  "地質調查及礦業管理中心 三義斷層": "https://fault.gsmma.gov.tw/About/FaultMore/ae141da17b684753ae417710bc89ed48",
+  "地質調查及礦業管理中心 大甲斷層": "https://fault.gsmma.gov.tw/About/FaultMore/46365c82026744e4ac954f4ca2e7028e",
+  "地質調查及礦業管理中心 鐵砧山斷層": "https://fault.gsmma.gov.tw/About/FaultMore/1ad2e638e38b41e49550c54f2a502f0a",
+  "地質調查及礦業管理中心 屯子腳斷層": "https://fault.gsmma.gov.tw/About/FaultMore/e01d9c47f9b0432da78016a3c231cabc",
+  "地質調查及礦業管理中心 彰化斷層": "https://fault.gsmma.gov.tw/About/FaultMore/7e082094f90c43628c9b96bad9787922",
+  "地質調查及礦業管理中心 車籠埔斷層": "https://fault.gsmma.gov.tw/About/FaultMore/55ae0384aecc43279b779ddf8a99e788",
+  "地質調查及礦業管理中心 大茅埔－雙冬斷層": "https://fault.gsmma.gov.tw/About/FaultMore/6379d16f026d403ebd0bf54696d3a4a2",
+  "地質調查及礦業管理中心 梅山斷層": "https://fault.gsmma.gov.tw/About/FaultMore/dd06c43a008c4872862ece36b0366b4f",
+  "地質調查及礦業管理中心 大尖山斷層": "https://fault.gsmma.gov.tw/About/FaultMore/3815d2075c8a4750be020b2bbf4a24f6",
+  "地質調查及礦業管理中心 木屐寮斷層": "https://fault.gsmma.gov.tw/About/FaultMore/b122ecd4c76e42828a4b471522ea06c3",
+  "地質調查及礦業管理中心 六甲斷層": "https://fault.gsmma.gov.tw/About/FaultMore/a03d40bec7084c99bd88b4bcd193ff76",
+  "地質調查及礦業管理中心 觸口斷層": "https://fault.gsmma.gov.tw/About/FaultMore/9146280f396e4bf6ad090e74720058f3",
+  "地質調查及礦業管理中心 新化斷層": "https://fault.gsmma.gov.tw/About/FaultMore/1dd6cbac6e614bffa6d81cedf2cb7cc9",
+  "地質調查及礦業管理中心 後甲里斷層": "https://fault.gsmma.gov.tw/About/FaultMore/2f951a9fa30f4de6bf0e9d3b343b7b6c",
+  "地質調查及礦業管理中心 左鎮斷層": "https://fault.gsmma.gov.tw/About/FaultMore/c3772e901fa74ac7ba0f9aefa0d7dfdb",
+  "地質調查及礦業管理中心 小崗山斷層": "https://fault.gsmma.gov.tw/About/FaultMore/ac51e24f1e1c47559fc28d44b8d73c8b",
+  "地質調查及礦業管理中心 旗山斷層": "https://fault.gsmma.gov.tw/About/FaultMore/7893ab7400ba45e081c7312467134d52",
+  "地質調查及礦業管理中心 潮州斷層": "https://fault.gsmma.gov.tw/About/FaultMore/1bc2ecd60d984d85a6579a42d77a473c",
+  "地質調查及礦業管理中心 恆春斷層": "https://fault.gsmma.gov.tw/About/FaultMore/f24fa2e580174ac9aba3edb28edcedc7",
+  "地質調查及礦業管理中心 米崙斷層": "https://fault.gsmma.gov.tw/About/FaultMore/6fe5298de54548df8c1d0c6215709a22",
+  "地質調查及礦業管理中心 嶺頂斷層": "https://fault.gsmma.gov.tw/About/FaultMore/d8b303dc603346c6bbec958744a78917",
+  "地質調查及礦業管理中心 瑞穗斷層": "https://fault.gsmma.gov.tw/About/FaultMore/1afefb6fee73489a8c96c98799d8e61a",
+  "地質調查及礦業管理中心 奇美斷層": "https://fault.gsmma.gov.tw/About/FaultMore/ada05552d0c44ab0bbab0b0547eb482b",
+  "地質調查及礦業管理中心 玉里斷層": "https://fault.gsmma.gov.tw/About/FaultMore/66f44d794f954a2c81dd8996fb283461",
+  "地質調查及礦業管理中心 池上斷層": "https://fault.gsmma.gov.tw/About/FaultMore/8060eee7113943109f047dabf46cd6c7",
+  "地質調查及礦業管理中心 鹿野斷層": "https://fault.gsmma.gov.tw/About/FaultMore/f2f2b6e40b8b40a1b2aa38cf89a5daf8",
+  "地質調查及礦業管理中心 利吉斷層": "https://fault.gsmma.gov.tw/About/FaultMore/f75a1cf5fc2e4a879e56b218f6e3d56f",
 };
