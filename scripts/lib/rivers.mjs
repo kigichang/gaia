@@ -32,7 +32,8 @@
  * ## 這個檔案管一件事
  *
  * **144 條河川的身分**——中文名、本站 id、水利署河川代碼、管理等級（或「主要支流」
- * 與它的母水系）、流經縣市，以及 26 條中央管／跨省市河川才有的官方長度與流域面積。
+ * 與它的母水系）、流經縣市，以及 47 條河川才有的官方長度與流域面積（兩份不同的
+ * 官方表，見 `length_km`／`lengthSource`）。
  *
  * 兩個圖層的**幾何來源不同、精確度同一等級**：
  * - `tw-rivers`（線）＝ OpenStreetMap 的 `waterway=river` 關聯，用 `ref`
@@ -118,14 +119,37 @@ export const RIVER_CATEGORY_ORDER = [
  *   新港溪…）。別名會寫進 geojson 的 `meta`，所以清單副標看得到、搜尋也搜得到
  *   ——學生對著底圖上的「阿里磅溪」找得到我們標的「乾華溪」。
  *
- * - `length_km`／`area_km2`（選填）：**只有 26 條中央管／跨省市河川有。**
- *   來源是水利署全球資訊網〈河川長度〉頁面（www.wra.gov.tw/cp.aspx?n=3163&dn=3164）
- *   的官方數字，人工抄錄（那個頁面沒有開放資料 API）。
+ * - `length_km`／`area_km2`（選填）：**47 條有，71 條沒有。** 兩批的出處不同，
+ *   由 `lengthSource` 區分——**這兩批數字不是同一張表，不要混為一談**：
  *
- *   ⚠️ **其餘 92 條沒有官方長度，也不要拿 OSM 幾何量出來的公里數填。** 公告
+ *   | 批次 | 條數 | 出處 | `lengthSource` |
+ *   |---|---|---|---|
+ *   | 中央管 24＋跨省市 2 | 26 | 〈河川長度〉總表（cp.aspx?n=3163&dn=3164） | 省略 |
+ *   | 直轄市管＋縣(市)管 | 21 | 各河自己的介紹頁（〈讓我們看河去(縣市管河川)〉，cl.aspx?n=3328） | `"看河去"` |
+ *
+ *   兩份都是經濟部水利署的官方數字，都沒有開放資料 API，都是人工抄錄。
+ *
+ *   ⚠️ **其餘 71 條這裡一律留空，也不要拿 OSM 幾何量出來的公里數填。** 公告
  *   明訂直轄市管與縣(市)管河川的「河川界點由主管機關訂定公告之」，界點不同、
  *   量到的長度就不同；把 OSM 河道長度放進同一個欄位，等於讓兩種不同基準的數字
- *   長得一模一樣。這些河川的卡片改為呈現公告等級與流經縣市。
+ *   長得一模一樣。
+ *
+ *   ⚠️ **加進來的那 21 條連帶動到三處算繪行為，改動時要一起看**（見
+ *   `build-geodata.mjs` 的 `HEADLINE_NUMBER_CATEGORIES`）：
+ *   - **清單順序**與 **`meta` 的主角**現在都是**依 `category` 決定**，不是依
+ *     「有沒有長度」。中央管／跨省市那兩組由長到短、副標主角是長度；另外三組
+ *     依河川代碼（＝沿海岸逆時針的地理順序）、副標主角是別名與流經縣市，長度
+ *     接在最後面。**不要改回用 `length_km != null` 判斷**——那會讓直轄市管與
+ *     縣(市)管兩組的清單從乾淨的地理順序變成半排序，而且會把別名擠出 `meta`
+ *     （`meta` 是 `searchIndex` 唯一收得到的額外欄位，別名掉了就等於「阿里磅溪」
+ *     那類地圖常用名搜不到，畫面上還沒有任何線索）。
+ *   - **長度核對**（差 >15% 印提醒、>60% 失敗）現在也套在這 21 條上。實測全部
+ *     落在 ±36% 內，其中 7 條會亮提醒——那是量測基準差異，不是選錯河，理由與
+ *     中央管那 5 條相同（見下面的 `RIVER_OSM_REFS`）。
+ *
+ * - `lengthSource`（選填）：`length_km`／`area_km2` 不是來自〈河川長度〉總表時
+ *   標出來。目前只有 `"看河去"` 一種，建置日誌會把它印在長度對照那一行上，
+ *   人在核對數字時才知道該去翻哪一頁。
  *
  * ## ⚠️ 官方名稱與 OSM 名稱的對照是查出來的，不是猜的
  *
@@ -184,34 +208,34 @@ export const RIVERS = {
   紅水仙溪: { id: "hongshuixian-river", ref: "115000", category: "直轄市管河川", counties: ["新北市"] },
   寶斗溪: { id: "baodou-river", ref: "116000", category: "直轄市管河川", counties: ["新北市"] },
   林口溪: { id: "linkou-river", ref: "117000", category: "直轄市管河川", counties: ["新北市"] },
-  南崁溪: { id: "nankan-river", ref: "118000", category: "直轄市管河川", counties: ["桃園市"] },
-  老街溪: { id: "laojie-river", ref: "121000", category: "直轄市管河川", counties: ["桃園市"] },
+  南崁溪: { id: "nankan-river", ref: "118000", category: "直轄市管河川", counties: ["桃園市"], length_km: 30.73, area_km2: 214.67, lengthSource: "看河去" },
+  老街溪: { id: "laojie-river", ref: "121000", category: "直轄市管河川", counties: ["桃園市"], length_km: 21.94, area_km2: 84.85, lengthSource: "看河去" },
   富林溪: { id: "fulin-river", ref: "122000", category: "直轄市管河川", counties: ["桃園市"] },
   大堀溪: { id: "daku-river", ref: "123000", category: "直轄市管河川", counties: ["桃園市"] },
   觀音溪: { id: "guanyin-river", ref: "124000", category: "直轄市管河川", counties: ["桃園市"] },
   新屋溪: { id: "xinwu-river", ref: "125000", category: "直轄市管河川", counties: ["桃園市"] },
-  社子溪: { id: "shezi-river", ref: "126000", category: "直轄市管河川", counties: ["桃園市"] },
+  社子溪: { id: "shezi-river", ref: "126000", category: "直轄市管河川", counties: ["桃園市"], length_km: 17.48, area_km2: 75.52, lengthSource: "看河去" },
   溫寮溪: { id: "wenliao-river", ref: "141000", category: "直轄市管河川", counties: ["臺中市"] },
-  雙溪: { id: "shuangxi-river", ref: "262000", category: "直轄市管河川", counties: ["新北市"] },
+  雙溪: { id: "shuangxi-river", ref: "262000", category: "直轄市管河川", counties: ["新北市"], length_km: 26.81, area_km2: 132.5, lengthSource: "看河去" },
   尖山腳溪: { id: "jianshanjiao-river", ref: "263000", category: "直轄市管河川", counties: ["新北市"], alias: "石碇溪" },
   瑪鍊溪: { id: "malian-river", ref: "264000", category: "直轄市管河川", counties: ["新北市"], alias: "瑪鋉溪" },
   員潭溪: { id: "yuantan-river", ref: "265000", category: "直轄市管河川", counties: ["新北市"] },
 
   // ── 縣(市)管河川 65 水系（表 3）─────────────────────────────
   新豐溪: { id: "xinfeng-river", ref: "128000", category: "縣(市)管河川", counties: ["新竹縣"] },
-  西湖溪: { id: "xihu-river", ref: "136000", category: "縣(市)管河川", counties: ["苗栗縣"] },
+  西湖溪: { id: "xihu-river", ref: "136000", category: "縣(市)管河川", counties: ["苗栗縣"], length_km: 32.5, area_km2: 110.53, lengthSource: "看河去" },
   通霄溪: { id: "tongxiao-river", ref: "137000", category: "縣(市)管河川", counties: ["苗栗縣"] },
   苑裡溪: { id: "yuanli-river", ref: "138000", category: "縣(市)管河川", counties: ["苗栗縣"] },
   房裡溪: { id: "fangli-river", ref: "139000", category: "縣(市)管河川", counties: ["苗栗縣"] },
-  新虎尾溪: { id: "xinhuwei-river", ref: "152000", category: "縣(市)管河川", counties: ["雲林縣"] },
+  新虎尾溪: { id: "xinhuwei-river", ref: "152000", category: "縣(市)管河川", counties: ["雲林縣"], length_km: 49.85, area_km2: 109.26, lengthSource: "看河去" },
   林邊溪: { id: "linbian-river", ref: "176000", category: "縣(市)管河川", counties: ["屏東縣"] },
-  率芒溪: { id: "shuaimang-river", ref: "179000", category: "縣(市)管河川", counties: ["屏東縣"] },
+  率芒溪: { id: "shuaimang-river", ref: "179000", category: "縣(市)管河川", counties: ["屏東縣"], length_km: 22.3, area_km2: 89.61, lengthSource: "看河去" },
   十里溪: { id: "shili-river", ref: "181000", category: "縣(市)管河川", counties: ["屏東縣"], alias: "七里溪" },
-  枋山溪: { id: "fangshan-river", ref: "182000", category: "縣(市)管河川", counties: ["屏東縣"] },
-  楓港溪: { id: "fenggang-river", ref: "183000", category: "縣(市)管河川", counties: ["屏東縣"] },
+  枋山溪: { id: "fangshan-river", ref: "182000", category: "縣(市)管河川", counties: ["屏東縣"], length_km: 25.67, area_km2: 127.26, lengthSource: "看河去" },
+  楓港溪: { id: "fenggang-river", ref: "183000", category: "縣(市)管河川", counties: ["屏東縣"], length_km: 20.32, area_km2: 102.52, lengthSource: "看河去" },
   石盤溪: { id: "shipan-river", ref: "184000", category: "縣(市)管河川", counties: ["屏東縣"], alias: "大石盤溪" },
-  保力溪: { id: "baoli-river", ref: "186000", category: "縣(市)管河川", counties: ["屏東縣"] },
-  港口溪: { id: "gangkou-river", ref: "201000", category: "縣(市)管河川", counties: ["屏東縣"] },
+  保力溪: { id: "baoli-river", ref: "186000", category: "縣(市)管河川", counties: ["屏東縣"], length_km: 16.5, area_km2: 103, lengthSource: "看河去" },
+  港口溪: { id: "gangkou-river", ref: "201000", category: "縣(市)管河川", counties: ["屏東縣"], length_km: 31.18, area_km2: 101.6, lengthSource: "看河去" },
   九棚溪: { id: "jiupeng-river", ref: "202000", category: "縣(市)管河川", counties: ["屏東縣"] },
   港子溪: { id: "gangzi-river", ref: "203000", category: "縣(市)管河川", counties: ["屏東縣"], alias: "港仔溪" },
   牡丹溪: { id: "mudan-river", ref: "204000", category: "縣(市)管河川", counties: ["屏東縣"], alias: "旭海溪" },
@@ -227,9 +251,9 @@ export const RIVERS = {
   金崙溪: { id: "jinlun-river", ref: "214000", category: "縣(市)管河川", counties: ["臺東縣"] },
   太麻里溪: { id: "taimali-river", ref: "215000", category: "縣(市)管河川", counties: ["臺東縣"] },
   文里溪: { id: "wenli-river", ref: "216000", category: "縣(市)管河川", counties: ["臺東縣"] },
-  知本溪: { id: "zhiben-river", ref: "217000", category: "縣(市)管河川", counties: ["臺東縣"] },
-  利嘉溪: { id: "lijia-river", ref: "218000", category: "縣(市)管河川", counties: ["臺東縣"] },
-  太平溪: { id: "taiping-river", ref: "219000", category: "縣(市)管河川", counties: ["臺東縣"] },
+  知本溪: { id: "zhiben-river", ref: "217000", category: "縣(市)管河川", counties: ["臺東縣"], length_km: 39.25, area_km2: 198.45, lengthSource: "看河去" },
+  利嘉溪: { id: "lijia-river", ref: "218000", category: "縣(市)管河川", counties: ["臺東縣"], length_km: 38, area_km2: 178.54, lengthSource: "看河去" },
+  太平溪: { id: "taiping-river", ref: "219000", category: "縣(市)管河川", counties: ["臺東縣"], length_km: 21.56, area_km2: 93.82, lengthSource: "看河去" },
   都蘭溪: { id: "dulan-river", ref: "221000", category: "縣(市)管河川", counties: ["臺東縣"] },
   八里溪: { id: "bali-river", ref: "222000", category: "縣(市)管河川", counties: ["臺東縣"] },
   馬武溪: { id: "mawu-river", ref: "223000", category: "縣(市)管河川", counties: ["臺東縣"], alias: "馬武窟溪" },
@@ -250,18 +274,18 @@ export const RIVERS = {
   加蘭溪: { id: "jialan-river", ref: "239000", category: "縣(市)管河川", counties: ["花蓮縣"] },
   薯寮溪: { id: "shuliao-river", ref: "240000", category: "縣(市)管河川", counties: ["花蓮縣"], alias: "蕃薯寮溪" },
   水連溪: { id: "shuilian-river", ref: "241000", category: "縣(市)管河川", counties: ["花蓮縣"], alias: "水璉溪" },
-  吉安溪: { id: "jian-river", ref: "243000", category: "縣(市)管河川", counties: ["花蓮縣"] },
-  美崙溪: { id: "meilun-river", ref: "244000", category: "縣(市)管河川", counties: ["花蓮縣"] },
+  吉安溪: { id: "jian-river", ref: "243000", category: "縣(市)管河川", counties: ["花蓮縣"], length_km: 11.4, area_km2: 36.5, lengthSource: "看河去" },
+  美崙溪: { id: "meilun-river", ref: "244000", category: "縣(市)管河川", counties: ["花蓮縣"], length_km: 15.4, area_km2: 76.4, lengthSource: "看河去" },
   三棧溪: { id: "sanzhan-river", ref: "245000", category: "縣(市)管河川", counties: ["花蓮縣"] },
-  立霧溪: { id: "liwu-river", ref: "246000", category: "縣(市)管河川", counties: ["花蓮縣"] },
+  立霧溪: { id: "liwu-river", ref: "246000", category: "縣(市)管河川", counties: ["花蓮縣"], length_km: 55, area_km2: 616.3, lengthSource: "看河去" },
   石公溪: { id: "shigong-river", ref: "247000", category: "縣(市)管河川", counties: ["花蓮縣"] },
   大富溪: { id: "dafu-river", ref: "248000", category: "縣(市)管河川", counties: ["花蓮縣"], alias: "小清水溪" },
   大清水溪: { id: "daqingshui-river", ref: "249000", category: "縣(市)管河川", counties: ["花蓮縣"], alias: "良里溪" },
-  南澳溪: { id: "nanao-river", ref: "251000", category: "縣(市)管河川", counties: ["宜蘭縣"] },
+  南澳溪: { id: "nanao-river", ref: "251000", category: "縣(市)管河川", counties: ["宜蘭縣"], length_km: 48.4, area_km2: 311.73, lengthSource: "看河去" },
   東澳溪: { id: "dongao-river", ref: "252000", category: "縣(市)管河川", counties: ["宜蘭縣"], alias: "東澳北溪" },
-  蘇澳溪: { id: "suao-river", ref: "253000", category: "縣(市)管河川", counties: ["宜蘭縣"] },
-  新城溪: { id: "xincheng-river", ref: "254000", category: "縣(市)管河川", counties: ["宜蘭縣"] },
-  得子口溪: { id: "dezikou-river", ref: "257000", category: "縣(市)管河川", counties: ["宜蘭縣"] },
+  蘇澳溪: { id: "suao-river", ref: "253000", category: "縣(市)管河川", counties: ["宜蘭縣"], length_km: 8.83, area_km2: 29.65, lengthSource: "看河去" },
+  新城溪: { id: "xincheng-river", ref: "254000", category: "縣(市)管河川", counties: ["宜蘭縣"], length_km: 18.13, area_km2: 50.46, lengthSource: "看河去" },
+  得子口溪: { id: "dezikou-river", ref: "257000", category: "縣(市)管河川", counties: ["宜蘭縣"], length_km: 19.3, area_km2: 98.35, lengthSource: "看河去" },
   大溪川: { id: "daxi-river", ref: "261000", category: "縣(市)管河川", counties: ["宜蘭縣"] },
   // ── 主要支流 26 條（不在公告的 118 個水系裡，見上面的說明）─────────
   // 淡水河水系：臺北盆地的三條河，課本講盆地與都市發展一定會點名
@@ -360,9 +384,12 @@ export const RIVER_OSM_REFS = Object.fromEntries(
 /**
  * 幹流長度（公里）與流域面積（平方公里）＋管理等級。
  *
- * ⚠️ **只有 26 條中央管／跨省市河川在這裡面**——其餘 92 條沒有官方數字（見
- * `RIVERS` 的說明）。`tw-basins` 直接以這 26 筆為清單，正好也是 BASIN 那份
- * SHP 涵蓋的範圍。
+ * ⚠️ **只有查得到官方數字的 47 條在這裡面**（26 條來自〈河川長度〉總表、21 條
+ * 來自各河的介紹頁），其餘 71 條沒有官方數字，見 `RIVERS` 的 `length_km`。
+ *
+ * ⚠️ 這個匯出**目前沒有任何呼叫端**（`tw-basins` 走的是 `BASIN_IDS` 加
+ * `RIVERS` 本身）。留著是為了讓「要一份純數字的對照表」時有現成的東西可用，
+ * 但**不要以為改它會影響產物**——要改產物請改 `RIVERS`。
  */
 export const RIVER_FACTS = Object.fromEntries(
   Object.entries(RIVERS)

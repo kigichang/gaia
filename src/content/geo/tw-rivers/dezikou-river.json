@@ -1,0 +1,53 @@
+{
+  "id": "dezikou-river",
+  "collection": "tw-rivers",
+  "name": {
+    "zh": "得子口溪",
+    "en": "Dezikou River"
+  },
+  "subtitle": "縣(市)管河川・宜蘭縣",
+  "stats": [
+    {
+      "label": "幹流長度",
+      "value": "19.3 km"
+    },
+    {
+      "label": "流域面積",
+      "value": "98.35 km²"
+    },
+    {
+      "label": "分類",
+      "value": "縣(市)管河川"
+    }
+  ],
+  "facts": [
+    {
+      "label": "發源地",
+      "value": "洪盧地山"
+    },
+    {
+      "label": "主要支流",
+      "value": "福德溪、金面溪"
+    },
+    {
+      "label": "流經",
+      "value": "宜蘭縣（礁溪鄉、頭城鎮、壯圍鄉）"
+    },
+    {
+      "label": "河床平均坡降",
+      "value": "上游 1:21"
+    },
+    {
+      "label": "特色",
+      "value": "中游河段稱二龍河（端午二龍競渡的所在），下游稱頭城河；沿線有礁溪溫泉與五峰旗瀑布"
+    }
+  ],
+  "curriculum": {
+    "unit": "臺灣的水文"
+  },
+  "sources": [
+    "OpenStreetMap",
+    "維基百科",
+    "經濟部水利署 得子口溪"
+  ]
+}

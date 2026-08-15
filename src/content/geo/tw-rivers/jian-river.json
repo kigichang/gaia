@@ -1,0 +1,49 @@
+{
+  "id": "jian-river",
+  "collection": "tw-rivers",
+  "name": {
+    "zh": "吉安溪",
+    "en": "Ji'an River"
+  },
+  "subtitle": "縣(市)管河川・花蓮縣",
+  "stats": [
+    {
+      "label": "幹流長度",
+      "value": "11.4 km"
+    },
+    {
+      "label": "流域面積",
+      "value": "36.5 km²"
+    },
+    {
+      "label": "分類",
+      "value": "縣(市)管河川"
+    }
+  ],
+  "facts": [
+    {
+      "label": "發源地",
+      "value": "七腳川山南峰"
+    },
+    {
+      "label": "流經",
+      "value": "花蓮縣（吉安鄉）"
+    },
+    {
+      "label": "河床平均坡降",
+      "value": "上游 1:90、中游 1:150、下游 1:275"
+    },
+    {
+      "label": "特色",
+      "value": "昔稱荳蘭溪，也因七腳川事件被稱為七腳川溪，是花蓮市與吉安鄉的界河"
+    }
+  ],
+  "curriculum": {
+    "unit": "臺灣的水文"
+  },
+  "sources": [
+    "OpenStreetMap",
+    "維基百科",
+    "經濟部水利署 吉安溪"
+  ]
+}

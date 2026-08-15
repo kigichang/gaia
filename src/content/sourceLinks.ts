@@ -52,6 +52,75 @@ export const SOURCE_LINKS: Record<string, string> = {
   // 燈塔的主管機關（本島四極的地標有三個是燈塔）
   交通部航港局: "https://www.motcmpb.gov.tw/",
   經濟部水利署: "https://www.wra.gov.tw/",
+
+  /**
+   * 47 條河川各自的官方介紹頁（水利署「讓我們看河去」）。走既有的 sources 機制
+   * 而不是另外開一個欄位，比照 33 條活動斷層與 43 處保留區的既有決定：內容檔的
+   * `sources` 寫 `經濟部水利署 濁水溪`，SourceLinks 就會把它渲染成連到那一頁的
+   * 連結，同時滿足「標示出處」與「使用者想點進去看官方原文」兩件事。
+   *
+   * 兩批的頁面形狀不同，這件事在取材時會遇到：
+   * - **26 條中央管／跨省市河川**是一河一頁（網址帶 `dn`），表格欄位是
+   *   發源地／主流長度／入海口／河床平均坡降／主要支流／流域面積／平地面積／
+   *   山地面積／流經行政區。
+   * - **21 條直轄市管／縣(市)管河川**是**一頁講好幾條**（例如 n=3337 一頁就是
+   *   率芒溪、枋山溪、楓港溪三條），欄位少一些：發源地／主要支流／幹線長度／
+   *   流域面積／平均坡度／流經區域。同一頁的河川共用同一個網址是正常的。
+   *
+   * ⚠️ 37 個網址全部實測回 200（2026-08）。`cp.aspx?n=` 這種查詢字串式的網址
+   * 沒有版本承諾，改版時舊網址會直接失效而卡片上只剩一個死連結——重新整理這一
+   * 區塊時，從 cl.aspx?n=3259（北部）／3270（中部）／3285（南部）／3306（東部）／
+   * 3328（縣市管）五個索引頁重新抓連結，不要憑印象改數字。
+   */
+  "經濟部水利署 蘭陽溪": "https://www.wra.gov.tw/cp.aspx?n=3260&dn=3261",
+  "經濟部水利署 淡水河": "https://www.wra.gov.tw/cp.aspx?n=3262&dn=3263",
+  "經濟部水利署 磺溪": "https://www.wra.gov.tw/cp.aspx?n=3264&dn=3265",
+  "經濟部水利署 鳳山溪": "https://www.wra.gov.tw/cp.aspx?n=3266&dn=3267",
+  "經濟部水利署 頭前溪": "https://www.wra.gov.tw/cp.aspx?n=3268&dn=3269",
+  "經濟部水利署 中港溪": "https://www.wra.gov.tw/cp.aspx?n=3271&dn=3272",
+  "經濟部水利署 後龍溪": "https://www.wra.gov.tw/cp.aspx?n=3273&dn=3274",
+  "經濟部水利署 大安溪": "https://www.wra.gov.tw/cp.aspx?n=3275&dn=3276",
+  "經濟部水利署 大甲溪": "https://www.wra.gov.tw/cp.aspx?n=3277&dn=3278",
+  "經濟部水利署 烏溪": "https://www.wra.gov.tw/cp.aspx?n=3279&dn=3280",
+  "經濟部水利署 濁水溪": "https://www.wra.gov.tw/cp.aspx?n=3281&dn=3282",
+  "經濟部水利署 北港溪": "https://www.wra.gov.tw/cp.aspx?n=3283&dn=3284",
+  "經濟部水利署 朴子溪": "https://www.wra.gov.tw/cp.aspx?n=3286&dn=3287",
+  "經濟部水利署 八掌溪": "https://www.wra.gov.tw/cp.aspx?n=3288&dn=3289",
+  "經濟部水利署 急水溪": "https://www.wra.gov.tw/cp.aspx?n=3290&dn=3291",
+  "經濟部水利署 曾文溪": "https://www.wra.gov.tw/cp.aspx?n=3292&dn=3293",
+  "經濟部水利署 鹽水溪": "https://www.wra.gov.tw/cp.aspx?n=3294&dn=3295",
+  "經濟部水利署 二仁溪": "https://www.wra.gov.tw/cp.aspx?n=3296&dn=3297",
+  "經濟部水利署 阿公店溪": "https://www.wra.gov.tw/cp.aspx?n=3298&dn=3299",
+  "經濟部水利署 高屏溪": "https://www.wra.gov.tw/cp.aspx?n=3300&dn=3301",
+  "經濟部水利署 東港溪": "https://www.wra.gov.tw/cp.aspx?n=3302&dn=3303",
+  "經濟部水利署 四重溪": "https://www.wra.gov.tw/cp.aspx?n=3304&dn=3305",
+  "經濟部水利署 卑南溪": "https://www.wra.gov.tw/cp.aspx?n=3307&dn=3308",
+  "經濟部水利署 秀姑巒溪": "https://www.wra.gov.tw/cp.aspx?n=3309&dn=3310",
+  "經濟部水利署 花蓮溪": "https://www.wra.gov.tw/cp.aspx?n=3311&dn=3312",
+  "經濟部水利署 和平溪": "https://www.wra.gov.tw/cp.aspx?n=3313&dn=3314",
+  // 以下 21 條走「讓我們看河去(縣市管河川)」，同一頁講好幾條
+  "經濟部水利署 南澳溪": "https://www.wra.gov.tw/cp.aspx?n=3330",
+  "經濟部水利署 蘇澳溪": "https://www.wra.gov.tw/cp.aspx?n=3330",
+  "經濟部水利署 新城溪": "https://www.wra.gov.tw/cp.aspx?n=3330",
+  "經濟部水利署 得子口溪": "https://www.wra.gov.tw/cp.aspx?n=3331",
+  "經濟部水利署 雙溪": "https://www.wra.gov.tw/cp.aspx?n=3332",
+  "經濟部水利署 南崁溪": "https://www.wra.gov.tw/cp.aspx?n=3333",
+  "經濟部水利署 老街溪": "https://www.wra.gov.tw/cp.aspx?n=3333",
+  "經濟部水利署 社子溪": "https://www.wra.gov.tw/cp.aspx?n=3333",
+  "經濟部水利署 西湖溪": "https://www.wra.gov.tw/cp.aspx?n=3335",
+  "經濟部水利署 新虎尾溪": "https://www.wra.gov.tw/cp.aspx?n=3336",
+  "經濟部水利署 率芒溪": "https://www.wra.gov.tw/cp.aspx?n=3337",
+  "經濟部水利署 枋山溪": "https://www.wra.gov.tw/cp.aspx?n=3337",
+  "經濟部水利署 楓港溪": "https://www.wra.gov.tw/cp.aspx?n=3337",
+  "經濟部水利署 保力溪": "https://www.wra.gov.tw/cp.aspx?n=3338",
+  "經濟部水利署 港口溪": "https://www.wra.gov.tw/cp.aspx?n=3338",
+  "經濟部水利署 知本溪": "https://www.wra.gov.tw/cp.aspx?n=3339",
+  "經濟部水利署 利嘉溪": "https://www.wra.gov.tw/cp.aspx?n=3339",
+  "經濟部水利署 太平溪": "https://www.wra.gov.tw/cp.aspx?n=3339",
+  "經濟部水利署 吉安溪": "https://www.wra.gov.tw/cp.aspx?n=3340",
+  "經濟部水利署 美崙溪": "https://www.wra.gov.tw/cp.aspx?n=3340",
+  "經濟部水利署 立霧溪": "https://www.wra.gov.tw/cp.aspx?n=3341",
+
   農業部農田水利署: "https://www.ia.gov.tw/",
   農業部林業及自然保育署: "https://www.forest.gov.tw/",
   // 垂直植被帶那六個高程界線的實際出處。連的是那一頁本身而不是農業部首頁：

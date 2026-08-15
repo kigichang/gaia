@@ -1,45 +1,45 @@
 {
-  "id": "sichong-river",
+  "id": "fenggang-river",
   "collection": "tw-rivers",
   "name": {
-    "zh": "四重溪",
-    "en": "Sichong River"
+    "zh": "楓港溪",
+    "en": "Fenggang River"
   },
-  "subtitle": "中央管河川・恆春半島",
+  "subtitle": "縣(市)管河川・屏東縣",
   "stats": [
     {
       "label": "幹流長度",
-      "value": "31.9 km"
+      "value": "20.32 km"
     },
     {
       "label": "流域面積",
-      "value": "125 km²"
+      "value": "102.52 km²"
     },
     {
       "label": "分類",
-      "value": "中央管河川"
+      "value": "縣(市)管河川"
     },
     {
       "label": "河床平均坡降",
-      "value": "1:59"
+      "value": "1:40"
     }
   ],
   "facts": [
     {
       "label": "發源地",
-      "value": "南部中央山脈西南側里龍山（海拔 1,062 公尺）"
+      "value": "屏東縣太和山"
     },
     {
       "label": "主要支流",
-      "value": "牡丹溪、竹社溪、大梅溪"
+      "value": "新路溪"
     },
     {
       "label": "流經",
-      "value": "屏東縣（牡丹鄉、車城鄉）"
+      "value": "屏東縣（獅子鄉、枋山鄉）"
     },
     {
       "label": "特色",
-      "value": "沿岸的四重溪溫泉是恆春半島著名的溫泉區"
+      "value": "溪谷是南部通往東部的重要孔道，南迴公路（省道臺 9 線）即沿此谷翻越中央山脈"
     }
   ],
   "curriculum": {
@@ -48,6 +48,6 @@
   "sources": [
     "OpenStreetMap",
     "維基百科",
-    "經濟部水利署 四重溪"
+    "經濟部水利署 楓港溪"
   ]
 }
