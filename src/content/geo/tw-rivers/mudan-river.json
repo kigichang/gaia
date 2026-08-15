@@ -1,0 +1,44 @@
+{
+  "id": "mudan-river",
+  "collection": "tw-rivers",
+  "name": {
+    "zh": "牡丹溪",
+    "en": "Mudan River"
+  },
+  "subtitle": "縣(市)管河川・屏東縣",
+  "stats": [
+    {
+      "label": "幹流長度",
+      "value": "4 km"
+    },
+    {
+      "label": "流域面積",
+      "value": "11.63 km²"
+    },
+    {
+      "label": "分類",
+      "value": "縣(市)管河川"
+    }
+  ],
+  "facts": [
+    {
+      "label": "又稱",
+      "value": "旭海溪"
+    },
+    {
+      "label": "發源地",
+      "value": "舊牡丹南方"
+    },
+    {
+      "label": "流經",
+      "value": "屏東縣牡丹鄉旭海村中部、東源村東部、牡丹村東端凸出部分"
+    }
+  ],
+  "curriculum": {
+    "unit": "臺灣的水文"
+  },
+  "sources": [
+    "OpenStreetMap",
+    "維基百科 旭海溪"
+  ]
+}

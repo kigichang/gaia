@@ -1,0 +1,40 @@
+{
+  "id": "fujia-river",
+  "collection": "tw-rivers",
+  "name": {
+    "zh": "富家溪",
+    "en": "Fujia River"
+  },
+  "subtitle": "縣(市)管河川・臺東縣",
+  "stats": [
+    {
+      "label": "幹流長度",
+      "value": "9.02 km"
+    },
+    {
+      "label": "流域面積",
+      "value": "25.7 km²"
+    },
+    {
+      "label": "分類",
+      "value": "縣(市)管河川"
+    }
+  ],
+  "facts": [
+    {
+      "label": "發源地",
+      "value": "成功鎮三仙里分水𪨧山東側"
+    },
+    {
+      "label": "流經",
+      "value": "台東縣成功鎮"
+    }
+  ],
+  "curriculum": {
+    "unit": "臺灣的水文"
+  },
+  "sources": [
+    "OpenStreetMap",
+    "維基百科 富家溪"
+  ]
+}

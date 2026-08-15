@@ -1,0 +1,44 @@
+{
+  "id": "dazhu-river",
+  "collection": "tw-rivers",
+  "name": {
+    "zh": "大竹溪",
+    "en": "Dazhu River"
+  },
+  "subtitle": "縣(市)管河川・臺東縣",
+  "stats": [
+    {
+      "label": "幹流長度",
+      "value": "23.65 km"
+    },
+    {
+      "label": "流域面積",
+      "value": "133.41 km²"
+    },
+    {
+      "label": "分類",
+      "value": "縣(市)管河川"
+    }
+  ],
+  "facts": [
+    {
+      "label": "發源地",
+      "value": "達仁鄉土坂村衣丁山東南側山頭之東側"
+    },
+    {
+      "label": "出海口",
+      "value": "大溪南側注入太平洋"
+    },
+    {
+      "label": "流經",
+      "value": "臺東縣"
+    }
+  ],
+  "curriculum": {
+    "unit": "臺灣的水文"
+  },
+  "sources": [
+    "OpenStreetMap",
+    "維基百科 大竹溪"
+  ]
+}

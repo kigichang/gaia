@@ -1,0 +1,44 @@
+{
+  "id": "shipan-river",
+  "collection": "tw-rivers",
+  "name": {
+    "zh": "石盤溪",
+    "en": "Shipan River"
+  },
+  "subtitle": "縣(市)管河川・屏東縣",
+  "stats": [
+    {
+      "label": "幹流長度",
+      "value": "4 km"
+    },
+    {
+      "label": "流域面積",
+      "value": "6.08 km²"
+    },
+    {
+      "label": "分類",
+      "value": "縣(市)管河川"
+    }
+  ],
+  "facts": [
+    {
+      "label": "又稱",
+      "value": "大石盤溪"
+    },
+    {
+      "label": "發源地",
+      "value": "獅子鄉竹坑村里龍山西側"
+    },
+    {
+      "label": "流經",
+      "value": "屏東縣枋山鄉、獅子鄉"
+    }
+  ],
+  "curriculum": {
+    "unit": "臺灣的水文"
+  },
+  "sources": [
+    "OpenStreetMap",
+    "維基百科 石盤溪"
+  ]
+}

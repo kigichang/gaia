@@ -1,0 +1,40 @@
+{
+  "id": "mugua-river",
+  "collection": "tw-rivers",
+  "name": {
+    "zh": "木瓜溪",
+    "en": "Mugua River"
+  },
+  "subtitle": "主要支流・花蓮溪水系",
+  "stats": [
+    {
+      "label": "幹流長度",
+      "value": "54 km"
+    },
+    {
+      "label": "流域面積",
+      "value": "468.21 km²"
+    },
+    {
+      "label": "分類",
+      "value": "主要支流"
+    }
+  ],
+  "facts": [
+    {
+      "label": "發源地",
+      "value": "能高南峰東南坡的清水溪"
+    },
+    {
+      "label": "所屬水系",
+      "value": "花蓮溪水系"
+    }
+  ],
+  "curriculum": {
+    "unit": "臺灣的水文"
+  },
+  "sources": [
+    "OpenStreetMap",
+    "維基百科 木瓜溪"
+  ]
+}

@@ -1,0 +1,44 @@
+{
+  "id": "dongao-river",
+  "collection": "tw-rivers",
+  "name": {
+    "zh": "東澳溪",
+    "en": "Dongao River"
+  },
+  "subtitle": "縣(市)管河川・宜蘭縣",
+  "stats": [
+    {
+      "label": "幹流長度",
+      "value": "8 km"
+    },
+    {
+      "label": "流域面積",
+      "value": "20.6 km²"
+    },
+    {
+      "label": "分類",
+      "value": "縣(市)管河川"
+    }
+  ],
+  "facts": [
+    {
+      "label": "又稱",
+      "value": "東澳北溪"
+    },
+    {
+      "label": "發源地",
+      "value": "南澳鄉東岳村大白山東南麓"
+    },
+    {
+      "label": "流經",
+      "value": "宜蘭縣蘇澳鎮、南澳鄉"
+    }
+  ],
+  "curriculum": {
+    "unit": "臺灣的水文"
+  },
+  "sources": [
+    "OpenStreetMap",
+    "維基百科 東澳溪"
+  ]
+}

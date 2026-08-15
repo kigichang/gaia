@@ -1,0 +1,44 @@
+{
+  "id": "laomei-river",
+  "collection": "tw-rivers",
+  "name": {
+    "zh": "老梅溪",
+    "en": "Laomei River"
+  },
+  "subtitle": "直轄市管河川・新北市",
+  "stats": [
+    {
+      "label": "幹流長度",
+      "value": "24.2 km"
+    },
+    {
+      "label": "流域面積",
+      "value": "14.85 km²"
+    },
+    {
+      "label": "分類",
+      "value": "直轄市管河川"
+    }
+  ],
+  "facts": [
+    {
+      "label": "發源地",
+      "value": "三芝區圓山里鷹子鼻北側"
+    },
+    {
+      "label": "出海口",
+      "value": "崩山口西側注入東海"
+    },
+    {
+      "label": "流經",
+      "value": "新北市石門區、三芝區"
+    }
+  ],
+  "curriculum": {
+    "unit": "臺灣的水文"
+  },
+  "sources": [
+    "OpenStreetMap",
+    "維基百科 老梅溪"
+  ]
+}

@@ -1,0 +1,40 @@
+{
+  "id": "tawa-river",
+  "collection": "tw-rivers",
+  "name": {
+    "zh": "塔瓦溪",
+    "en": "Tawa River"
+  },
+  "subtitle": "縣(市)管河川・臺東縣",
+  "stats": [
+    {
+      "label": "幹流長度",
+      "value": "3 km"
+    },
+    {
+      "label": "流域面積",
+      "value": "4.48 km²"
+    },
+    {
+      "label": "分類",
+      "value": "縣(市)管河川"
+    }
+  ],
+  "facts": [
+    {
+      "label": "發源地",
+      "value": "牡丹溪山"
+    },
+    {
+      "label": "流經",
+      "value": "臺東縣"
+    }
+  ],
+  "curriculum": {
+    "unit": "臺灣的水文"
+  },
+  "sources": [
+    "OpenStreetMap",
+    "維基百科 塔瓦溪"
+  ]
+}
