@@ -833,7 +833,14 @@ export const taiwanTheme: ThemeDefinition = {
        */
       render: { kind: "fill", fillOpacity: 0.18, outlineWidth: 1.6 },
       colorRole: "conservation",
-      detail: { type: "geo", collection: "tw-protected-areas" },
+      /**
+       * ⚠️ `hideLayerDescription`：53 處裡有 **43 處沒有內容檔**（十座國家公園
+       * 以外的保留區／保護區），它們的卡片走 `FeatureCard` fallback，整片說明
+       * 都是跟抽屜那一列逐字相同的圖層說明。退掉之後卡片剩
+       * 「名稱／類別・約 N 公頃／資料來源」——逐筆不同的東西。
+       * 有內容檔的十座國家公園完全不受影響（fallback 根本不會走到）。
+       */
+      detail: { type: "geo", collection: "tw-protected-areas", hideLayerDescription: true },
       browse: {},
       /**
        * ⚠️ **不設 maxzoom**（縣市界設 11 是因為相鄰面各自簡化會開出次像素縫隙）。
