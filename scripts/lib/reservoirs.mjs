@@ -171,6 +171,12 @@ export const num = (v) => {
  *
  * 容量單位是**萬立方公尺**，面積單位是**公頃**（實測對過：新山水庫集水面積 160
  * 公頃 = 1.6 km²、滿水位面積 50.9 公頃，與 KML 量到的 0.57 km² 相符）。
+ *
+ * ⚠️ **名稱不含任何漢字的列是上游的垃圾資料，警告後跳過**（2026-08-15 實測：
+ * CSV 短暫冒出一列名稱是「0.0」的資料，幾十分鐘後自行消失）。判準刻意收窄成
+ * 「連一個漢字都沒有」——真正的新水庫一定是漢字名稱，仍然會流到下游
+ * `RESERVOIR_IDS` 的嚴格檢查並讓建置失敗，由人決定它的 id；這裡只擋
+ * 明顯不是水庫的東西，不是把對照表檢查放寬。
  */
 export async function fetchReservoirBasics(fetchWithRetry) {
   const rows = await fetchCsv(BASICS_URL, fetchWithRetry);
@@ -178,9 +184,14 @@ export async function fetchReservoirBasics(fetchWithRetry) {
   for (const r of rows) {
     const code = r["水庫代碼"];
     if (!code) continue;
+    const name = clean(r["水庫名稱"]);
+    if (!name || !/\p{Script=Han}/u.test(name)) {
+      console.warn(`\n⚠ 略過垃圾列：水庫代碼「${code}」名稱「${name ?? ""}」不像水庫名`);
+      continue;
+    }
     byCode.set(code, {
       code,
-      name: clean(r["水庫名稱"]),
+      name,
       region: clean(r["地區別"]),
       river: clean(r["河川名稱"]),
       authority: clean(r["機關名稱"]),
