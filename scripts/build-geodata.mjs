@@ -578,7 +578,7 @@ const SOURCES = [
           properties: {
             // ⚠️ id 用官方的 TOWNCODE，**不能用名稱 slugify**：鄉鎮名不唯一，
             // 實測有 8 個重複名（中正區、信義區、中山區、東區…）散在不同縣市。
-            // 人口與作物兩層也**共用這個 id**（見 CLAUDE.md「三層共用 id」），
+            // 人口與作物兩層也**共用這個 id**（見 CLAUDE_TW.md「三層共用 id」），
             // 所以它現在同時是三層共用詳情卡的 join key。
             id: `tw-${p.TOWNCODE}`,
             name: p.TOWNNAME,
@@ -1232,7 +1232,7 @@ const SOURCES = [
        *   直接漏掉這幾條。
        * - **同名不同河**：BASIN 裡的 `新港溪` 到底是臺東成功鎮那條（224000）還是
        *   苗栗冷水坑溪的別名（133000），名稱看不出來。這正是 RIVERLIN 當初報廢的
-       *   同一個坑（見 CLAUDE.md），不要再走一次。
+       *   同一個坑（見 CLAUDE_TW.md），不要再走一次。
        *
        * 一個 `BASIN_NO` 對到多筆時**一律跳過**：那是上游用來歸類「沒有個別代碼的
        * 小水系」的群組碼（實測 2803 底下有 5 條北海岸小溪），拿群組裡任一條當成
@@ -1418,7 +1418,7 @@ const SOURCES = [
           type: "Feature",
           geometry: { type: "Point", coordinates: town_.centroid },
           properties: {
-            // ⚠️ 官方 TOWNCODE，跟鄉鎮界與人口層**共用**（見 CLAUDE.md「三層共用 id」）。
+            // ⚠️ 官方 TOWNCODE，跟鄉鎮界與人口層**共用**（見 CLAUDE_TW.md「三層共用 id」）。
             // 三個作物子圖層因此各有一筆同 id 的 feature——instance 之內仍然唯一
             // （一個鄉鎮一種作物一筆），跨 instance 互撞正是這次要的。
             id: town_.id,
@@ -1497,7 +1497,7 @@ const SOURCES = [
           properties: {
             // ⚠️ **用鄉鎮界那份的官方 TOWNCODE id，不是自己組一個。**
             // 鄉鎮／人口／作物三層講的是同一個實體，共用 id 才能共用同一張詳情卡、
-            // 在搜尋裡合併成一筆、以及讓 highlightIds 連動強調（見 CLAUDE.md
+            // 在搜尋裡合併成一筆、以及讓 highlightIds 連動強調（見 CLAUDE_TW.md
             // 「三層共用 id」）。順帶也解掉「中正區、東區在 8 個縣市重複」那個
             // 不能用名稱 slugify 的老問題。
             id: town_.id,
@@ -1796,7 +1796,7 @@ const SOURCES = [
              * ⚠️ **刻意跟母圖層那條路徑共用同一個 id**（所以這份檔案裡有 757 筆
              * 但只有 14 個不重複的 id，`sharedIds` 就是為它開的）。
              *
-             * 這是 CLAUDE.md「三層共用 id」那條既有規則的同一件事：定位點與路徑
+             * 這是 CLAUDE_TW.md「三層共用 id」那條既有規則的同一件事：定位點與路徑
              * 講的是**同一個颱風**，共用 id 之後三件事自動成立——點定位點會開出
              * 那個颱風的卡片、選取時整條路徑連同它所有的定位點一起加粗、
              * `highlightIds` 只需要一個字串而不是 55 個。
@@ -1844,7 +1844,7 @@ const rawCategory = (f) =>
  *
  * ⚠️ **`id` 也要一起帶出來**，那是「鄉鎮／人口／作物三層共用同一張詳情卡」的關鍵：
  * 三層的 featureId 都用官方 TOWNCODE，卡片、搜尋合併與連動強調才對得起來。
- * 詳見 CLAUDE.md「三層共用 id」那一節。
+ * 詳見 CLAUDE_TW.md「三層共用 id」那一節。
  */
 let townCentroidsPromise = null;
 function townshipCentroids() {

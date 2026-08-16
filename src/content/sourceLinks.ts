@@ -137,7 +137,7 @@ export const SOURCE_LINKS: Record<string, string> = {
   文化部文化資產局: "https://nchdb.boch.gov.tw/",
   維基百科: "https://zh.wikipedia.org/",
 
-  // 97 條沒有官方詳細資料的河川，改用維基百科（見 CLAUDE.md 的說明）。
+  // 97 條沒有官方詳細資料的河川，改用維基百科（見 CLAUDE_TW.md 的說明）。
   // ⚠️ 這裡刻意逐條登記真正的條目名，不要改成從河川名自動組網址：
   // 公告名與條目名有 27 條對不上，而且花蓮那兩條會**互相對調**
   //（公告「大清水溪」＝條目「良里溪」、公告「大富溪」的條目 native_name 才是小清水溪），

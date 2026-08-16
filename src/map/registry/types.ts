@@ -333,7 +333,7 @@ export type DetailSpec =
   /**
    * 鄉鎮市區。**三個圖層共用這一個型別**：鄉鎮市區界（面）、人口與都市體系（點）、
    * 主要作物分布（點）講的是同一個實體，所以它們的 featureId 都是官方 TOWNCODE，
-   * 點哪一層都開同一張 `TownshipCard`（見 CLAUDE.md「三層共用 id」）。
+   * 點哪一層都開同一張 `TownshipCard`（見 CLAUDE_TW.md「三層共用 id」）。
    *
    * ⚠️ **不能用 `geo` + 同一個 collection 代替**，那條路有兩個坑：
    * `DetailCard` 的 `findGeoOwner()` 只回傳 `theme.layers` 裡**第一個**符合的圖層，

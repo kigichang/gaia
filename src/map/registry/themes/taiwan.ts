@@ -986,7 +986,7 @@ export const taiwanTheme: ThemeDefinition = {
        *
        * ⚠️ **定位點跟路徑共用同一個 `properties.id`**（757 個點只有 14 個不重複的
        * id），所以點任何一個定位點開出來的就是那個颱風的卡片，選取時整條路徑連同
-       * 它所有的定位點一起加粗——那是 CLAUDE.md「三層共用 id」的同一條規則：
+       * 它所有的定位點一起加粗——那是 CLAUDE_TW.md「三層共用 id」的同一條規則：
        * 同一個實體就該是同一個 id。也因此 `parentProperty` 退化成 `"id"`：
        * 母子關係已經由 id 本身表達，不需要再存 757 筆 `typhoonId`。
        *
