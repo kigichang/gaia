@@ -24,6 +24,22 @@ export const SOURCE_LINKS: Record<string, string> = {
   內政部消防署: "https://www.nfa.gov.tw/",
   農業部: "https://www.moa.gov.tw/",
   內政部國土測繪中心: "https://www.nlsc.gov.tw/",
+  /**
+   * 專屬經濟海域那一層的三個來源。
+   *
+   * ⚠️ `Marine Regions 海域界線資料庫` 是 **CC-BY 的署名義務**，不是可有可無的
+   * 外連——`FeatureCard` 有內容檔時顯示的是內容檔的 `sources`，四份內容檔少了
+   * 這個字串，署名就會憑空消失（比照 tw-rivers 對 OpenStreetMap 的 ODbL 署名）。
+   *
+   * 另外兩筆連的是**條文與公告本身**，不是主管機關首頁：這一層的重點正是
+   * 「200 浬有法源，但外界線至今未公告」，連到首頁等於追不到那句話
+   * （比照「行政院 國情簡介－土地」的既有判斷）。
+   */
+  "Marine Regions 海域界線資料庫": "https://www.marineregions.org/eezsearch.php",
+  中華民國專屬經濟海域及大陸礁層法:
+    "https://law.moj.gov.tw/LawClass/LawAll.aspx?pcode=A0000010",
+  "海洋委員會 中華民國第一批領海基線":
+    "https://www.oac.gov.tw/ch/home.jsp?id=243&parentpath=0,4,242",
   // 「臺灣123」那一組島群數字的出處（該頁自己標的資料來源是內政部）。
   // 連的是那一頁本身：面積、島嶼數、經緯度全在這一頁，連到行政院首頁等於追不到。
   "行政院 國情簡介－土地":

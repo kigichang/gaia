@@ -67,6 +67,7 @@ Node ≥ 22.12（vite 8 要求）。開發機與 CI 都用 Node 24。
 | 臺灣鄉鎮市區界線 | `data.gov.tw/api/v2/rest/dataset/**7441**` → TGOS 的 **SHP** zip（同一個單位） | **只在建置期呼叫**。⚠️ 這份**沒有 GML 只有 SHP**，而且 zip 裡有兩份 shapefile，見下 |
 | 世界行政區／河流幾何、國際換日線 | `raw.githubusercontent.com/nvkelso/natural-earth-vector`（Natural Earth） | **只在建置期呼叫**，public domain。換日線在 `ne_10m_geographic_lines`，見下 |
 | 板塊與板塊邊界 | `raw.githubusercontent.com/fraxen/tectonicplates`（Bird 2003／Nordpil 轉製） | **只在建置期呼叫**，ODC-BY 1.0（**必須標示出處**）。邊界的三分類在 10 MB 的 `PB2002_steps.json` 裡，見下 |
+| 臺灣與鄰國專屬經濟海域 | `geo.vliz.be/geoserver/MarineRegions/wfs`（Marine Regions／Flanders Marine Institute，Maritime Boundaries v12） | **只在建置期呼叫**，免金鑰的公開 WFS，CC-BY（**必須標示出處**）。⚠️ 我國從未公告經濟海域外界線，官方那份 12／24 浬向量在 NODASS 要登入，見 `CLAUDE_TW.md` |
 | 地震目錄 | `earthquake.usgs.gov/fdsnws/event/1/query`（USGS） | **只在建置期呼叫**，免金鑰、`ACAO: *`。全球與臺灣兩層共用這一個端點 |
 | 臺灣活動斷層 | `geologycloud.tw/data/zh-tw/ActiveFault`（經濟部地質調查及礦業管理中心「地質雲」） | **只在建置期呼叫**。⚠️ data.gov.tw 那份**只有 WMS 影像**，拿不到向量；而且這是 **33 條的舊版**，見下 |
 | 交通軸線幾何（高鐵／國道／橫貫公路／臺鐵幹線）、河川幹流河道 | `overpass-api.de/api/interpreter`（OpenStreetMap Overpass） | **只在建置期呼叫**，ODbL 1.0。⚠️ **沒有 User-Agent 一律回 HTTP 406**；河川的選擇器**不能寫 `waterway=river`**（一半以上是 `stream`），要用 `type=waterway`＋`ref`，見下 |
@@ -154,10 +155,15 @@ Bird 把課本合稱的「印澳板塊」分成印度板塊與澳洲板塊兩塊
 #### 面圖層的標註是新加的算繪能力
 
 `LayerRender` 的 fill 變體多了 `label`，`geo.ts` 的 fill 分支因此會多開一個
-`${instanceId}-label` 的 symbol 圖層（`symbol-placement: point`）。這是全站第一個
-用到它的圖層——「標出各板塊」如果沒有名字就等於沒做。
+`${instanceId}-label` 的 symbol 圖層（`symbol-placement: point`）。板塊是第一個
+用到它的圖層——「標出各板塊」如果沒有名字就等於沒做；第二個是臺灣主題的
+`tw-eez`（四片專屬經濟海域）。
 
 - **不需要在建置期算形心**：maplibre 對多邊形會自己算錨點。
+- ⚠️ **但那個錨點是逐圖磚算的，所以同一塊面放大之後會被重複標註。** 實測 `tw-eez`
+  沒設上限時 zoom 5 每片 1 個、zoom 6 變 4 個、**zoom 8 的臺灣那一片有 6 個「臺灣」
+  散在海上**。板塊沒踩到只是因為它 `maxzoom: 8` 而且實際只在 zoom 1–3 看。
+  `label.maxzoom` 就是為此加的（**只擋標註、不擋面**）；不要改成在建置期算形心去繞過它。
 - ⚠️ **MultiPolygon 的每一塊都會拿到一個標註。** 實測只有 4 塊板塊是 MultiPolygon
   （太平洋 3 塊、澳洲 2 塊、克馬德克與巴爾莫勒爾礁各 2 塊），其中太平洋的兩大塊是
   ±180 兩側的真實兩半、標兩次是對的，真正多餘的只有兩個小碎塊。**這是已知行為，
@@ -313,6 +319,7 @@ ID 常數定義在 `src/map/layers/*.ts`，**一律 import 常數，不要寫死
 | `tw-quakes-major-points` | circle（同一個 hazard 色但更深、更大、有白框） |
 | `tw-typhoons-line` / `tw-typhoons-label` | line + symbol（`hazard` 中性色，標註用 `name`） |
 | `tw-typhoon-centers-points` / `tw-typhoon-centers-label` | circle + symbol（附屬圖層；半徑與顏色都由 `wind` 驅動；**標註只在該颱風被選取時才出現**） |
+| `tw-eez-<zone>-fill` / `-outline` / `-label` | fill + line + symbol，**四片海域各自一組**（`taiwan`／`japan`／`philippines`／`senkaku`）。標註用 `shortName`，而且是**面的標註**（`symbol-placement: point`，全站只有它與 `plates` 用） |
 
 `dem` 與 `dem-terrain` 是兩個來源但都指向同一個 shared DEM protocol：maplibre 會警告 hillshade 與 terrain 共用來源會降低算繪品質，拆開可消除警告，而底層圖磚快取仍然共用、不會重複下載。
 
@@ -345,7 +352,7 @@ maplibre-contour 把 worker 以 Blob URL 內嵌，**不需要額外部署 worker
 
 | 主題 | 路由 | 內容 |
 |---|---|---|
-| 臺灣地理 | `/theme/taiwan` | 臺灣123（土地與島群）、行政區（縣市、鄉鎮市區）、地形、天然災害（活動斷層、地震、颱風路徑與災損）、水系（118 個列管水系、水庫即時水情、河川流域分區）、人文（原住民族、交通軸線、古蹟、人口與都市體系）、植被生態（特有種、國家公園與保護區、垂直植被帶）、農業物產（主要作物分布） |
+| 臺灣地理 | `/theme/taiwan` | 臺灣123（土地與島群、專屬經濟海域）、行政區（縣市、鄉鎮市區）、地形、天然災害（活動斷層、地震、颱風路徑與災損）、水系（118 個列管水系、水庫即時水情、河川流域分區）、人文（原住民族、交通軸線、古蹟、人口與都市體系）、植被生態（特有種、國家公園與保護區、垂直植被帶）、農業物產（主要作物分布） |
 | 世界地理 | `/theme/world` | 世界重要城市、國界與大洲、地形水系、人文專題 |
 | 全球地理形貌 | `/theme/global` | 參考線（緯度參考線、國際換日線）、氣候與生物群系、洋流、地體構造（板塊、板塊邊界、地震帶） |
 
@@ -1195,6 +1202,8 @@ npm run build:geodata -- --force --only=tw-typhoon-centers    # 同一份資料�
 npm run build:geodata -- --force --only=date-line            # 國際換日線（Natural Earth）
 npm run build:geodata -- --force --only=plates               # 52 塊板塊（含球面面積）
 npm run build:geodata -- --force --only=plate-boundaries    # 三種板塊邊界（下載 10 MB 的 step 檔）
+npm run build:geodata -- --force --only=tw-eez              # 臺、日、菲的經濟海域＋釣魚臺爭議海域
+                                       # （下載 17 MB，裁切到臺灣周邊後產物 103 KB）
 npm run build:geodata -- --force --only=tw-monuments-national   # 古蹟三級要各跑一次
                                        # （municipal／county 同理；歷史沿革分片會一起寫出）
 ```

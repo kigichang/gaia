@@ -614,8 +614,11 @@ function addGeoLayerShapes(map: MapLibreMap, spec: GeoLayerSpec) {
         type: "symbol",
         source: sourceId,
         ...zoom,
-        // 面的標註可以有自己更嚴的 minzoom（板塊名在全球視角會互相碰撞掉）
+        // 面的標註可以有自己更嚴的縮放範圍：minzoom 擋「名字互相碰撞掉」（板塊），
+        // maxzoom 擋「逐圖磚重複標註」（經濟海域）。⚠️ 兩者都只擋標註、不擋面，
+        // 圖層層級的縮放範圍請看 `...zoom`。
         ...(render.label.minzoom !== undefined ? { minzoom: render.label.minzoom } : {}),
+        ...(render.label.maxzoom !== undefined ? { maxzoom: render.label.maxzoom } : {}),
         layout: {
           "text-field": textField as never,
           // 只有 "Noto Sans Bold" 確定存在於 basemaps.ts 借用的 glyph 端點上
