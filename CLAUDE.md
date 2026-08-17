@@ -68,6 +68,7 @@ Node ≥ 22.12（vite 8 要求）。開發機與 CI 都用 Node 24。
 | 世界行政區／河流幾何、國際換日線 | `raw.githubusercontent.com/nvkelso/natural-earth-vector`（Natural Earth） | **只在建置期呼叫**，public domain。換日線在 `ne_10m_geographic_lines`，見下 |
 | 板塊與板塊邊界 | `raw.githubusercontent.com/fraxen/tectonicplates`（Bird 2003／Nordpil 轉製） | **只在建置期呼叫**，ODC-BY 1.0（**必須標示出處**）。邊界的三分類在 10 MB 的 `PB2002_steps.json` 裡，見下 |
 | 地震目錄 | `earthquake.usgs.gov/fdsnws/event/1/query`（USGS） | **只在建置期呼叫**，免金鑰、`ACAO: *`。全球與臺灣兩層共用這一個端點 |
+| 全球活火山 | `webservices.volcano.si.edu/geoserver/GVP-VOTW/ows`（史密森尼學會 全球火山計畫 GVP） | **只在建置期呼叫**，WFS 一次回 2.4 MB 的 GeoJSON。免金鑰、不需要 User-Agent；授權是「引用即可自由使用」，見下 |
 | 臺灣活動斷層 | `geologycloud.tw/data/zh-tw/ActiveFault`（經濟部地質調查及礦業管理中心「地質雲」） | **只在建置期呼叫**。⚠️ data.gov.tw 那份**只有 WMS 影像**，拿不到向量；而且這是 **33 條的舊版**，見下 |
 | 交通軸線幾何（高鐵／國道／橫貫公路／臺鐵幹線）、河川幹流河道 | `overpass-api.de/api/interpreter`（OpenStreetMap Overpass） | **只在建置期呼叫**，ODbL 1.0。⚠️ **沒有 User-Agent 一律回 HTTP 406**；河川的選擇器**不能寫 `waterway=river`**（一半以上是 `stream`），要用 `type=waterway`＋`ref`，見下 |
 | 水庫基本資料／水庫水情 | `opendata.wra.gov.tw/api/v2/…?format=CSV`（經濟部水利署） | **只在建置期呼叫**。⚠️ **沒有 CORS 標頭**（瀏覽器一定抓不到），而且掛著 bot 防護，見下 |
@@ -215,6 +216,77 @@ node <dataviz-skill>/scripts/validate_palette.js "#c95c1c,#2f74c9,#159c6b" --pai
 ⚠️ 綠色在臺灣主題是禁忌（NLSC 底圖的山區底色就是綠的），這裡可以，理由與交通軸線相同
 ——**地理分佈相反**：板塊邊界絕大多數在洋底，而世界底圖在海上是藍的。
 
+### 火山帶：1,214 座全新世活火山
+
+取得邏輯在 `scripts/lib/volcanoes.mjs`（端點、19 個火山區與 17 種火山類型的中文對照、
+40 幾座知名火山的中文名）。
+
+#### 為什麼是 GVP 的「全新世火山」
+
+課本說的活火山＝**全新世（約一萬年）以來噴發過**，而史密森尼學會全球火山計畫的
+Volcanoes of the World 就是那份權威名單。USGS 只有靜態圖、Natural Earth 沒有火山圖層，
+所以這是唯一一份公開、帶座標與最後噴發年代的全球資料。WFS 一次回 2.4 MB，產物 285 KB。
+
+⚠️ **黃石與多巴這類「超級火山」不在名單裡，那不是漏掉**——它們上次噴發在 7 萬年前，
+早於全新世，按定義不算活火山。這件事寫在圖層的 `notes` 裡。
+
+⚠️ 三成（366 座）的最後噴發年代是「不詳」：靠地層或碳定年判定為全新世噴發，但定不出
+年份。`formatEruption()` 因此把 `null` 寫成「最後噴發年代不詳」而不是留白。
+
+⚠️ 海拔**可以是負的**（最深 -5,700 公尺的海底火山），所以 `formatElevation()` 對負值
+寫「海面下 N 公尺」——寫成「海拔 -5700 公尺」是讀不懂的。
+
+#### ⚠️ 產物只留卡片會用到的四個欄位
+
+上游每筆還帶著幾百字的英文地質沿革（`Geological_Summary`）、照片網址與岩性。全帶著的
+話產物會從 285 KB 膨脹到 2 MB 以上、直接撞穿大小預算，而卡片一個字都用不到。留下的是
+`id`／`name`／`meta`／`detail`，後兩者是建置期就組好的字串（比照水庫與河川的既有做法）。
+
+中文名的收錄界線是「**臺灣的兩座（龜山島、大屯火山群），加上課本、新聞與科普讀物會
+直接叫出名字的知名火山**」，40 幾座；其餘沿用 GVP 原名。⚠️ 這份表**不可能補完**，
+理由與 `ZH_HANT_OVERRIDES`、`RIVER_NAMES_ZH` 相同。key 用 `Volcano_Number` 不用名稱
+——GVP 會修訂拼寫（`Fuji` → `Fujisan`、`White Island` → `Whakaari/White Island`），
+編號則穩定；表裡的編號在上游找不到就讓建置失敗。
+
+#### ⚠️ 有卡片但沒有 `browse`，這是兩個分開的決定
+
+- **有卡片**：跟地震帶不同，每一座火山都有名字、類型、海拔與最後噴發年代，點下去讀得到
+  具體的東西（比照 `tw-quakes` 那 612 個震央）。
+- **沒有清單**：1,214 列不是人掃得完的清單。既有判準就擺在那裡——`tw-quakes-major`
+  （92 筆）有 browse、`tw-quakes`（612 筆）沒有。
+- **連帶後果是搜尋也找不到**（`searchIndex` 的 `indexesFeatures()` 看的就是 `browse`），
+  所以**搜「富士山」不會有結果**。那是刻意的取捨：進索引等於每個學生一聚焦搜尋框就多付
+  285 KB。搜「火山」仍然找得到**圖層本身**。
+
+#### ⚠️ 顏色不能用紅色，而且這一層的跨幾何豁免不成立
+
+`VOLCANO_COLOR` 是洋紅 `#c0259c`。本站的規則是「三組獨立色票、跨幾何不驗」（古蹟赭紅的
+圓點與斷層磚紅的線就是這樣共存的），但那條豁免的前提是**地理分佈相反**。火山正好相反
+——它們幾乎全部長在板塊邊界上，那是這一層要教的第一件事，所以必須跟三種邊界一起驗：
+
+```bash
+node <dataviz-skill>/scripts/validate_palette.js "#c95c1c,#2f74c9,#159c6b,#c0259c" --pairs all --mode light|dark
+# → 兩模式五項全數 PASS、零 WARN；CVD 最差仍是既有的綠↔橘 8.8、一般視覺最差 21.2
+```
+
+紅色（製圖慣例）**過不了**：`#d1352b` 對張裂型邊界的橘 `#c95c1c` 一般視覺 ΔE 只有
+**7.3（hard FAIL，下限 15）**、deutan 3.2——冰島與東非大裂谷那一帶的紅點會直接融進橘線。
+掃過整個 OKLCH 色域（色相每 2.5°、L 0.48–0.67＝明暗兩模式亮度帶的交集、彩度 0.10–0.26）
+之後，零 WARN 的候選**只剩色相 285–355° 的紫／洋紅那一族**。深紅 `#ba054a` 過得了
+all-pairs 但深色模式對比只有 2.66，而這裡有乾淨的替代品可選（比照保護區紫那次的判準：
+有乾淨替代品就不要帶 WARN 上線）。顏色與「火山」的對應靠圖例文字，比照茶葉配藍。
+
+⚠️ 它跟山脈洋紅 `#c23f8f` 同一族是**刻意可以**的（不同幾何、不同主題，比照地形景點藍與
+水系藍共用同一個 hex）；但 `#c23f8f` 本身在這裡**不夠好**——它對錯動型邊界的綠只有
+deutan 6.7，落在「只有搭配次要編碼才合法」的 6–8 band。
+
+#### ⚠️ 半徑 3.2／不透明度 0.9／不畫外框，三個值都是被主題預設視角逼出來的
+
+這一層第一眼看到的是 `center [0,10]、zoom 1.8`——正中央是全球最沒有火山的非洲與大西洋。
+全球地震帶踩過那個坑（1.5 px + 0.35 的灰點＝「勾了圖層但什麼都沒有」），這裡直接沿用它
+修好之後的量級。半徑**不隨 zoom 變**：放大時靠點與點拉開，不是點變大。**不畫白色外框**
+——1,214 個亮外框在投影機上會糊成一片白雜訊，而這一層常常跟地震帶疊著看。
+
 ### 世界底圖的地名一律改成繁體中文（只換表達式，不換資料源）
 
 「世界地圖」（OpenFreeMap Liberty）原本的 `text-field` 是 `拉丁名\n當地文字`，於是德國寫
@@ -318,6 +390,7 @@ ID 常數定義在 `src/map/layers/*.ts`，**一律 import 常數，不要寫死
 | `world-places-points` | circle |
 | `latitude-lines-line` / `latitude-lines-label` | line + symbol |
 | `quakes-points` | circle |
+| `volcanoes-points` | circle（1,214 座活火山，`strokeWidth: 0`；半徑固定不隨 zoom 變） |
 | `tw-reservoirs-points` | circle（顏色是**依蓄水率分級的表達式**，不是單一色，見下） |
 | `tw-transport-<axis>-casing` / `-line` / `-label` | line + line + symbol，**十條軸線各自一組**（`thsr`／`freeway-1`／`freeway-3`／`freeway-5`／`provincial-7`／`provincial-8`／`provincial-20`／`tra-west`／`tra-east`／`tra-south-link`）。`-casing` 是墊在線底下的白框，全站只有這一層用；標註用 `shortName`，不是 `name` |
 | `tw-rivers-line` / `tw-rivers-label` | line + symbol |
@@ -365,7 +438,7 @@ maplibre-contour 把 worker 以 Blob URL 內嵌，**不需要額外部署 worker
 |---|---|---|
 | 臺灣地理 | `/theme/taiwan` | 臺灣123（土地與島群）、行政區（縣市、鄉鎮市區）、地形、天然災害（活動斷層、地震、颱風路徑與災損）、水系（118 個列管水系、水庫即時水情、河川流域分區）、人文（原住民族、交通軸線、古蹟、人口與都市體系）、植被生態（特有種、國家公園與保護區、垂直植被帶）、農業物產（主要作物分布） |
 | 世界地理 | `/theme/world` | 世界重要城市、國界與大洲、地形水系、人文專題 |
-| 全球地理形貌 | `/theme/global` | 參考線（緯度參考線、國際換日線）、氣候與生物群系、洋流、地體構造（板塊、板塊邊界、地震帶） |
+| 全球地理形貌 | `/theme/global` | 參考線（緯度參考線、國際換日線）、氣候與生物群系、洋流、地體構造（板塊、板塊邊界、地震帶、火山帶） |
 
 三個主題頁都是**滿版地圖 + 浮動控制**（仿 Google Map），沒有頁首也沒有側欄——版面機制見下面的「全螢幕地圖外框與浮動控制」。
 
@@ -1213,6 +1286,7 @@ npm run build:geodata -- --force --only=tw-typhoon-centers    # 同一份資料�
 npm run build:geodata -- --force --only=date-line            # 國際換日線（Natural Earth）
 npm run build:geodata -- --force --only=plates               # 52 塊板塊（含球面面積）
 npm run build:geodata -- --force --only=plate-boundaries    # 三種板塊邊界（下載 10 MB 的 step 檔）
+npm run build:geodata -- --force --only=volcanoes            # 1,214 座全新世活火山（GVP）
 npm run build:geodata -- --force --only=tw-monuments-national   # 古蹟三級要各跑一次
                                        # （municipal／county 同理；歷史沿革分片會一起寫出）
 ```
@@ -1545,6 +1619,31 @@ m.isSourceLoaded('contour-source')
     - 切底圖之後重驗存在、顏色與排序（面 < 線 < 標註，全部在 `contour-lines` 之上、
       `contour-labels` 之下）
 
+31. **火山帶**（`/theme/global` → 地體構造，見上）：
+    ```js
+    const m = window.__gaiaMaps.at(-1);
+    m.getPaintProperty('volcanoes-points', 'circle-color')                       // "#c0259c"
+    new Set(m.queryRenderedFeatures({layers:['volcanoes-points']}).map(f=>f.properties.id)).size
+    // 主題預設視角（center [0,10]、zoom 1.8、1512×772）為 949
+    ```
+    - ⚠️ **這一層最重要的一項只能用眼睛驗，而且必須在「勾起來的第一眼」看**：不要先
+      `jumpTo` 到環太平洋。主題預設視角的正中央是非洲與大西洋，全球地震帶就是在這個
+      視角上「數得到 1,829 筆但畫面上什麼都看不到」的。要看得出安地斯、中美洲、印尼、
+      日本、地中海與東非大裂谷各條火山帶
+    - **跟「板塊邊界」「全球地震帶」疊起來**（`jumpTo([135,20], 3)`）：洋紅的火山點在
+      島弧上、灰色震央偏海溝側、藍線沿海溝——三者分得開才算過。⚠️ 洋紅↔橘（張裂型）
+      是這一層唯一的色彩風險，冰島與東非大裂谷那一帶要特別看
+    - 點任一座火山要開得了卡，而且卡上**沒有圖層說明**（`hideLayerDescription`）：
+      ```js
+      // 富士山 → 標題「富士山」、副標「Fujisan・層狀火山・海拔 3,776 公尺」、
+      //          下一行「最後噴發 1708 年・西北太平洋火山區」
+      ```
+    - 臺灣的兩座要在（`龜山島`、`大屯火山群`），中文名不可以退回英文
+    - **搜「火山」找得到圖層本身，搜「富士山」是空的**——那是刻意的（沒有 `browse`
+      就不進索引，見上）。⚠️ 順帶確認聚焦搜尋框**不會**抓 `volcanoes.geojson`
+    - 切底圖之後重驗存在、顏色與排序（在 `contour-lines` 之上、`contour-labels` 之下，
+      而且在板塊邊界的線之上）
+
 ### ⚠️ 用瀏覽器自動化點 UI 的三個陷阱
 
 - **主題頁的底圖選單藏在左下角「圖層」彈出層裡**，必須先 `document.querySelector('.map-tile').click()` 才找得到 `<select>`；`/compare` 的仍然直接在頁首。
@@ -1666,6 +1765,7 @@ scripts/
 ├─ lib/quakes-major.mjs   # 氣象署〈災害地震〉表的剖析（＋2023 年後補錄的人工抄錄表）
 ├─ lib/faults.mjs         # 活動斷層的存取層（地質雲端點、33 條的 id 對照表、筆數檢查）
 ├─ lib/typhoons.mjs       # 侵臺颱風的存取層（氣象署最佳路徑 txt ＋ 概況表 HTML；14 個的 id 對照表）
+├─ lib/volcanoes.mjs      # GVP 全新世活火山的存取層（19 個火山區與 17 種類型的中文對照、40 幾座知名火山的中文名、筆數檢查）
 ├─ lib/population.mjs     # 各鄉鎮市區人口密度的存取層（年份寫死、site_id 切縣市／鄉鎮、行政層級）
 ├─ lib/crops.mjs          # 農情調查的存取層（逐縣市抓以避開 9999 上限、台／臺正規化、非生產列過濾）
 ├─ lib/overpass.mjs       # OSM Overpass 存取層（端點輪替、way 串接）。**兩種查法並存**：

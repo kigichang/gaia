@@ -51,7 +51,13 @@ export type ColorRole =
   | "reference"
   | "hazard"
   | "vegetation"
-  | "plate";
+  | "plate"
+  /**
+   * ⚠️ `volcano` 是**有驗過**的，只是驗的對象不是 POINT 色票而是板塊邊界那三個
+   * 線色——火山幾乎全部長在板塊邊界上，跨幾何豁免在那一層不成立。
+   * 理由與量測值見 thematicColors.ts 的 `VOLCANO_COLOR`。
+   */
+  | "volcano";
 
 /** `src/content` 底下用 import.meta.glob 載入、已經打包進 bundle 的內容集合。 */
 export type BundledContentId =

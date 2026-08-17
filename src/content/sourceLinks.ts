@@ -283,6 +283,11 @@ export const SOURCE_LINKS: Record<string, string> = {
   "Peter Bird (2003) 板塊模型": "https://doi.org/10.1029/2001GC000252",
   "Nordpil 板塊資料集": "https://github.com/fraxen/tectonicplates",
   "維基百科 板塊列表": "https://zh.wikipedia.org/wiki/%E6%9D%BF%E5%A1%8A%E5%88%97%E8%A1%A8",
+  /**
+   * 全球活火山。GVP 的授權方式是「引用即可自由使用」，所以來源標籤要留著全名，
+   * 不要簡寫成「Smithsonian」。知名火山的中文名另外標維基百科（次級來源）。
+   */
+  "史密森尼學會 全球火山計畫（GVP）": "https://volcano.si.edu/",
   // 三種邊界的說明卡（src/content/geo/plate-boundaries/）查名稱與代表案例用的次級來源。
   // 幾何與三分類仍然一律以 Bird (2003) 為準，見上面那則說明。
   "維基百科 板塊構造論":

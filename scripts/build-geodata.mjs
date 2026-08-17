@@ -113,6 +113,12 @@ import {
   formatArea as formatPlateArea,
   geometryAreaKm2,
 } from "./lib/plates.mjs";
+import {
+  LICENSE as VOLCANO_LICENSE,
+  SOURCE_LABEL as VOLCANO_SOURCE_LABEL,
+  VOLCANOES_URL,
+  buildVolcanoFeatures,
+} from "./lib/volcanoes.mjs";
 
 /**
  * 「這一組的清單順序與副標由官方數字當主角」——`tw-rivers` 與 `tw-basins` 共用。
@@ -879,6 +885,21 @@ const SOURCES = [
         };
       });
     },
+  },
+  {
+    id: "volcanoes",
+    label: "全球活火山",
+    url: VOLCANOES_URL,
+    license: VOLCANO_LICENSE,
+    sourceLabel: VOLCANO_SOURCE_LABEL,
+    /**
+     * 點位不需要簡化，只取位。3 位小數 ≈ 110 公尺——火山口本來就有幾百公尺寬，
+     * 而且這一層是密度場（看的是火山帶的形狀），再高的精度沒有意義。
+     * 取位把產物從 190 KB 壓到 130 KB。
+     */
+    tolerance: 0,
+    digits: 3,
+    transform: buildVolcanoFeatures,
   },
   {
     id: "tw-reservoirs",
