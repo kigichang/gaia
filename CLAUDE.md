@@ -70,6 +70,7 @@ Node ≥ 22.12（vite 8 要求）。開發機與 CI 都用 Node 24。
 | 地震目錄 | `earthquake.usgs.gov/fdsnws/event/1/query`（USGS） | **只在建置期呼叫**，免金鑰、`ACAO: *`。全球與臺灣兩層共用這一個端點 |
 | 全球活火山 | `webservices.volcano.si.edu/geoserver/GVP-VOTW/ows`（史密森尼學會 全球火山計畫 GVP） | **只在建置期呼叫**，WFS 一次回 2.4 MB 的 GeoJSON。免金鑰、不需要 User-Agent；授權是「引用即可自由使用」，見下 |
 | 陸域生物群系 | `services.arcgis.com/…/Resolve_Ecoregions/FeatureServer`（RESOLVE Ecoregions 2017，Esri Living Atlas 代管） | **只在建置期呼叫**，用伺服器端的 `maxAllowableOffset` 取已化簡的幾何。⚠️ 授權 CC-BY 4.0（**必須標示出處**）；⚠️ 連發會回一個指著參數的假 400，見下 |
+| 柯本氣候分區 | `koeppen-geiger.vu-wien.ac.at/data/Koeppen-Geiger-ASCII.zip`（Kottek et al. 2006） | **只在建置期呼叫**，zip 裡是一個 `Lat Lon Cls` 三欄的 0.5° 網格文字檔（92,416 格）。⚠️ 期距是 1951–2000；新版與 Esri 那份都只有點陣，見下 |
 | 臺灣活動斷層 | `geologycloud.tw/data/zh-tw/ActiveFault`（經濟部地質調查及礦業管理中心「地質雲」） | **只在建置期呼叫**。⚠️ data.gov.tw 那份**只有 WMS 影像**，拿不到向量；而且這是 **33 條的舊版**，見下 |
 | 交通軸線幾何（高鐵／國道／橫貫公路／臺鐵幹線）、河川幹流河道 | `overpass-api.de/api/interpreter`（OpenStreetMap Overpass） | **只在建置期呼叫**，ODbL 1.0。⚠️ **沒有 User-Agent 一律回 HTTP 406**；河川的選擇器**不能寫 `waterway=river`**（一半以上是 `stream`），要用 `type=waterway`＋`ref`，見下 |
 | 水庫基本資料／水庫水情 | `opendata.wra.gov.tw/api/v2/…?format=CSV`（經濟部水利署） | **只在建置期呼叫**。⚠️ **沒有 CORS 標頭**（瀏覽器一定抓不到），而且掛著 bot 防護，見下 |
@@ -363,6 +364,72 @@ node <dataviz-skill>/scripts/validate_palette.js "#25744c,#989401,#b4410d,#369db
 ⚠️ **溫帶林是藍綠、針葉林是靛紫，那不是配錯**：三種森林的慣例色都是綠，但綠只夠給一個，
 三個綠的 CVD 分離度不可能同時達標。比照茶葉配藍——對應靠圖例文字，不是靠「像不像」。
 
+### 柯本氣候分區：五個顏色、30 個亞型
+
+取得邏輯在 `scripts/lib/koppen.mjs`；五大類各一個檔（`public/data/geo/koppen-zones-<a–e>.geojson`，
+合計 336 KB）。
+
+#### 為什麼是維也納那份 0.5° ASCII 網格
+
+柯本分類是**用氣溫與雨量的門檻算出來的**，沒有官方界線圖，能拿到的都是別人算好的網格。
+維也納獸醫大學（Kottek et al. 2006）那份是課本與百科用得最多的一版，而且它提供
+**純文字的 `Lat Lon Cls` 三欄網格**（92,416 個陸地格、2.6 MB），不必寫 GeoTIFF 解碼器。
+
+⚠️ 另外兩條路都被否掉了：Beck et al.（2018／2023）的新版**只發布 GeoTIFF**；Esri Living
+Atlas 上的柯本圖層是 **Image Service（點陣）**。同一個網站的 1986–2010 版**只有 KMZ，
+而 KMZ 裡是一張 720×360 的 PNG 疊圖**（實測解開來確認過），不是向量。
+
+⚠️ 所以期距是 **1951–2000**，寫在 `notes` 裡。
+
+#### 網格 dissolve 的兩條硬規則
+
+同一個亞型的格子用 `lib/dissolve.mjs`（有向邊相消）併成一個 MultiPolygon——網格的邊
+逐位元相同，正好是那支模組的前提（它本來是為國家公園的分區圖寫的）。
+
+⚠️ **`tolerance` 必須是 0。** 容差 0 的 Douglas–Peucker 只刪掉**完全共線**的點（無損），
+而座標都是 0.5 的倍數，所以 `digits: 1` 也是無損的。容差一旦大於 0，階梯狀邊界會被切角，
+而相鄰兩類是**各自**簡化的、切完就對不齊——那正是生物群系那一層要用半透明外框補縫的
+原因。這一層**不需要補縫**，所以 `outlineWidth: 0`（順帶讓同一大類裡的亞型界線不會被
+畫成一堆內部線條）。
+
+⚠️ 產物是 **5 個檔**但只下載**一次**：五大類吃的是同一份 2.6 MB 文字檔，`fetchKoppenGrid()`
+有 module-level 快取（比照古蹟三級與作物三種）。
+
+#### 顏色是大類，圖徵是亞型
+
+30 個亞型不可能各給一個顏色（本站掃出來的分類色上限是六色），但「這一塊到底是 Cfa 還是
+Cwa」正是這一層存在的理由——每一張地點卡上都有 `koppen` 欄位。所以：**五個核取方塊＝
+五個顏色**，30 個亞型各是一筆圖徵，名稱／判準／代表地點在建置期就寫進 geojson
+（`SUBTYPES`，30 筆一個都不能少），卡片走 `FeatureCard` 的 fallback ＋
+`hideLayerDescription`。
+
+⚠️ **亞型代碼一定要放進 `items[].keywords`**：這一層沒有可點清單，也**刻意沒有開
+`indexFeatures`**（開了等於讓每個學生一聚焦搜尋框就多付 336 KB），所以搜「Cfa」能不能
+找到東西，完全靠那份 keywords。實測搜「Cfa」會同時出現「C 溫帶氣候」與 koppen 欄位是
+Cfa 的那些地點（後者是 `contentKeywords` 本來就有的行為）。
+
+五色 `KOPPEN_COLORS` 明暗兩模式 `--pairs all` **五項全數 PASS、零 WARN**：
+
+```bash
+node <dataviz-skill>/scripts/validate_palette.js "#1d9dc8,#d8783d,#147811,#ba229e,#5e42fe" --pairs all --mode light|dark
+# → CVD 最差 8.4（C 綠↔B 橙，protan）、一般視覺最差 23.3（E↔D）
+```
+
+色相窗刻意貼近 Kottek 原圖的慣例（A 藍、B 橙黃、C 綠、D 紫、E 冷色），選法同生物群系。
+
+#### ⚠️ 這一層與「森林與沙漠帶」會互相蓋住
+
+兩層都是 fill、都蓋滿陸地，而 `MAX_ACTIVE_BY_KIND.fill` 是 2 ——所以它們**可以**同時
+打開，但兩片 0.25 的半透明面疊起來就是一團糊。這件事寫在 `notes` 裡提醒使用者一次看
+一層；**不要為了讓兩層「能一起看」去調亮度或不透明度**，那只會讓兩層都變難讀。
+兩組色票也不可能一起驗（11 個分類色）。
+
+#### 0.5° 對臺灣意味著什麼
+
+臺灣整座島只有三、四格。實測臺北是 Cfa（跟本站地點資料一致）、東京 Cfa、倫敦 Cfb、
+開羅 BWh 都對得上，但**高雄一帶算成 Am**，而本站地點卡採中央氣象署的分區寫 Aw。
+兩者不一定逐格相同，這件事寫在 `notes` 裡——不要為了「一致」去改任何一邊。
+
 ### 世界底圖的地名一律改成繁體中文（只換表達式，不換資料源）
 
 「世界地圖」（OpenFreeMap Liberty）原本的 `text-field` 是 `拉丁名\n當地文字`，於是德國寫
@@ -468,6 +535,7 @@ ID 常數定義在 `src/map/layers/*.ts`，**一律 import 常數，不要寫死
 | `quakes-points` | circle |
 | `volcanoes-points` | circle（1,214 座活火山，`strokeWidth: 0`；半徑固定不隨 zoom 變） |
 | `biomes-<class>-fill` / `-outline` | fill + line，**六類各自一組**（`tropical-forest`／`savanna`／`desert`／`temperate-forest`／`boreal`／`tundra`）。外框是拿來**補相鄰面之間的縫**的，所以是 1.0 寬 × 0.15 不透明度，見下 |
+| `koppen-zones-<group>-fill` / `-outline` | fill + line，**五大類各自一組**（`a`／`b`／`c`／`d`／`e`）。⚠️ 顏色是大類、**圖徵是 30 個亞型**（點下去才知道是 Cfa 還是 Cwa）；外框寬度 0，見下 |
 | `tw-reservoirs-points` | circle（顏色是**依蓄水率分級的表達式**，不是單一色，見下） |
 | `tw-transport-<axis>-casing` / `-line` / `-label` | line + line + symbol，**十條軸線各自一組**（`thsr`／`freeway-1`／`freeway-3`／`freeway-5`／`provincial-7`／`provincial-8`／`provincial-20`／`tra-west`／`tra-east`／`tra-south-link`）。`-casing` 是墊在線底下的白框，全站只有這一層用；標註用 `shortName`，不是 `name` |
 | `tw-rivers-line` / `tw-rivers-label` | line + symbol |
@@ -515,7 +583,7 @@ maplibre-contour 把 worker 以 Blob URL 內嵌，**不需要額外部署 worker
 |---|---|---|
 | 臺灣地理 | `/theme/taiwan` | 臺灣123（土地與島群）、行政區（縣市、鄉鎮市區）、地形、天然災害（活動斷層、地震、颱風路徑與災損）、水系（118 個列管水系、水庫即時水情、河川流域分區）、人文（原住民族、交通軸線、古蹟、人口與都市體系）、植被生態（特有種、國家公園與保護區、垂直植被帶）、農業物產（主要作物分布） |
 | 世界地理 | `/theme/world` | 世界重要城市、國界與大洲、地形水系、人文專題 |
-| 全球地理形貌 | `/theme/global` | 參考線（緯度參考線、國際換日線）、氣候與生物群系（森林與沙漠帶）、洋流、地體構造（板塊、板塊邊界、地震帶、火山帶） |
+| 全球地理形貌 | `/theme/global` | 參考線（緯度參考線、國際換日線）、氣候與生物群系（森林與沙漠帶、柯本氣候分區）、洋流、地體構造（板塊、板塊邊界、地震帶、火山帶） |
 
 三個主題頁都是**滿版地圖 + 浮動控制**（仿 Google Map），沒有頁首也沒有側欄——版面機制見下面的「全螢幕地圖外框與浮動控制」。
 
@@ -1366,6 +1434,8 @@ npm run build:geodata -- --force --only=date-line            # 國際換日線�
 npm run build:geodata -- --force --only=plates               # 52 塊板塊（含球面面積）
 npm run build:geodata -- --force --only=plate-boundaries    # 三種板塊邊界（下載 10 MB 的 step 檔）
 npm run build:geodata -- --force --only=volcanoes            # 1,214 座全新世活火山（GVP）
+npm run build:geodata -- --force --only=koppen-zones-c       # 柯本五大類要各跑一次（a／b／c／d／e）
+                                       # （一個 process 裡共用同一份下載，見 lib/koppen.mjs）
 npm run build:geodata -- --force --only=biomes-desert        # 生物群系六類要各跑一次
                                        # （tropical-forest／savanna／temperate-forest／boreal／tundra 同理；
                                        #   ⚠️ 六個不要連著跑，上游會回一個指著參數的假 400，見下）
@@ -1751,6 +1821,32 @@ m.isSourceLoaded('contour-source')
     - 切底圖之後重驗存在、顏色、外框不透明度與排序（面在 `contour-lines` 之上、
       `contour-labels` 之下）
 
+33. **柯本氣候分區**（`/theme/global` → 氣候與生物群系，見上）：
+    ```js
+    const m = window.__gaiaMaps.at(-1);
+    ['a','b','c','d','e'].map(k => m.getPaintProperty(`koppen-zones-${k}-fill`, 'fill-color'))
+    // 期望 ["#1d9dc8","#d8783d","#147811","#ba229e","#5e42fe"]，**不隨勾選順序改變**
+    // 亞型數：A 4／B 4／C 9／D 11／E 2（合計 30，一個都不能少）
+    ['a','b','c','d','e'].map(k =>
+      new Set(m.queryRenderedFeatures({layers:[`koppen-zones-${k}-fill`]}).map(f=>f.properties.id)).size)
+    ```
+    - ⚠️ **這一層最快的正確性檢查是拿幾個城市對答案**（`queryRenderedFeatures` 在
+      `m.project([lng,lat])` 上查）：臺北 `Cfa`、東京 `Cfa`、倫敦 `Cfb`、開羅 `BWh`、
+      西伯利亞（100°E,62°N）`Dfc`。⚠️ **高雄會是 `Am` 而不是本站地點卡的 `Aw`**，
+      那是 0.5° 網格的已知落差，不是壞掉（見上）
+    - 點任一塊要開出**亞型**的卡：標題「Cfa 溫暖濕潤氣候」、副標「溫帶・全年有雨・
+      最暖月 ≥22 °C」、下一行「代表地點：…」。⚠️ 卡上**不該有圖層說明**
+      （`hideLayerDescription`）
+    - **搜「Cfa」要找得到「C 溫帶氣候」**（靠 `items[].keywords`，這一層沒有開
+      `indexFeatures`）。⚠️ 順帶確認聚焦搜尋框**不會**抓 `koppen-zones-*.geojson`
+    - ⚠️ **不可以出現白縫**：這一層的相鄰類別邊界是逐位元相同的格線，看得到縫代表
+      建置期的 `tolerance` 被改成大於 0 了（見上）
+    - 南極要是一塊完整的冰帽（EF 加一圈 ET），**不可以變成橫貫地圖的一條帶**
+    - 全球視角下五類的分布要對得上課本的柯本圖：撒哈拉／阿拉伯／澳洲內陸橙、
+      亞馬遜／剛果／東南亞青、歐洲與美東綠、俄羅斯與加拿大紫紅、北極與南極藍紫
+    - `maxzoom: 5`：超過就整層消失（0.5° 網格再放大只是一格一格的階梯）
+    - 切底圖之後重驗存在、顏色與排序（在 `contour-lines` 之上、`contour-labels` 之下）
+
 ### ⚠️ 用瀏覽器自動化點 UI 的三個陷阱
 
 - **主題頁的底圖選單藏在左下角「圖層」彈出層裡**，必須先 `document.querySelector('.map-tile').click()` 才找得到 `<select>`；`/compare` 的仍然直接在頁首。
@@ -1874,6 +1970,7 @@ scripts/
 ├─ lib/typhoons.mjs       # 侵臺颱風的存取層（氣象署最佳路徑 txt ＋ 概況表 HTML；14 個的 id 對照表）
 ├─ lib/volcanoes.mjs      # GVP 全新世活火山的存取層（19 個火山區與 17 種類型的中文對照、40 幾座知名火山的中文名、筆數檢查）
 ├─ lib/biomes.mjs         # RESOLVE 生態區的存取層（14 個生物群系 → 六個教學用大類、小碎塊過濾、跨 ±180 檢查）
+├─ lib/koppen.mjs         # 柯本氣候分區的存取層（0.5° ASCII 網格、30 個亞型的中文名與判準、五大類分組）
 ├─ lib/population.mjs     # 各鄉鎮市區人口密度的存取層（年份寫死、site_id 切縣市／鄉鎮、行政層級）
 ├─ lib/crops.mjs          # 農情調查的存取層（逐縣市抓以避開 9999 上限、台／臺正規化、非生產列過濾）
 ├─ lib/overpass.mjs       # OSM Overpass 存取層（端點輪替、way 串接）。**兩種查法並存**：

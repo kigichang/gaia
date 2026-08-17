@@ -294,6 +294,11 @@ export const SOURCE_LINKS: Record<string, string> = {
    * 兩個都要列，少一個就違反授權（比照板塊那份 ODC-BY）。
    */
   "RESOLVE 生態區 2017（Dinerstein et al.）": "https://ecoregions.appspot.com/",
+  /**
+   * 柯本氣候分區。維也納獸醫大學公開提供，條件是引用 Kottek et al. (2006)，
+   * 所以來源標籤帶著論文出處，不要簡寫成「柯本分類」。
+   */
+  "柯本－蓋格氣候分類圖（Kottek et al. 2006）": "https://koeppen-geiger.vu-wien.ac.at/present.htm",
   "Esri Living Atlas":
     "https://www.arcgis.com/home/item.html?id=37ea320eebb647c6838c23f72abae5ef",
   // 三種邊界的說明卡（src/content/geo/plate-boundaries/）查名稱與代表案例用的次級來源。

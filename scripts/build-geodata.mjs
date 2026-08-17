@@ -17,7 +17,8 @@
 import { writeFile, mkdir, access, readFile } from "node:fs/promises";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
-import { fetchWithRetry } from "./lib/fetch-retry.mjs";
+import { fetchBuffer, fetchWithRetry } from "./lib/fetch-retry.mjs";
+import { dissolveRings } from "./lib/dissolve.mjs";
 import { simplifyGeometry, slugify } from "./lib/simplify.mjs";
 import { parseNlscGml, ringArea } from "./lib/gml.mjs";
 import { parseReservoirKml, ringsCentroid } from "./lib/kml.mjs";
@@ -126,6 +127,15 @@ import {
   SOURCE_PAGE as BIOME_SOURCE_PAGE,
   fetchBiomeClass,
 } from "./lib/biomes.mjs";
+import {
+  KOPPEN_GROUPS,
+  KOPPEN_URL,
+  LICENSE as KOPPEN_LICENSE,
+  SOURCE_LABEL as KOPPEN_SOURCE_LABEL,
+  SOURCE_PAGE as KOPPEN_SOURCE_PAGE,
+  fetchKoppenGrid,
+  subtypeProperties,
+} from "./lib/koppen.mjs";
 
 /**
  * 「這一組的清單順序與副標由官方數字當主角」——`tw-rivers` 與 `tw-basins` 共用。
@@ -942,6 +952,43 @@ const SOURCES = [
     tolerance: 0.08,
     digits: 2,
     transform: (raw) => [raw.feature],
+  })),
+
+  /**
+   * 柯本氣候分區：五大類各一筆產物，每一筆裡是**該類的各個亞型**。
+   *
+   * 顏色是大類（五個核取方塊），圖徵是亞型（30 個代碼各一個 MultiPolygon）——
+   * 30 個分類色沒有人分得出來，但「點下去告訴你這裡是 Cfa」正是這一層存在的理由
+   * （本站每一筆地點資料都有 `koppen` 欄位，兩邊互相對照）。
+   *
+   * ⚠️ `tolerance: 0` 不是忘了設：這一層是 0.5° 網格 dissolve 出來的，容差一旦
+   * 大於 0，階梯狀邊界會被切角，而相鄰兩類是各自簡化的，切完就對不齊、裂出白縫。
+   * 容差 0 的 Douglas–Peucker 只會刪掉**完全共線**的點（無損），而座標都是 0.5 的
+   * 倍數，所以 `digits: 1` 也是無損的。見 lib/koppen.mjs 的檔頭。
+   */
+  ...KOPPEN_GROUPS.map((group) => ({
+    id: `koppen-zones-${group.id}`,
+    label: `柯本氣候分區：${group.label}`,
+    load: async () => {
+      const byCode = await fetchKoppenGrid(fetchBuffer);
+      const cells = group.codes.reduce((n, code) => n + (byCode.get(code)?.length ?? 0), 0);
+      return { byCode, warnings: [`${group.label}：${group.codes.length} 個亞型／${cells} 個網格` ] };
+    },
+    sourceUrl: KOPPEN_SOURCE_PAGE,
+    license: KOPPEN_LICENSE,
+    sourceLabel: KOPPEN_SOURCE_LABEL,
+    tolerance: 0,
+    digits: 1,
+    transform: ({ byCode }) =>
+      group.codes.map((code) => {
+        const rings = byCode.get(code);
+        if (!rings?.length) throw new Error(`亞型 ${code} 在上游網格裡一格都沒有`);
+        return {
+          type: "Feature",
+          geometry: { type: "MultiPolygon", coordinates: dissolveRings(rings, code) },
+          properties: subtypeProperties(code),
+        };
+      }),
   })),
 
   {

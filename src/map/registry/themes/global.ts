@@ -1,7 +1,7 @@
 // .ts 副檔名是必要的：Node 直接載入註冊表時不會自己補副檔名（見 ../types.ts）
 import type { ThemeDefinition } from "../types.ts";
 // value-import 只允許 thematicColors（零 import 的常數模組），見 ../types.ts 的說明
-import { BIOME_COLORS, PLATE_BOUNDARY_COLORS } from "../../thematicColors.ts";
+import { BIOME_COLORS, KOPPEN_COLORS, PLATE_BOUNDARY_COLORS } from "../../thematicColors.ts";
 
 /**
  * 全球地理形貌。純資料——限制見 ../types.ts。
@@ -397,11 +397,97 @@ export const globalTheme: ThemeDefinition = {
       id: "koppen-zones",
       label: "柯本氣候分區",
       group: "氣候與生物群系",
-      status: "planned",
-      render: { kind: "fill" },
-      detail: { type: "none" },
-      description: "柯本氣候分類的全球分區，與地點資料的 koppen 代碼互相對照。",
-      sources: [],
+      status: "ready",
+      /**
+       * ⚠️ **這一層不需要「補縫」的外框**（生物群系那一層需要）。它是 0.5° 網格
+       * dissolve 出來的，相鄰兩類的邊界是**逐位元相同**的格線、而且建置期的容差是 0，
+       * 所以兩邊永遠對得齊，不會裂縫。外框設 0 也讓同一大類裡的亞型界線不會被畫成
+       * 一堆內部線條——亞型是點下去才看的東西。
+       */
+      render: { kind: "fill", fillOpacity: 0.25, outlineWidth: 0 },
+      /**
+       * 五大類各一個檔（各 51–83 KB）。⚠️ **顏色是大類、圖徵是亞型**：30 個代碼
+       * 不可能各給一個顏色（本站掃出來的分類色上限是六色），但「這一塊到底是
+       * Cfa 還是 Cwa」正是這一層存在的理由，所以那件事交給點擊後的卡片。
+       */
+      items: {
+        from: {
+          type: "inline",
+          list: [
+            {
+              id: "a",
+              label: "A 熱帶氣候",
+              source: { type: "remote", path: "data/geo/koppen-zones-a.geojson" },
+              color: KOPPEN_COLORS.a,
+              /**
+               * ⚠️ 亞型代碼**一定要進 keywords**。這一層沒有可點清單、也沒有開
+               * `indexFeatures`（開了等於讓每個學生一聚焦搜尋框就多付 332 KB），
+               * 所以 30 個代碼唯一的搜尋入口就是這裡——而「Cfa」正是學生在地點卡上
+               * 看到、會直接打進搜尋框的字串。
+               */
+              keywords: ["熱帶", "Af", "Am", "As", "Aw", "熱帶雨林", "熱帶季風", "莽原"],
+            },
+            {
+              id: "b",
+              label: "B 乾燥氣候",
+              source: { type: "remote", path: "data/geo/koppen-zones-b.geojson" },
+              color: KOPPEN_COLORS.b,
+              keywords: ["乾燥", "BWh", "BWk", "BSh", "BSk", "沙漠氣候", "草原氣候", "半乾燥"],
+            },
+            {
+              id: "c",
+              label: "C 溫帶氣候",
+              source: { type: "remote", path: "data/geo/koppen-zones-c.geojson" },
+              color: KOPPEN_COLORS.c,
+              keywords: [
+                "溫帶",
+                "Cfa", "Cfb", "Cfc", "Csa", "Csb", "Csc", "Cwa", "Cwb", "Cwc",
+                "溫暖濕潤", "海洋性", "地中海型", "副熱帶季風",
+              ],
+            },
+            {
+              id: "d",
+              label: "D 大陸性氣候",
+              source: { type: "remote", path: "data/geo/koppen-zones-d.geojson" },
+              color: KOPPEN_COLORS.d,
+              keywords: [
+                "大陸性",
+                "Dfa", "Dfb", "Dfc", "Dfd", "Dsa", "Dsb", "Dsc", "Dwa", "Dwb", "Dwc", "Dwd",
+                "副極地", "針葉林氣候", "濕潤大陸性",
+              ],
+            },
+            {
+              id: "e",
+              label: "E 極地氣候",
+              source: { type: "remote", path: "data/geo/koppen-zones-e.geojson" },
+              color: KOPPEN_COLORS.e,
+              keywords: ["極地", "ET", "EF", "苔原氣候", "冰原氣候"],
+            },
+          ],
+        },
+        maxActive: 5,
+        palette: Object.values(KOPPEN_COLORS),
+        // 勾圖層就五類全開：這一層看的是「全球分成哪幾種氣候」，只顯示一類看不出分區
+        defaultAll: true,
+      },
+      /**
+       * 30 個亞型各是一筆圖徵，卡片走 `FeatureCard` 的 fallback（沒有內容檔，
+       * 名稱／判準／代表地點都在建置期寫進 geojson，見 lib/koppen.mjs 的 `SUBTYPES`）。
+       * `hideLayerDescription`：30 張卡上那段圖層說明逐字相同，而且就是抽屜那一列。
+       */
+      detail: { type: "geo", collection: "koppen-zones", hideLayerDescription: true },
+      // 0.5° 的網格，再放大只會看到一格一格的階梯（比照生物群系）
+      maxzoom: 5,
+      description:
+        "柯本用「最冷月、最暖月的氣溫」與「雨量的季節分配」把全球氣候分成 A 熱帶、B 乾燥、C 溫帶、D 大陸性、E 極地五大類。地圖上畫的是這五類，點任何一塊會告訴你它的完整代碼（例如臺北是 Cfa 溫暖濕潤氣候）——那就是每一張地點卡上 koppen 欄位的意思。",
+      notes: [
+        "⚠️ 這份分區是 1951–2000 年的統計（Kottek et al. 2006）。氣候分區會隨暖化移動，新版的分區圖（1991–2020）在乾燥帶與副極地帶都有可見的位移。",
+        "⚠️ 解析度是 0.5°（赤道附近約 55 公里）。臺灣整座島只有三、四格，所以島上的分區只能看大勢：這份網格在臺北是 Cfa（與本站地點資料一致），但高雄一帶算成 Am，而本站的地點卡採用中央氣象署的臺灣氣候分區、寫的是 Aw。兩者不一定逐格相同。",
+        "⚠️ 邊界是網格的階梯狀，不是平滑曲線——那是資料本身的形狀，不是簡化造成的。放大到 zoom 5 以上這一層會自動關掉。",
+        "⚠️ 柯本分類看的是氣溫與雨量，不是植被。它跟「森林與沙漠帶」高度相關但不會完全重疊：同一個 Cfa 裡可能是森林也可能是農田或城市。",
+        "⚠️ 這一層與「森林與沙漠帶」蓋的是同一片陸地，兩層一起打開會互相蓋住，建議一次只看一層。",
+      ],
+      sources: ["柯本－蓋格氣候分類圖（Kottek et al. 2006）"],
     },
     {
       id: "wind-belts",
