@@ -1,0 +1,29 @@
+{
+  "type": "FeatureCollection",
+  "metadata": {
+    "collection": "tw-strait-median-line",
+    "source": "座標為國防部 2019-07-30 公布的「北緯 27 度、東經 122 度至北緯 23 度、東經 118 度」，逐字轉錄，不是描繪的。只有兩個端點，因為官方給的就是兩個端點加「直線連線」——中間不補點是刻意的，補了等於替官方決定它是大圓還是等角航線（兩者中點只差 3.3 公里）。maplibre 在 Web Mercator 上把兩點連成直線，也就是海圖慣例的等角航線。",
+    "license": "座標為政府公開發布之事實資料",
+    "generatedAt": "2026-08-17",
+    "featureCount": 1
+  },
+  "features": [
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [122, 27],
+          [118, 23]
+        ]
+      },
+      "properties": {
+        "id": "strait-median-line",
+        "name": "臺灣海峽中線",
+        "shortName": "海峽中線",
+        "en": "Taiwan Strait median line",
+        "meta": "國防部 2019 年公布・27°N 122°E—23°N 118°E・全長約 600 km"
+      }
+    }
+  ]
+}
