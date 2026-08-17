@@ -128,12 +128,25 @@ async function featureHits(
     if (!layer.items.indexFeatures) return hits;
 
     for (const item of items) {
-      if (!item.source) continue;
-      const fc = await resolveLayerData(item.source);
+      /**
+       * 子項目有兩種切法，兩種都要索引得到（見 registry/types.ts 的 `LayerItem`）：
+       * 各自一份資料（古蹟三級），或用 `featureIds` 從母圖層那一份切出來（洋流）。
+       *
+       * ⚠️ 早期版本只認得前者（`if (!item.source) continue`），於是洋流那 18 條
+       * 明明宣告了 `indexFeatures` 卻**一條都搜不到**——而且完全靜默：搜「黑潮」
+       * 只會出現「暖流」那個子項目（靠 keywords 命中），看起來像是「本來就只索引
+       * 到這一層」。用 `featureIds` 切分的圖層本來就沒有可點清單，搜尋是它唯一的
+       * 檢索入口，這個洞等於整層搜不到東西。
+       */
+      const source = item.source ?? layer.source;
+      if (!source) continue;
+      const fc = await resolveLayerData(source);
+      const wanted = item.source ? null : new Set(item.featureIds ?? []);
       for (const feature of fc?.features ?? []) {
         const props = feature.properties ?? {};
         // 比照下面一般圖層的規則：沒有 id 就選不了、沒有名字就搜不到
         if (typeof props.id !== "string" || typeof props.name !== "string") continue;
+        if (wanted && !wanted.has(props.id)) continue;
         hits.push({
           key: `${theme.id}:${layer.id}:${item.id}:${props.id}`,
           kind: "feature",

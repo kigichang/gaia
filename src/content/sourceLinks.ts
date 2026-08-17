@@ -136,6 +136,13 @@ export const SOURCE_LINKS: Record<string, string> = {
   // （MonumentCard 用 geojson 的 url 屬性直接連到個案頁）。
   文化部文化資產局: "https://nchdb.boch.gov.tw/",
   維基百科: "https://zh.wikipedia.org/",
+  /**
+   * 洋流那一層的另一個來源。連的是 NOAA Ocean Service 的洋流教學專頁而不是首頁：
+   * 暖流／寒流、環流方向與湧升流的說明都在這一頁，連到首頁等於追不到
+   * （比照「農業部農業兒童網 山地植群帶分布」的既有判斷）。
+   */
+  "美國國家海洋暨大氣總署（NOAA）":
+    "https://oceanservice.noaa.gov/education/tutorial_currents/",
 
   // 97 條沒有官方詳細資料的河川，改用維基百科（見 CLAUDE_TW.md 的說明）。
   // ⚠️ 這裡刻意逐條登記真正的條目名，不要改成從河川名自動組網址：

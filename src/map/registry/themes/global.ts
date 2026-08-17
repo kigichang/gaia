@@ -4,6 +4,7 @@ import type { ThemeDefinition } from "../types.ts";
 import {
   BIOME_COLORS,
   KOPPEN_COLORS,
+  OCEAN_CURRENT_COLORS,
   PLATE_BOUNDARY_COLORS,
   WIND_COLOR,
 } from "../../thematicColors.ts";
@@ -620,12 +621,102 @@ export const globalTheme: ThemeDefinition = {
       id: "ocean-currents",
       label: "洋流（暖流／寒流）",
       group: "海洋",
-      status: "planned",
-      render: { kind: "line" },
-      detail: { type: "none" },
+      status: "ready",
+      /**
+       * ⚠️ 幾何**完全由程式產生**（見 registry/generators.ts 的 `oceanCurrents()`）。
+       * 路徑的控制點是手訂的示意曲線，但箭頭、平滑與「不跨越 ±180」這三件事交給
+       * 程式——洋流的方向就是這一層的教學內容，而北太平洋暖流、兩條赤道暖流與
+       * 西風漂流一定會跨過換日線。
+       */
+      source: { type: "generated", generator: "ocean-currents" },
+      render: {
+        kind: "line",
+        width: 2,
+        /**
+         * ⚠️ **標註是必要條件，不是裝飾。** 這一層有兩個已知的顏色衝突（暖流紅 ↔
+         * 張裂型邊界橘、寒流藍 ↔ 聚合型邊界藍，一般視覺 ΔE 都只有 14，見
+         * thematicColors.ts 的 `OCEAN_CURRENT_COLORS`），而洋流有名字、板塊邊界沒有
+         * ——沿線印出來的「黑潮」「祕魯寒流」就是唯一的次要編碼。
+         *
+         * `maxAngle: 150` 照抄臺灣河川那次的教訓：真實的彎曲路徑用預設的 60 會讓
+         * 放置演算法**靜默拒絕**掉大半標註（那次濁水溪整條標不出來）。實測見
+         * CLAUDE.md 第 35 項。
+         */
+        label: { property: "name", size: 10, spacing: 200, maxAngle: 150 },
+      },
+      /**
+       * 兩個核取方塊，用 `featureIds` 從同一份產物切出來（比照板塊邊界）。
+       *
+       * ⚠️ 顏色**固定綁在暖／寒上**，不是依勾選順序指派——先勾寒流再勾暖流時，
+       * 暖流仍然必須是紅的，否則「紅暖藍寒」這個唯一的教學內容當場失效
+       * （比照古蹟三級與板塊邊界）。
+       */
+      items: {
+        from: {
+          type: "inline",
+          list: [
+            {
+              id: "warm",
+              label: "暖流",
+              featureIds: [
+                "kuroshio", "north-pacific-drift", "alaska", "north-equatorial",
+                "south-equatorial", "gulf-stream", "north-atlantic-drift",
+                "brazil", "east-australian", "agulhas",
+              ],
+              color: OCEAN_CURRENT_COLORS.warm,
+              keywords: ["暖流", "黑潮", "灣流", "墨西哥灣流", "warm current", "kuroshio", "gulf stream"],
+            },
+            {
+              id: "cold",
+              label: "寒流",
+              featureIds: [
+                "oyashio", "california", "labrador", "canary",
+                "peru", "benguela", "west-australian", "west-wind-drift",
+              ],
+              color: OCEAN_CURRENT_COLORS.cold,
+              keywords: ["寒流", "涼流", "親潮", "洪堡", "湧升流", "cold current", "oyashio", "humboldt"],
+            },
+          ],
+        },
+        maxActive: 2,
+        palette: [OCEAN_CURRENT_COLORS.warm, OCEAN_CURRENT_COLORS.cold],
+        /**
+         * 勾圖層就兩個一起打開：這一層唯一要教的事情是「暖流與寒流分別在哪裡」，
+         * 只顯示一種就看不出環流，而且兩者共用同一份程式產物，全開不多花任何成本。
+         */
+        defaultAll: true,
+        /**
+         * ⚠️ 展開成 18 條洋流的搜尋結果。這一層是**全站唯一一個開了它又不用付
+         * 任何流量**的圖層——資料是程式產生的，`resolveLayerData()` 連 fetch 都不會
+         * 發（比照 types.ts 的說明：那個旗標防的是「抓一份大檔案卻產不出結果」）。
+         * 而它是必要的：`items` 圖層沒有可點清單（ThemeMapPage 的 `!l.items`），
+         * 搜尋是「黑潮」「祕魯寒流」唯一的檢索入口。
+         */
+        indexFeatures: true,
+      },
+      /**
+       * 18 條各有一張說明卡（`src/content/geo/ocean-currents/<id>.json`，檔名＝
+       * generators.ts 產物的 `properties.id`＝上面 `featureIds` 裡的字串，三者一致，
+       * 比照板塊邊界與行星風系）。
+       */
+      detail: { type: "geo", collection: "ocean-currents" },
+      /**
+       * ⚠️ 世界尺度專用。控制點只有幾十個，放大之後那條「流軸」會變成一條假的
+       * 精確曲線——而真實的洋流是幾百公里寬、隨季節擺動的水團。zoom 6 大約是
+       * 「還看得出黑潮貼著臺灣東岸」的尺度。
+       */
+      maxzoom: 6,
+      /** ⚠️ 必須標：這是示意路徑，不是實測的流軸。 */
       schematic: true,
-      description: "黑潮、灣流、祕魯寒流等主要洋流，解釋同緯度海岸的冷暖差異。",
-      sources: [],
+      description:
+        "洋流是海面上長期固定方向的水流，由行星風系推動、再被陸地與地球自轉導成一個個環流。暖流把低緯的熱帶回高緯（黑潮、墨西哥灣流），寒流把高緯的冷水送到低緯（親潮、祕魯寒流）——這就是同緯度的兩個海岸可以差好幾度的原因。跟「行星風系」疊起來看，環流的方向就是風吹出來的。",
+      notes: [
+        "⚠️ 路徑是示意曲線，不是實測流軸。真實的洋流是幾百公里寬的水團，位置與強度隨季節擺動（例如黑潮的流軸每年會東西擺動上百公里），而且只畫得出主要的表層洋流——深層的溫鹽環流不在這一層。",
+        "⚠️ 這 18 條是課本會點名的主要洋流，不是完整名單。赤道逆流、對馬暖流、東格陵蘭寒流這類次要洋流沒有畫出來。",
+        "⚠️ 「暖流／寒流」是相對於**流經海域**的水溫而言，不是絕對溫度。北大西洋暖流到了挪威外海只有攝氏七、八度，仍然是暖流——因為同緯度別的海面已經結冰了。",
+        "⚠️ 這一層與「板塊邊界」的顏色會互相干擾：寒流藍與聚合型邊界的藍、暖流紅與張裂型邊界的橘都很接近，而祕魯寒流正好貼著祕魯－智利海溝、親潮正好貼著千島海溝。兩層一起打開時請以洋流的沿線名稱判讀，或一次只看一層。",
+      ],
+      sources: ["維基百科", "美國國家海洋暨大氣總署（NOAA）"],
     },
   ],
 };

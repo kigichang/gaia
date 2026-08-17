@@ -1,0 +1,23 @@
+{
+  "id": "east-australian",
+  "collection": "ocean-currents",
+  "name": { "zh": "東澳暖流", "en": "East Australian Current" },
+  "subtitle": "南太平洋環流的西側，沿澳洲東岸南下",
+  "stats": [
+    { "label": "海域", "value": "南太平洋西側" },
+    { "label": "流向", "value": "沿岸南下" }
+  ],
+  "facts": [
+    {
+      "label": "澳洲東岸為什麼濕潤",
+      "value": "暖流讓東岸的空氣帶足水氣，遇上大分水嶺被抬升就下雨——布里斯本、雪梨一帶全年有雨，而同一個大陸的西岸（西澳寒流那一側）卻是沙漠"
+    },
+    {
+      "label": "珊瑚礁的溫水",
+      "value": "大堡礁能長在澳洲東北岸，靠的就是這一帶終年溫暖的海水；暖流也把珊瑚的幼生往南帶，讓珊瑚分布得比預期更南"
+    }
+  ],
+  "curriculum": { "unit": "全球的洋流與氣候" },
+  "schematic": true,
+  "sources": ["維基百科", "美國國家海洋暨大氣總署（NOAA）"]
+}

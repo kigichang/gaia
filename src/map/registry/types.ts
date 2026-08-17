@@ -66,7 +66,7 @@ export type BundledContentId =
   | "indigenous";
 
 /** 完全由程式產生的幾何，不需要任何檔案。 */
-export type GeneratorId = "latitude-lines" | "wind-belts";
+export type GeneratorId = "latitude-lines" | "wind-belts" | "ocean-currents";
 
 /**
  * 由**兩份既有資料 join 出來**的幾何，本身沒有檔案。
@@ -528,6 +528,12 @@ export interface LayerItems {
    *
    * 古蹟要開，因為它的 1,064 個圖徵全部有名字，而 items 圖層又沒有可點清單
    * （ThemeMapPage 的 `!l.items`），搜尋是這一層唯一的檢索入口。
+   *
+   * ⚠️ 洋流也開，而且**它是零成本的**：那一層的資料由 `generators.ts` 產生，
+   * `resolveLayerData()` 連 fetch 都不會發。這個旗標防的是流量，不是「圖徵多」。
+   *
+   * 兩種切法都索引得到：子項目自己有 `source`（古蹟），或用 `featureIds` 從母圖層
+   * 切出來（洋流）。後者是 2026-08 補的，在那之前 `searchIndex` 只認得前者。
    */
   indexFeatures?: boolean;
   /**
