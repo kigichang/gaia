@@ -1,7 +1,7 @@
 // .ts 副檔名是必要的：Node 直接載入註冊表時不會自己補副檔名（見 ../types.ts）
 import type { ThemeDefinition } from "../types.ts";
 // value-import 只允許 thematicColors（零 import 的常數模組），見 ../types.ts 的說明
-import { PLATE_BOUNDARY_COLORS } from "../../thematicColors.ts";
+import { BIOME_COLORS, PLATE_BOUNDARY_COLORS } from "../../thematicColors.ts";
 
 /**
  * 全球地理形貌。純資料——限制見 ../types.ts。
@@ -284,13 +284,114 @@ export const globalTheme: ThemeDefinition = {
       id: "biomes",
       label: "森林與沙漠帶",
       group: "氣候與生物群系",
-      status: "planned",
-      render: { kind: "fill" },
-      detail: { type: "none" },
-      schematic: true,
+      status: "ready",
+      /**
+       * ⚠️ **這一層不是手繪示意圖，所以沒有 `schematic`。** 原本的規劃是畫幾條緯度
+       * 長方形，但那只是把結論畫出來——這一層要教的是「為什麼沙漠帶在南北緯 30°」，
+       * 而真實的分布正好會露出反例：同樣在 30° 附近，撒哈拉與阿拉伯連成一氣，
+       * 東亞卻是森林（季風）。幾何取自 RESOLVE Ecoregions 2017，見 lib/biomes.mjs。
+       */
+      render: {
+        /**
+         * ⚠️ `fillOpacity` 取上限 0.25（見 types.ts：面疊在底圖地名之上）。這一層
+         * 蓋滿所有陸地，再深一階就會把國名與河流全部悶掉。
+         *
+         * ⚠️ **外框在這一層的用途是「補縫」，不是畫界線**，所以是「寬一點、
+         * 但跟面一樣半透明」這個組合。六類的幾何是上游逐一化簡出來的（不保拓樸），
+         * 共用邊界對不齊，撒哈拉／薩赫爾之間會露出一條一條的白縫；畫一圈同色同
+         * 不透明度的外框剛好蓋掉。⚠️ **不要改回預設的 0.9 不透明度**——1,900 多塊
+         * 多邊形在中亞、安地斯與北極群島會織成一張線網，色帶本身反而讀不出來
+         * （0.6 寬 × 0.9 實測就是那個樣子，比對過截圖；現在這組 1.0 × 0.15 是在 zoom 1.8 的
+         * 全球視角與 zoom 3.6 的撒哈拉／薩赫爾交界兩邊都看過才定的）。
+         */
+        kind: "fill",
+        fillOpacity: 0.25,
+        outlineWidth: 1.0,
+        outlineOpacity: 0.15,
+      },
+      /**
+       * 六類各一個檔（比照古蹟與作物）：只勾「沙漠與乾旱地」就只抓 77 KB，
+       * 不是整包 730 KB。顏色**固定綁在類別上**，不是依勾選順序指派——先勾苔原
+       * 再勾沙漠時，沙漠仍然必須是紅褐色，否則圖例當場失效（比照古蹟三級）。
+       */
+      items: {
+        from: {
+          type: "inline",
+          list: [
+            {
+              id: "tropical-forest",
+              label: "熱帶雨林與季風林",
+              source: { type: "remote", path: "data/geo/biomes-tropical-forest.geojson" },
+              color: BIOME_COLORS["tropical-forest"],
+              keywords: ["熱帶雨林", "季風林", "雨林", "紅樹林", "rainforest"],
+            },
+            {
+              id: "savanna",
+              label: "莽原與草原",
+              source: { type: "remote", path: "data/geo/biomes-savanna.geojson" },
+              color: BIOME_COLORS.savanna,
+              keywords: ["莽原", "草原", "疏林", "大草原", "savanna", "grassland"],
+            },
+            {
+              id: "desert",
+              label: "沙漠與乾旱地",
+              source: { type: "remote", path: "data/geo/biomes-desert.geojson" },
+              color: BIOME_COLORS.desert,
+              keywords: ["沙漠", "乾旱", "半乾燥", "desert"],
+            },
+            {
+              id: "temperate-forest",
+              label: "溫帶林",
+              source: { type: "remote", path: "data/geo/biomes-temperate-forest.geojson" },
+              color: BIOME_COLORS["temperate-forest"],
+              keywords: ["溫帶林", "落葉林", "混合林", "地中海型", "temperate forest"],
+            },
+            {
+              id: "boreal",
+              label: "針葉林（泰加林）",
+              source: { type: "remote", path: "data/geo/biomes-boreal.geojson" },
+              color: BIOME_COLORS.boreal,
+              keywords: ["針葉林", "泰加林", "寒帶林", "taiga", "boreal"],
+            },
+            {
+              id: "tundra",
+              label: "苔原與高山寒原",
+              source: { type: "remote", path: "data/geo/biomes-tundra.geojson" },
+              color: BIOME_COLORS.tundra,
+              keywords: ["苔原", "凍原", "高山寒原", "高山草原", "tundra"],
+            },
+          ],
+        },
+        maxActive: 6,
+        palette: Object.values(BIOME_COLORS),
+        /**
+         * 勾圖層時六類一起打開——這一層的重點是**帶狀分布**，只顯示一類就看不出
+         * 「一條一條排下來」。⚠️ 代價是六份檔案一次抓（合計約 730 KB），這是這一層
+         * 最貴的地方；取消不想看的那幾類之後不會重抓（`resolveLayerData` 有快取）。
+         */
+        defaultAll: true,
+      },
+      /**
+       * 六類各有一張說明卡（`src/content/geo/biomes/<id>.json`，檔名＝上面的 item id
+       * ＝geojson 的 `properties.id`，三者必須一致，理由見 plate-boundaries）。
+       * 點地圖上的面或點抽屜裡的類名，開的都是同一張。
+       */
+      detail: { type: "geo", collection: "biomes" },
+      /**
+       * ⚠️ 世界尺度專用。上游幾何在建置期已經用 0.4°（約 44 公里）綜合過，
+       * 放大之後邊界會變成一段一段的折線，而且相鄰兩類各自簡化會露出縫隙
+       * （比照縣市界設 maxzoom 的既有理由）。
+       */
+      maxzoom: 5,
       description:
-        "熱帶雨林、莽原、沙漠、溫帶林、針葉林的緯度帶狀分布，對照行星風系。",
-      sources: [],
+        "地球的陸地依氣候長出六種主要植被：熱帶雨林、莽原與草原、沙漠、溫帶林、針葉林、苔原。橫著看就是一條一條的緯度帶，跟「緯度參考線」疊在一起特別清楚——沙漠帶落在南北緯 30° 附近，針葉林在 60° 附近。",
+      notes: [
+        "⚠️ 這是**現況的自然植被分區**，不是「地表現在真的長什麼」：溫帶林那一類裡的西歐、華北平原與美國中西部，今天大多是農田與城市。",
+        "⚠️ 上游有 14 個生物群系，本站併成六類才畫得出來（十四個分類色沒有人分得出來）。併法：紅樹林併入熱帶林、溫帶草原與熱帶莽原合成「莽原與草原」、地中海型併入溫帶林、高山草原併入苔原。",
+        "⚠️ 界線是概略的。真實的植被是漸變的過渡帶而不是一條線，而且幾何在建置期已經化簡到約 44 公里的精度——所以這一層只在世界尺度顯示，放大會自動關掉。",
+        "⚠️ 小於約 1,850 平方公里的碎塊（小島、湖心島、狹長的紅樹林海岸）已經濾掉，否則光是北極群島與湖泊就佔掉整份檔案的八成。",
+      ],
+      sources: ["RESOLVE 生態區 2017（Dinerstein et al.）", "Esri Living Atlas"],
     },
     {
       id: "koppen-zones",

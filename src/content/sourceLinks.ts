@@ -288,6 +288,14 @@ export const SOURCE_LINKS: Record<string, string> = {
    * 不要簡寫成「Smithsonian」。知名火山的中文名另外標維基百科（次級來源）。
    */
   "史密森尼學會 全球火山計畫（GVP）": "https://volcano.si.edu/",
+  /**
+   * 陸域生物群系。授權是 CC-BY 4.0，**要求標示出處**，所以原始資料集（RESOLVE／
+   * Dinerstein et al. 2017）與取得管道（Esri Living Atlas 的 FeatureServer）
+   * 兩個都要列，少一個就違反授權（比照板塊那份 ODC-BY）。
+   */
+  "RESOLVE 生態區 2017（Dinerstein et al.）": "https://ecoregions.appspot.com/",
+  "Esri Living Atlas":
+    "https://www.arcgis.com/home/item.html?id=37ea320eebb647c6838c23f72abae5ef",
   // 三種邊界的說明卡（src/content/geo/plate-boundaries/）查名稱與代表案例用的次級來源。
   // 幾何與三分類仍然一律以 Bird (2003) 為準，見上面那則說明。
   "維基百科 板塊構造論":

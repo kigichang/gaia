@@ -69,6 +69,7 @@ Node ≥ 22.12（vite 8 要求）。開發機與 CI 都用 Node 24。
 | 板塊與板塊邊界 | `raw.githubusercontent.com/fraxen/tectonicplates`（Bird 2003／Nordpil 轉製） | **只在建置期呼叫**，ODC-BY 1.0（**必須標示出處**）。邊界的三分類在 10 MB 的 `PB2002_steps.json` 裡，見下 |
 | 地震目錄 | `earthquake.usgs.gov/fdsnws/event/1/query`（USGS） | **只在建置期呼叫**，免金鑰、`ACAO: *`。全球與臺灣兩層共用這一個端點 |
 | 全球活火山 | `webservices.volcano.si.edu/geoserver/GVP-VOTW/ows`（史密森尼學會 全球火山計畫 GVP） | **只在建置期呼叫**，WFS 一次回 2.4 MB 的 GeoJSON。免金鑰、不需要 User-Agent；授權是「引用即可自由使用」，見下 |
+| 陸域生物群系 | `services.arcgis.com/…/Resolve_Ecoregions/FeatureServer`（RESOLVE Ecoregions 2017，Esri Living Atlas 代管） | **只在建置期呼叫**，用伺服器端的 `maxAllowableOffset` 取已化簡的幾何。⚠️ 授權 CC-BY 4.0（**必須標示出處**）；⚠️ 連發會回一個指著參數的假 400，見下 |
 | 臺灣活動斷層 | `geologycloud.tw/data/zh-tw/ActiveFault`（經濟部地質調查及礦業管理中心「地質雲」） | **只在建置期呼叫**。⚠️ data.gov.tw 那份**只有 WMS 影像**，拿不到向量；而且這是 **33 條的舊版**，見下 |
 | 交通軸線幾何（高鐵／國道／橫貫公路／臺鐵幹線）、河川幹流河道 | `overpass-api.de/api/interpreter`（OpenStreetMap Overpass） | **只在建置期呼叫**，ODbL 1.0。⚠️ **沒有 User-Agent 一律回 HTTP 406**；河川的選擇器**不能寫 `waterway=river`**（一半以上是 `stream`），要用 `type=waterway`＋`ref`，見下 |
 | 水庫基本資料／水庫水情 | `opendata.wra.gov.tw/api/v2/…?format=CSV`（經濟部水利署） | **只在建置期呼叫**。⚠️ **沒有 CORS 標頭**（瀏覽器一定抓不到），而且掛著 bot 防護，見下 |
@@ -287,6 +288,81 @@ deutan 6.7，落在「只有搭配次要編碼才合法」的 6–8 band。
 修好之後的量級。半徑**不隨 zoom 變**：放大時靠點與點拉開，不是點變大。**不畫白色外框**
 ——1,214 個亮外框在投影機上會糊成一片白雜訊，而這一層常常跟地震帶疊著看。
 
+### 森林與沙漠帶：六個生物群系大類
+
+取得邏輯在 `scripts/lib/biomes.mjs`；六類各一個檔（`public/data/geo/biomes-<class>.geojson`，
+合計 731 KB）。
+
+#### 為什麼不是手繪示意圖
+
+這一層原本掛著 `schematic: true`，打算畫幾條橫的緯度帶。**現在是真實資料，所以不標
+schematic。** 理由是這一層要教的不是「有哪幾種植被」而是「**為什麼**沙漠帶落在南北緯 30°」
+——手繪長方形只是把結論畫出來，而真實分布會露出反例：同樣在 30° 附近，撒哈拉與阿拉伯連成
+一氣，東亞卻是森林（季風）。那個對比才是這一層的價值。
+
+資料是 RESOLVE Ecoregions 2017（Dinerstein et al.，WWF 陸域生態區的現行版本），847 個
+生態區各自標了 14 個生物群系之一。⚠️ **授權 CC-BY 4.0，要求標示出處**，所以 `sources`
+必須同時列原始資料集與取得管道（比照板塊那份 ODC-BY）。
+
+#### ⚠️ 走 Esri Living Atlas，不要去抓官方那份 149 MB 的 shapefile
+
+官方 `Ecoregions2017.zip` 是 149 MB，解開更大——`lib/shp.mjs` 是自己寫的純 JS 讀取器，
+不該讓它扛那個量級。Living Atlas 代管的同一份資料支援伺服器端的 `maxAllowableOffset`
+（幾何綜合）與 `geometryPrecision`（小數位），一次要求就拿到化簡過的 GeoJSON。
+
+⚠️ **連續打會收到一個會騙人的 400**：第二輪之後開始回
+`'maxAllowableOffset' parameter is invalid`，**但同一個網址單獨打是好的、參數也沒錯**
+（0.2／0.4／0.8 都出現過同一句話）。看起來是流量控管，錯誤訊息卻指著參數，很容易讓人
+跑去改 offset。`fetchBiomeClass()` 因此自己做間隔與退避重試——`fetchWithRetry` 只認
+429／5xx，這裡是 HTTP 400 帶著一個 JSON 錯誤物件。**六類不要連著跑。**
+
+#### 14 類併成 6 類是色票逼出來的，併法要說得出口
+
+十四個分類色不可能通過驗證（本站掃過整個色域，六色已經是 all-pairs 全過的上限），而課本
+講的本來就是「熱帶雨林、莽原、沙漠、溫帶林、針葉林、苔原」這幾條帶。併法寫在
+`BIOME_CLASSES`，四個判斷值得記住：紅樹林併入熱帶林（窄帶，世界尺度下幾乎全被面積門檻
+濾掉）、**溫帶草原與熱帶莽原合成「莽原與草原」**（所以類名不叫「莽原」——不能說謊）、
+地中海型併入溫帶林、高山草原併入苔原（同一個低溫限制，只是換成用海拔達成）。
+⚠️ `BIOME_CLASSES` 有一道建置期檢查：`BIOME_NUM` 1–14 少涵蓋一個就直接拋錯。
+
+#### ⚠️ 小碎塊過濾是這一層塞得進預算的關鍵
+
+上游把每個小島與湖心島都收了進來：**光是苔原那一類就有 50,680 個環**，全留下來那一類
+自己就 3.5 MB。`MIN_POLYGON_AREA = 0.15` 度²（≈1,850 km²）之後是 169 KB。
+⚠️ **門檻不能再往上調**：0.3 度² 會開始咬到峇里島、宿霧這種島，而熱帶雨林這一類的教學
+重點正好在印尼與菲律賓的群島上。⚠️ 跟離島那條規則一樣，**必須在簡化之前**做。
+
+#### ⚠️ 外框是拿來「補縫」的，不是畫界線
+
+六類彼此相鄰，而幾何是上游**逐一**化簡的（不保拓樸），共用邊界因此對不齊，撒哈拉／薩赫爾
+之間會露出一條一條的白縫（zoom 3.6 就看得到）。修法是畫一圈**跟面同色、同樣半透明**的
+外框把縫蓋掉——這就是 `LayerRender.fill` 新增 `outlineOpacity` 的唯一理由（預設仍是 0.9，
+既有圖層行為不變）。
+
+⚠️ **不要改回預設的 0.9**：1,900 多塊多邊形在中亞、安地斯與北極群島會織成一張線網，
+色帶本身反而讀不出來（0.6 寬 × 0.9 實測就是那個樣子）。現在這組 **1.0 寬 × 0.15**
+是在 zoom 1.8 的全球視角與 zoom 3.6 的撒哈拉交界**兩邊都看過**才定的。
+
+`maxzoom: 5` 同理：0.4° 的綜合精度在更近的尺度會露出折線與縫。
+
+#### 六色是在語意色相窗內最佳化出來的
+
+`BIOME_COLORS`（熱帶林 `#25744c`／莽原 `#989401`／沙漠 `#b4410d`／溫帶林 `#369db8`／
+針葉林 `#695ba9`／苔原 `#c754f4`），明暗兩模式 `--pairs all` **五項全數 PASS、零 WARN**：
+
+```bash
+node <dataviz-skill>/scripts/validate_palette.js "#25744c,#989401,#b4410d,#369db8,#695ba9,#c754f4" --pairs all --mode light|dark
+# → CVD 最差 8.6（沙漠↔熱帶林，protan）、一般視覺最差 18.1（溫帶林↔熱帶林）
+```
+
+方法：每一類先框一段語意色相窗，亮度限制在明暗兩模式亮度帶的交集 L 0.48–0.67，再以
+「CVD ≥ 8.5 的前提下**最大化一般視覺最差值**」跑爬山法。⚠️ 目標函數把餘裕留在一般視覺
+那一項是刻意的——15 是不能用次要編碼豁免的硬下限（另一組解是 CVD 10.0／一般視覺 15.4，
+就卡在下限旁邊）。
+
+⚠️ **溫帶林是藍綠、針葉林是靛紫，那不是配錯**：三種森林的慣例色都是綠，但綠只夠給一個，
+三個綠的 CVD 分離度不可能同時達標。比照茶葉配藍——對應靠圖例文字，不是靠「像不像」。
+
 ### 世界底圖的地名一律改成繁體中文（只換表達式，不換資料源）
 
 「世界地圖」（OpenFreeMap Liberty）原本的 `text-field` 是 `拉丁名\n當地文字`，於是德國寫
@@ -391,6 +467,7 @@ ID 常數定義在 `src/map/layers/*.ts`，**一律 import 常數，不要寫死
 | `latitude-lines-line` / `latitude-lines-label` | line + symbol |
 | `quakes-points` | circle |
 | `volcanoes-points` | circle（1,214 座活火山，`strokeWidth: 0`；半徑固定不隨 zoom 變） |
+| `biomes-<class>-fill` / `-outline` | fill + line，**六類各自一組**（`tropical-forest`／`savanna`／`desert`／`temperate-forest`／`boreal`／`tundra`）。外框是拿來**補相鄰面之間的縫**的，所以是 1.0 寬 × 0.15 不透明度，見下 |
 | `tw-reservoirs-points` | circle（顏色是**依蓄水率分級的表達式**，不是單一色，見下） |
 | `tw-transport-<axis>-casing` / `-line` / `-label` | line + line + symbol，**十條軸線各自一組**（`thsr`／`freeway-1`／`freeway-3`／`freeway-5`／`provincial-7`／`provincial-8`／`provincial-20`／`tra-west`／`tra-east`／`tra-south-link`）。`-casing` 是墊在線底下的白框，全站只有這一層用；標註用 `shortName`，不是 `name` |
 | `tw-rivers-line` / `tw-rivers-label` | line + symbol |
@@ -438,7 +515,7 @@ maplibre-contour 把 worker 以 Blob URL 內嵌，**不需要額外部署 worker
 |---|---|---|
 | 臺灣地理 | `/theme/taiwan` | 臺灣123（土地與島群）、行政區（縣市、鄉鎮市區）、地形、天然災害（活動斷層、地震、颱風路徑與災損）、水系（118 個列管水系、水庫即時水情、河川流域分區）、人文（原住民族、交通軸線、古蹟、人口與都市體系）、植被生態（特有種、國家公園與保護區、垂直植被帶）、農業物產（主要作物分布） |
 | 世界地理 | `/theme/world` | 世界重要城市、國界與大洲、地形水系、人文專題 |
-| 全球地理形貌 | `/theme/global` | 參考線（緯度參考線、國際換日線）、氣候與生物群系、洋流、地體構造（板塊、板塊邊界、地震帶、火山帶） |
+| 全球地理形貌 | `/theme/global` | 參考線（緯度參考線、國際換日線）、氣候與生物群系（森林與沙漠帶）、洋流、地體構造（板塊、板塊邊界、地震帶、火山帶） |
 
 三個主題頁都是**滿版地圖 + 浮動控制**（仿 Google Map），沒有頁首也沒有側欄——版面機制見下面的「全螢幕地圖外框與浮動控制」。
 
@@ -554,6 +631,8 @@ fill   → `${instanceId}-fill` + `${instanceId}-outline`
 `-points` 後綴是刻意沿用的舊命名，讓 `places-points`／`indigenous-points`／`species-<id>-points` 一個字元都不變。
 
 **fill 一定是兩個 maplibre 圖層**：maplibre 的 `fill-outline-color` 只能畫 1px 髮絲線、線寬不可調，外框必須是同一個 source 上的獨立 line 圖層。
+
+外框的不透明度預設 0.9，可以用 `render.outlineOpacity` 調低。⚠️ 會用到它的情境只有一個：**用同色半透明的外框去補相鄰面之間的縫**（生物群系六類的共用邊界對不齊），見下。
 
 ### 關鍵坑一：切換底圖會清掉主題圖層
 
@@ -1287,6 +1366,9 @@ npm run build:geodata -- --force --only=date-line            # 國際換日線�
 npm run build:geodata -- --force --only=plates               # 52 塊板塊（含球面面積）
 npm run build:geodata -- --force --only=plate-boundaries    # 三種板塊邊界（下載 10 MB 的 step 檔）
 npm run build:geodata -- --force --only=volcanoes            # 1,214 座全新世活火山（GVP）
+npm run build:geodata -- --force --only=biomes-desert        # 生物群系六類要各跑一次
+                                       # （tropical-forest／savanna／temperate-forest／boreal／tundra 同理；
+                                       #   ⚠️ 六個不要連著跑，上游會回一個指著參數的假 400，見下）
 npm run build:geodata -- --force --only=tw-monuments-national   # 古蹟三級要各跑一次
                                        # （municipal／county 同理；歷史沿革分片會一起寫出）
 ```
@@ -1644,6 +1726,31 @@ m.isSourceLoaded('contour-source')
     - 切底圖之後重驗存在、顏色與排序（在 `contour-lines` 之上、`contour-labels` 之下，
       而且在板塊邊界的線之上）
 
+32. **森林與沙漠帶**（`/theme/global` → 氣候與生物群系，見上）：
+    ```js
+    const m = window.__gaiaMaps.at(-1);
+    m.getStyle().layers.map(l => l.id).filter(i => /^biomes-.*-fill$/.test(i)).length   // 6（defaultAll）
+    ['tropical-forest','savanna','desert','temperate-forest','boreal','tundra']
+      .map(k => m.getPaintProperty(`biomes-${k}-fill`, 'fill-color'))
+    // 期望 ["#25744c","#989401","#b4410d","#369db8","#695ba9","#c754f4"]，**不隨勾選順序改變**
+    m.getPaintProperty('biomes-desert-outline', 'line-opacity')                         // 0.15（補縫用，見上）
+    ```
+    - ⚠️ **這一層的成敗只能用眼睛驗**，而且要在**主題預設視角**（zoom 1.8）看：
+      撒哈拉與阿拉伯要連成一條壓在北回歸線上的橘色帶、薩赫爾是橄欖綠、剛果與亞馬遜是
+      深綠、歐亞中緯度是藍綠、加拿大與西伯利亞是靛紫、青藏高原與安地斯高地是洋紅
+    - ⚠️ **檢查有沒有白縫**：`jumpTo([10,20], 3.6)` 看撒哈拉／薩赫爾交界。露出一條條
+      白色細縫代表外框的補縫失效（`outlineOpacity` 或 `outlineWidth` 被改掉了）
+    - ⚠️ 反過來也要看：全球視角下**不可以**出現一張細線網（那是外框太實，見上）
+    - 點任一塊面要開得了卡（六類各有內容檔）：點撒哈拉 → 標題「沙漠與乾旱地」、
+      副標「南北緯 30° 附近那兩條——副熱帶高壓底下不下雨」；**選取時整類一起加深**
+      （`fill-opacity` 0.25 → 0.38，全球的沙漠同時變深才是對的）
+    - 六類的核取方塊可以各自取消，取消後不會重抓（`resolveLayerData` 有快取）
+    - 搜「沙漠」要出現「沙漠與乾旱地」子項目，選它只勾那一類（不是六類全開）
+    - `maxzoom: 5`：`jumpTo` 到 zoom 5.5 整層應該消失，這是刻意的（見上）
+    - 資料來源那一行**必須有兩個連結**（RESOLVE、Esri Living Atlas）——CC-BY 要求標示出處
+    - 切底圖之後重驗存在、顏色、外框不透明度與排序（面在 `contour-lines` 之上、
+      `contour-labels` 之下）
+
 ### ⚠️ 用瀏覽器自動化點 UI 的三個陷阱
 
 - **主題頁的底圖選單藏在左下角「圖層」彈出層裡**，必須先 `document.querySelector('.map-tile').click()` 才找得到 `<select>`；`/compare` 的仍然直接在頁首。
@@ -1766,6 +1873,7 @@ scripts/
 ├─ lib/faults.mjs         # 活動斷層的存取層（地質雲端點、33 條的 id 對照表、筆數檢查）
 ├─ lib/typhoons.mjs       # 侵臺颱風的存取層（氣象署最佳路徑 txt ＋ 概況表 HTML；14 個的 id 對照表）
 ├─ lib/volcanoes.mjs      # GVP 全新世活火山的存取層（19 個火山區與 17 種類型的中文對照、40 幾座知名火山的中文名、筆數檢查）
+├─ lib/biomes.mjs         # RESOLVE 生態區的存取層（14 個生物群系 → 六個教學用大類、小碎塊過濾、跨 ±180 檢查）
 ├─ lib/population.mjs     # 各鄉鎮市區人口密度的存取層（年份寫死、site_id 切縣市／鄉鎮、行政層級）
 ├─ lib/crops.mjs          # 農情調查的存取層（逐縣市抓以避開 9999 上限、台／臺正規化、非生產列過濾）
 ├─ lib/overpass.mjs       # OSM Overpass 存取層（端點輪替、way 串接）。**兩種查法並存**：

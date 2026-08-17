@@ -574,9 +574,12 @@ function addGeoLayerShapes(map: MapLibreMap, spec: GeoLayerSpec) {
     (b) => ["*", b, SELECTED.outlineScale],
     baseOutline,
   );
+  // 半透明的外框是拿來補相鄰面之間的縫的，見 registry/types.ts 的 outlineOpacity
+  const outlineOpacity = render.outlineOpacity ?? 0.9;
   if (map.getLayer(outlineId)) {
     map.setPaintProperty(outlineId, "line-color", color);
     map.setPaintProperty(outlineId, "line-width", outlineWidth);
+    map.setPaintProperty(outlineId, "line-opacity", outlineOpacity);
   } else {
     map.addLayer({
       id: outlineId,
@@ -587,7 +590,7 @@ function addGeoLayerShapes(map: MapLibreMap, spec: GeoLayerSpec) {
       paint: {
         "line-color": color,
         "line-width": outlineWidth,
-        "line-opacity": 0.9,
+        "line-opacity": outlineOpacity,
       },
     });
   }

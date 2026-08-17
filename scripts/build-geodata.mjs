@@ -119,6 +119,13 @@ import {
   VOLCANOES_URL,
   buildVolcanoFeatures,
 } from "./lib/volcanoes.mjs";
+import {
+  BIOME_CLASSES,
+  LICENSE as BIOME_LICENSE,
+  SOURCE_LABELS as BIOME_SOURCE_LABELS,
+  SOURCE_PAGE as BIOME_SOURCE_PAGE,
+  fetchBiomeClass,
+} from "./lib/biomes.mjs";
 
 /**
  * 「這一組的清單順序與副標由官方數字當主角」——`tw-rivers` 與 `tw-basins` 共用。
@@ -901,6 +908,42 @@ const SOURCES = [
     digits: 3,
     transform: buildVolcanoFeatures,
   },
+
+  /**
+   * 六個生物群系大類各一筆。
+   *
+   * **產物是六個檔而不是一個**：六類合計約 730 KB，併成一份會撞上 500 KB 的建議值
+   * （而且離 1 MB 的硬上限只剩三成餘裕）。拆開之後每一份都在 170 KB 以下，
+   * 註冊表的 `items` 也才能一類一個 source（比照古蹟三級與作物三種）。
+   *
+   * ⚠️ 六個查詢**不能連著發**：上游會回一個指著 `maxAllowableOffset` 的 400，
+   * 而參數其實是對的。`fetchBiomeClass()` 自己做間隔與退避重試，見 lib/biomes.mjs。
+   */
+  ...BIOME_CLASSES.map((cls) => ({
+    id: `biomes-${cls.id}`,
+    label: `生物群系：${cls.label}`,
+    load: async () => {
+      // 每一類之間隔幾秒，理由見上
+      await new Promise((r) => setTimeout(r, 3000));
+      const { feature, ecoregions, kept, dropped } = await fetchBiomeClass(cls);
+      return {
+        feature,
+        warnings: [`${cls.label}：上游 ${ecoregions} 個生態區 → ${kept} 塊（濾掉 ${dropped} 塊小碎塊）`],
+      };
+    },
+    sourceUrl: BIOME_SOURCE_PAGE,
+    license: BIOME_LICENSE,
+    sourceLabel: BIOME_SOURCE_LABELS[0],
+    /**
+     * 伺服器端已經用 `maxAllowableOffset=0.4` 綜合過，這裡再跑一次自家的
+     * Douglas–Peucker 砍掉化簡後仍然共線的點；2 位小數 ≈ 1.1 公里，在 maxzoom 5
+     * 的世界尺度下是次像素。
+     */
+    tolerance: 0.08,
+    digits: 2,
+    transform: (raw) => [raw.feature],
+  })),
+
   {
     id: "tw-reservoirs",
     label: "臺灣主要水庫",
