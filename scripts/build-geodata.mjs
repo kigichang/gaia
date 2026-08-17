@@ -817,7 +817,8 @@ const SOURCES = [
      *
      * 為什麼不是一段一筆：註冊表用 `LayerItem.featureIds` 把子項目從母圖層切出來，
      * 那是一份寫在 `themes/*.ts` 裡的 id 清單——1,582 段各自一筆的話那份清單就爆了。
-     * 而這一層 `detail: "none"`，逐段點選本來就沒有教學意義，所以三筆剛剛好。
+     * 而逐段點選本來就沒有教學意義（點的是「哪一種邊界」不是「哪一小段」），
+     * 所以三筆剛剛好。
      */
     transform: (raw) => {
       const steps = raw.features
@@ -866,7 +867,15 @@ const SOURCES = [
         return {
           type: "Feature",
           geometry: { type: "MultiLineString", coordinates: lines.map((l) => l.coords) },
-          properties: { id: `boundary-${t.id}`, name: t.name, segments: lines.length },
+          /**
+           * ⚠️ id 就是 `BOUNDARY_TYPES[].id`，**不要再加 `boundary-` 前綴**：這個
+           * 字串同時是註冊表的 item id、`featureIds`、以及
+           * `src/content/geo/plate-boundaries/<id>.json` 的檔名（比照交通軸線的
+           * 「三個 id 是同一個字串」）。加了前綴的話，點子項目名稱傳進去的是
+           * item id、點地圖上的線傳進去的是圖徵 id，兩條路徑會開出不同的卡片，
+           * 而且「只顯示這一筆」下的 filter 會一筆都比對不到、整層消失。
+           */
+          properties: { id: t.id, name: t.name, segments: lines.length },
         };
       });
     },

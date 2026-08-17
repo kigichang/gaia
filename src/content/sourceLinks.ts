@@ -283,6 +283,10 @@ export const SOURCE_LINKS: Record<string, string> = {
   "Peter Bird (2003) 板塊模型": "https://doi.org/10.1029/2001GC000252",
   "Nordpil 板塊資料集": "https://github.com/fraxen/tectonicplates",
   "維基百科 板塊列表": "https://zh.wikipedia.org/wiki/%E6%9D%BF%E5%A1%8A%E5%88%97%E8%A1%A8",
+  // 三種邊界的說明卡（src/content/geo/plate-boundaries/）查名稱與代表案例用的次級來源。
+  // 幾何與三分類仍然一律以 Bird (2003) 為準，見上面那則說明。
+  "維基百科 板塊構造論":
+    "https://zh.wikipedia.org/wiki/%E6%9D%BF%E5%A1%8A%E6%A7%8B%E9%80%A0%E8%AB%96",
   // 交通軸線的線位來源。ODbL 1.0 要求標示「© OpenStreetMap 貢獻者」，
   // 這個署名義務不是新增的——世界底圖 OpenFreeMap 本來就是 OSM 衍生的。
   OpenStreetMap: "https://www.openstreetmap.org/copyright",

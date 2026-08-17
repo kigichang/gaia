@@ -171,7 +171,12 @@ export const globalTheme: ThemeDefinition = {
        *
        * ⚠️ 產物**刻意只有三筆圖徵**——每一種邊界是一個 MultiLineString，裡面有
        * 幾百段。`featureIds` 是寫在這個檔案裡的 id 清單，一段一筆的話那份清單會
-       * 有 1,582 行；而這一層 `detail: "none"`，逐段點選本來就沒有教學意義。
+       * 有 1,582 行；而逐段點選也沒有教學意義（要點開的是「這是哪一種邊界」）。
+       *
+       * ⚠️ 三個 id 是**同一個字串**（比照交通軸線）：geojson 的 `properties.id`、
+       * 這裡的 item id、以及 `src/content/geo/plate-boundaries/<id>.json` 的檔名。
+       * 三者一致，「點子項目名稱」與「點地圖上的線」才會開出同一張卡，
+       * 「只顯示這一筆」的 filter 也才比對得到。
        */
       items: {
         from: {
@@ -180,21 +185,21 @@ export const globalTheme: ThemeDefinition = {
             {
               id: "divergent",
               label: "張裂型邊界",
-              featureIds: ["boundary-divergent"],
+              featureIds: ["divergent"],
               color: PLATE_BOUNDARY_COLORS[0],
               keywords: ["張裂", "分離", "中洋脊", "裂谷", "divergent"],
             },
             {
               id: "convergent",
               label: "聚合型邊界",
-              featureIds: ["boundary-convergent"],
+              featureIds: ["convergent"],
               color: PLATE_BOUNDARY_COLORS[1],
               keywords: ["聚合", "碰撞", "隱沒", "海溝", "convergent", "subduction"],
             },
             {
               id: "transform",
               label: "錯動型邊界",
-              featureIds: ["boundary-transform"],
+              featureIds: ["transform"],
               color: PLATE_BOUNDARY_COLORS[2],
               keywords: ["錯動", "轉形", "平移", "transform"],
             },
@@ -209,10 +214,21 @@ export const globalTheme: ThemeDefinition = {
          */
         defaultAll: true,
       },
-      detail: { type: "none" },
+      /**
+       * ⚠️ **不可以退回 `type: "none"`。** 這一層只有三筆圖徵，而那三筆正好就是
+       * 課本要講的三種邊界——「這一種是怎麼動的、造出什麼地形、哪裡看得到」
+       * 沒有別的地方講得完（圖層說明只塞得下一句話）。內容檔在
+       * `src/content/geo/plate-boundaries/`，三個 id 見上面 items 的說明。
+       *
+       * 留 `"none"` 還會壞掉一件事：`handleItemNameClick` 照樣會 setSelected，
+       * 而 `DetailCard` 對 `none` 回 null——點抽屜裡的「張裂型邊界」會開出一張
+       * **空白面板**（`data-detail-open` 仍是 true），完全靜默。垂直植被帶那一層
+       * 也踩過同一個坑，見 themes/taiwan.ts 的說明。
+       */
+      detail: { type: "geo", collection: "plate-boundaries" },
       maxzoom: 8,
       description:
-        "張裂型（板塊分開，中洋脊與裂谷）、聚合型（板塊相撞，海溝與造山帶）、錯動型（板塊錯開，轉形斷層）。跟「全球地震帶」一起打開，就看得出地震沿著哪一種邊界排列。",
+        "張裂型（板塊分開，中洋脊與裂谷）、聚合型（板塊相撞，海溝與造山帶）、錯動型（板塊錯開，轉形斷層）。點線或點名稱可以看各種邊界怎麼動、造出什麼地形；跟「全球地震帶」一起打開，就看得出地震沿著哪一種邊界排列。",
       notes: [
         "⚠️ 三種分類直接取自 Bird (2003) 對每一小段邊界的判定（中洋脊、大陸裂谷歸張裂；隱沒帶、海洋與大陸聚合帶歸聚合；海洋與大陸轉形斷層歸錯動），不是本站自己歸的。",
         "⚠️ 板塊邊界不是一條線而是一個帶：真實的變形區可以寬達數百公里（例如喜馬拉雅、加州），圖上那條線是模型的簡化。",

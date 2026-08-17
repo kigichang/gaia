@@ -115,8 +115,26 @@ NLSC WMTS 是 `{z}/{y}/{x}`——**y 在 x 前面**，跟絕大多數 XYZ 服務
 
 每一種邊界是一個 MultiLineString，裡面有幾百段（張裂 661、聚合 205、錯動 716）。
 一段一筆會壞掉一件事：註冊表用 `LayerItem.featureIds` 把子項目從母圖層切出來，而那是
-一份**寫在 `themes/global.ts` 裡的 id 清單**——1,582 行 id 是不能接受的。這一層
-`detail: "none"`，逐段點選本來就沒有教學意義，所以三筆剛剛好。
+一份**寫在 `themes/global.ts` 裡的 id 清單**——1,582 行 id 是不能接受的。而逐段點選也
+沒有教學意義（要點開的是「這是哪一種邊界」不是「這是哪一小段」），所以三筆剛剛好。
+
+#### 三種邊界各有一張說明卡，而三個 id 必須是同一個字串
+
+課本講的「三種板塊邊界」要講的是**各自怎麼動、造出什麼地形、哪裡看得到**，圖層說明
+只塞得下一句話，所以三種各有一份內容檔：`src/content/geo/plate-boundaries/{divergent,
+convergent,transform}.json`，圖層的 `detail` 因此是 `{ type: "geo", collection:
+"plate-boundaries" }`。點地圖上的線、或點抽屜裡的子項目名稱，開的是同一張卡。
+
+⚠️ **`detail` 不可以退回 `"none"`。** 除了說明沒地方放之外還會壞掉一件事：
+`handleItemNameClick` 照樣會 `setSelected`，而 `DetailCard` 對 `none` 回 `null`——
+點抽屜裡的「張裂型邊界」會開出一張**空白面板**（`data-detail-open` 仍是 true），
+完全靜默。垂直植被帶那一層也踩過同一個坑。
+
+⚠️ **geojson 的 `properties.id` 不帶 `boundary-` 前綴**（早期版本帶，2026-08 拿掉並
+重跑了 `build:geodata`）。比照交通軸線的既有規則：**geojson 的 id、註冊表的 item id、
+內容檔的檔名必須是同一個字串**。不一致的話點子項目名稱傳的是 item id、點地圖上的線
+傳的是圖徵 id，兩條路徑會開出不同的卡；而且「只顯示這一筆」的 `setFilter` 會一筆都
+比對不到、整層消失。
 
 串接規則：相同 `PLATEBOUND`、相同分類、而且前一段的終點等於後一段的起點，就併成一條線
 （實測 5,613 對接得上、只有 8 對接不上）。不併的話會得到 5,824 條各三十幾個點的碎線，
@@ -1503,6 +1521,23 @@ m.isSourceLoaded('contour-source')
       ```
     - 抽屜清單依分類分三組：`["主要板塊:8","次要板塊:14","微板塊:30"]`，組內依面積由大
       到小（開頭是太平洋板塊 1.05 億 km²）。⚠️ **主要是 8 塊不是 7 塊**，見上
+    - **三種邊界各要開得了說明卡，而且兩條路徑開出同一張**（內容檔在
+      `src/content/geo/plate-boundaries/`，三個 id 必須一致，見上）：
+      ```js
+      // ① 點抽屜裡的子項目名稱
+      [...document.querySelectorAll('.layer-drawer .layer-row')]
+        .find(r => r.textContent.startsWith('板塊邊界'))
+        .querySelector('.species-name-btn').click();   // 「張裂型邊界」
+      // ② 點地圖上的線（先用 queryRenderedFeatures 找一個只命中該層的像素再派事件）
+      document.querySelector('.map-detail-panel').innerText.split('\n')[0]  // 兩者都是該種邊界的名字
+      ```
+      ⚠️ 卡片開了不算數，要看**內文**：退回 `FeatureCard` fallback 時標題一樣對，
+      但內容會變成圖層說明（代表內容檔的 id 對不上）
+    - 選取時該種邊界要加粗，而且**清單裡是不帶前綴的 id**：
+      ```js
+      JSON.stringify(m.getPaintProperty('plate-boundaries-divergent-line','line-width'))
+      // ["case",["in",["get","id"],["literal",["divergent"]]],["*",1.6,2.2],1.6]
+      ```
     - 搜「太平洋板塊」「Pacific」都要找得到；搜「錯動」要出現「錯動型邊界」子項目
     - 資料來源那一行**必須有三個連結**（Bird、Nordpil、維基百科）——ODC-BY 要求標示出處，
       少一個就違反授權
