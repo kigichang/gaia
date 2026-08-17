@@ -66,7 +66,7 @@ export type BundledContentId =
   | "indigenous";
 
 /** 完全由程式產生的幾何，不需要任何檔案。 */
-export type GeneratorId = "latitude-lines";
+export type GeneratorId = "latitude-lines" | "wind-belts";
 
 /**
  * 由**兩份既有資料 join 出來**的幾何，本身沒有檔案。

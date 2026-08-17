@@ -1,7 +1,21 @@
 // .ts 副檔名是必要的：Node 直接載入註冊表時不會自己補副檔名（見 ../types.ts）
 import type { ThemeDefinition } from "../types.ts";
 // value-import 只允許 thematicColors（零 import 的常數模組），見 ../types.ts 的說明
-import { BIOME_COLORS, KOPPEN_COLORS, PLATE_BOUNDARY_COLORS } from "../../thematicColors.ts";
+import {
+  BIOME_COLORS,
+  KOPPEN_COLORS,
+  PLATE_BOUNDARY_COLORS,
+  WIND_COLOR,
+} from "../../thematicColors.ts";
+
+/**
+ * 氣壓帶的點線樣式（風帶的箭頭是實線）。
+ *
+ * ⚠️ 寫成有型別註記的常數而不是在 `items` 裡直接寫字面值：`dash` 的型別是
+ * `[number, number]`，而陣列字面值在那個位置會被推論成 `number[]`（比照
+ * `TRANSPORT_DASH` 的既有做法）。
+ */
+const PRESSURE_DASH: [number, number] = [1, 2.5];
 
 /**
  * 全球地理形貌。純資料——限制見 ../types.ts。
@@ -493,11 +507,113 @@ export const globalTheme: ThemeDefinition = {
       id: "wind-belts",
       label: "行星風系",
       group: "氣候與生物群系",
-      status: "planned",
-      render: { kind: "line" },
-      detail: { type: "none" },
+      status: "ready",
+      /**
+       * ⚠️ **完全由程式產生，而且應該是這樣。** 行星風系不是測出來的界線而是理想化
+       * 的模型（氣壓帶在 0°／±30°／±60°，風帶夾在中間），實際大氣還會隨季節南北
+       * 移動好幾度。所以沒有「權威資料檔」可抓，只有課本的示意圖——而示意圖的參數
+       * （帶的緯度、箭頭間隔、畫面上的斜度）該寫成程式碼裡的常數，不是一份手抄的
+       * 幾千個座標。幾何與參數見 registry/generators.ts 的 `windBelts()`。
+       */
+      source: { type: "generated", generator: "wind-belts" },
+      render: {
+        kind: "line",
+        width: 1.6,
+        /**
+         * ⚠️ 標註是這一層的必要條件，不是裝飾：四個部位共用同一個顏色（見
+         * thematicColors.ts 的 `WIND_COLOR`），畫面上唯一寫出「這是西風」的東西
+         * 就是沿線標註。
+         *
+         * `spacing: 250` 是實測調的（1512×772 畫布）：氣壓帶那三條是 6 段 34° 的
+         * 短線，spacing 60 時同一段上會重複放兩次（zoom 1.1 實測 20 個標註，
+         * 250 之後是 16 個）。**不可以照抄緯度參考線的 320**——箭頭在 zoom 1.8 下
+         * 只有約 50 px，再高就一個都放不出來。`size: 10` 同理：11 時「極地東風」
+         * 四個字排不進箭頭。
+         */
+        label: { property: "name", size: 10, spacing: 250, maxAngle: 60 },
+      },
+      /**
+       * 四個核取方塊。⚠️ 氣壓帶那一個用 `featureIds` **一次切三筆**（赤道低壓、
+       * 副熱帶高壓、副極地低壓）——它們必須是三個獨立圖徵才有各自的標註與卡片，
+       * 但在 UI 上是同一件事（「氣壓帶」），沒有理由拆成三個核取方塊。
+       *
+       * ⚠️ 顏色全部相同是刻意的，不是漏填（見 thematicColors.ts）；`dash` 才是
+       * 氣壓帶與風帶的區辨通道——點線 vs 實線箭頭。
+       */
+      items: {
+        from: {
+          type: "inline",
+          list: [
+            {
+              id: "pressure-belts",
+              label: "氣壓帶",
+              featureIds: ["pressure-equatorial", "pressure-subtropical", "pressure-subpolar"],
+              color: WIND_COLOR,
+              dash: PRESSURE_DASH,
+              keywords: [
+                "氣壓帶", "赤道低壓帶", "副熱帶高壓帶", "副極地低壓帶",
+                "間熱帶輻合區", "ITCZ", "馬緯度", "無風帶",
+              ],
+            },
+            {
+              id: "trades",
+              label: "信風",
+              featureIds: ["trades"],
+              color: WIND_COLOR,
+              keywords: ["信風", "貿易風", "東北信風", "東南信風", "trade winds"],
+            },
+            {
+              id: "westerlies",
+              label: "西風",
+              featureIds: ["westerlies"],
+              color: WIND_COLOR,
+              keywords: ["西風", "西風帶", "咆哮西風帶", "westerlies"],
+            },
+            {
+              id: "polar-easterlies",
+              label: "極地東風",
+              featureIds: ["polar-easterlies"],
+              color: WIND_COLOR,
+              keywords: ["極地東風", "極東風", "polar easterlies"],
+            },
+          ],
+        },
+        maxActive: 4,
+        /**
+         * ⚠️ 四個都是同一個顏色，所以這份色票是**四個重複值**——比照三條橫貫公路
+         * 共用一色的既有做法：`palette` 在這種圖層只是型別與 `maxActive` 檢查用的
+         * 備援，真正決定顏色的是每個子項目自己的 `color`。
+         */
+        palette: [WIND_COLOR, WIND_COLOR, WIND_COLOR, WIND_COLOR],
+        // 勾圖層就四個一起打開：這一層要教的是「一整套環流」，只顯示一條風帶看不出
+        // 它為什麼往那個方向吹
+        defaultAll: true,
+      },
+      /**
+       * 六筆圖徵各有一張說明卡（`src/content/geo/wind-belts/<id>.json`，檔名＝
+       * geojson 的 `properties.id`＝上面 `featureIds` 裡的字串，三者一致，
+       * 比照板塊邊界）。點箭頭或點抽屜裡的名稱開的都是同一張。
+       */
+      detail: { type: "geo", collection: "wind-belts" },
+      /**
+       * ⚠️ 世界尺度專用，而且理由跟資料精度無關（這一層沒有精度可言）：箭頭的長度
+       * 是**固定的 20° 經度**，放大之後一支箭頭就會比整個畫面還寬，看起來只是一條
+       * 莫名其妙的斜線。zoom 4 大約是「一支箭頭佔畫面三分之一」的尺度。
+       */
+      maxzoom: 4,
+      /**
+       * ⚠️ 這一層**必須**標 schematic：它是理想模型，不是測得的風場。
+       * UI 會顯示「教學示意圖，非精確界線」。
+       */
       schematic: true,
-      description: "信風、西風、極地東風與副熱帶高壓帶——沙漠帶為什麼在 30° 的答案。",
+      description:
+        "赤道的空氣受熱上升（赤道低壓帶），到高空往兩極流、在南北緯 30° 附近下沉（副熱帶高壓帶），再從高壓帶吹回赤道與吹向極區——被地球自轉偏轉之後，就成了信風、西風與極地東風。這一層是沙漠帶為什麼落在 30° 的答案：跟「森林與沙漠帶」或「柯本氣候分區」疊起來看最清楚。",
+      notes: [
+        "⚠️ 這是理想化的模型：真實的氣壓帶與風帶會隨太陽直射點南北移動（夏季北移、冬季南移），而且會被海陸分布、季風與高山打斷——南亞的夏季季風就是最大的例外。",
+        "⚠️ 箭頭的位置與間隔是畫出來讓人看方向的示意圖，不是測得的風場；帶與帶之間也沒有一條真正的界線。",
+        "⚠️ 風的命名慣例是「從哪裡吹來」：西風是從西邊吹來、往東邊去；東北信風從東北吹來、往西南去。箭頭畫的是**去向**。",
+        "⚠️ 極地東風那一帶（南北緯 65–85°）在 Web Mercator 上被縱向拉得很長，箭頭的斜度是依緯度校正過的，看起來才跟其他帶一樣。",
+      ],
       sources: [],
     },
     {

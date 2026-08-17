@@ -430,6 +430,70 @@ node <dataviz-skill>/scripts/validate_palette.js "#1d9dc8,#d8783d,#147811,#ba229
 開羅 BWh 都對得上，但**高雄一帶算成 Am**，而本站地點卡採中央氣象署的分區寫 Aw。
 兩者不一定逐格相同，這件事寫在 `notes` 裡——不要為了「一致」去改任何一邊。
 
+### 行星風系：全站第二個「程式產生」的圖層
+
+幾何在 `src/map/registry/generators.ts` 的 `windBelts()`，**沒有任何資料檔**。
+
+#### 為什麼是程式產生，而且應該是
+
+行星風系不是測出來的界線，而是**理想化的模型**（氣壓帶在 0°／±30°／±60°，風帶夾在
+中間），實際大氣還會隨季節南北移動好幾度。所以沒有「權威資料檔」可抓，只有課本的
+示意圖——而示意圖的參數（帶的緯度、箭頭間隔、畫面上的斜度）該寫成程式碼裡的常數，
+不是一份手抄的幾千個座標。**這一層因此必須標 `schematic: true`**（`geo-manual/` 那條
+路也可以走，但參數會變成一堆改不動的座標）。
+
+#### ⚠️ 箭頭的斜度要依緯度校正，否則極地東風會變成垂直的
+
+Web Mercator 的縱向拉伸是 1/cos(緯度)：同樣 10° 的緯度差在 70°N 看起來比赤道長將近
+三倍。所以緯度差是由「畫面上要幾度斜」反推的——`tan(30°) × 經度長度 × cos(緯度)`，
+六條帶的箭頭在畫面上才會是同一個斜度。
+
+⚠️ 極地東風的箭頭放在 **70°** 而不是 60–90 帶的正中央（75°）：主題預設視角
+（zoom 1.8）的上緣只到約 66°N，往北每 5° 就要多縮小一級才看得到。**即使放在 70°，
+預設視角仍然看不到極地東風**（實測 0 個標註）——要縮到 zoom 1.2 左右整套環流才會
+同時出現，這件事寫在 `notes` 裡。
+
+⚠️ 每一支箭頭與每一段氣壓帶線都**不跨越 ±180**（中心經度留了半個長度的餘裕），
+理由同國際換日線。
+
+#### 氣壓帶畫成「間斷的短線段」，不是橫貫全圖的長線
+
+三條氣壓帶的緯度（0°／±30°／±60°）跟「緯度參考線」**完全重疊**。畫成長線就會變成
+兩條疊在一起、只差顏色的線；短線段配上自己的標註（「副熱帶高壓帶」）才看得出是兩種
+不同的東西。同理，這一層的顏色**必須跟參考線灰分得開**（實測 ΔE 11.1，見下）。
+
+#### ⚠️ 整層只有一個顏色，那不是漏填
+
+四個核取方塊（氣壓帶／信風／西風／極地東風）共用 `WIND_COLOR`（板岩藍 `#5a6f96`）
+——它們是**同一個系統的四個部位**，不是四個要互相比較的類別。區辨靠形狀（點線 vs
+箭頭）、位置（各自的緯度帶）與沿線標註，比照三條橫貫公路共用一個青的既有判例。
+`items.palette` 因此是四個重複值。
+
+⚠️ **為什麼不用課本的紅（高壓）／藍（低壓）**：`MAX_ACTIVE_BY_KIND.line` 是 3，
+這一層可以跟緯度參考線＋板塊邊界（橘／藍／綠）同時打開；掃過整個 OKLCH 色域，能跟
+那三個邊界色一起 all-pairs 全過又零 WARN 的**只剩色相 290–360° 的紫／洋紅**，而那一
+族已經被火山帶的洋紅 `#c0259c` 佔走。所以改走「非分類固定角色」那條路（比照板塊的
+暖褐與地震帶的中性灰）：彩度只有 0.066、**低於分類色下限 0.10**，本來就不是拿來跟人
+比色相的顏色。明暗兩模式對面板底色是 4.93:1 與 3.44:1（都過 3:1，不必欠 relief）。
+
+⚠️ 這一層是 `items` 變體，所以**不能有 `colorRole`**（型別擋著：`colorRole?: never`），
+顏色寫在每個子項目的 `color` 上。
+
+#### ⚠️ 標註是必要條件，而參數是實測出來的
+
+四個部位同色，畫面上唯一寫出「這是西風」的東西就是沿線標註。實測（1512×772）：
+`spacing: 60` 會讓氣壓帶的同一段短線重複放兩次（zoom 1.1 共 20 個），250 之後是 16 個；
+`size: 11` 時「極地東風」四個字排不進箭頭，10 才進得去。**不可以照抄緯度參考線的
+320**——箭頭在 zoom 1.8 下只有約 50 px，再高就一個都放不出來。
+
+#### 驗證器也跟著補了一條：程式產生的圖層現在會被交叉檢查
+
+`validate-content.mjs` 以前只對 `source.type === "remote"` 檢查 `featureIds`，而內容檔
+的「id 必須在 geojson 裡找得到」對沒有 geojson 的圖層一律報錯。現在它會**直接跑一次
+`generateLayer()`** 拿真正的圖徵 id 來比對（跟垂直植被帶那個 elevation 例外同一個形狀），
+兩個方向都擋住：`featureIds` 打錯字 → 子項目變空圖層；內容檔檔名打錯 → 卡片退回只有
+圖層說明。兩者在執行期都是**完全靜默**的。
+
 ### 世界底圖的地名一律改成繁體中文（只換表達式，不換資料源）
 
 「世界地圖」（OpenFreeMap Liberty）原本的 `text-field` 是 `拉丁名\n當地文字`，於是德國寫
@@ -536,6 +600,7 @@ ID 常數定義在 `src/map/layers/*.ts`，**一律 import 常數，不要寫死
 | `volcanoes-points` | circle（1,214 座活火山，`strokeWidth: 0`；半徑固定不隨 zoom 變） |
 | `biomes-<class>-fill` / `-outline` | fill + line，**六類各自一組**（`tropical-forest`／`savanna`／`desert`／`temperate-forest`／`boreal`／`tundra`）。外框是拿來**補相鄰面之間的縫**的，所以是 1.0 寬 × 0.15 不透明度，見下 |
 | `koppen-zones-<group>-fill` / `-outline` | fill + line，**五大類各自一組**（`a`／`b`／`c`／`d`／`e`）。⚠️ 顏色是大類、**圖徵是 30 個亞型**（點下去才知道是 Cfa 還是 Cwa）；外框寬度 0，見下 |
+| `wind-belts-<item>-line` / `-label` | line + symbol，**四個部位各自一組**（`pressure-belts`／`trades`／`westerlies`／`polar-easterlies`）。⚠️ 幾何**完全由程式產生**（generators.ts），四個共用同一個顏色，靠點線／箭頭與標註區辨，見下 |
 | `tw-reservoirs-points` | circle（顏色是**依蓄水率分級的表達式**，不是單一色，見下） |
 | `tw-transport-<axis>-casing` / `-line` / `-label` | line + line + symbol，**十條軸線各自一組**（`thsr`／`freeway-1`／`freeway-3`／`freeway-5`／`provincial-7`／`provincial-8`／`provincial-20`／`tra-west`／`tra-east`／`tra-south-link`）。`-casing` 是墊在線底下的白框，全站只有這一層用；標註用 `shortName`，不是 `name` |
 | `tw-rivers-line` / `tw-rivers-label` | line + symbol |
@@ -583,7 +648,7 @@ maplibre-contour 把 worker 以 Blob URL 內嵌，**不需要額外部署 worker
 |---|---|---|
 | 臺灣地理 | `/theme/taiwan` | 臺灣123（土地與島群）、行政區（縣市、鄉鎮市區）、地形、天然災害（活動斷層、地震、颱風路徑與災損）、水系（118 個列管水系、水庫即時水情、河川流域分區）、人文（原住民族、交通軸線、古蹟、人口與都市體系）、植被生態（特有種、國家公園與保護區、垂直植被帶）、農業物產（主要作物分布） |
 | 世界地理 | `/theme/world` | 世界重要城市、國界與大洲、地形水系、人文專題 |
-| 全球地理形貌 | `/theme/global` | 參考線（緯度參考線、國際換日線）、氣候與生物群系（森林與沙漠帶、柯本氣候分區）、洋流、地體構造（板塊、板塊邊界、地震帶、火山帶） |
+| 全球地理形貌 | `/theme/global` | 參考線（緯度參考線、國際換日線）、氣候與生物群系（森林與沙漠帶、柯本氣候分區、行星風系）、洋流、地體構造（板塊、板塊邊界、地震帶、火山帶） |
 
 三個主題頁都是**滿版地圖 + 浮動控制**（仿 Google Map），沒有頁首也沒有側欄——版面機制見下面的「全螢幕地圖外框與浮動控制」。
 
@@ -598,7 +663,7 @@ registry/
 ├─ types.ts        # 型別（含 MAX_ACTIVE_BY_KIND）
 ├─ index.ts        # THEMES、getTheme、allLayers、id 組合 helper
 ├─ themes/*.ts     # 三個主題的圖層清單（純資料）
-├─ generators.ts   # 程式產生的幾何（緯度參考線）
+├─ generators.ts   # 程式產生的幾何（緯度參考線、行星風系）
 └─ resolve.ts      # 標籤 → 實際資料（瀏覽器專用）
 ```
 
@@ -1847,6 +1912,33 @@ m.isSourceLoaded('contour-source')
     - `maxzoom: 5`：超過就整層消失（0.5° 網格再放大只是一格一格的階梯）
     - 切底圖之後重驗存在、顏色與排序（在 `contour-lines` 之上、`contour-labels` 之下）
 
+34. **行星風系**（`/theme/global` → 氣候與生物群系，見上）：
+    ```js
+    const m = window.__gaiaMaps.at(-1);
+    const parts = ['pressure-belts','trades','westerlies','polar-easterlies'];
+    parts.map(i => m.getPaintProperty(`wind-belts-${i}-line`, 'line-color'))  // 四個都是 "#5a6f96"
+    m.getPaintProperty('wind-belts-pressure-belts-line', 'line-dasharray')    // [1,2.5]（只有氣壓帶是點線）
+    // ⚠️ 標註數要在**縮到 zoom 1.2** 之後數，主題預設視角看不到極地東風（見上）
+    m.jumpTo({ center: [0, 0], zoom: 1.2 });
+    parts.map(i => m.queryRenderedFeatures({layers:[`wind-belts-${i}-label`]}).length)
+    // 1512×772 實測 [16, 8, 7, 6]；預設視角（zoom 1.8）是 [6, 4, 4, 0]
+    ```
+    - ⚠️ **這一層的成敗在箭頭的方向，只能用眼睛驗**：信風指向西南（北半球）與西北
+      （南半球）、西風指向東北與東南、極地東風指向西南與西北。**方向畫反是最容易
+      發生又最不會報錯的錯**，而它正好是這一層唯一要教的東西
+    - ⚠️ 六條帶的箭頭在畫面上要**看起來一樣斜**（斜度依緯度校正過）。極地東風變成
+      接近垂直代表 `ARROW_SCREEN_SLOPE_DEG` 那段校正被改掉了
+    - 氣壓帶是**間斷的短線段**而不是橫貫全圖的長線（否則會跟緯度參考線疊成一條），
+      而且三條各自標著「赤道低壓帶」「副熱帶高壓帶」「副極地低壓帶」
+    - 點箭頭或點氣壓帶要開得了卡（六筆圖徵各有內容檔）：點信風 → 標題「信風」、
+      副標「從副熱帶高壓吹回赤道的風…」；點 30° 那條 → 「副熱帶高壓帶」
+    - 圖例要有四列、色塊同色，而且「氣壓帶」那一列帶著 `（示意）` 標記（schematic）
+    - 搜「信風」「馬緯度」「咆哮」都要找得到（分別命中信風、氣壓帶、西風——靠
+      `items[].keywords`，這一層沒有可點清單）
+    - ⚠️ **不可以出現橫貫整個地球的線**（箭頭跨過 ±180 的症狀）
+    - `maxzoom: 4`：再放大一支箭頭會比畫面還寬，整層應該消失
+    - 切底圖之後重驗顏色、虛線與排序（在 `contour-lines` 之上、`contour-labels` 之下）
+
 ### ⚠️ 用瀏覽器自動化點 UI 的三個陷阱
 
 - **主題頁的底圖選單藏在左下角「圖層」彈出層裡**，必須先 `document.querySelector('.map-tile').click()` 才找得到 `<select>`；`/compare` 的仍然直接在頁首。
@@ -1979,7 +2071,7 @@ scripts/
 ├─ lib/rivers.mjs         # 118 個列管水系的官方身分（RIVERS：id／河川代碼／管理等級／流經縣市／常用別名／26 條才有的官方長度面積）
 │                         #   RIVER_IDS／RIVER_OSM_REFS／RIVER_FACTS／BASIN_IDS 全部從 RIVERS 衍生
 ├─ lib/fetch-retry.mjs    # 指數退避的 fetch（含 HTTP/2 fallback，見上）
-├─ validate-content.mjs   # 建置前 schema 驗證 + 註冊表交叉檢查
+├─ validate-content.mjs   # 建置前 schema 驗證 + 註冊表交叉檢查（會跑一次 generators.ts 拿程式產生的圖徵 id）
 └─ postbuild.mjs          # 404.html + CNAME 確認
 ```
 

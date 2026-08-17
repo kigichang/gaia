@@ -19,6 +19,13 @@ import {
 // 圖層註冊表是刻意設計成純資料的，就是為了能在這裡被 Node 直接載入做交叉檢查。
 // 見 src/map/registry/types.ts 的說明。
 import { DERIVED_FILES, THEMES, allLayers } from "../src/map/registry/index.ts";
+/**
+ * 程式產生的幾何（緯度參考線、行星風系）。這裡真的把它跑起來，理由跟載入註冊表
+ * 一樣：那些圖層沒有 geojson 可以比對，`featureIds` 或內容檔的檔名打錯字的話，
+ * 執行期是**完全靜默**的——切出來的 FeatureCollection 是空的、卡片退回只有圖層
+ * 說明，console 什麼都不會說。generators.ts 只 `import type`，Node 讀得動。
+ */
+import { generateLayer } from "../src/map/registry/generators.ts";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 const PLACES_DIR = join(ROOT, "src/content/places");
@@ -392,7 +399,41 @@ for (const { layer } of allLayers()) {
   elevationItemIds.set(layer.detail.collection, new Set(list.map((i) => i.id)));
 }
 
+/**
+ * 同一件事的第二種例外：**程式產生的圖層也沒有 geojson**（行星風系）。
+ * 它的圖徵 id 由 generators.ts 算出來，所以直接跑一次拿真正的 id 來比對——
+ * 這同時擋掉兩個方向的打錯字：`featureIds` 指到不存在的圖徵（子項目變空圖層），
+ * 以及內容檔的檔名跟圖徵對不起來（卡片退回只有圖層說明）。
+ */
+const generatedIds = new Map(); // collection → Set(feature id)
+for (const { theme, layer } of allLayers()) {
+  if (layer.source?.type !== "generated") continue;
+  const ids = new Set(
+    generateLayer(layer.source.generator).features.map((f) => String(f.properties?.id)),
+  );
+  if (layer.detail?.type === "geo") generatedIds.set(layer.detail.collection, ids);
+  const list = layer.items?.from.type === "inline" ? layer.items.from.list : [];
+  for (const item of list) {
+    for (const fid of item.featureIds ?? []) {
+      if (!ids.has(fid)) {
+        errors.push(
+          `registry/${theme.id} → 圖層「${layer.id}」的子項目「${item.id}」宣告的 featureId「${fid}」不在 generators.ts 的「${layer.source.generator}」產物裡（那個子項目會變成空圖層）`,
+        );
+      }
+    }
+  }
+}
+
 for (const f of geoFeatures) {
+  const generated = generatedIds.get(f.collection);
+  if (generated) {
+    if (!generated.has(f.id)) {
+      errors.push(
+        `geo/${f.collection}/${f.id}.json → 這個 collection 由程式產生，但 generators.ts 的產物裡沒有 id「${f.id}」`,
+      );
+    }
+    continue;
+  }
   const items = elevationItemIds.get(f.collection);
   if (items) {
     if (!items.has(f.id)) {
