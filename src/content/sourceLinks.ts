@@ -24,6 +24,33 @@ export const SOURCE_LINKS: Record<string, string> = {
   內政部消防署: "https://www.nfa.gov.tw/",
   農業部: "https://www.moa.gov.tw/",
   內政部國土測繪中心: "https://www.nlsc.gov.tw/",
+  /**
+   * 專屬經濟海域那一層的三個來源。
+   *
+   * ⚠️ `Marine Regions 海域界線資料庫` 是 **CC-BY 的署名義務**，不是可有可無的
+   * 外連——`FeatureCard` 有內容檔時顯示的是內容檔的 `sources`，四份內容檔少了
+   * 這個字串，署名就會憑空消失（比照 tw-rivers 對 OpenStreetMap 的 ODbL 署名）。
+   *
+   * 另外兩筆連的是**條文與公告本身**，不是主管機關首頁：這一層的重點正是
+   * 「200 浬有法源，但外界線至今未公告」，連到首頁等於追不到那句話
+   * （比照「行政院 國情簡介－土地」的既有判斷）。
+   */
+  "Marine Regions 海域界線資料庫": "https://www.marineregions.org/eezsearch.php",
+  /**
+   * 海峽中線那一層的兩個來源。
+   *
+   * ⚠️ 國防部**沒有把中線座標放成一份可連結的公告或開放資料**——2019-07-30 那組數字
+   * 是記者會上公布的，只能連到國防部全球資訊網。維基百科在這裡因此不是「順便附上」，
+   * 而是唯一能讓讀者追到各版本座標與越線事件時序的地方，比照 97 條河川的既有做法
+   * （來源名稱帶條目名，不是泛稱的「維基百科」）。
+   */
+  中華民國國防部: "https://www.mnd.gov.tw/",
+  "維基百科 臺灣海峽中線":
+    "https://zh.wikipedia.org/zh-tw/%E8%87%BA%E7%81%A3%E6%B5%B7%E5%B3%BD%E4%B8%AD%E7%B7%9A",
+  中華民國專屬經濟海域及大陸礁層法:
+    "https://law.moj.gov.tw/LawClass/LawAll.aspx?pcode=A0000010",
+  "海洋委員會 中華民國第一批領海基線":
+    "https://www.oac.gov.tw/ch/home.jsp?id=243&parentpath=0,4,242",
   // 「臺灣123」那一組島群數字的出處（該頁自己標的資料來源是內政部）。
   // 連的是那一頁本身：面積、島嶼數、經緯度全在這一頁，連到行政院首頁等於追不到。
   "行政院 國情簡介－土地":

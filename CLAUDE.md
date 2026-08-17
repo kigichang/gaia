@@ -70,6 +70,7 @@ Node ≥ 22.12（vite 8 要求）。開發機與 CI 都用 Node 24。
 | 臺灣鄉鎮市區界線 | `data.gov.tw/api/v2/rest/dataset/**7441**` → TGOS 的 **SHP** zip（同一個單位） | **只在建置期呼叫**。⚠️ 這份**沒有 GML 只有 SHP**，而且 zip 裡有兩份 shapefile，見下 |
 | 世界行政區／河流幾何、國際換日線 | `raw.githubusercontent.com/nvkelso/natural-earth-vector`（Natural Earth） | **只在建置期呼叫**，public domain。換日線在 `ne_10m_geographic_lines`，見下 |
 | 板塊與板塊邊界 | `raw.githubusercontent.com/fraxen/tectonicplates`（Bird 2003／Nordpil 轉製） | **只在建置期呼叫**，ODC-BY 1.0（**必須標示出處**）。邊界的三分類在 10 MB 的 `PB2002_steps.json` 裡，見下 |
+| 臺灣與鄰國專屬經濟海域 | `geo.vliz.be/geoserver/MarineRegions/wfs`（Marine Regions／Flanders Marine Institute，Maritime Boundaries v12） | **只在建置期呼叫**，免金鑰的公開 WFS，CC-BY（**必須標示出處**）。⚠️ 我國從未公告經濟海域外界線，官方那份 12／24 浬向量在 NODASS 要登入，見 `CLAUDE_TW.md` |
 | 地震目錄 | `earthquake.usgs.gov/fdsnws/event/1/query`（USGS） | **只在建置期呼叫**，免金鑰、`ACAO: *`。全球與臺灣兩層共用這一個端點 |
 | 全球活火山 | `webservices.volcano.si.edu/geoserver/GVP-VOTW/ows`（史密森尼學會 全球火山計畫 GVP） | **只在建置期呼叫**，WFS 一次回 2.4 MB 的 GeoJSON。免金鑰、不需要 User-Agent；授權是「引用即可自由使用」，見下 |
 | 陸域生物群系 | `services.arcgis.com/…/Resolve_Ecoregions/FeatureServer`（RESOLVE Ecoregions 2017，Esri Living Atlas 代管） | **只在建置期呼叫**，用伺服器端的 `maxAllowableOffset` 取已化簡的幾何。⚠️ 授權 CC-BY 4.0（**必須標示出處**）；⚠️ 連發會回一個指著參數的假 400，見下 |
@@ -87,6 +88,7 @@ Node ≥ 22.12（vite 8 要求）。開發機與 CI 都用 Node 24。
 | 古蹟（國定／直轄市定／縣市定） | `data.gov.tw` 資料集 **6246** → `data.boch.gov.tw/opendata/v2/assetsCase/1.1.json` | **只在建置期呼叫**（8.1 MB、**沒有 CORS 標頭**），文化部文化資產局。⚠️ 座標有 5 筆經緯度顛倒，見下 |
 | 颱風最佳路徑／災情 | `rdc28.cwa.gov.tw/TDB/`（交通部中央氣象署颱風資料庫） | **只在建置期呼叫**。免金鑰、免登入，但是**沒有文件的內部端點**；災情欄轉載自內政部消防署與農業部，見下 |
 | 災害地震（官方清單） | `scweb.cwa.gov.tw/zh-tw/page/disaster/5`（交通部中央氣象署地震測報中心） | **只在建置期呼叫**。⚠️ 沒有開放資料 API（那邊要金鑰），只能剖析 HTML 表格；⚠️ **只收到 2022-09-18**，見下 |
+| 臺灣海峽中線的座標 | 國防部 2019-07-30 記者會公布的「北緯 27 度、東經 122 度至北緯 23 度、東經 118 度」 | **程式完全不呼叫**。⚠️ 國防部**沒有把它放成可連結的公告或開放資料**，只能人工轉錄進 `public/data/geo-manual/tw-strait-median-line.geojson`，見 `CLAUDE_TW.md` |
 | 基本地理事實（山脈走向、主峰高度、河川路徑、河川分界…） | `zh.wikipedia.org` 各條目 | **程式完全不呼叫**，人工查閱後寫進 `src/content/` 與 `public/data/geo-manual/`。次級來源，用法見「內容撰寫規範」，CC BY-SA |
 
 ### ⚠️ NLSC 的路徑順序陷阱
@@ -178,10 +180,15 @@ Bird 把課本合稱的「印澳板塊」分成印度板塊與澳洲板塊兩塊
 #### 面圖層的標註是新加的算繪能力
 
 `LayerRender` 的 fill 變體多了 `label`，`geo.ts` 的 fill 分支因此會多開一個
-`${instanceId}-label` 的 symbol 圖層（`symbol-placement: point`）。這是全站第一個
-用到它的圖層——「標出各板塊」如果沒有名字就等於沒做。
+`${instanceId}-label` 的 symbol 圖層（`symbol-placement: point`）。板塊是第一個
+用到它的圖層——「標出各板塊」如果沒有名字就等於沒做；第二個是臺灣主題的
+`tw-eez`（四片專屬經濟海域）。
 
 - **不需要在建置期算形心**：maplibre 對多邊形會自己算錨點。
+- ⚠️ **但那個錨點是逐圖磚算的，所以同一塊面放大之後會被重複標註。** 實測 `tw-eez`
+  沒設上限時 zoom 5 每片 1 個、zoom 6 變 4 個、**zoom 8 的臺灣那一片有 6 個「臺灣」
+  散在海上**。板塊沒踩到只是因為它 `maxzoom: 8` 而且實際只在 zoom 1–3 看。
+  `label.maxzoom` 就是為此加的（**只擋標註、不擋面**）；不要改成在建置期算形心去繞過它。
 - ⚠️ **MultiPolygon 的每一塊都會拿到一個標註。** 實測只有 4 塊板塊是 MultiPolygon
   （太平洋 3 塊、澳洲 2 塊、克馬德克與巴爾莫勒爾礁各 2 塊），其中太平洋的兩大塊是
   ±180 兩側的真實兩半、標兩次是對的，真正多餘的只有兩個小碎塊。**這是已知行為，
@@ -704,6 +711,8 @@ ID 常數定義在 `src/map/layers/*.ts`，**一律 import 常數，不要寫死
 | `tw-quakes-major-points` | circle（同一個 hazard 色但更深、更大、有白框） |
 | `tw-typhoons-line` / `tw-typhoons-label` | line + symbol（`hazard` 中性色，標註用 `name`） |
 | `tw-typhoon-centers-points` / `tw-typhoon-centers-label` | circle + symbol（附屬圖層；半徑與顏色都由 `wind` 驅動；**標註只在該颱風被選取時才出現**） |
+| `tw-eez-<zone>-fill` / `-outline` / `-label` | fill + line + symbol，**四片海域各自一組**（`taiwan`／`japan`／`philippines`／`senkaku`）。標註用 `shortName`，而且是**面的標註**（`symbol-placement: point`，全站只有它與 `plates` 用） |
+| `tw-strait-median-line-line` / `-label` | line + symbol（虛線，`reference` 中性灰——跟全球主題的緯度參考線、國際換日線同一套樣式） |
 
 `dem` 與 `dem-terrain` 是兩個來源但都指向同一個 shared DEM protocol：maplibre 會警告 hillshade 與 terrain 共用來源會降低算繪品質，拆開可消除警告，而底層圖磚快取仍然共用、不會重複下載。
 
@@ -736,7 +745,7 @@ maplibre-contour 把 worker 以 Blob URL 內嵌，**不需要額外部署 worker
 
 | 主題 | 路由 | 內容 |
 |---|---|---|
-| 臺灣地理 | `/theme/taiwan` | 臺灣123（土地與島群）、行政區（縣市、鄉鎮市區）、地形、天然災害（活動斷層、地震、颱風路徑與災損）、水系（118 個列管水系、水庫即時水情、河川流域分區）、人文（原住民族、交通軸線、古蹟、人口與都市體系）、植被生態（特有種、國家公園與保護區、垂直植被帶）、農業物產（主要作物分布） |
+| 臺灣地理 | `/theme/taiwan` | 臺灣123（土地與島群、專屬經濟海域、海峽中線）、行政區（縣市、鄉鎮市區）、地形、天然災害（活動斷層、地震、颱風路徑與災損）、水系（118 個列管水系、水庫即時水情、河川流域分區）、人文（原住民族、交通軸線、古蹟、人口與都市體系）、植被生態（特有種、國家公園與保護區、垂直植被帶）、農業物產（主要作物分布） |
 | 世界地理 | `/theme/world` | **全球尺度（骨架，排在前面）**：參考線（緯度參考線、國際換日線）、氣候與生物群系（森林與沙漠帶、柯本氣候分區、行星風系）、海洋（洋流：18 條暖流／寒流）、地體構造（板塊、板塊邊界、地震帶、火山帶）。**世界地理原有**：城市、國界與大洲、地形水系、人文專題 |
 
 兩個主題頁都是**滿版地圖 + 浮動控制**（仿 Google Map），沒有頁首也沒有側欄——版面機制見下面的「全螢幕地圖外框與浮動控制」。
@@ -1403,30 +1412,41 @@ maplibre 的四個角落容器是 map container 內的 `position: absolute; z-in
 
 **而且撞名時要把 `meta` 補進副標**，否則畫面上是兩列一模一樣的字。這件事**只對真的撞名的標題做**：水庫的 `meta` 是「蓄水 62%・有效容量 …」這種長字串，沒撞名還硬加只會把副標塞爆。實測搜「東區」會得到四列，各自標著新竹市／臺中市／嘉義市／臺南市。
 
-索引是 **lazy 的**：搜尋框第一次獲得焦點才 `buildSearchIndex()`。目前它會抓十九份檔案，合計約 **2.49 MB**（實測，2026-08）：
+索引是 **lazy 的**：搜尋框第一次獲得焦點才 `buildSearchIndex()`。**實測（2026-08，production build 讀 `performance.getEntriesByType('resource')`）它會多抓 21 份、合計約 2.68 MB**：
 
 | 檔案 | 大小 |
 |---|---|
-| `tw-townships.geojson` | 516 KB |
-| `tw-basins.geojson` | 345 KB |
+| `tw-townships.geojson` | 517 KB |
+| `tw-basins.geojson` | 347 KB |
 | `tw-monuments-municipal.geojson` | 240 KB |
-| `tw-rivers.geojson` | 225 KB |
+| `tw-rivers.geojson` | 230 KB |
+| `tw-monuments-county.geojson` | 193 KB |
 | `tw-counties.geojson` | 192 KB |
-| `tw-monuments-county.geojson` | 192 KB |
-| `tw-protected-areas.geojson` | 182 KB |
+| `tw-protected-areas.geojson` | 183 KB |
 | `world-rivers.geojson` | 146 KB |
-| `tw-crops-vegetable.geojson` | 105 KB |
-| `tw-crops-fruit.geojson` | 101 KB |
+| `plates.geojson` | 125 KB |
+| `tw-crops-vegetable.geojson` | 106 KB |
+| `tw-crops-fruit.geojson` | 102 KB |
 | `tw-population.geojson` | 93 KB |
-| `tw-transport.geojson` | 60 KB |
-| `tw-monuments-national.geojson` | 50 KB |
-| `tw-crops-tea.geojson` | 24 KB |
-| `tw-reservoirs.geojson` + `reservoirs-live.json` | 20 + 7 KB |
+| `tw-monuments-national.geojson` | 51 KB |
 | `tw-quakes-major.geojson` | 49 KB |
-| `tw-typhoons.geojson` | 13 KB |
-| `tw-county-halls.geojson` | 7 KB |
+| `tw-faults.geojson` | 40 KB |
+| `tw-crops-tea.geojson` | 25 KB |
+| `tw-reservoirs.geojson` + `reservoirs-live.json` | 20 + 2 KB |
+| `tw-typhoons.geojson` | 14 KB |
+| `tw-county-halls.geojson` | 8 KB |
+| `tw-strait-median-line.geojson` | <1 KB |
 
-一個班 30 個學生同時開站時，這 2.49 MB 不該是每個人無條件付的成本。資料一律走 `resolveLayerData()`，與圖層顯示**以及 `TownshipCard`** 共用同一份快取，不會抓兩次——鄉鎮共用卡要的那五份（鄉鎮界、人口、三份作物）全都已經在這張表上。
+⚠️ **`tw-transport.geojson` 不在這張表上，那不是漏掉——它從來就不該在。** 交通軸線是
+`items` 圖層，而 `featureHits()` 對子項目是 `if (!item.source) continue`：靠 `featureIds`
+從母圖層切出來的子項目**沒有自己的 source**，所以那份 geojson 根本不會被索引抓。
+`tw-eez`（四片經濟海域）同理，實測聚焦搜尋框後 **0 次**請求。這也表示那兩層的搜尋
+完全靠 `LayerItem.keywords`，少填就搜不到（見 types.ts 的說明）。
+
+（`tw-territory.geojson` 4 KB 與 `tw-ranges.geojson` 3 KB 不列在表上：那兩層 `defaultOn`，
+進站時就付過了，不是聚焦搜尋框才新增的成本。）
+
+一個班 30 個學生同時開站時，這 2.68 MB 不該是每個人無條件付的成本。資料一律走 `resolveLayerData()`，與圖層顯示**以及 `TownshipCard`** 共用同一份快取，不會抓兩次——鄉鎮共用卡要的那五份（鄉鎮界、人口、三份作物）全都已經在這張表上。
 
 ⚠️ **颱風的 757 個中心定位點（117 KB）不在這張表上**，但**理由不是「attach 不會被
 索引」——`buildSearchIndex()` 是會走 `layer.attach` 的**（主峰與縣市政府就靠它才搜得到）。
@@ -1647,6 +1667,8 @@ npm run build:geodata -- --force --only=koppen-zones-c       # 柯本五大類�
 npm run build:geodata -- --force --only=biomes-desert        # 生物群系六類要各跑一次
                                        # （tropical-forest／savanna／temperate-forest／boreal／tundra 同理；
                                        #   ⚠️ 六個不要連著跑，上游會回一個指著參數的假 400，見下）
+npm run build:geodata -- --force --only=tw-eez              # 臺、日、菲的經濟海域＋釣魚臺爭議海域
+                                       # （下載 17 MB，裁切到臺灣周邊後產物 103 KB）
 npm run build:geodata -- --force --only=tw-monuments-national   # 古蹟三級要各跑一次
                                        # （municipal／county 同理；歷史沿革分片會一起寫出）
 ```

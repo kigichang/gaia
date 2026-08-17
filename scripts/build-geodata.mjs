@@ -136,6 +136,18 @@ import {
   fetchKoppenGrid,
   subtypeProperties,
 } from "./lib/koppen.mjs";
+import {
+  CLIP_BOX as EEZ_CLIP_BOX,
+  EEZ_BY_MRGID,
+  EEZ_URL,
+  EEZ_ZONES,
+  LICENSE as EEZ_LICENSE,
+  SOURCE_LABEL as EEZ_SOURCE_LABEL,
+  checkArea as checkEezArea,
+  clipRingToBox,
+  formatArea as formatEezArea,
+  ringDiagonal,
+} from "./lib/eez.mjs";
 
 /**
  * 「這一組的清單順序與副標由官方數字當主角」——`tw-rivers` 與 `tw-basins` 共用。
@@ -1948,6 +1960,101 @@ const SOURCES = [
           },
         })),
       ),
+  },
+  {
+    id: "tw-eez",
+    label: "臺灣與鄰國專屬經濟海域",
+    url: EEZ_URL,
+    license: EEZ_LICENSE,
+    sourceLabel: EEZ_SOURCE_LABEL,
+    /**
+     * ⚠️ 這裡的 0.0008 **不是這一層真正的簡化參數**。四片海域的合理容差差了一個
+     * 數量級（臺灣本島那個陸地洞要 0.0008 才不會蓋過海岸線，日、菲的島嶼細節在
+     * 這個主題完全沒有意義、粗到 0.02 也看不出來），而 `build()` 只吃**一個**
+     * 全域容差。所以逐圖徵的簡化在下面的 transform 裡先做完，這裡填的是四者之中
+     * 最細的那一個——對已經簡化過的幾何再跑一次更小的容差是 no-op，而
+     * `metadata.simplifyTolerance` 也還記得到一個有意義的數字。
+     */
+    tolerance: 0.0008,
+    digits: 4,
+    transform: (raw) => {
+      const byMrgid = new Map();
+      for (const f of raw.features) byMrgid.set(f.properties.mrgid, f);
+      if (byMrgid.size !== EEZ_ZONES.length) {
+        throw new Error(
+          `上游回了 ${byMrgid.size} 片海域，對照表有 ${EEZ_ZONES.length} 筆——` +
+            `mrgid 可能改了，請先確認 lib/eez.mjs 的 EEZ_ZONES`,
+        );
+      }
+
+      const logs = [];
+      // ⚠️ feature 順序＝圖層抽屜與圖例的順序，所以照 EEZ_ZONES 走，不要照上游回的順序
+      const rows = EEZ_ZONES.map((zone) => {
+        const feature = byMrgid.get(zone.mrgid);
+        if (!feature) throw new Error(`上游沒有 mrgid ${zone.mrgid}（${zone.name}）`);
+        const upstreamKm2 = feature.properties.area_km2;
+
+        /**
+         * ⚠️ **面積要在裁切與簡化之前算**（比照板塊那一層）。而且寫進 properties 的
+         * 是這個**完整海域**的面積，不是裁切後畫得出來那一塊——日本 406 萬 km² 在
+         * 畫面上只有臺灣附近那一角，卡片要把這件事講出來。
+         */
+        logs.push(checkEezArea(zone, feature.geometry, upstreamKm2));
+
+        const { outer, hole, minHoleDiag } = zone.simplify;
+        // 逐環：先裁切到臺灣周邊，再依「外環／陸地洞」用不同容差簡化
+        const simplifyRing = (ring, tolerance) =>
+          simplifyGeometry({ type: "Polygon", coordinates: [ring] }, tolerance, 4).coordinates[0];
+
+        const polygons =
+          feature.geometry.type === "Polygon"
+            ? [feature.geometry.coordinates]
+            : feature.geometry.coordinates;
+
+        const kept = [];
+        for (const rings of polygons) {
+          const outerRing = clipRingToBox(rings[0], EEZ_CLIP_BOX);
+          // 整塊都在裁切框外（日本東半部、菲律賓南半部）就整塊丟掉
+          if (!outerRing) continue;
+          const out = [simplifyRing(outerRing, outer)];
+          for (let i = 1; i < rings.length; i++) {
+            // 洞＝陸地。小到在這個主題的縮放尺度上看不見的島就不畫了
+            if (ringDiagonal(rings[i]) < minHoleDiag) continue;
+            const clipped = clipRingToBox(rings[i], EEZ_CLIP_BOX);
+            if (!clipped) continue;
+            const simplified = simplifyRing(clipped, hole);
+            if (simplified.length >= 4) out.push(simplified);
+          }
+          kept.push(out);
+        }
+        if (kept.length === 0) {
+          throw new Error(`${zone.name} 裁切之後一塊都不剩，請檢查 lib/eez.mjs 的 CLIP_BOX`);
+        }
+
+        return {
+          type: "Feature",
+          geometry:
+            kept.length === 1
+              ? { type: "Polygon", coordinates: kept[0] }
+              : { type: "MultiPolygon", coordinates: kept },
+          properties: {
+            id: zone.id,
+            name: zone.name,
+            /** 面的標註用短名——「臺灣周邊專屬經濟海域」在圖上放不下 */
+            shortName: zone.shortName,
+            /** 搜尋 haystack 會收 `en`，讓學生打 Japan／Philippines 也找得到 */
+            en: feature.properties.geoname,
+            category: zone.category,
+            /** ⚠️ 完整海域的面積，不是畫出來那一塊 */
+            area_km2: upstreamKm2,
+            meta: `${zone.category}・${formatEezArea(upstreamKm2)}`,
+          },
+        };
+      });
+
+      console.log(`\n${logs.join("\n")}`);
+      return rows;
+    },
   },
 ];
 
