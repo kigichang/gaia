@@ -71,6 +71,12 @@ export function App() {
     <Routes>
       <Route path="/" element={<Navigate to={`/theme/${DEFAULT_THEME_ID}`} replace />} />
       <Route path="/compare" element={<ComparePage chrome={chrome} />} />
+      {/*
+        舊網址相容：「全球地理形貌」在 2026-08 併進「世界地理」（見 registry/index.ts）。
+        ⚠️ 這一條必須排在 `/theme/:themeId` **前面**，否則會被那條萬用路由吃掉——
+        而 ThemeMapPage 對不認得的 themeId 是重導到臺灣主題，等於安靜地跑錯地方。
+      */}
+      <Route path="/theme/global" element={<Navigate to="/theme/world" replace />} />
       <Route path="/theme/:themeId" element={<ThemeMapPage chrome={chrome} />} />
       {/* 舊網址相容：/explore 是重構前的探索頁，外部連結與文件都還指著它 */}
       <Route path="/explore" element={<Navigate to={`/theme/${DEFAULT_THEME_ID}`} replace />} />

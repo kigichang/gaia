@@ -2,7 +2,6 @@
 // 而 validate-content.mjs 要用 Node 直接載入這支模組。見下方說明。
 import { taiwanTheme } from "./themes/taiwan.ts";
 import { worldTheme } from "./themes/world.ts";
-import { globalTheme } from "./themes/global.ts";
 import type {
   DerivedId,
   GeometryKind,
@@ -23,7 +22,13 @@ import type {
  * `./resolve.ts`，那支是瀏覽器專用的。這條界線請不要跨過去。
  */
 
-export const THEMES: ThemeDefinition[] = [taiwanTheme, worldTheme, globalTheme];
+/**
+ * ⚠️ 曾經有第三個主題 `global`（全球地理形貌）。2026-08 併進 `world`：兩者講的是
+ * 同一張世界地圖的不同層次，全球尺度的圖層排在前面當骨架。舊網址 `/theme/global`
+ * 由 `App.tsx` 重導過去——**那條路由不要拿掉**，站上的連結與使用者的書籤都指著它，
+ * 而 `ThemeMapPage` 對不認得的 themeId 是重導到臺灣主題（＝安靜地跑錯地方）。
+ */
+export const THEMES: ThemeDefinition[] = [taiwanTheme, worldTheme];
 
 export const DEFAULT_THEME_ID = THEMES[0].id;
 
