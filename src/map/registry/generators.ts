@@ -50,6 +50,57 @@ function latitudeLines(): GeoJSON.FeatureCollection<GeoJSON.LineString> {
 }
 
 /**
+ * 臺灣主題的北回歸線。
+ *
+ * ⚠️ **緯度值刻意從 `LATITUDE_LINES` 撈，不要另外寫一個 23.43661。** 同一條線在兩個
+ * 主題各畫一次，數值抄第二份遲早會漂開（比照 `tw-basins` 的 id 從 `RIVERS` 衍生、
+ * 五大山脈主峰的座標從 `src/content/places` join 出來的既有做法）。對不到就直接丟
+ * 例外——那代表有人動了上面那張表的 id。
+ *
+ * ## 為什麼不共用「緯度參考線」那一層
+ *
+ * 那一層是全球骨架的一部分（九條線一起才講得出沙漠帶在 30°、針葉林帶在 60°），
+ * 而臺灣主題要的只有一條，而且要的是**它跟臺灣的關係**——通過嘉義與花蓮、
+ * 把臺灣切成熱帶與副熱帶。九條線裡有七條根本不會出現在臺灣的畫面上。
+ *
+ * ## 為什麼只畫臺灣附近這一段
+ *
+ * 等緯度線在 Web Mercator 下是直線，兩個端點就精確；畫滿整圈也不會比較貴。但這是
+ * 臺灣主題，`browse` 的 `fitBounds` 會照圖徵的範圍取景——畫滿整圈就會飛到整個地球，
+ * 而這個主題的建議底圖 NLSC 只有臺灣範圍（比照 `tw-eez` 裁切日、菲的同一個理由）。
+ *
+ * ⚠️ 所以**兩端是裁掉的，不是線的終點**。節點取每 0.5° 一個是為了讓沿線標註有足夠
+ * 的放置機會（比照 `latitudeLines()` 的 5°，這裡範圍小得多所以取密一點）。
+ */
+const TW_TROPIC_LON = [118.5, 123.5] as const;
+
+function twTropicOfCancer(): GeoJSON.FeatureCollection<GeoJSON.LineString> {
+  const source = LATITUDE_LINES.find((l) => l.id === "tropic-of-cancer");
+  if (!source) throw new Error("LATITUDE_LINES 裡找不到 tropic-of-cancer");
+
+  const [west, east] = TW_TROPIC_LON;
+  const steps = Math.round((east - west) / 0.5);
+  return {
+    type: "FeatureCollection",
+    features: [
+      {
+        type: "Feature",
+        geometry: {
+          type: "LineString",
+          coordinates: Array.from({ length: steps + 1 }, (_, i) => [west + i * 0.5, source.lat]),
+        },
+        properties: {
+          id: "tw-tropic-of-cancer",
+          name: source.name,
+          shortName: source.name,
+          lat: source.lat,
+        },
+      },
+    ],
+  };
+}
+
+/**
  * 行星風系（三胞環流的理想模型）。
  *
  * ## 為什麼是程式產生，而且**應該**是程式產生
@@ -481,6 +532,7 @@ function oceanCurrents(): GeoJSON.FeatureCollection {
 
 const GENERATORS: Record<GeneratorId, () => GeoJSON.FeatureCollection> = {
   "latitude-lines": latitudeLines,
+  "tw-tropic-of-cancer": twTropicOfCancer,
   "wind-belts": windBelts,
   "ocean-currents": oceanCurrents,
 };

@@ -45,6 +45,14 @@ export const SOURCE_LINKS: Record<string, string> = {
    * （來源名稱帶條目名，不是泛稱的「維基百科」）。
    */
   中華民國國防部: "https://www.mnd.gov.tw/",
+  /**
+   * 北回歸線那一層唯一的外部來源：標誌碑的位置與設立年代。
+   *
+   * ⚠️ 緯度值（23.43661°）與每年南移約 14 公尺**不是**從這裡來的——那是地球轉軸
+   * 傾角的天文常數，由 `generators.ts` 的 `LATITUDE_LINES` 直接給，不需要外部來源。
+   */
+  "維基百科 嘉義北回歸線標誌":
+    "https://zh.wikipedia.org/zh-tw/%E5%98%89%E7%BE%A9%E5%8C%97%E5%9B%9E%E6%AD%B8%E7%B7%9A%E6%A8%99%E8%AA%8C",
   "維基百科 臺灣海峽中線":
     "https://zh.wikipedia.org/zh-tw/%E8%87%BA%E7%81%A3%E6%B5%B7%E5%B3%BD%E4%B8%AD%E7%B7%9A",
   中華民國專屬經濟海域及大陸礁層法:

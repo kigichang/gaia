@@ -66,7 +66,12 @@ export type BundledContentId =
   | "indigenous";
 
 /** 完全由程式產生的幾何，不需要任何檔案。 */
-export type GeneratorId = "latitude-lines" | "wind-belts" | "ocean-currents";
+export type GeneratorId =
+  | "latitude-lines"
+  /** 臺灣主題只要北回歸線那一條，緯度值從 `latitude-lines` 那張表撈，見 generators.ts */
+  | "tw-tropic-of-cancer"
+  | "wind-belts"
+  | "ocean-currents";
 
 /**
  * 由**兩份既有資料 join 出來**的幾何，本身沒有檔案。
