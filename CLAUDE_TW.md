@@ -1348,6 +1348,24 @@ markdown 的 `**粗體**`，會原樣印出星號。
 
 所以這一層走第三方模型，比照 Bird (2003) 板塊模型的既有判例。
 
+#### ✅ 而且官方採用的就是同一份模型（2026-08 查證）
+
+NODASS 自己的資料集「**全球經濟海域範圍**」（`nodass.namr.gov.tw/dataInfo?metadataid=33`）
+就是我們用的這一份，逐項對上：資料資源描述寫的是 *Maritime Boundaries Geodatabase:
+Maritime Boundaries and Exclusive Economic Zones, **version 12***、資料提供者是
+**法蘭德斯海洋研究所（Flanders Marine Institute）**、授權 **CC BY 4.0**、上架日期
+**2023-10-25**（＝ v12 的發布日）、資料集屬性「開放資料」。
+
+決定性的一項是**資料量「285(面), 2349(線)」**——拿 WFS 的 `resultType=hits` 對點，
+`MarineRegions:eez` 是 **285**、`MarineRegions:eez_boundaries` 是 **2349**，逐筆相同。
+
+它的中文描述也自己講了中線規則（「如兩國經濟海域重疊，原則上以兩國海域之中線為界」），
+跟我們寫進 `notes` 的說法一致。
+
+⚠️ **但這不表示可以改抓 NODASS**：那邊仍然要會員登入才下載得到，而且它只是轉存，
+上游本來就是 Marine Regions。這件事的價值在**佐證**——連海洋委員會國家海洋研究院
+在「全球經濟海域範圍」這件事上用的也是這份模型，所以圖層的 `notes` 有把它寫出來。
+
 #### 資料來源：Marine Regions（VLIZ）Maritime Boundaries v12
 
 公開的 GeoServer WFS，免金鑰、建置期呼叫，**CC-BY，必須標示出處**。
