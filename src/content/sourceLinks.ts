@@ -10,20 +10,32 @@
  * 讀者才看得出哪一筆能追到原始出處。
  */
 export const SOURCE_LINKS: Record<string, string> = {
-  交通部中央氣象署: "https://www.cwa.gov.tw/",
+  交通部中央氣象署: "https://www.cwa.gov.tw/V8/C/C/Statistics/monthlydata.html",
   /**
    * 颱風路徑與災損那一層的實際來源頁。
    *
    * ⚠️ 不能只寫「交通部中央氣象署」連到氣象署首頁——最佳路徑資料與「颱風概況表」
    * 都只在這個子站上，連到首頁等於追不到（比照「行政院 國情簡介－土地」的既有判斷）。
    */
+  // ⚠️ 泛稱的「交通部中央氣象署」現在指向每月氣象統計（地點的氣候敘述用得到）。
+  // 災害地震那一層引用的是另一份東西——氣象署地震測報中心的〈災害地震〉表，
+  // 所以另立一個標籤，比照颱風資料庫的既有做法。
+  "交通部中央氣象署 災害地震": "https://scweb.cwa.gov.tw/zh-tw/page/disaster/5",
+  // 26 條中央管／跨省市河川的官方長度與流域面積出自這張總表。
+  "經濟部水利署 河川長度": "https://www.wra.gov.tw/cp.aspx?n=3163&dn=3164",
   "交通部中央氣象署 颱風資料庫": "https://rdc28.cwa.gov.tw/TDB/",
-  內政部: "https://www.moi.gov.tw/",
+  // 「臺灣123」島群面積的主管機關。連方域業務那一頁——領土範圍、領海基線的公告都在這裡，
+  // 連到內政部首頁等於追不到（比照「行政院 國情簡介－土地」的既有判斷）。
+  內政部: "https://www.land.moi.gov.tw/chhtml/content/68?mcid=3225",
   // 颱風概況表自己註明「災情節錄自內政部消防署及行政院農委會資料」，
   // 所以死亡與失蹤人數的原始主管機關是消防署、農損是農業部（前農委會）
-  內政部消防署: "https://www.nfa.gov.tw/",
-  農業部: "https://www.moa.gov.tw/",
-  內政部國土測繪中心: "https://www.nlsc.gov.tw/",
+  // 颱風概況表的死亡與失蹤人數節錄自消防署，連的是它的「天然災害統計」那一頁。
+  內政部消防署: "https://www.nfa.gov.tw/cht/index.php?code=list&ids=233",
+  // 颱風的農損數字節錄自農業部，連的是農業統計資料查詢系統。
+  農業部: "https://agrstat.moa.gov.tw/sdweb/public/inquiry/InquireAdvance.aspx",
+  // 縣市界、鄉鎮市區界、地形圖都出自這裡。連「國土測繪圖資服務雲」的開放資料下載頁
+  // ——那是真的拿得到檔案的地方，不是首頁。個別資料集另有 data.gov.tw 的 7442／7441。
+  內政部國土測繪中心: "https://whgis.nlsc.gov.tw/Opendata/Files.aspx",
   /**
    * 專屬經濟海域那一層的三個來源。
    *
@@ -67,11 +79,11 @@ export const SOURCE_LINKS: Record<string, string> = {
     "https://www.moi.gov.tw/News_Content.aspx?n=2905&s=325345",
   "內政部戶政司 114年各鄉鎮市區人口密度":
     "https://data.gov.tw/dataset/8410",
-  原住民族委員會全球資訊網: "https://www.cip.gov.tw/",
+  原住民族委員會全球資訊網: "https://www.cip.gov.tw/zh-tw/tribe/grid-list/index.html",
   "原住民族委員會 113年4月原住民族人口數統計資料":
     "https://www.cip.gov.tw/zh-tw/news/data-list/940F9579765AC6A0/index.html?cumid=940F9579765AC6A0",
   台灣原住民族文化知識網: "https://knowlegde.gov.taipei/",
-  內政部國家公園署: "https://www.nps.gov.tw/",
+  內政部國家公園署: "https://data.gov.tw/dataset/174421",
   玉山國家公園管理處: "https://www.ysnp.gov.tw/",
   雪霸國家公園管理處: "https://www.spnp.gov.tw/",
   太魯閣國家公園管理處: "https://www.taroko.gov.tw/",
@@ -83,13 +95,16 @@ export const SOURCE_LINKS: Record<string, string> = {
   海洋國家公園管理處: "https://www.marine.gov.tw/",
   北海岸及觀音山國家風景區管理處: "https://www.northguan-nsa.gov.tw/",
   澎湖國家風景區管理處: "https://www.penghu-nsa.gov.tw/",
-  交通部觀光署: "https://www.taiwan.net.tw/",
+  // 景點座標出自觀光署的開放資料（北回歸線標誌碑那三處就是從這裡抄的）。
+  交通部觀光署: "https://media.taiwan.net.tw/",
   // 北回歸線標誌碑那一組的第二個來源：瑞穗那座的設立年代、1981 年遷移的原因，
   // 以及「北緯 23 度 27 分 4.51 秒」這個名目緯度，都只在鄉公所自己的頁面上。
   花蓮縣瑞穗鄉公所: "https://www.juisui.gov.tw/cp.aspx?n=1685",
   // 燈塔的主管機關（本島四極的地標有三個是燈塔）
   交通部航港局: "https://www.motcmpb.gov.tw/",
-  經濟部水利署: "https://www.wra.gov.tw/",
+  // 河川流域範圍圖與水庫蓄水範圍都是從水利空間資訊服務平台下載的。
+  // ⚠️ 河川的官方長度是另一頁，見下面的「經濟部水利署 河川長度」。
+  經濟部水利署: "https://gic.wra.gov.tw/",
 
   /**
    * 47 條河川各自的官方介紹頁（水利署「讓我們看河去」）。走既有的 sources 機制
@@ -160,7 +175,8 @@ export const SOURCE_LINKS: Record<string, string> = {
   "經濟部水利署 立霧溪": "https://www.wra.gov.tw/cp.aspx?n=3341",
 
   農業部農田水利署: "https://www.ia.gov.tw/",
-  農業部林業及自然保育署: "https://www.forest.gov.tw/",
+  // 這個標籤最常被引用的是保育等級（特有種那五份、垂直植被帶）。
+  農業部林業及自然保育署: "https://www.forest.gov.tw/0008324",
   // 垂直植被帶那六個高程界線的實際出處。連的是那一頁本身而不是農業部首頁：
   // 六帶與界線只有這一頁講得完整，而全站的既有承諾是「資料要能追溯出處」。
   // ⚠️ 舊網域 kids.coa.gov.tw 仍然搜得到，農業部改制後已改為 kids.moa.gov.tw。
@@ -169,10 +185,10 @@ export const SOURCE_LINKS: Record<string, string> = {
   // 上面那一頁自己標的製作單位（發行是林務局，即現在的林業及自然保育署）
   國立臺灣大學生物多樣性研究中心: "https://www.brc.ntu.edu.tw/",
   // 主要作物分布的來源（農情調查）
-  農業部農糧署: "https://www.afa.gov.tw/",
+  農業部農糧署: "https://data.gov.tw/dataset/7302",
   // 古蹟圖層的來源。網站名是「國家文化資產網」，每一處古蹟的官方頁面都在它底下
   // （MonumentCard 用 geojson 的 url 屬性直接連到個案頁）。
-  文化部文化資產局: "https://nchdb.boch.gov.tw/",
+  文化部文化資產局: "https://data.gov.tw/dataset/6246",
   維基百科: "https://zh.wikipedia.org/",
   /**
    * 洋流那一層的另一個來源。連的是 NOAA Ocean Service 的洋流教學專頁而不是首頁：
@@ -319,7 +335,10 @@ export const SOURCE_LINKS: Record<string, string> = {
   連江縣政府: "https://www.matsu.gov.tw",
   金門縣政府: "https://www.kinmen.gov.tw",
   澎湖縣政府: "https://www.penghu.gov.tw",
-  "GBIF Global Biodiversity Information Facility": "https://www.gbif.org/",
+  // 特有種觀測點的來源。連的是「臺灣境內的紀錄」那個查詢，不是 GBIF 首頁。
+  // ⚠️ 這個網址用 curl 測會回 403（Cloudflare 的 bot 防護），瀏覽器開是正常的
+  // ——本檔案其餘網址都實測 200，只有這一筆沒辦法用指令驗證。
+  "GBIF Global Biodiversity Information Facility": "https://www.gbif.org/occurrence/search?country=TW",
   "Natural Earth": "https://www.naturalearthdata.com/",
   /**
    * 板塊與板塊邊界。授權是 ODC-BY 1.0，**要求標示出處**，所以原作者（Bird）與
@@ -360,7 +379,7 @@ export const SOURCE_LINKS: Record<string, string> = {
   臺灣鐵路公司: "https://www.railway.gov.tw/",
   台灣高鐵: "https://www.thsrc.com.tw/",
   "Open-Meteo ERA5 再分析資料": "https://open-meteo.com/en/docs/historical-weather-api",
-  USGS: "https://www.usgs.gov/",
+  USGS: "https://earthquake.usgs.gov/earthquakes/search/",
 
   // 43 處保留區／保護區各自的官方介紹頁（林業及自然保育署）。走既有的 sources
   // 機制而不是另外開欄位，比照 22 個縣市政府的既有決定：那一頁同時是「這筆

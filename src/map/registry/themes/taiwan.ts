@@ -776,7 +776,7 @@ export const taiwanTheme: ThemeDefinition = {
           "河川界點由各級主管機關各自訂定，沒有全國一致的長度表；" +
           "少數河川的最上游河段在 OSM 尚未收錄，線會比標示的長度短一些。",
       ],
-      sources: ["OpenStreetMap", "經濟部水利署"],
+      sources: ["OpenStreetMap", "經濟部水利署 河川長度", "經濟部水利署"],
     },
     {
       id: "tw-basins",
@@ -1277,7 +1277,7 @@ export const taiwanTheme: ThemeDefinition = {
         "⚠️ 也因為兩層來自不同目錄，同一次地震在兩層的震央會差幾公里到二十幾公里——" +
           "那是兩個地震目錄的真實差異，不是畫錯了。",
       ],
-      sources: ["交通部中央氣象署", "維基百科", "USGS"],
+      sources: ["交通部中央氣象署 災害地震", "維基百科", "USGS"],
     },
     {
       id: "tw-typhoons",
