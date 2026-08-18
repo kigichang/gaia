@@ -84,24 +84,24 @@ export const SOURCE_LINKS: Record<string, string> = {
     "https://www.cip.gov.tw/zh-tw/news/data-list/940F9579765AC6A0/index.html?cumid=940F9579765AC6A0",
   台灣原住民族文化知識網: "https://knowlegde.gov.taipei/",
   內政部國家公園署: "https://data.gov.tw/dataset/174421",
-  玉山國家公園管理處: "https://www.ysnp.gov.tw/",
-  雪霸國家公園管理處: "https://www.spnp.gov.tw/",
-  太魯閣國家公園管理處: "https://www.taroko.gov.tw/",
-  陽明山國家公園管理處: "https://www.ymsnp.gov.tw/",
-  墾丁國家公園管理處: "https://www.ktnp.gov.tw/",
-  臺江國家公園管理處: "https://www.tjnp.gov.tw/",
+  玉山國家公園管理處: "https://www.ysnp.gov.tw/Folder/Resource",
+  雪霸國家公園管理處: "https://www.spnp.gov.tw/cp.aspx?n=14499",
+  太魯閣國家公園管理處: "https://www.taroko.gov.tw/cp.aspx?n=5443",
+  陽明山國家公園管理處: "https://www.ymsnp.gov.tw/cp.aspx?n=18110",
+  墾丁國家公園管理處: "https://www.ktnp.gov.tw/cp.aspx?n=4752B9BC22AAF612",
+  臺江國家公園管理處: "https://www.tjnp.gov.tw/cp.aspx?n=373",
   金門國家公園管理處: "https://www.kmnp.gov.tw/",
   // 東沙環礁與澎湖南方四島兩座海洋型國家公園同屬這一處
-  海洋國家公園管理處: "https://www.marine.gov.tw/",
+  海洋國家公園管理處: "https://www.marine.gov.tw/zh_tw/about/mnph/History",
   北海岸及觀音山國家風景區管理處: "https://www.northguan-nsa.gov.tw/",
-  澎湖國家風景區管理處: "https://www.penghu-nsa.gov.tw/",
+  澎湖國家風景區管理處: "https://www.penghu-nsa.gov.tw/AboutUs/A01.htm",
   // 景點座標出自觀光署的開放資料（北回歸線標誌碑那三處就是從這裡抄的）。
   交通部觀光署: "https://media.taiwan.net.tw/",
   // 北回歸線標誌碑那一組的第二個來源：瑞穗那座的設立年代、1981 年遷移的原因，
   // 以及「北緯 23 度 27 分 4.51 秒」這個名目緯度，都只在鄉公所自己的頁面上。
   花蓮縣瑞穗鄉公所: "https://www.juisui.gov.tw/cp.aspx?n=1685",
   // 燈塔的主管機關（本島四極的地標有三個是燈塔）
-  交通部航港局: "https://www.motcmpb.gov.tw/",
+  交通部航港局: "https://www.motcmpb.gov.tw/Article?siteId=1&nodeId=75",
   // 河川流域範圍圖與水庫蓄水範圍都是從水利空間資訊服務平台下載的。
   // ⚠️ 河川的官方長度是另一頁，見下面的「經濟部水利署 河川長度」。
   經濟部水利署: "https://gic.wra.gov.tw/",
@@ -174,7 +174,7 @@ export const SOURCE_LINKS: Record<string, string> = {
   "經濟部水利署 美崙溪": "https://www.wra.gov.tw/cp.aspx?n=3340",
   "經濟部水利署 立霧溪": "https://www.wra.gov.tw/cp.aspx?n=3341",
 
-  農業部農田水利署: "https://www.ia.gov.tw/",
+  農業部農田水利署: "https://www.ia.gov.tw/zh-TW/about/articles?a=89",
   // 這個標籤最常被引用的是保育等級（特有種那五份、垂直植被帶）。
   農業部林業及自然保育署: "https://www.forest.gov.tw/0008324",
   // 垂直植被帶那六個高程界線的實際出處。連的是那一頁本身而不是農業部首頁：
@@ -313,27 +313,44 @@ export const SOURCE_LINKS: Record<string, string> = {
   // （WAF 擋 curl，真人瀏覽器沒問題）；雲林在 Cloudflare 的人機驗證後面，
   // 自動化一律拿到 403，網址本身是對的。維基百科的資訊框沒填南投縣政府的網站，
   // 那一筆是另外補的官方網域。
-  基隆市政府: "https://www.klcg.gov.tw",
-  臺北市政府: "https://www.gov.taipei",
-  新北市政府: "https://www.ntpc.gov.tw",
+  /**
+   * 22 個縣市政府、8 座國家公園、風景區與運輸業者：一律連到那個機關自己的
+   * **「認識○○／地理環境／園區介紹」**那一頁，不是首頁。
+   *
+   * 網址是從各機關首頁的連結或搜尋引擎已索引的頁面取得的，2026-08 逐一實測。
+   *
+   * ⚠️ **有四個網站是 SPA（雪霸、太魯閣、陽明山、臺江），對任何路徑都回 200**
+   * ——那表示狀態碼證明不了網址對不對，猜出來的路徑在瀏覽器上會是 404。
+   * 這四筆的網址是從搜尋引擎已索引的結果拿的（標題確實是「園區介紹」「關於雪霸」
+   * 這類），不是猜的。**改這四筆之前要用瀏覽器實際開一次，不要只看 curl 的狀態碼。**
+   *
+   * ⚠️ 以下幾個維持首頁，因為找不到可引用的介紹頁（實測 404 或站上根本沒有）：
+   * 臺中市（9945/Normalnodelist 實測 404）、彰化縣（abouts-city-surroundings.aspx
+   * 回的是站內 404 頁）、桃園市、南投縣、雲林縣、澎湖縣、金門國家公園管理處、
+   * 北海岸及觀音山國家風景區管理處、台灣原住民族文化知識網、國立臺灣大學生物多樣性
+   * 研究中心。要補的話請先確認那一頁真的存在。
+   */
+  基隆市政府: "https://www.klcg.gov.tw/tw/klcg1/3175.html",
+  臺北市政府: "https://www.gov.taipei/cp.aspx?n=469A3095FCB700F3",
+  新北市政府: "https://www.ntpc.gov.tw/ch/home.jsp?id=acd3c124c0849a39",
   桃園市政府: "https://www.tycg.gov.tw",
-  新竹市政府: "https://www.hccg.gov.tw",
-  新竹縣政府: "https://www.hsinchu.gov.tw",
-  宜蘭縣政府: "https://www.e-land.gov.tw",
-  苗栗縣政府: "https://www.miaoli.gov.tw",
+  新竹市政府: "https://www.hccg.gov.tw/hccg/app/folder/1800",
+  新竹縣政府: "https://www.hsinchu.gov.tw/cp.aspx?n=92",
+  宜蘭縣政府: "https://www.e-land.gov.tw/cp.aspx?n=14747",
+  苗栗縣政府: "https://www.miaoli.gov.tw/cp.aspx?n=260",
   臺中市政府: "https://www.taichung.gov.tw",
   彰化縣政府: "https://www.chcg.gov.tw",
   南投縣政府: "https://www.nantou.gov.tw",
-  花蓮縣政府: "https://www.hl.gov.tw",
+  花蓮縣政府: "https://www.hl.gov.tw/cl.aspx?n=32735",
   雲林縣政府: "https://www.yunlin.gov.tw",
-  嘉義市政府: "https://www.chiayi.gov.tw",
-  嘉義縣政府: "https://www.cyhg.gov.tw",
-  臺南市政府: "https://www.tainan.gov.tw",
-  高雄市政府: "https://www.kcg.gov.tw",
-  臺東縣政府: "https://www.taitung.gov.tw",
-  屏東縣政府: "https://www.pthg.gov.tw",
-  連江縣政府: "https://www.matsu.gov.tw",
-  金門縣政府: "https://www.kinmen.gov.tw",
+  嘉義市政府: "https://www.chiayi.gov.tw/cl.aspx?n=440",
+  嘉義縣政府: "https://www.cyhg.gov.tw/cp.aspx?n=43",
+  臺南市政府: "https://www.tainan.gov.tw/cp.aspx?n=13292",
+  高雄市政府: "https://www.kcg.gov.tw/cp.aspx?n=07880B28C8E3EAEA",
+  臺東縣政府: "https://www.taitung.gov.tw/cp.aspx?n=15107",
+  屏東縣政府: "https://www.pthg.gov.tw/Content_List.aspx?n=69C7AEB54C628D5D",
+  連江縣政府: "https://www.matsu.gov.tw/chhtml/newslist/371030000A/580",
+  金門縣政府: "https://www.kinmen.gov.tw/cp.aspx?n=B602E31F7317F1AA",
   澎湖縣政府: "https://www.penghu.gov.tw",
   // 特有種觀測點的來源。連的是「臺灣境內的紀錄」那個查詢，不是 GBIF 首頁。
   // ⚠️ 這個網址用 curl 測會回 403（Cloudflare 的 bot 防護），瀏覽器開是正常的
@@ -372,12 +389,12 @@ export const SOURCE_LINKS: Record<string, string> = {
   // 交通軸線的線位來源。ODbL 1.0 要求標示「© OpenStreetMap 貢獻者」，
   // 這個署名義務不是新增的——世界底圖 OpenFreeMap 本來就是 OSM 衍生的。
   OpenStreetMap: "https://www.openstreetmap.org/copyright",
-  交通部高速公路局: "https://www.freeway.gov.tw/",
+  交通部高速公路局: "https://www.freeway.gov.tw/Publish.aspx?cnid=2903",
   // 省道（三條橫貫公路）的主管機關。⚠️ 2023-09 由「公路總局」改制為「公路局」，
   // 舊名仍搜得到，但機關名稱要用現行的。
-  交通部公路局: "https://www.thb.gov.tw/",
-  臺灣鐵路公司: "https://www.railway.gov.tw/",
-  台灣高鐵: "https://www.thsrc.com.tw/",
+  交通部公路局: "https://www.thb.gov.tw/cl.aspx?n=184",
+  臺灣鐵路公司: "https://www.railway.gov.tw/tra-tip-web/adr/about-vision",
+  台灣高鐵: "https://www.thsrc.com.tw/event/Governance/THSRC_Introduction.pdf",
   "Open-Meteo ERA5 再分析資料": "https://open-meteo.com/en/docs/historical-weather-api",
   USGS: "https://earthquake.usgs.gov/earthquakes/search/",
 
