@@ -1,0 +1,54 @@
+{
+  "id": "hindu-kush",
+  "collection": "world-mountains",
+  "name": {
+    "zh": "興都庫什山脈",
+    "en": "Hindu Kush"
+  },
+  "subtitle": "帕米爾山結向西南延伸的一支，把阿富汗分成南北",
+  "stats": [
+    {
+      "label": "最高峰",
+      "value": "蒂里奇米爾峰（7,708 m）"
+    },
+    {
+      "label": "主要國家",
+      "value": "阿富汗、巴基斯坦"
+    },
+    {
+      "label": "長度",
+      "value": "約 800 km"
+    },
+    {
+      "label": "走向",
+      "value": "東北—西南"
+    }
+  ],
+  "facts": [
+    {
+      "label": "成因",
+      "value": "印澳板塊向北推擠的西翼，把帕米爾的山結一路延伸進阿富汗內陸"
+    },
+    {
+      "label": "交通",
+      "value": "薩朗隧道穿過山脈的主稜，是首都喀布爾通往北部的主要通道；冬季山口封閉時南北往來會中斷"
+    },
+    {
+      "label": "氣候",
+      "value": "高山擋住從南方來的水氣，山脈兩側都相當乾燥，河谷裡的綠洲靠融雪灌溉"
+    },
+    {
+      "label": "對照重點",
+      "value": "跟帕米爾高原一起看，兩者在東北端相接"
+    }
+  ],
+  "curriculum": {
+    "unit": "板塊運動與全球地形"
+  },
+  "schematic": true,
+  "sources": [
+    "維基百科 興都庫什山脈",
+    "Natural Earth 1:10m 自然地理區",
+    "Natural Earth 1:10m 高程點"
+  ]
+}

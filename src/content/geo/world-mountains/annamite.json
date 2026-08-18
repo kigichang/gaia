@@ -1,0 +1,54 @@
+{
+  "id": "annamite",
+  "collection": "world-mountains",
+  "name": {
+    "zh": "安南山脈",
+    "en": "Annamite Range"
+  },
+  "subtitle": "中南半島東側的脊梁",
+  "stats": [
+    {
+      "label": "最高峰",
+      "value": "普比亞山（2,830 m）"
+    },
+    {
+      "label": "主要國家",
+      "value": "寮國、越南"
+    },
+    {
+      "label": "長度",
+      "value": "約 1,100 km"
+    },
+    {
+      "label": "走向",
+      "value": "西北—東南"
+    }
+  ],
+  "facts": [
+    {
+      "label": "界線",
+      "value": "越南與寮國的天然國界，大致沿著分水嶺劃分"
+    },
+    {
+      "label": "地形",
+      "value": "東坡陡、西坡緩，越南中部的海岸平原因此非常狹窄，最窄處只有幾十公里"
+    },
+    {
+      "label": "雨季",
+      "value": "秋冬的東北季風越過南海之後在東坡抬升降雨，越南中部的雨季因此比南北兩端來得晚"
+    },
+    {
+      "label": "對照重點",
+      "value": "跟「行星風系」與「柯本氣候分區」一起看，山脈兩側的雨季時間並不相同"
+    }
+  ],
+  "curriculum": {
+    "unit": "板塊運動與全球地形"
+  },
+  "schematic": true,
+  "sources": [
+    "維基百科 安南山脈",
+    "Natural Earth 1:10m 自然地理區",
+    "Natural Earth 1:10m 高程點"
+  ]
+}

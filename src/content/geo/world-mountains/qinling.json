@@ -1,0 +1,54 @@
+{
+  "id": "qinling",
+  "collection": "world-mountains",
+  "name": {
+    "zh": "秦嶺",
+    "en": "Qinling Mountains"
+  },
+  "subtitle": "中國的南北分界線",
+  "stats": [
+    {
+      "label": "最高峰",
+      "value": "太白山（3,767 m）"
+    },
+    {
+      "label": "主要國家",
+      "value": "中國（陝西、甘肅、河南）"
+    },
+    {
+      "label": "長度",
+      "value": "約 1,600 km"
+    },
+    {
+      "label": "走向",
+      "value": "東西"
+    }
+  ],
+  "facts": [
+    {
+      "label": "南北分界",
+      "value": "一月均溫 0 ℃ 等溫線與年雨量 800 公釐等雨線大致沿著秦嶺與淮河一線；北邊是暖溫帶的旱作區，南邊是亞熱帶的稻作區"
+    },
+    {
+      "label": "水系",
+      "value": "分開黃河與長江兩大流域，北坡的水入渭河進黃河，南坡的水入漢水進長江"
+    },
+    {
+      "label": "屏障",
+      "value": "冬季擋下南下的冷空氣，南麓的漢中盆地比同緯度的關中平原溫暖得多"
+    },
+    {
+      "label": "對照重點",
+      "value": "跟「柯本氣候分區」疊著看，秦嶺南北剛好落在兩種氣候型的交界上"
+    }
+  ],
+  "curriculum": {
+    "unit": "板塊運動與全球地形"
+  },
+  "schematic": true,
+  "sources": [
+    "維基百科 秦嶺",
+    "Natural Earth 1:10m 自然地理區",
+    "Natural Earth 1:10m 高程點"
+  ]
+}

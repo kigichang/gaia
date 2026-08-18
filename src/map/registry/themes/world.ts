@@ -965,12 +965,14 @@ export const worldTheme: ThemeDefinition = {
        */
       colorRole: "mountain",
       /**
-       * 39 條都還沒有內容檔，所以卡片走 `FeatureCard` 的 fallback：標題是山脈名、
-       * 副標是 geojson 的 `meta`（洲＋最高峰）、下一行是 `detail`（成因）。
+       * 39 條都有內容檔（`src/content/geo/world-mountains/`），所以卡片是完整的那一版：
+       * 四格數據（最高峰＋高度／主要國家／長度或走向）＋三到五條 `facts`，最後一條
+       * 一律是「對照重點」，明講該跟哪一個圖層疊著看。
        *
-       * ⚠️ `hideLayerDescription` 的判準跟活動斷層與全球活火山一樣：**圖徵很多、
-       * 而且圖層說明在每一張卡上逐字相同**。這一層的卡片本來就有洲、最高峰與成因
-       * 三件逐條不同的事可講，不必再貼一段跟抽屜那一列一模一樣的字。
+       * ⚠️ `hideLayerDescription` 因此**今天是 no-op**（有內容檔的圖徵不走 fallback），
+       * 比照 `tw-rivers` 與 `tw-protected-areas` 留著是為了規則一致：之後補收一條山脈
+       * 而內容檔還沒寫時，卡片會退回「名稱＋洲＋最高峰＋成因」而不是整片跟抽屜那一列
+       * 逐字相同的圖層說明。
        */
       detail: { type: "geo", collection: "world-mountains", hideLayerDescription: true },
       /**

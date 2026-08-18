@@ -1,0 +1,54 @@
+{
+  "id": "scandinavian",
+  "collection": "world-mountains",
+  "name": {
+    "zh": "斯堪地那維亞山脈",
+    "en": "Scandinavian Mountains"
+  },
+  "subtitle": "被冰河刨出峽灣的老山地",
+  "stats": [
+    {
+      "label": "最高峰",
+      "value": "加爾赫峰（2,469 m）"
+    },
+    {
+      "label": "主要國家",
+      "value": "挪威、瑞典"
+    },
+    {
+      "label": "長度",
+      "value": "約 1,700 km"
+    },
+    {
+      "label": "走向",
+      "value": "東北—西南"
+    }
+  ],
+  "facts": [
+    {
+      "label": "成因",
+      "value": "約四億年前的碰撞造山，久經侵蝕之後又被抬升，所以山勢渾圓而不像阿爾卑斯那樣尖峭"
+    },
+    {
+      "label": "峽灣",
+      "value": "第四紀冰河把西坡的谷地刨蝕成又深又直的 U 形谷，冰退之後海水灌入，形成挪威曲折的峽灣海岸"
+    },
+    {
+      "label": "雨影",
+      "value": "擋住大西洋來的西風，西坡多雨多雪，越過山脈之後瑞典內陸明顯乾燥"
+    },
+    {
+      "label": "對照重點",
+      "value": "與阿帕拉契山脈原本屬於同一條造山帶，後來大西洋張裂才把它們分到兩岸"
+    }
+  ],
+  "curriculum": {
+    "unit": "板塊運動與全球地形"
+  },
+  "schematic": true,
+  "sources": [
+    "維基百科 斯堪地那維亞山脈",
+    "Natural Earth 1:10m 自然地理區",
+    "Natural Earth 1:10m 高程點"
+  ]
+}

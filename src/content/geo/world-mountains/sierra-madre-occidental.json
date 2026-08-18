@@ -1,0 +1,54 @@
+{
+  "id": "sierra-madre-occidental",
+  "collection": "world-mountains",
+  "name": {
+    "zh": "西馬德雷山脈",
+    "en": "Sierra Madre Occidental"
+  },
+  "subtitle": "火山岩構成的墨西哥高原西緣",
+  "stats": [
+    {
+      "label": "最高峰",
+      "value": "莫伊諾拉山（3,348 m）"
+    },
+    {
+      "label": "主要國家",
+      "value": "墨西哥"
+    },
+    {
+      "label": "長度",
+      "value": "約 1,250 km"
+    },
+    {
+      "label": "走向",
+      "value": "西北—東南"
+    }
+  ],
+  "facts": [
+    {
+      "label": "成因",
+      "value": "大規模火山噴發堆積成厚厚的火山岩層，之後被河流深切，形成陡峭的峽谷地形"
+    },
+    {
+      "label": "銅峽谷",
+      "value": "一群比美國大峽谷更深也更長的峽谷，是這條山脈最著名的景觀"
+    },
+    {
+      "label": "礦產",
+      "value": "銀礦豐富，殖民時代以來就是墨西哥重要的礦業區"
+    },
+    {
+      "label": "對照重點",
+      "value": "跟東馬德雷山脈一起看，兩者在墨西哥南部交會"
+    }
+  ],
+  "curriculum": {
+    "unit": "板塊運動與全球地形"
+  },
+  "schematic": true,
+  "sources": [
+    "維基百科 西馬德雷山脈",
+    "Natural Earth 1:10m 自然地理區",
+    "Natural Earth 1:10m 高程點"
+  ]
+}

@@ -1,0 +1,54 @@
+{
+  "id": "barisan",
+  "collection": "world-mountains",
+  "name": {
+    "zh": "巴里桑山脈",
+    "en": "Barisan Mountains"
+  },
+  "subtitle": "蘇門答臘西側的火山山脈",
+  "stats": [
+    {
+      "label": "最高峰",
+      "value": "克林奇火山（3,805 m）"
+    },
+    {
+      "label": "主要國家",
+      "value": "印尼"
+    },
+    {
+      "label": "長度",
+      "value": "約 1,700 km"
+    },
+    {
+      "label": "走向",
+      "value": "西北—東南"
+    }
+  ],
+  "facts": [
+    {
+      "label": "成因",
+      "value": "印澳板塊沿西側的巽他海溝隱沒到歐亞板塊之下，熔融的岩漿沿線上湧，山脈上排著三十幾座活火山"
+    },
+    {
+      "label": "多巴湖",
+      "value": "約七萬四千年前一場超大規模噴發留下的火山口湖，是世界上最大的火山口湖之一"
+    },
+    {
+      "label": "土壤",
+      "value": "火山灰風化後養分豐富，山區成為咖啡、茶與各種熱帶作物的重要產地"
+    },
+    {
+      "label": "對照重點",
+      "value": "跟「火山帶」與「板塊邊界」一起看，洋紅色的火山點幾乎全部排在這條山脈上"
+    }
+  ],
+  "curriculum": {
+    "unit": "板塊運動與全球地形"
+  },
+  "schematic": true,
+  "sources": [
+    "維基百科 巴里桑山脈",
+    "Natural Earth 1:10m 自然地理區",
+    "Natural Earth 1:10m 高程點"
+  ]
+}

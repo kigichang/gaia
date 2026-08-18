@@ -1,0 +1,54 @@
+{
+  "id": "coast-mountains",
+  "collection": "world-mountains",
+  "name": {
+    "zh": "海岸山脈",
+    "en": "Coast Mountains"
+  },
+  "subtitle": "北美西岸的年輕山脈，冰河刻出峽灣海岸",
+  "stats": [
+    {
+      "label": "最高峰",
+      "value": "沃丁頓山（4,019 m）"
+    },
+    {
+      "label": "主要國家",
+      "value": "加拿大、美國"
+    },
+    {
+      "label": "長度",
+      "value": "約 1,600 km"
+    },
+    {
+      "label": "走向",
+      "value": "西北—東南"
+    }
+  ],
+  "facts": [
+    {
+      "label": "同名提醒",
+      "value": "臺灣東部也有一條海岸山脈，兩者只是名字相同，位置與成因都沒有關係"
+    },
+    {
+      "label": "冰河",
+      "value": "山區至今仍有大片冰原，谷地被冰河刨蝕成 U 形谷並沉入海中，卑詩省的海岸因此破碎多峽灣與島嶼"
+    },
+    {
+      "label": "多雨",
+      "value": "正對太平洋吹來的西風，西坡是北美雨量最多的地帶之一，長著高大的溫帶雨林"
+    },
+    {
+      "label": "對照重點",
+      "value": "跟「柯本氣候分區」一起看，西坡濕潤、越過山脈之後的內陸立刻轉乾"
+    }
+  ],
+  "curriculum": {
+    "unit": "板塊運動與全球地形"
+  },
+  "schematic": true,
+  "sources": [
+    "維基百科 海岸山脈 (北美)",
+    "Natural Earth 1:10m 自然地理區",
+    "Natural Earth 1:10m 高程點"
+  ]
+}

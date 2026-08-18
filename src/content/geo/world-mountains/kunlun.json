@@ -1,0 +1,54 @@
+{
+  "id": "kunlun",
+  "collection": "world-mountains",
+  "name": {
+    "zh": "崑崙山脈",
+    "en": "Kunlun Mountains"
+  },
+  "subtitle": "青藏高原的北緣，中國古籍裡的「萬山之祖」",
+  "stats": [
+    {
+      "label": "最高峰",
+      "value": "崑崙女神峰（7,167 m）"
+    },
+    {
+      "label": "主要國家",
+      "value": "中國"
+    },
+    {
+      "label": "長度",
+      "value": "約 2,500 km"
+    },
+    {
+      "label": "走向",
+      "value": "東西"
+    }
+  ],
+  "facts": [
+    {
+      "label": "位置",
+      "value": "把青藏高原與北邊的塔里木盆地分開，南坡緩緩接上高原，北坡直落沙漠"
+    },
+    {
+      "label": "乾燥",
+      "value": "北麓就是塔克拉瑪干沙漠，年雨量常在 50 公釐以下；山區的冰川融水是和田、于闐等綠洲唯一的水源"
+    },
+    {
+      "label": "成因",
+      "value": "印澳板塊北推使青藏高原整體隆起，崑崙是被推到最北邊的那一道"
+    },
+    {
+      "label": "對照重點",
+      "value": "跟「森林與沙漠帶」一起看，山脈北側立刻進入橘色的沙漠帶"
+    }
+  ],
+  "curriculum": {
+    "unit": "板塊運動與全球地形"
+  },
+  "schematic": true,
+  "sources": [
+    "維基百科 崑崙山脈",
+    "Natural Earth 1:10m 自然地理區",
+    "Natural Earth 1:10m 高程點"
+  ]
+}

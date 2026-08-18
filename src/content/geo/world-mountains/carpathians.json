@@ -1,0 +1,54 @@
+{
+  "id": "carpathians",
+  "collection": "world-mountains",
+  "name": {
+    "zh": "喀爾巴阡山脈",
+    "en": "Carpathian Mountains"
+  },
+  "subtitle": "阿爾卑斯山系向東延伸的弧",
+  "stats": [
+    {
+      "label": "最高峰",
+      "value": "蓋爾拉赫峰（2,655 m）"
+    },
+    {
+      "label": "主要國家",
+      "value": "斯洛伐克、波蘭、烏克蘭、羅馬尼亞"
+    },
+    {
+      "label": "長度",
+      "value": "約 1,500 km"
+    },
+    {
+      "label": "走向",
+      "value": "弧形環抱"
+    }
+  ],
+  "facts": [
+    {
+      "label": "形狀",
+      "value": "弧形環抱中歐的匈牙利平原，那個弧的形狀正是這條山脈最好認的特徵"
+    },
+    {
+      "label": "森林",
+      "value": "保有歐洲面積最大的原始山毛櫸林，也是棕熊、狼與猞猁在歐洲最重要的棲地"
+    },
+    {
+      "label": "成因",
+      "value": "與阿爾卑斯同屬非洲與歐亞板塊擠壓的褶曲帶，只是位在更東邊的段落"
+    },
+    {
+      "label": "對照重點",
+      "value": "跟阿爾卑斯一起看，兩條山脈在維也納一帶幾乎相接"
+    }
+  ],
+  "curriculum": {
+    "unit": "板塊運動與全球地形"
+  },
+  "schematic": true,
+  "sources": [
+    "維基百科 喀爾巴阡山脈",
+    "Natural Earth 1:10m 自然地理區",
+    "Natural Earth 1:10m 高程點"
+  ]
+}

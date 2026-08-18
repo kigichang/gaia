@@ -1,0 +1,58 @@
+{
+  "id": "new-guinea-highlands",
+  "collection": "world-mountains",
+  "name": {
+    "zh": "新幾內亞高地",
+    "en": "New Guinea Highlands"
+  },
+  "subtitle": "赤道上的高山，曾經有冰河",
+  "stats": [
+    {
+      "label": "最高峰",
+      "value": "查亞峰（4,884 m）"
+    },
+    {
+      "label": "主要國家",
+      "value": "印尼、巴布亞紐幾內亞"
+    },
+    {
+      "label": "長度",
+      "value": "約 1,600 km"
+    },
+    {
+      "label": "走向",
+      "value": "西北—東南"
+    }
+  ],
+  "facts": [
+    {
+      "label": "成因",
+      "value": "印澳板塊與太平洋板塊碰撞抬升，是世界上最年輕的高山地形之一"
+    },
+    {
+      "label": "赤道冰河",
+      "value": "查亞峰一帶曾有熱帶少見的冰河，近幾十年急速消融，面積已所剩無幾"
+    },
+    {
+      "label": "查亞峰",
+      "value": "大洋洲的最高峰，也是登山界「七頂峰」之一"
+    },
+    {
+      "label": "語言",
+      "value": "高地的谷地彼此隔絕，是世界上語言種類最多的地區，光是新幾內亞島就有八百多種語言"
+    },
+    {
+      "label": "對照重點",
+      "value": "跟「板塊邊界」一起看，聚合型邊界就沿著島的北側通過"
+    }
+  ],
+  "curriculum": {
+    "unit": "板塊運動與全球地形"
+  },
+  "schematic": true,
+  "sources": [
+    "維基百科 新幾內亞高地",
+    "Natural Earth 1:10m 自然地理區",
+    "Natural Earth 1:10m 高程點"
+  ]
+}

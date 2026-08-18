@@ -1,0 +1,54 @@
+{
+  "id": "caucasus",
+  "collection": "world-mountains",
+  "name": {
+    "zh": "高加索山脈",
+    "en": "Caucasus Mountains"
+  },
+  "subtitle": "黑海與裏海之間的高牆，也是課本畫的歐亞洲界",
+  "stats": [
+    {
+      "label": "最高峰",
+      "value": "厄爾布魯士山（5,642 m）"
+    },
+    {
+      "label": "主要國家",
+      "value": "俄羅斯、喬治亞、亞塞拜然"
+    },
+    {
+      "label": "長度",
+      "value": "約 1,200 km"
+    },
+    {
+      "label": "走向",
+      "value": "西北—東南"
+    }
+  ],
+  "facts": [
+    {
+      "label": "厄爾布魯士山",
+      "value": "一座層狀火山，若以高加索主稜當作歐亞洲界，它就是歐洲的最高峰"
+    },
+    {
+      "label": "成因",
+      "value": "阿拉伯板塊向北推擠歐亞板塊的結果，與札格羅斯、厄爾布爾士屬於同一個擠壓帶"
+    },
+    {
+      "label": "語言",
+      "value": "山區地形破碎、聚落彼此隔絕，成為世界上語言種類最密集的地區之一"
+    },
+    {
+      "label": "對照重點",
+      "value": "跟「大洲分區」一起看，歐亞洲界那條線就從這裡通過"
+    }
+  ],
+  "curriculum": {
+    "unit": "板塊運動與全球地形"
+  },
+  "schematic": true,
+  "sources": [
+    "維基百科 高加索山脈",
+    "Natural Earth 1:10m 自然地理區",
+    "Natural Earth 1:10m 高程點"
+  ]
+}

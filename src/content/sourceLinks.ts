@@ -419,6 +419,52 @@ export const SOURCE_LINKS: Record<string, string> = {
   // 世界主要山脈：39 條的中文名與成因說明的查閱來源（次級來源，見 CLAUDE.md「內容撰寫規範」）
   "維基百科 山脈列表": "https://zh.wikipedia.org/zh-tw/%E5%B1%B1%E8%84%88%E5%88%97%E8%A1%A8",
   /**
+   * 39 條山脈各自的條目——每一份內容檔（`src/content/geo/world-mountains/`）都引它。
+   *
+   * ⚠️ 標籤裡的條目名要跟維基百科上**實際的**標題一致（連結是由它組出來的）：
+   * 「海岸山脈 (北美)」與「內華達山脈 (美國)」的括號是條目自己的消歧義後綴，
+   * 少了它會連到臺灣的海岸山脈與西班牙的內華達山脈。全部實測過 HTTP 200。
+   */
+  "維基百科 喜馬拉雅山脈": "https://zh.wikipedia.org/zh-tw/%E5%96%9C%E9%A6%AC%E6%8B%89%E9%9B%85%E5%B1%B1%E8%84%88",
+  "維基百科 喀喇崑崙山脈": "https://zh.wikipedia.org/zh-tw/%E5%96%80%E5%96%87%E5%B4%91%E5%B4%99%E5%B1%B1%E8%84%88",
+  "維基百科 興都庫什山脈": "https://zh.wikipedia.org/zh-tw/%E8%88%88%E9%83%BD%E5%BA%AB%E4%BB%80%E5%B1%B1%E8%84%88",
+  "維基百科 帕米爾高原": "https://zh.wikipedia.org/zh-tw/%E5%B8%95%E7%B1%B3%E7%88%BE%E9%AB%98%E5%8E%9F",
+  "維基百科 天山山脈": "https://zh.wikipedia.org/zh-tw/%E5%A4%A9%E5%B1%B1%E5%B1%B1%E8%84%88",
+  "維基百科 崑崙山脈": "https://zh.wikipedia.org/zh-tw/%E5%B4%91%E5%B4%99%E5%B1%B1%E8%84%88",
+  "維基百科 阿爾泰山脈": "https://zh.wikipedia.org/zh-tw/%E9%98%BF%E7%88%BE%E6%B3%B0%E5%B1%B1%E8%84%88",
+  "維基百科 祁連山脈": "https://zh.wikipedia.org/zh-tw/%E7%A5%81%E9%80%A3%E5%B1%B1%E8%84%88",
+  "維基百科 秦嶺": "https://zh.wikipedia.org/zh-tw/%E7%A7%A6%E5%B6%BA",
+  "維基百科 大興安嶺": "https://zh.wikipedia.org/zh-tw/%E5%A4%A7%E8%88%88%E5%AE%89%E5%B6%BA",
+  "維基百科 札格羅斯山脈": "https://zh.wikipedia.org/zh-tw/%E6%9C%AD%E6%A0%BC%E7%BE%85%E6%96%AF%E5%B1%B1%E8%84%88",
+  "維基百科 厄爾布爾士山脈": "https://zh.wikipedia.org/zh-tw/%E5%8E%84%E7%88%BE%E5%B8%83%E7%88%BE%E5%A3%AB%E5%B1%B1%E8%84%88",
+  "維基百科 托魯斯山脈": "https://zh.wikipedia.org/zh-tw/%E6%89%98%E9%AD%AF%E6%96%AF%E5%B1%B1%E8%84%88",
+  "維基百科 西高止山脈": "https://zh.wikipedia.org/zh-tw/%E8%A5%BF%E9%AB%98%E6%AD%A2%E5%B1%B1%E8%84%88",
+  "維基百科 安南山脈": "https://zh.wikipedia.org/zh-tw/%E5%AE%89%E5%8D%97%E5%B1%B1%E8%84%88",
+  "維基百科 巴里桑山脈": "https://zh.wikipedia.org/zh-tw/%E5%B7%B4%E9%87%8C%E6%A1%91%E5%B1%B1%E8%84%88",
+  "維基百科 阿爾卑斯山脈": "https://zh.wikipedia.org/zh-tw/%E9%98%BF%E7%88%BE%E5%8D%91%E6%96%AF%E5%B1%B1%E8%84%88",
+  "維基百科 庇里牛斯山脈": "https://zh.wikipedia.org/zh-tw/%E5%BA%87%E9%87%8C%E7%89%9B%E6%96%AF%E5%B1%B1%E8%84%88",
+  "維基百科 喀爾巴阡山脈": "https://zh.wikipedia.org/zh-tw/%E5%96%80%E7%88%BE%E5%B7%B4%E9%98%A1%E5%B1%B1%E8%84%88",
+  "維基百科 亞平寧山脈": "https://zh.wikipedia.org/zh-tw/%E4%BA%9E%E5%B9%B3%E5%AF%A7%E5%B1%B1%E8%84%88",
+  "維基百科 斯堪地那維亞山脈": "https://zh.wikipedia.org/zh-tw/%E6%96%AF%E5%A0%AA%E5%9C%B0%E9%82%A3%E7%B6%AD%E4%BA%9E%E5%B1%B1%E8%84%88",
+  "維基百科 高加索山脈": "https://zh.wikipedia.org/zh-tw/%E9%AB%98%E5%8A%A0%E7%B4%A2%E5%B1%B1%E8%84%88",
+  "維基百科 烏拉山脈": "https://zh.wikipedia.org/zh-tw/%E7%83%8F%E6%8B%89%E5%B1%B1%E8%84%88",
+  "維基百科 阿特拉斯山脈": "https://zh.wikipedia.org/zh-tw/%E9%98%BF%E7%89%B9%E6%8B%89%E6%96%AF%E5%B1%B1%E8%84%88",
+  "維基百科 衣索比亞高原": "https://zh.wikipedia.org/zh-tw/%E8%A1%A3%E7%B4%A2%E6%AF%94%E4%BA%9E%E9%AB%98%E5%8E%9F",
+  "維基百科 德拉肯斯山脈": "https://zh.wikipedia.org/zh-tw/%E5%BE%B7%E6%8B%89%E8%82%AF%E6%96%AF%E5%B1%B1%E8%84%88",
+  "維基百科 洛磯山脈": "https://zh.wikipedia.org/zh-tw/%E6%B4%9B%E7%A3%AF%E5%B1%B1%E8%84%88",
+  "維基百科 阿帕拉契山脈": "https://zh.wikipedia.org/zh-tw/%E9%98%BF%E5%B8%95%E6%8B%89%E5%A5%91%E5%B1%B1%E8%84%88",
+  "維基百科 海岸山脈 (北美)": "https://zh.wikipedia.org/zh-tw/%E6%B5%B7%E5%B2%B8%E5%B1%B1%E8%84%88%20(%E5%8C%97%E7%BE%8E)",
+  "維基百科 喀斯開山脈": "https://zh.wikipedia.org/zh-tw/%E5%96%80%E6%96%AF%E9%96%8B%E5%B1%B1%E8%84%88",
+  "維基百科 內華達山脈 (美國)": "https://zh.wikipedia.org/zh-tw/%E5%85%A7%E8%8F%AF%E9%81%94%E5%B1%B1%E8%84%88%20(%E7%BE%8E%E5%9C%8B)",
+  "維基百科 阿拉斯加山脈": "https://zh.wikipedia.org/zh-tw/%E9%98%BF%E6%8B%89%E6%96%AF%E5%8A%A0%E5%B1%B1%E8%84%88",
+  "維基百科 東馬德雷山脈": "https://zh.wikipedia.org/zh-tw/%E6%9D%B1%E9%A6%AC%E5%BE%B7%E9%9B%B7%E5%B1%B1%E8%84%88",
+  "維基百科 西馬德雷山脈": "https://zh.wikipedia.org/zh-tw/%E8%A5%BF%E9%A6%AC%E5%BE%B7%E9%9B%B7%E5%B1%B1%E8%84%88",
+  "維基百科 安地斯山脈": "https://zh.wikipedia.org/zh-tw/%E5%AE%89%E5%9C%B0%E6%96%AF%E5%B1%B1%E8%84%88",
+  "維基百科 大分水嶺": "https://zh.wikipedia.org/zh-tw/%E5%A4%A7%E5%88%86%E6%B0%B4%E5%B6%BA",
+  "維基百科 南阿爾卑斯山脈": "https://zh.wikipedia.org/zh-tw/%E5%8D%97%E9%98%BF%E7%88%BE%E5%8D%91%E6%96%AF%E5%B1%B1%E8%84%88",
+  "維基百科 新幾內亞高地": "https://zh.wikipedia.org/zh-tw/%E6%96%B0%E5%B9%BE%E5%85%A7%E4%BA%9E%E9%AB%98%E5%9C%B0",
+  "維基百科 橫貫南極山脈": "https://zh.wikipedia.org/zh-tw/%E6%A9%AB%E8%B2%AB%E5%8D%97%E6%A5%B5%E5%B1%B1%E8%84%88",
+  /**
    * 全球活火山。GVP 的授權方式是「引用即可自由使用」，所以來源標籤要留著全名，
    * 不要簡寫成「Smithsonian」。知名火山的中文名另外標維基百科（次級來源）。
    */

@@ -1,0 +1,54 @@
+{
+  "id": "urals",
+  "collection": "world-mountains",
+  "name": {
+    "zh": "烏拉山脈",
+    "en": "Ural Mountains"
+  },
+  "subtitle": "又低又老的歐亞洲界",
+  "stats": [
+    {
+      "label": "最高峰",
+      "value": "納羅德納亞山（1,895 m）"
+    },
+    {
+      "label": "主要國家",
+      "value": "俄羅斯、哈薩克"
+    },
+    {
+      "label": "長度",
+      "value": "約 2,500 km"
+    },
+    {
+      "label": "走向",
+      "value": "南北"
+    }
+  ],
+  "facts": [
+    {
+      "label": "老",
+      "value": "古生代末期的碰撞造山，之後兩億多年持續被侵蝕，現在最高處也不到兩千公尺，山勢平緩"
+    },
+    {
+      "label": "洲界",
+      "value": "課本以它當歐亞兩洲的界線，但它既不構成交通障礙、也不是氣候或文化的分界——那是一條約定俗成的線"
+    },
+    {
+      "label": "礦產",
+      "value": "鐵、銅、鉀鹽與寶石都很豐富，山脈兩側是俄羅斯重要的重工業帶"
+    },
+    {
+      "label": "對照重點",
+      "value": "跟「大洲分區」一起看，歐亞洲界就沿著這條山脈往北走"
+    }
+  ],
+  "curriculum": {
+    "unit": "板塊運動與全球地形"
+  },
+  "schematic": true,
+  "sources": [
+    "維基百科 烏拉山脈",
+    "Natural Earth 1:10m 自然地理區",
+    "Natural Earth 1:10m 高程點"
+  ]
+}

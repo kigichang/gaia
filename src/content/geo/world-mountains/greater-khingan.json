@@ -1,0 +1,54 @@
+{
+  "id": "greater-khingan",
+  "collection": "world-mountains",
+  "name": {
+    "zh": "大興安嶺",
+    "en": "Greater Khingan Range"
+  },
+  "subtitle": "東亞季風深入內陸的界線",
+  "stats": [
+    {
+      "label": "最高峰",
+      "value": "黃崗梁（2,029 m）"
+    },
+    {
+      "label": "主要國家",
+      "value": "中國（內蒙古、黑龍江）"
+    },
+    {
+      "label": "長度",
+      "value": "約 1,200 km"
+    },
+    {
+      "label": "走向",
+      "value": "東北—西南"
+    }
+  ],
+  "facts": [
+    {
+      "label": "分界",
+      "value": "東側年雨量在 400 公釐以上、可以耕作，越過山脈往西迅速減少，轉為草原與乾燥的蒙古高原"
+    },
+    {
+      "label": "地形",
+      "value": "斷塊隆起的緩坡山地，東坡陡、西坡緩，高度只有一千多公尺卻足以擋住季風"
+    },
+    {
+      "label": "森林",
+      "value": "中國面積最大的林區之一，以落葉松與樺木為主，是寒溫帶針葉林在中國的南界"
+    },
+    {
+      "label": "對照重點",
+      "value": "跟「森林與沙漠帶」一起看，靛紫的針葉林帶到這裡就換成橄欖綠的草原"
+    }
+  ],
+  "curriculum": {
+    "unit": "板塊運動與全球地形"
+  },
+  "schematic": true,
+  "sources": [
+    "維基百科 大興安嶺",
+    "Natural Earth 1:10m 自然地理區",
+    "Natural Earth 1:10m 高程點"
+  ]
+}

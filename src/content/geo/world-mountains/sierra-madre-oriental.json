@@ -1,0 +1,54 @@
+{
+  "id": "sierra-madre-oriental",
+  "collection": "world-mountains",
+  "name": {
+    "zh": "東馬德雷山脈",
+    "en": "Sierra Madre Oriental"
+  },
+  "subtitle": "墨西哥高原的東緣",
+  "stats": [
+    {
+      "label": "最高峰",
+      "value": "聖拉斐爾山（3,710 m）"
+    },
+    {
+      "label": "主要國家",
+      "value": "墨西哥"
+    },
+    {
+      "label": "長度",
+      "value": "約 1,000 km"
+    },
+    {
+      "label": "走向",
+      "value": "西北—東南"
+    }
+  ],
+  "facts": [
+    {
+      "label": "位置",
+      "value": "沿墨西哥灣岸的內側延伸，把狹窄的海岸平原與內陸的墨西哥高原分開"
+    },
+    {
+      "label": "地形雨",
+      "value": "迎向墨西哥灣吹來的信風，東坡多雨、山腰有雲霧林；越過山脈之後的高原明顯乾燥"
+    },
+    {
+      "label": "成因",
+      "value": "以褶皺的沉積岩為主，與西側以火山岩為主的西馬德雷山脈成因並不相同"
+    },
+    {
+      "label": "對照重點",
+      "value": "跟西馬德雷山脈一起看，兩條山脈之間夾著的就是墨西哥高原"
+    }
+  ],
+  "curriculum": {
+    "unit": "板塊運動與全球地形"
+  },
+  "schematic": true,
+  "sources": [
+    "維基百科 東馬德雷山脈",
+    "Natural Earth 1:10m 自然地理區",
+    "Natural Earth 1:10m 高程點"
+  ]
+}

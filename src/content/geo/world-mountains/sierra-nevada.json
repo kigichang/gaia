@@ -1,0 +1,58 @@
+{
+  "id": "sierra-nevada",
+  "collection": "world-mountains",
+  "name": {
+    "zh": "內華達山脈",
+    "en": "Sierra Nevada"
+  },
+  "subtitle": "一整塊花崗岩傾斜抬起的斷塊山",
+  "stats": [
+    {
+      "label": "最高峰",
+      "value": "惠特尼峰（4,421 m）"
+    },
+    {
+      "label": "主要國家",
+      "value": "美國（加州）"
+    },
+    {
+      "label": "長度",
+      "value": "約 640 km"
+    },
+    {
+      "label": "走向",
+      "value": "南北"
+    }
+  ],
+  "facts": [
+    {
+      "label": "斷塊山",
+      "value": "整塊花崗岩沿東側的斷層抬升並向西傾斜，所以東坡陡峭如牆、西坡緩長，是斷塊山最清楚的例子"
+    },
+    {
+      "label": "雨影",
+      "value": "擋下太平洋來的水氣，東側緊接著就是乾燥的大盆地與死谷——北美最低最熱的地方"
+    },
+    {
+      "label": "優勝美地",
+      "value": "冰河把花崗岩谷地刨成 U 形谷與巨大的岩壁，是冰河侵蝕地形的代表景觀"
+    },
+    {
+      "label": "同名提醒",
+      "value": "西班牙南部也有一條內華達山脈（Sierra Nevada），這個名字在西班牙文裡就是「積雪的山脈」"
+    },
+    {
+      "label": "對照重點",
+      "value": "跟「森林與沙漠帶」一起看，山脈東側就是橘色的沙漠帶"
+    }
+  ],
+  "curriculum": {
+    "unit": "板塊運動與全球地形"
+  },
+  "schematic": true,
+  "sources": [
+    "維基百科 內華達山脈 (美國)",
+    "Natural Earth 1:10m 自然地理區",
+    "Natural Earth 1:10m 高程點"
+  ]
+}

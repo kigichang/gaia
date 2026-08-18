@@ -1,0 +1,54 @@
+{
+  "id": "apennines",
+  "collection": "world-mountains",
+  "name": {
+    "zh": "亞平寧山脈",
+    "en": "Apennines"
+  },
+  "subtitle": "縱貫義大利半島的脊梁",
+  "stats": [
+    {
+      "label": "最高峰",
+      "value": "大科爾諾峰（2,912 m）"
+    },
+    {
+      "label": "主要國家",
+      "value": "義大利"
+    },
+    {
+      "label": "長度",
+      "value": "約 1,200 km"
+    },
+    {
+      "label": "走向",
+      "value": "西北—東南"
+    }
+  ],
+  "facts": [
+    {
+      "label": "位置",
+      "value": "從義大利北部一路延伸到南端，把半島分成第勒尼安海側與亞得里亞海側兩坡"
+    },
+    {
+      "label": "地震",
+      "value": "位在非洲與歐亞板塊擠壓帶上，義大利中部的破壞性地震多半發生在這條山脈沿線"
+    },
+    {
+      "label": "火山",
+      "value": "維蘇威與埃特納火山雖然不在主稜上，但與亞平寧同屬一個板塊擠壓與隱沒的構造帶"
+    },
+    {
+      "label": "對照重點",
+      "value": "跟「板塊邊界」和「火山帶」一起看，義大利一帶三者疊在一起"
+    }
+  ],
+  "curriculum": {
+    "unit": "板塊運動與全球地形"
+  },
+  "schematic": true,
+  "sources": [
+    "維基百科 亞平寧山脈",
+    "Natural Earth 1:10m 自然地理區",
+    "Natural Earth 1:10m 高程點"
+  ]
+}

@@ -1,0 +1,54 @@
+{
+  "id": "alaska-range",
+  "collection": "world-mountains",
+  "name": {
+    "zh": "阿拉斯加山脈",
+    "en": "Alaska Range"
+  },
+  "subtitle": "北美最高峰所在的弧形山脈",
+  "stats": [
+    {
+      "label": "最高峰",
+      "value": "迪納利山（6,194 m）"
+    },
+    {
+      "label": "主要國家",
+      "value": "美國（阿拉斯加）"
+    },
+    {
+      "label": "長度",
+      "value": "約 1,000 km"
+    },
+    {
+      "label": "走向",
+      "value": "弧形"
+    }
+  ],
+  "facts": [
+    {
+      "label": "迪納利山",
+      "value": "北美最高峰。它從山腳到山頂的相對高差超過五千公尺，比許多更高的山看起來更雄偉"
+    },
+    {
+      "label": "成因",
+      "value": "太平洋板塊隱沒到北美板塊之下，並沿著德納利斷層錯動，山脈因此呈現弧形"
+    },
+    {
+      "label": "地震",
+      "value": "1964 年的阿拉斯加大地震規模 9.2，是有儀器紀錄以來北美最大、全球第二大的地震"
+    },
+    {
+      "label": "對照重點",
+      "value": "跟「地震帶」與「板塊邊界」一起看，灰點與藍虛線都沿著山脈南側排列"
+    }
+  ],
+  "curriculum": {
+    "unit": "板塊運動與全球地形"
+  },
+  "schematic": true,
+  "sources": [
+    "維基百科 阿拉斯加山脈",
+    "Natural Earth 1:10m 自然地理區",
+    "Natural Earth 1:10m 高程點"
+  ]
+}

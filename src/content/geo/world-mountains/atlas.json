@@ -1,0 +1,54 @@
+{
+  "id": "atlas",
+  "collection": "world-mountains",
+  "name": {
+    "zh": "阿特拉斯山脈",
+    "en": "Atlas Mountains"
+  },
+  "subtitle": "撒哈拉北緣的屏障",
+  "stats": [
+    {
+      "label": "最高峰",
+      "value": "圖卜卡勒峰（4,165 m）"
+    },
+    {
+      "label": "主要國家",
+      "value": "摩洛哥、阿爾及利亞、突尼西亞"
+    },
+    {
+      "label": "長度",
+      "value": "約 2,500 km"
+    },
+    {
+      "label": "走向",
+      "value": "西南—東北"
+    }
+  ],
+  "facts": [
+    {
+      "label": "氣候界線",
+      "value": "北側是地中海型氣候的海岸，冬雨夏乾、可以種橄欖與小麥；南側越過山脈立刻進入撒哈拉沙漠"
+    },
+    {
+      "label": "成因",
+      "value": "非洲板塊與歐亞板塊擠壓的南翼，與阿爾卑斯屬於同一場造山運動的兩端"
+    },
+    {
+      "label": "名字",
+      "value": "來自希臘神話裡扛著天空的巨人阿特拉斯，大西洋（Atlantic）的名字也出自同一個字"
+    },
+    {
+      "label": "對照重點",
+      "value": "跟「森林與沙漠帶」疊著看，橘色的沙漠帶就從山脈的南麓開始"
+    }
+  ],
+  "curriculum": {
+    "unit": "板塊運動與全球地形"
+  },
+  "schematic": true,
+  "sources": [
+    "維基百科 阿特拉斯山脈",
+    "Natural Earth 1:10m 自然地理區",
+    "Natural Earth 1:10m 高程點"
+  ]
+}

@@ -1,0 +1,54 @@
+{
+  "id": "drakensberg",
+  "collection": "world-mountains",
+  "name": {
+    "zh": "德拉肯斯山脈",
+    "en": "Drakensberg"
+  },
+  "subtitle": "南非高原的東緣崖",
+  "stats": [
+    {
+      "label": "最高峰",
+      "value": "塔巴納恩特列尼亞納峰（3,482 m）"
+    },
+    {
+      "label": "主要國家",
+      "value": "南非、賴索托"
+    },
+    {
+      "label": "長度",
+      "value": "約 1,000 km"
+    },
+    {
+      "label": "走向",
+      "value": "東北—西南"
+    }
+  ],
+  "facts": [
+    {
+      "label": "成因",
+      "value": "不是褶曲山脈，而是南非高原邊緣被侵蝕退卻所形成的大崖，向東是一路陡降到印度洋岸的斷崖"
+    },
+    {
+      "label": "雨影",
+      "value": "迎風的東坡承接印度洋的水氣而多雨，越過山脈之後的內陸高原轉為乾燥的草原與半沙漠"
+    },
+    {
+      "label": "賴索托",
+      "value": "整個國家都在這片高地上，是世界上國土最低點海拔最高的國家"
+    },
+    {
+      "label": "對照重點",
+      "value": "跟「森林與沙漠帶」一起看，山脈東西兩側分屬不同的植被帶"
+    }
+  ],
+  "curriculum": {
+    "unit": "板塊運動與全球地形"
+  },
+  "schematic": true,
+  "sources": [
+    "維基百科 德拉肯斯山脈",
+    "Natural Earth 1:10m 自然地理區",
+    "Natural Earth 1:10m 高程點"
+  ]
+}

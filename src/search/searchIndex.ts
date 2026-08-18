@@ -203,6 +203,17 @@ async function featureHits(
         attachedId: layer.attach.id,
         haystack: push([
           props.name,
+          /**
+           * ⚠️ 附屬圖徵的原名也要收，跟下面一般圖層那段同一條規則。
+           *
+           * 這裡漏過一次：世界主要山脈的 39 座最高峰帶著上游的英文名（`Mount
+           * Everest`、`K2`、`Denali`…），但這一段原本只收 `name` 與 `meta`，
+           * 於是**搜「K2」一筆結果都沒有**——而搜「喬戈里峰」是好的，搜「Andes」
+           * 也是好的（那是母圖層那一段收的），所以完全看不出少了什麼。
+           * 臺灣的兩個附屬圖層（主峰、縣市政府）的 properties 本來就沒有 `en`，
+           * 這個洞因此潛伏到現在。
+           */
+          typeof props.en === "string" ? props.en : undefined,
           typeof props.meta === "string" ? props.meta : undefined,
           ...contentKeywords(layer, props.id, layer.attach.detail),
         ]),

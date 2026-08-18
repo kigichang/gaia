@@ -1,0 +1,54 @@
+{
+  "id": "ethiopian-highlands",
+  "collection": "world-mountains",
+  "name": {
+    "zh": "衣索比亞高原",
+    "en": "Ethiopian Highlands"
+  },
+  "subtitle": "非洲之角的熔岩高原，青尼羅河的源頭",
+  "stats": [
+    {
+      "label": "最高峰",
+      "value": "拉斯達善峰（4,533 m）"
+    },
+    {
+      "label": "主要國家",
+      "value": "衣索比亞、厄利垂亞"
+    },
+    {
+      "label": "平均海拔",
+      "value": "2,000–3,000 m"
+    },
+    {
+      "label": "別稱",
+      "value": "非洲屋脊"
+    }
+  ],
+  "facts": [
+    {
+      "label": "成因",
+      "value": "約三千萬年前大規模的玄武岩噴發層層堆疊成高原，之後東非大裂谷把它從中撕開"
+    },
+    {
+      "label": "青尼羅河",
+      "value": "發源於高原上的塔納湖，夏季高原的雨造成尼羅河下游的定期氾濫，古埃及的農業就靠這場水"
+    },
+    {
+      "label": "高地宜居",
+      "value": "雖然靠近赤道，高海拔讓這裡涼爽而不酷熱，衣索比亞的人口與首都阿迪斯阿貝巴都集中在高原上"
+    },
+    {
+      "label": "對照重點",
+      "value": "跟「板塊邊界」一起看，橘色的張裂型邊界（東非大裂谷）正好穿過高原"
+    }
+  ],
+  "curriculum": {
+    "unit": "板塊運動與全球地形"
+  },
+  "schematic": true,
+  "sources": [
+    "維基百科 衣索比亞高原",
+    "Natural Earth 1:10m 自然地理區",
+    "Natural Earth 1:10m 高程點"
+  ]
+}

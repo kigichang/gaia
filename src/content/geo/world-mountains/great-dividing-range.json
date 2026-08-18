@@ -1,0 +1,54 @@
+{
+  "id": "great-dividing-range",
+  "collection": "world-mountains",
+  "name": {
+    "zh": "大分水嶺",
+    "en": "Great Dividing Range"
+  },
+  "subtitle": "澳洲東岸的老山地，也是全洲最重要的分水嶺",
+  "stats": [
+    {
+      "label": "最高峰",
+      "value": "科修斯科山（2,228 m）"
+    },
+    {
+      "label": "主要國家",
+      "value": "澳洲"
+    },
+    {
+      "label": "長度",
+      "value": "約 3,500 km"
+    },
+    {
+      "label": "走向",
+      "value": "南北"
+    }
+  ],
+  "facts": [
+    {
+      "label": "分水嶺",
+      "value": "東側的河流短促而直接入海；西側的水則流向內陸，最後匯入墨累－達令河系"
+    },
+    {
+      "label": "氣候",
+      "value": "擋下太平洋來的水氣，東岸濕潤、人口密集；越過山脈之後迅速轉為乾燥的內陸"
+    },
+    {
+      "label": "老而平緩",
+      "value": "古生代造山之後長期被侵蝕，最高的科修斯科山也只有兩千多公尺，那就是整個澳洲的最高點"
+    },
+    {
+      "label": "對照重點",
+      "value": "跟「柯本氣候分區」疊著看，澳洲東岸那一條窄窄的濕潤帶就止於這條山脈"
+    }
+  ],
+  "curriculum": {
+    "unit": "板塊運動與全球地形"
+  },
+  "schematic": true,
+  "sources": [
+    "維基百科 大分水嶺",
+    "Natural Earth 1:10m 自然地理區",
+    "Natural Earth 1:10m 高程點"
+  ]
+}

@@ -96,7 +96,9 @@ export const RANGES = {
     en: "Karakoram Range",
     continent: "亞洲",
     formation: "同一場印澳與歐亞板塊碰撞的產物，四座八千公尺以上的高峰集中在這裡",
-    peak: { en: "K2", name: "喬戈里峰（K2）" },
+    /** ⚠️ 名字裡不再帶「（K2）」：卡片的數據格會變成「喬戈里峰（K2）（8,611 m）」
+     * 兩層括號。K2 是上游的原名，`en` 已經帶著它，卡片與搜尋都拿得到。 */
+    peak: { en: "K2", name: "喬戈里峰" },
   },
   1159104183: {
     id: "hindu-kush",

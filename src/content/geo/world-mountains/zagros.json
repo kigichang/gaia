@@ -1,0 +1,54 @@
+{
+  "id": "zagros",
+  "collection": "world-mountains",
+  "name": {
+    "zh": "札格羅斯山脈",
+    "en": "Zagros Mountains"
+  },
+  "subtitle": "阿拉伯板塊撞上歐亞板塊擠出來的褶皺帶",
+  "stats": [
+    {
+      "label": "最高峰",
+      "value": "扎爾德山（4,548 m）"
+    },
+    {
+      "label": "主要國家",
+      "value": "伊朗、伊拉克、土耳其"
+    },
+    {
+      "label": "長度",
+      "value": "約 1,600 km"
+    },
+    {
+      "label": "走向",
+      "value": "西北—東南"
+    }
+  ],
+  "facts": [
+    {
+      "label": "褶皺",
+      "value": "一道一道平行的背斜與向斜整齊排列，從空中看像被推皺的布料，是課本講褶曲構造最好認的例子"
+    },
+    {
+      "label": "石油",
+      "value": "褶皺把油氣封存在背斜構造裡，波斯灣周邊的大油田多半與這條褶皺帶有關"
+    },
+    {
+      "label": "氣候",
+      "value": "擋住地中海方向來的水氣，東側的伊朗高原因此乾燥，山區反而有較多雨雪"
+    },
+    {
+      "label": "對照重點",
+      "value": "跟「板塊邊界」一起看，聚合型邊界就沿著山脈的西南側"
+    }
+  ],
+  "curriculum": {
+    "unit": "板塊運動與全球地形"
+  },
+  "schematic": true,
+  "sources": [
+    "維基百科 札格羅斯山脈",
+    "Natural Earth 1:10m 自然地理區",
+    "Natural Earth 1:10m 高程點"
+  ]
+}

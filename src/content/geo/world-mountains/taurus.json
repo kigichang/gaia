@@ -1,0 +1,54 @@
+{
+  "id": "taurus",
+  "collection": "world-mountains",
+  "name": {
+    "zh": "托魯斯山脈",
+    "en": "Taurus Mountains"
+  },
+  "subtitle": "安納托利亞高原的南緣",
+  "stats": [
+    {
+      "label": "最高峰",
+      "value": "代米爾卡澤克峰（3,756 m）"
+    },
+    {
+      "label": "主要國家",
+      "value": "土耳其"
+    },
+    {
+      "label": "長度",
+      "value": "約 1,500 km"
+    },
+    {
+      "label": "走向",
+      "value": "東西"
+    }
+  ],
+  "facts": [
+    {
+      "label": "分界",
+      "value": "把地中海型氣候的南部海岸與半乾燥的內陸高原分開，越過山口氣候立刻改變"
+    },
+    {
+      "label": "石灰岩地形",
+      "value": "山區以石灰岩為主，喀斯特地形發育良好，洞穴、地下河與陷穴很多"
+    },
+    {
+      "label": "成因",
+      "value": "阿爾卑斯－喜馬拉雅褶曲帶的一段，非洲板塊北移擠壓的結果"
+    },
+    {
+      "label": "對照重點",
+      "value": "跟「柯本氣候分區」一起看，山脈南側是 Cs 地中海型、北側轉為乾燥"
+    }
+  ],
+  "curriculum": {
+    "unit": "板塊運動與全球地形"
+  },
+  "schematic": true,
+  "sources": [
+    "維基百科 托魯斯山脈",
+    "Natural Earth 1:10m 自然地理區",
+    "Natural Earth 1:10m 高程點"
+  ]
+}

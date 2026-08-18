@@ -1,0 +1,54 @@
+{
+  "id": "cascades",
+  "collection": "world-mountains",
+  "name": {
+    "zh": "喀斯開山脈",
+    "en": "Cascade Range"
+  },
+  "subtitle": "隱沒帶上的一整排火山",
+  "stats": [
+    {
+      "label": "最高峰",
+      "value": "雷尼爾火山（4,392 m）"
+    },
+    {
+      "label": "主要國家",
+      "value": "美國、加拿大"
+    },
+    {
+      "label": "長度",
+      "value": "約 1,100 km"
+    },
+    {
+      "label": "走向",
+      "value": "南北"
+    }
+  ],
+  "facts": [
+    {
+      "label": "成因",
+      "value": "胡安·德富卡板塊隱沒到北美板塊之下，熔融的岩漿沿線上湧，形成一整排彼此獨立的層狀火山"
+    },
+    {
+      "label": "聖海倫火山",
+      "value": "1980 年的噴發把山頂削去約 400 公尺，是二十世紀美國本土最劇烈的火山災害"
+    },
+    {
+      "label": "雨影",
+      "value": "西坡是多雨的溫帶雨林，越過稜線之後東側立刻轉為半乾燥的灌叢與農業區"
+    },
+    {
+      "label": "對照重點",
+      "value": "跟「火山帶」一起看，洋紅色的火山點在這條山脈上排成一直線"
+    }
+  ],
+  "curriculum": {
+    "unit": "板塊運動與全球地形"
+  },
+  "schematic": true,
+  "sources": [
+    "維基百科 喀斯開山脈",
+    "Natural Earth 1:10m 自然地理區",
+    "Natural Earth 1:10m 高程點"
+  ]
+}
