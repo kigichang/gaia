@@ -557,6 +557,32 @@ geojson 一定查不到（那邊的 id 是官方案號 `monument-19831228000008`
 5. **面積是跨期作相加的年種植面積**，一塊地一年種兩期就算兩次。這是農業統計的標準
    定義，不是重複計算的 bug，但卡片與說明都要寫「年種植面積」，不要寫成耕地面積。
 
+#### 三種作物各有一張說明卡（`items.detail`，比照古蹟三級）
+
+點抽屜裡的「果樹」兩個字，原本開出來的是 `DetailCard` 那條 township fallback：
+標題「主要作物分布」＋整段圖層說明，三個子項目**逐字相同**——而「果樹跟蔬菜差在
+哪」正是點下去想知道的事。現在三種各有一份內容檔
+`src/content/geo/tw-crop-kinds/{fruit,vegetable,tea}.json`，
+`items.detail: { type: "geo", collection: "tw-crop-kinds" }` 覆蓋掉母圖層的
+`detail: { type: "township" }`；**點地圖上的圓點仍然是三層共用的 `TownshipCard`**。
+
+三張卡各自要回答的是「這一類收哪些作物、面積怎麼算、分布為什麼長這樣」，其中兩件事
+是這一層最容易讀錯、而圖層說明塞不下的：
+
+- ⚠️ **檳榔算果樹**（官方代碼 6 開頭）。323 個鄉鎮裡有 44 個的第一大「果樹」是檳榔，
+  冠軍的嘉義中埔鄉 5,432 公頃裡就有 3,711 公頃是檳榔——不講的話會把檳榔園讀成果園。
+- ⚠️ **竹筍算蔬菜**，而且它是 92 個鄉鎮的第一大蔬菜（多在丘陵與山區）。所以蔬菜的點
+  不是只落在平原上，山區冒出來的那幾顆多半是竹筍。
+
+⚠️ **卡片上的每個數字都是從三份產物 geojson 現數出來的**（鄉鎮數、總面積、縣市與
+鄉鎮前幾名、以及「第一名作物」的次數是數 `top` 字串的第一項），不是抄的。**重跑
+`build:geodata -- --only=tw-crops-*` 之後三張卡要一起重數**——農情調查逐年更新。
+
+⚠️ `DetailCard` 的 township fallback（featureId 不是 TOWNCODE 時退回圖層說明）
+**不要因此拿掉**：那條路徑現在雖然不是主要入口了，但這一層有三個子項目、五份資料與
+三個共用 featureId 的圖層，任何新路徑傳進一個非 TOWNCODE 的 id，症狀都是一張完全
+靜默的空白面板。
+
 #### ⚠️ 多年生作物要濾掉「沒有收成」的列
 
 新竹縣寶山鄉報了 **2,487 公頃的蘋果**，收穫面積 0、收量 0——那是全國其他所有蘋果
@@ -1997,11 +2023,19 @@ Web Mercator 下是直線，畫滿整圈也不貴；裁切是為了 `browse` 的
     - 點嘉義縣中埔鄉的果樹點 → 開的是**三層共用的 `TownshipCard`**：標題「中埔鄉」、
       副標「嘉義縣・鄉」、人口／密度／面積三個 stat，底下「主要作物（年種植面積）」
       列出果樹 5,432 公頃（檳榔／香蕉／其他果樹）、蔬菜、茶
-    - ⚠️ **在圖層抽屜點「果樹」這個子項目名稱**（不是核取方塊）→ 要顯示作物圖層的
-      說明，**不是空白面板**。那條路徑傳的 featureId 是 `"fruit"`，不是 TOWNCODE：
+    - ⚠️ **在圖層抽屜點「果樹」這個子項目名稱**（不是核取方塊）→ 開的是**那一類
+      作物自己的說明卡**（`items.detail`，見上），不是空白面板、也不是重複一次
+      圖層說明：
       ```js
-      document.querySelector('.map-detail-panel').innerText.trim().length > 0
+      const row = [...document.querySelectorAll('.layer-drawer .layer-row')]
+        .find(r => r.textContent.startsWith('主要作物分布'));
+      [...row.querySelectorAll('.species-name-btn')].find(b => b.textContent === '果樹').click();
+      document.querySelector('.map-detail-panel').innerText.slice(0, 30)
+      // 「果樹 / 果樹 / Fruit Trees / 農情調查裡作物代碼 6 開頭的那一大類…」
       ```
+      三種都要試（果樹／蔬菜／茶），搜「檳榔」「竹筍」「茶」也要開出同一張卡。
+      ⚠️ 那條路徑傳的 featureId 是 `"fruit"`、不是 TOWNCODE，所以 `DetailCard` 的
+      township fallback **仍然要留著**當守衛（見那裡的說明）
     - 搜「鹿谷」現在只有**一筆**鄉鎮（副標「鄉鎮市區界」），不再是鄉鎮界＋三筆作物
       ——三層共用同一張卡，五筆一樣的標題只是雜訊（見「搜尋合併成一筆」）。
       但搜「茶」仍然要找得到「茶・主要作物分布」那個子圖層

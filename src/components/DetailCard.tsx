@@ -106,10 +106,14 @@ export function DetailCard({
       .find((f) => f.properties?.id === featureId)?.properties ?? undefined;
 
     /**
-     * ⚠️ featureId 不是鄉鎮時要退回圖層說明，**不能回 `null`**。
-     * `handleItemNameClick`（ThemeMapPage）在使用者點「果樹」這個**子項目名稱**時，
-     * 傳的 featureId 是 `"fruit"`——那不是 TOWNCODE。回 null 的話畫面會是一張
-     * 空白面板，而 `data-detail-open` 仍然是 true。
+     * ⚠️ featureId 不是鄉鎮時要退回圖層說明，**不能回 `null`**——回 null 的話畫面
+     * 會是一張空白面板，而 `data-detail-open` 仍然是 true。
+     *
+     * 當初是為了「點『果樹』這個**子項目名稱**」而加的（`handleItemNameClick` 傳的
+     * featureId 是 `"fruit"`，那不是 TOWNCODE）。那條路徑現在走 `items.detail`
+     * 的作物說明卡了，所以這裡是**守衛而不是主要路徑**——但不要拿掉：這一層有
+     * 三個子項目、五份資料與三個共用同一組 featureId 的圖層，任何一條新路徑傳進
+     * 一個非 TOWNCODE 的 id，症狀都是一張完全靜默的空白面板。
      */
     if (!/^tw-\d+$/.test(featureId)) {
       const owner = owners.find((l) => l.items) ?? owners[0];

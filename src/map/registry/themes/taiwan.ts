@@ -1625,18 +1625,24 @@ export const taiwanTheme: ThemeDefinition = {
               label: "果樹",
               source: { type: "remote", path: "data/geo/tw-crops-fruit.geojson" },
               color: CROP_COLORS.fruit,
+              // 使用者搜的是水果的名字，不是「果樹」這個類別名（比照沿線標註的
+              // shortName 那條規則：看到什麼就會搜什麼）。檳榔一定要在——它是
+              // 44 個鄉鎮的第一大「果樹」，卻最不像水果
+              keywords: ["Fruit", "水果", "檳榔", "芒果", "香蕉", "鳳梨", "柑橘", "果園"],
             },
             {
               id: "vegetable",
               label: "蔬菜",
               source: { type: "remote", path: "data/geo/tw-crops-vegetable.geojson" },
               color: CROP_COLORS.vegetable,
+              keywords: ["Vegetable", "菜", "葉菜", "竹筍", "甘藍", "西瓜", "毛豆"],
             },
             {
               id: "tea",
               label: "茶",
               source: { type: "remote", path: "data/geo/tw-crops-tea.geojson" },
               color: CROP_COLORS.tea,
+              keywords: ["Tea", "茶葉", "茶園", "茶區", "高山茶", "凍頂"],
             },
           ],
         },
@@ -1644,6 +1650,17 @@ export const taiwanTheme: ThemeDefinition = {
         palette: Object.values(CROP_COLORS),
         // 鄉鎮全部有名字，而 items 圖層沒有可點清單——搜尋是唯一的檢索入口
         indexFeatures: true,
+        /**
+         * 點「果樹」這兩個字要開的是**這一類作物本身**的說明（收哪些作物、面積
+         * 怎麼算、分布為什麼長這樣），不是某一個鄉鎮的卡片——所以覆蓋掉母圖層的
+         * `detail: { type: "township" }`。比照古蹟三級，見 registry/types.ts 的
+         * `LayerItems.detail`。
+         *
+         * ⚠️ 在這之前點子項目名稱開出來的是 `DetailCard` 那條 township fallback：
+         * 標題「主要作物分布」＋整段圖層說明——三個子項目**逐字相同**，等於什麼
+         * 都沒回答（「果樹跟蔬菜差在哪」正是點下去想知道的事）。
+         */
+        detail: { type: "geo", collection: "tw-crop-kinds" },
       },
       browse: { zoom: 11 },
       description:

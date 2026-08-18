@@ -590,6 +590,11 @@ export interface LayerItems {
    * 「誰指定的、指定基準是什麼、跟另外兩級差在哪」。兩者是不同的東西，
    * 所以不能共用一個 `detail`。
    *
+   * 第二個案例是主要作物分布（母圖層是三層共用的 `township`，點圓點開的是那個
+   * 鄉鎮的卡；點「果樹」要開的是那一類作物本身）。判準是**「子項目名稱回答的
+   * 問題」跟「圖徵回答的問題」不同**——特有種、垂直植被帶那種兩者一致的圖層
+   * 不需要宣告它。
+   *
    * ⚠️ **不宣告它的後果是完全靜默的一張空白卡。** `handleItemNameClick` 一律
    * `setSelected`，而 `DetailCard` 拿 item id 去 `monument` 那一支查 geojson 是
    * 一定查不到的（那份 geojson 的 id 是 `monument-19831228000008` 這種官方案號）

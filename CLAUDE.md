@@ -907,7 +907,7 @@ registry/
 
 子項目（`items`）是「一個勾選項展開成 N 個子圖層」的第一級概念，目前只有特有種用到。清單來源寫成 `{ type: "content", collection: "species" }` 而不是硬編，這樣**新增一個物種 JSON 就會自動出現在 UI**。
 
-⚠️ **子項目本身也可能是一個要解釋的概念，那時要宣告 `items.detail`。** 點抽屜裡的子項目名稱（以及搜到子項目本身時）預設開的是**母圖層的** `detail`，而那不一定講得通：古蹟母圖層的 `detail` 是 `monument`（點圓點要開的是那一處古蹟的卡），但點「國定古蹟」四個字要開的是**那個級別的定義**。`items.detail`（目前只支援 `type: "geo"`）就是覆蓋這條路徑用的，內容檔放 `src/content/geo/<collection>/<item id>.json`，`validate-content.mjs` 兩個方向都會擋。⚠️ **不宣告的後果是一張完全靜默的空白面板**（item id 拿去母圖層那一支查 geojson 一定查不到 → 卡片回 `null`），詳見 `CLAUDE_TW.md` 的古蹟那一節。
+⚠️ **子項目本身也可能是一個要解釋的概念，那時要宣告 `items.detail`。** 點抽屜裡的子項目名稱（以及搜到子項目本身時）預設開的是**母圖層的** `detail`，而那不一定講得通：古蹟母圖層的 `detail` 是 `monument`（點圓點要開的是那一處古蹟的卡），但點「國定古蹟」四個字要開的是**那個級別的定義**。`items.detail`（目前只支援 `type: "geo"`）就是覆蓋這條路徑用的，內容檔放 `src/content/geo/<collection>/<item id>.json`，`validate-content.mjs` 兩個方向都會擋。判準是**「子項目名稱回答的問題」跟「圖徵回答的問題」不同**：古蹟（級別的定義 vs 那一處古蹟）與主要作物分布（那一類作物 vs 那個鄉鎮）都成立，特有種與垂直植被帶不成立、不必宣告。⚠️ **不宣告的後果是一張完全靜默的空白面板**（item id 拿去母圖層那一支查 geojson 一定查不到 → 卡片回 `null`），詳見 `CLAUDE_TW.md` 的古蹟那一節。
 
 ### 資料限制寫 `notes`，不寫進 `description`
 
