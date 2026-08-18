@@ -37,6 +37,9 @@
      兩個值不可能分歧，所以詳情面板的 top 可以直接用它，不必量測 DOM。 */
   --search-pill-h: 40px;
   --search-h: calc(var(--search-pill-h) + var(--fab-gap) * 2);
+  /* 右上角 ⋮⋮⋮ 那顆 fab 的寬度（圖示 20 + padding 12×2 + 框線 1×2）。
+     窄螢幕的搜尋欄要靠它算出右邊要讓出多少，見 max-width: 860px 那一段。 */
+  --top-right-fab-w: 46px;
   --z-map-ui: 5; /* 浮動控制與圖例 */
   --z-scrim: 10; /* 窄螢幕遮罩：那是抽屜的遮罩，所以在抽屜之下 */
   --z-drawer: 15; /* 圖層抽屜 */
@@ -1757,6 +1760,25 @@ input {
   /* 搜尋框改成滿寬（--panel-w 比窄螢幕還寬） */
   .map-top-left {
     width: 100%;
+  }
+
+  /* ⚠️ 窄螢幕的搜尋欄一定要在右邊讓出 ⋮⋮⋮ 那顆按鈕的位置。上面那條把整欄拉成
+     滿寬，而 .map-top-right 是絕對定位的另一欄，兩者會**重疊**——.map-top-left
+     的 z-index 是 --z-popover、高過 --z-map-ui，所以蓋住的一定是主題選單那顆
+     按鈕（實測 500px 寬時它整顆被搜尋藥丸的右端蓋掉，看不見也點不到，使用者的
+     回報就是「愛心蓋住選主題的按鈕」）。寬螢幕不會發生：那時整欄只有
+     --panel-w(360px) 寬，右邊還有一大段空的。
+     留白 = fab 寬 + 它自己的 --fab-gap + 兩欄之間再留一個 8px（同 .map-top-left
+     的 gap）；padding 是簡寫，所以這一條必須寫在四邊的 padding 之後。 */
+  .map-top-left {
+    padding-right: calc(var(--top-right-fab-w) + var(--fab-gap) + 8px);
+  }
+
+  /* ⚠️ 而且贊助按鈕整個收起來：讓出上面那段留白之後，搜尋框在 412px 的手機上
+     只剩三百出頭，再擺一顆 46px 的心型就不夠打字了。贊助入口不是這一頁的主要
+     任務（桌機仍然看得到），主要入口是搜尋框與 ☰。 */
+  .map-donate {
+    display: none;
   }
 
   .drawer-scrim {

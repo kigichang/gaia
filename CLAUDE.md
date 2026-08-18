@@ -1548,6 +1548,8 @@ source 也 loaded。這一類「畫得出來但看不見」的缺陷**只能看�
 
 `.map-top-left` 是 `display: flex` 的一列，`MapSearchBox` 用 `flex: 1; min-width: 0` 佔滿剩下的寬度，`DonateButton`（`src/components/DonateButton.tsx`）用 `flex: none` 排在右邊——這是唯一一個心型固定用暖紅色（不是 `.map-fab` 預設的中性灰）的浮動按鈕，因為它要引導點擊而不是單純導覽，是 `<a target="_blank">` 連到均一的贊助頁，不是 React Router 內部連結。抽屜開著時整欄一起 `visibility: hidden`，贊助按鈕也會跟著收起。
 
+⚠️ **窄螢幕（≤860px）的 `.map-top-left` 會變成滿寬，於是它跟右上角的 `.map-top-right`（⋮⋮⋮，絕對定位的另一欄）重疊，而它的 `z-index` 比較高——所以蓋掉的一定是主題選單那顆按鈕，而且是連看都看不到、也點不到**（實測 500px 寬時整顆被搜尋藥丸的右端吃掉；使用者在 Pixel 7a 上的回報是「愛心蓋住選主題的按鈕」）。修法有兩條、缺一不可：媒體查詢裡替這一欄補 `padding-right: calc(var(--top-right-fab-w) + var(--fab-gap) + 8px)`（`--top-right-fab-w` 是那顆 fab 的寬度 46px＝圖示 20 + padding 12×2 + 框線 1×2），並且把 `.map-donate` 整個 `display: none`——讓出那段留白之後，412px 的手機上搜尋框只剩三百出頭，再擺一顆 46px 的心型就不夠打字了。⚠️ **只藏愛心是不夠的**，搜尋藥丸自己一樣會蓋住 ⋮⋮⋮。驗法是 `document.elementFromPoint()` 打在 ⋮⋮⋮ 的正中心要命中那顆按鈕，光看截圖上愛心不見了會誤判成修好了。
+
 ### `<MapView>` 必須是 shell 的第一個、無條件的子節點
 
 不准把它移進條件分支、加 key 的包裝層、或抽屜／面板擁有的子樹。任何一種都會讓 React 重建那個節點，於是 maplibre remount：整份圖磚快取丟掉，`window.__gaiaMaps` 累積殘骸（檢查清單第 11 項就是在抓這個）。面板一律是**排在地圖後面**的條件式兄弟節點，地圖的 reconciliation 位置永遠是 index 0。
