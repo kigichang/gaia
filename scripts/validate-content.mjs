@@ -141,6 +141,48 @@ try {
   console.log("（略過 geo-features：目錄不存在）");
 }
 
+/**
+ * ── 內容檔裡不准有 markdown ──────────────────────────────────────────────
+ *
+ * 詳情卡把 `facts[].value`（以及 subtitle／stats／sources）直接放進文字節點，
+ * **沒有任何 markdown 算繪**。所以 `**粗體**` 會原樣印出兩對星號給學生看，而且
+ * **完全靜默**——build 過、typecheck 過、schema 也過，只有把那一張卡打開來看
+ * 才發現得了。2026-08 掃出 6 處（維蘇威、聖母峰、普哈胡努 ×2、尤耶亞科山、
+ * 信風），全部改成本站原本的慣例（用「」或改寫句子）。
+ *
+ * ⚠️ 正確的修法不是加一個 markdown 算繪器：那會替一份純資料檔開一條新的語法
+ * 通道，而 `sources`、`stats`、圖層的 `description`／`notes` 全都不會經過它，
+ * 寫的人分不出哪裡能用、哪裡不能用。
+ *
+ * 檢查放在**檔案層級**（不是逐欄位）是刻意的：`**` 在這些資料檔裡沒有任何
+ * 合法用途，整份掃最簡單也最不會漏。
+ */
+for (const dir of ["places", "indigenous", "species", "geo"]) {
+  const base = join(ROOT, "src/content", dir);
+  const walk = async (d, rel) => {
+    let entries;
+    try {
+      entries = await readdir(d, { withFileTypes: true });
+    } catch {
+      return;
+    }
+    for (const entry of entries) {
+      const next = join(d, entry.name);
+      if (entry.isDirectory()) {
+        await walk(next, `${rel}/${entry.name}`);
+      } else if (entry.name.endsWith(".json")) {
+        const text = await readFile(next, "utf8");
+        if (text.includes("**")) {
+          errors.push(
+            `${rel}/${entry.name} → 含 markdown 粗體標記「**」，卡片不算繪 markdown（會原樣印出星號）。要強調請用「」或改寫句子`,
+          );
+        }
+      }
+    }
+  };
+  await walk(base, dir);
+}
+
 // ── 產生／手繪的 geojson ────────────────────────────────────────────────
 /**
  * 刻意跟另一個圖層共用 `properties.id` 的產物，因此**允許重複**。
