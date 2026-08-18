@@ -28,5 +28,5 @@
     }
   ],
   "curriculum": { "unit": "臺灣的人口與交通" },
-  "sources": ["維基百科", "台灣高鐵", "OpenStreetMap"]
+  "sources": ["維基百科 台灣高鐵", "台灣高鐵", "OpenStreetMap"]
 }
