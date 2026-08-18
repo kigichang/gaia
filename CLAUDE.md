@@ -714,6 +714,7 @@ ID 常數定義在 `src/map/layers/*.ts`，**一律 import 常數，不要寫死
 | `tw-eez-<zone>-fill` / `-outline` / `-label` | fill + line + symbol，**四片海域各自一組**（`taiwan`／`japan`／`philippines`／`senkaku`）。標註用 `shortName`，而且是**面的標註**（`symbol-placement: point`，全站只有它與 `plates` 用） |
 | `tw-strait-median-line-line` / `-label` | line + symbol（虛線，`reference` 中性灰——跟世界地理主題的緯度參考線、國際換日線同一套樣式） |
 | `tw-tropic-of-cancer-line` / `-label` | line + symbol（同上那一套樣式；幾何由 `generators.ts` 產生，緯度值從 `latitude-lines` 那張表撈） |
+| `tw-tropic-markers-points` | circle（附屬圖層；四處北回歸線標誌碑，沿用 `place` 藍） |
 
 `dem` 與 `dem-terrain` 是兩個來源但都指向同一個 shared DEM protocol：maplibre 會警告 hillshade 與 terrain 共用來源會降低算繪品質，拆開可消除警告，而底層圖磚快取仍然共用、不會重複下載。
 
@@ -860,7 +861,7 @@ registry/
 
 **資料是 join 出來的，不是抄的。** `{ type: "derived", derived: "tw-range-peaks" }` 由 `resolve.ts` 把兩份既有的單一事實來源接起來：座標取自 `src/content/places`、「哪座山峰屬於哪條山脈」取自 `tw-ranges.geojson` 的 `peakId`。所以 5 座主峰的座標與歸屬各自只有一份，不會漂開。它跟山脈線圖層共用 `resolveLayerData` 的同一個快取項目，實測 `tw-ranges.geojson` 只抓一次。
 
-目前有兩組：**五大山脈 → 主峰**、**縣市界 → 縣市政府**。
+目前有三組：**五大山脈 → 主峰**、**縣市界 → 縣市政府**、**北回歸線 → 標誌碑**。
 
 **附屬點一律沿用 `place` 藍，不是母圖層的顏色——這是被色票驗證逼出來的，不是隨手選。** POINT 色票（藍／紅／青／黃／紫）已經是 all-pairs 全過的飽和狀態，把山脈洋紅 `#c23f8f` 加進去，它跟原住民族紅 `#e34948` 的**一般視覺 ΔE 只有 13.0（hard FAIL）**，而驗證器明講這一項不能用次要編碼豁免；紫 `#7a3fa6`、棕 `#8a5a2b`、青綠 `#00857a`、橘褐 `#b06a00` 也全部 FAIL（撞紫／撞紅／彩度不足）。縣市界橘 `#d95926` 更糟，對原住民族紅只有 **5.1**（CVD 2.7）。藍在語意上是一致的：「藍點＝地圖上一個有詳情卡的地點」。**要動這個顏色請先重跑 `validate_palette.js --pairs all` 明暗兩模式。**
 

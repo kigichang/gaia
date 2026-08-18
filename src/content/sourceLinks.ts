@@ -84,6 +84,9 @@ export const SOURCE_LINKS: Record<string, string> = {
   北海岸及觀音山國家風景區管理處: "https://www.northguan-nsa.gov.tw/",
   澎湖國家風景區管理處: "https://www.penghu-nsa.gov.tw/",
   交通部觀光署: "https://www.taiwan.net.tw/",
+  // 北回歸線標誌碑那一組的第二個來源：瑞穗那座的設立年代、1981 年遷移的原因，
+  // 以及「北緯 23 度 27 分 4.51 秒」這個名目緯度，都只在鄉公所自己的頁面上。
+  花蓮縣瑞穗鄉公所: "https://www.juisui.gov.tw/cp.aspx?n=1685",
   // 燈塔的主管機關（本島四極的地標有三個是燈塔）
   交通部航港局: "https://www.motcmpb.gov.tw/",
   經濟部水利署: "https://www.wra.gov.tw/",

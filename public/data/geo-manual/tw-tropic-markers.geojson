@@ -1,0 +1,56 @@
+{
+  "type": "FeatureCollection",
+  "metadata": {
+    "collection": "tw-tropic-markers",
+    "source": "座標逐筆取自官方頁面，不是描繪的：嘉義市、花蓮瑞穗、花蓮豐濱三處取自交通部觀光署的景點資料；嘉義縣水上鄉那座取自維基百科〈嘉義北回歸線標誌〉。lineId 對應 generators.ts 產生的北回歸線圖徵。⚠️ 澎湖縣馬公市虎井嶼的「北回歸線 23.5° 地標／追日大道」（2016）沒有查到任何官方公布的經緯度，所以不在這份檔案裡——那是刻意的缺漏，不是漏掉，見圖層的 notes。",
+    "license": "座標為政府公開發布之景點資料；水上鄉那一筆為 CC BY-SA（維基百科）",
+    "generatedAt": "2026-08-18",
+    "featureCount": 4
+  },
+  "features": [
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [120.416622, 23.453688] },
+      "properties": {
+        "id": "chiayi-shuishang",
+        "name": "嘉義水上北回歸線標誌",
+        "lineId": "tw-tropic-of-cancer",
+        "meta": "嘉義縣水上鄉・1908 年・世界第一座",
+        "year": 1908
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [120.426138, 23.466307] },
+      "properties": {
+        "id": "chiayi-city",
+        "name": "全球北回歸線標誌第十處",
+        "lineId": "tw-tropic-of-cancer",
+        "meta": "嘉義市西區・2004 年・六座歷年標誌並列",
+        "year": 2004
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [121.3574, 23.465731] },
+      "properties": {
+        "id": "hualien-ruisui",
+        "name": "瑞穗北回歸線標誌",
+        "lineId": "tw-tropic-of-cancer",
+        "meta": "花蓮縣瑞穗鄉舞鶴・1933 年・1981 年遷至舞鶴台地",
+        "year": 1933
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [121.49623, 23.451362] },
+      "properties": {
+        "id": "hualien-fengbin",
+        "name": "靜浦北回歸線標誌",
+        "lineId": "tw-tropic-of-cancer",
+        "meta": "花蓮縣豐濱鄉・臺11線 70.5 公里處",
+        "year": null
+      }
+    }
+  ]
+}
