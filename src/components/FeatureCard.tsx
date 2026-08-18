@@ -9,6 +9,14 @@ interface FeatureCardProps {
   fallback: {
     name?: string;
     /**
+     * geojson 的 `en` 屬性（原始的外文名）。
+     *
+     * ⚠️ 沒有內容檔的圖層本來讀不到英文名——`feature.name.en` 只存在於內容檔裡，
+     * 而世界主要河流 118 條、全球活火山 1,214 座**一份內容檔都沒有**。中文名是
+     * 對照表翻出來的，原名不顯示的話，學生就沒辦法拿它去查資料或對照新聞。
+     */
+    en?: string;
+    /**
      * geojson 的 `meta` 屬性（清單裡的次標，例如縣市政府的地址）。
      * 沒有內容檔時它常常是這個圖徵**唯一**的具體資訊，不顯示就浪費掉了。
      */
@@ -48,7 +56,9 @@ export function FeatureCard({ feature, fallback }: FeatureCardProps) {
     <div className="place-card">
       <h4 className="feature-title">
         {title}
-        {feature?.name.en && <span className="detail-en">{feature.name.en}</span>}
+        {(feature?.name.en ?? fallback.en) && (
+          <span className="detail-en">{feature?.name.en ?? fallback.en}</span>
+        )}
       </h4>
       {feature?.subtitle && <p className="feature-subtitle">{feature.subtitle}</p>}
 

@@ -414,7 +414,82 @@ const RIVER_NAMES_ZH = {
   Seine: "塞納河",
   Ayeyarwady: "伊洛瓦底江",
   Irrawaddy: "伊洛瓦底江",
+  "Irrawaddy Delta": "伊洛瓦底江三角洲",
+  Nmai: "恩梅開江",
+
+  // 2026-08 補：原本這 37 條在圖上顯示的是英文名（NE 的原名），對一個給國中小學生
+  // 看的中文網站來說那等於沒有名字。多數是既有大河的上游段或當地語言名。
+  Ertis: "額爾濟斯河",
+  Ertix: "額爾齊斯河（額爾齊斯河中國段）",
+  "Argun\u2019": "額爾古納河",
+  Hailar: "海拉爾河",
+  "Selenge (Selenga)": "色楞格河",
+  Ideriyn: "伊德爾河",
+  Za: "扎曲（瀾滄江上游）",
+  Maquan: "馬泉河（雅魯藏布江上游）",
+  Shiquan: "獅泉河（印度河上游）",
+  Dihang: "迪杭河（雅魯藏布江下游）",
+  Madison: "麥迪遜河",
+  Peace: "和平河",
+  Slave: "奴河",
+  Teslin: "特斯林河",
+  Allegheny: "阿勒格尼河",
+  Niagara: "尼加拉河",
+  "St. Clair": "聖克萊爾河",
+  Barwon: "巴旺河",
+  Weir: "威爾河",
+  Shire: "希雷河",
+  Uele: "韋萊河",
+  Kibali: "基巴利河",
+  "Guapor\u00e9": "瓜波雷河",
+  "Mamor\u00e9": "馬莫雷河",
+  // 多瑙河三角洲的三條分流與其支汊（羅馬尼亞語 Bra\u021bul＝「分流」）
+  Borcea: "多瑙河三角洲（博爾恰分流）",
+  "Bratul Chillia": "多瑙河三角洲（基利亞分流）",
+  "Bratul Sfintu Gheorghe": "多瑙河三角洲（聖喬治分流）",
+  "Bratul Sulina": "多瑙河三角洲（蘇利納分流）",
+  // 勒拿河三角洲的分流
+  "Bykovskaya Protoka": "勒拿河三角洲（貝科夫分流）",
+  "Olenekskaya Protoka": "勒拿河三角洲（奧列尼奧克分流）",
 };
+
+/**
+ * ⚠️ **NE 是依「名稱字串」分筆的，所以同名不同河會被併成同一筆圖徵。**
+ *
+ * 這正是 CLAUDE_TW.md 記載的 RIVERLIN 陷阱，只是出現在世界河流層。實測只有兩筆
+ * 中招（其餘多段的圖徵都是同一條河被切成有間隙的段落，不可以一起拆）：
+ *
+ *   Negro   2 段，兩群相距 **4,455 km**：一條在巴塔哥尼亞、一條是亞馬遜支流
+ *   Grande  7 段，兩群相距 **2,084 km**：一條在巴西（巴拉那水系）、一條在玻利維亞
+ *
+ * 不拆的話會得到「一張卡片講兩條不同的河」，而且 `fitBounds` 會從巴西框到玻利維亞。
+ *
+ * ⚠️ **刻意用明確的判準（經緯度門檻）而不是自動分群。** 試過用端點連通性分群，
+ * 26 筆會被判成「斷開成多群」，但其中密蘇里河、伏爾加河、尼日河那些**本來就是
+ * 同一條河**——NE 的線段之間本來就有間隙，靠距離門檻分不出「同一條河的兩段」與
+ * 「兩條不同的河」。所以這裡只列真的查證過的兩筆。
+ */
+const RIVER_SPLITS = {
+  Negro: [
+    { name: "內格羅河（亞馬遜支流）", en: "Rio Negro", keep: (lat) => lat > -20 },
+    { name: "內格羅河（巴塔哥尼亞）", en: "R\u00edo Negro", keep: (lat) => lat <= -20 },
+  ],
+  Grande: [
+    { name: "格蘭德河（巴西）", en: "Rio Grande", keep: (_lat, lon) => lon > -55 },
+    { name: "格蘭德河（玻利維亞）", en: "R\u00edo Grande", keep: (_lat, lon) => lon <= -55 },
+  ],
+};
+
+/** 一段線的平均座標，給 RIVER_SPLITS 的判準用。 */
+function partCenter(part) {
+  let x = 0;
+  let y = 0;
+  for (const [lon, lat] of part) {
+    x += lon;
+    y += lat;
+  }
+  return [y / part.length, x / part.length];
+}
 
 /**
  * 主要交通軸線。每一筆是**一條教學上會整條講的軸線**，不是一個 OSM 關聯。
@@ -706,18 +781,51 @@ const SOURCES = [
     digits: 3,
     // scalerank <= 3（116 條）而不是 <= 2（62 條）：實測 <= 2 會漏掉黃河、恆河、
     // 伏爾加河、尼日河、印度河——全都是課綱會點名的大河，漏掉就不能叫「世界主要河流」。
-    transform: (raw) =>
-      raw.features
-        .filter((f) => f.properties.scalerank <= 3 && f.properties.name)
-        .map((f, i) => ({
-          type: "Feature",
-          geometry: f.geometry,
-          properties: {
-            id: `${slugify(f.properties.name)}-${i}`,
-            // NE 沒有中文名欄位，對不到就沿用原名
-            name: RIVER_NAMES_ZH[f.properties.name] ?? f.properties.name,
-          },
-        })),
+    transform: (raw) => {
+      const picked = raw.features.filter((f) => f.properties.scalerank <= 3 && f.properties.name);
+      const out = [];
+      picked.forEach((f, i) => {
+        const en = f.properties.name;
+        const split = RIVER_SPLITS[en];
+        if (!split) {
+          out.push({
+            type: "Feature",
+            geometry: f.geometry,
+            properties: {
+              id: `${slugify(en)}-${i}`,
+              // ⚠️ 對不到就沿用原名——但那代表圖上會出現英文名，等於那條河沒有名字。
+              // 補對照表時請一併確認它不是同名不同河（見 RIVER_SPLITS）。
+              name: RIVER_NAMES_ZH[en] ?? en,
+              // 原始的 Natural Earth 名稱一律保留：卡片上會顯示，`searchIndex` 也會
+              // 收進 haystack，所以打 Mekong、Danube 一樣搜得到。
+              en,
+            },
+          });
+          return;
+        }
+        // 同名不同河：依明確判準拆成兩筆，各自給名字（見 RIVER_SPLITS 的說明）
+        const parts =
+          f.geometry.type === "LineString" ? [f.geometry.coordinates] : f.geometry.coordinates;
+        for (const [k, spec] of split.entries()) {
+          const mine = parts.filter((part) => {
+            const [lat, lon] = partCenter(part);
+            return spec.keep(lat, lon);
+          });
+          if (mine.length === 0) {
+            throw new Error(`RIVER_SPLITS 的「${en}／${spec.name}」一段都沒分到，判準要重看`);
+          }
+          out.push({
+            type: "Feature",
+            geometry:
+              mine.length === 1
+                ? { type: "LineString", coordinates: mine[0] }
+                : { type: "MultiLineString", coordinates: mine },
+            properties: { id: `${slugify(en)}-${i}-${k}`, name: spec.name, en: spec.en },
+          });
+        }
+      });
+      return out;
+    },
   },
   {
     id: "date-line",

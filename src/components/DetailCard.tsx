@@ -60,6 +60,8 @@ export function DetailCard({
               ? String(props[detail.fallbackNameProperty ?? "name"])
               : undefined,
           meta: typeof props?.meta === "string" ? props.meta : undefined,
+          // 原始外文名（世界主要河流與全球活火山都靠它才顯示得出原名）
+          en: typeof props?.en === "string" ? props.en : undefined,
           /**
            * ⚠️ 兩個屬性名都要讀。`detail` 是這個欄位本來的名字（`FeatureCard`
            * 的 prop 就叫這個），臺灣河川用它放公告的管理等級；`top` 是主要作物
