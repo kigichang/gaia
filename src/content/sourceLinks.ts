@@ -517,6 +517,19 @@ export const SOURCE_LINKS: Record<string, string> = {
   "美國國家海洋暨大氣總署 百慕達三角": "https://oceanservice.noaa.gov/facts/bermudatri.html",
   "維基百科 百慕達三角": "https://zh.wikipedia.org/zh-tw/%E7%99%BE%E6%85%95%E5%A4%A7%E4%B8%89%E8%A7%92",
   /**
+   * 東非大裂谷那一筆（作者精選・範圍）。⚠️ 泛稱的「USGS」在本檔案一律拆開登記，
+   * 這一個連的是 This Dynamic Earth 的〈認識板塊運動〉那一章——「非洲底下可能正在
+   * 發育一個新的擴張中心」這句話出自那一頁，它也是這張卡的骨幹。
+   */
+  "USGS 認識板塊運動": "https://pubs.usgs.gov/gip/dynamic/understanding.html",
+  // 裂谷本身、北端的三聯點、西支最深的那個湖，以及在裂谷裡出土的那具化石——
+  // 四件事各自登記條目，不要只寫泛稱的「維基百科」（次級來源，數值仍以上面那份為準）。
+  "維基百科 東非大裂谷": "https://zh.wikipedia.org/zh-tw/%E6%9D%B1%E9%9D%9E%E5%A4%A7%E8%A3%82%E8%B0%B7",
+  "維基百科 阿法爾三角": "https://zh.wikipedia.org/zh-tw/%E9%98%BF%E6%B3%95%E7%88%BE%E4%B8%89%E8%A7%92",
+  "維基百科 坦干伊喀湖": "https://zh.wikipedia.org/zh-tw/%E5%9D%A6%E5%B9%B2%E4%BC%8A%E5%96%80%E6%B9%96",
+  "維基百科 露西 (南方古猿)":
+    "https://zh.wikipedia.org/zh-tw/%E9%9C%B2%E8%A5%BF_(%E5%8D%97%E6%96%B9%E5%8F%A4%E7%8C%BF)",
+  /**
    * 全球活火山。GVP 的授權方式是「引用即可自由使用」，所以來源標籤要留著全名，
    * 不要簡寫成「Smithsonian」。知名火山的中文名另外標維基百科（次級來源）。
    */
