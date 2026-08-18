@@ -148,6 +148,19 @@ import {
   formatArea as formatEezArea,
   ringDiagonal,
 } from "./lib/eez.mjs";
+import {
+  CONTINENTS,
+  COUNTRIES_URL as CONTINENT_COUNTRIES_URL,
+  EXPECTED_LAND_KM2,
+  LAND_TOLERANCE,
+  LICENSE as CONTINENT_LICENSE,
+  SOURCE_LABEL as CONTINENT_SOURCE_LABEL,
+  assignContinent,
+  pieceAreaKm2,
+  ringBbox,
+  ringSignedArea,
+  splitPolygon,
+} from "./lib/continents.mjs";
 
 /**
  * 「這一組的清單順序與副標由官方數字當主角」——`tw-rivers` 與 `tw-basins` 共用。
@@ -247,6 +260,19 @@ const COUNTY_IDS = {
  * **必須在簡化之前**做，不能指望容差幫忙。
  */
 const MIN_ISLAND_AREA = 1e-5;
+
+/**
+ * 大洲分區的離島面積下限（度²）。比照 `MIN_ISLAND_AREA` 的既有作法，但門檻高得多
+ * ——那一份是 zoom 11 的臺灣，這一份是 zoom 5 的世界。
+ *
+ * 0.02 度² ≈ 250 km²。上游把每一塊礁岩都收了進來（七大洲合計 1,450 個環，其中
+ * 六成小於這個門檻），而它們在世界尺度上全都不到一個像素。
+ *
+ * ⚠️ **不要再往上調**：0.15 度²（生物群系那一層的門檻）會開始咬到新加坡、馬爾他、
+ * 澎湖群島與大半個太平洋島群，而「大洋洲是由澳洲大陸與無數島嶼組成」正是這一層
+ * 要教的事。
+ */
+const MIN_CONTINENT_ISLAND_AREA = 0.02;
 
 /**
  * 交通軸線裡一段折線的最短長度（公里）。比照 `MIN_ISLAND_AREA` 的既有作法。
@@ -744,6 +770,114 @@ const SOURCES = [
           properties: { id: "date-line", name: "國際換日線" },
         },
       ];
+    },
+  },
+  {
+    id: "world-continents",
+    label: "大洲分區",
+    url: CONTINENT_COUNTRIES_URL,
+    license: CONTINENT_LICENSE,
+    sourceLabel: CONTINENT_SOURCE_LABEL,
+    /**
+     * 0.05° ≈ 5.5 km。這一層的 `maxzoom` 是 5，一個像素在 zoom 5 是 0.088°，
+     * 所以簡化的誤差還在半個像素以內；而它畫出來的**海岸線本來就跟底圖重複**，
+     * 真正要讀的是洲與洲之間那幾條界線與各洲的名字，再細也沒有用。
+     */
+    tolerance: 0.05,
+    digits: 3,
+    transform: (raw) => {
+      /** 洲別 id → 所有環（已反轉成逆時針，見 lib/continents.mjs 檔頭）。 */
+      const ringsById = new Map(Object.keys(CONTINENTS).map((id) => [id, []]));
+      /** ⚠️ 面積在切開之後、簡化與濾島之前累加——那是這一層唯一的自我檢查。 */
+      const areaById = new Map(Object.keys(CONTINENTS).map((id) => [id, 0]));
+
+      for (const feature of raw.features) {
+        const { NAME: name, CONTINENT: neContinent } = feature.properties;
+        const polygons =
+          feature.geometry.type === "Polygon"
+            ? [feature.geometry.coordinates]
+            : feature.geometry.coordinates;
+        for (const polygon of polygons) {
+          for (const piece of splitPolygon(polygon, name)) {
+            const id = assignContinent(name, neContinent, piece.flags, ringBbox(piece.rings[0]));
+            const target = ringsById.get(id);
+            if (!target) throw new Error(`「${name}」被分到不存在的洲別「${id}」`);
+            for (const ring of piece.rings) target.push(ring.slice().reverse());
+            areaById.set(id, areaById.get(id) + pieceAreaKm2(piece.rings));
+          }
+        }
+      }
+
+      const totalKm2 = [...areaById.values()].reduce((sum, km2) => sum + km2, 0);
+      if (Math.abs(totalKm2 / EXPECTED_LAND_KM2 - 1) > LAND_TOLERANCE) {
+        throw new Error(
+          `七大洲面積總和 ${(totalKm2 / 1e6).toFixed(1)} 百萬 km²，` +
+            `與陸地總面積 ${(EXPECTED_LAND_KM2 / 1e6).toFixed(0)} 差太多`,
+        );
+      }
+
+      const rows = [];
+      for (const [id, { name, en }] of Object.entries(CONTINENTS)) {
+        const rings = ringsById.get(id);
+        if (!rings.length) throw new Error(`${name}一塊陸地都沒有，上游的 CONTINENT 欄位可能變了`);
+        /**
+         * ⚠️ 濾掉小島**必須在簡化之前**（比照離島與生物群系的既有規則）：
+         * Douglas–Peucker 不會刪掉整個環，指望容差幫忙是沒有用的。
+         *
+         * 0.02 度² ≈ 250 km²。這個門檻留得住模里西斯、馬爾他、澎湖群島這種
+         * 課本叫得出名字的島，濾掉的是上游連每一塊礁岩都收進來的那幾千個環
+         * ——它們在 `maxzoom: 5` 之內全都小於一個像素。
+         */
+        const polygons = dissolveRings(rings, name, 0).filter(
+          (poly) => Math.abs(ringSignedArea(poly[0])) >= MIN_CONTINENT_ISLAND_AREA,
+        );
+
+        /**
+         * ⚠️ 不可以有任何一條邊跨過 ±180——跨了 maplibre 會畫一條繞過整個地球的
+         * 橫線而且不報錯（跟國際換日線、板塊邊界同一個坑）。
+         *
+         * ⚠️ **南極洲是唯一的例外**：它的外環沿著南緯 90° 那條邊從西經 180° 接回
+         * 東經 180°，那條邊在畫面上就是地圖最下緣的一條水平線，不是繞過地球的橫線。
+         */
+        for (const poly of polygons) {
+          for (const ring of poly) {
+            for (let i = 1; i < ring.length; i++) {
+              if (Math.abs(ring[i][0] - ring[i - 1][0]) < 180) continue;
+              if (Math.abs(ring[i][1]) > 89 && Math.abs(ring[i - 1][1]) > 89) continue;
+              throw new Error(`${name}有一條邊從 ${ring[i - 1]} 跳到 ${ring[i]}，代表它跨過了 ±180`);
+            }
+          }
+        }
+
+        const areaKm2 = areaById.get(id);
+        const share = Math.round((areaKm2 / totalKm2) * 100);
+        rows.push({
+          type: "Feature",
+          geometry: { type: "MultiPolygon", coordinates: polygons },
+          properties: {
+            id,
+            name,
+            /** 搜尋 haystack 會收 `en`，讓學生打 Asia 也找得到 */
+            en,
+            area_km2: Math.round(areaKm2),
+            share_percent: share,
+            meta: `${formatPlateArea(areaKm2)}・約占陸地 ${share}%`,
+          },
+          _area: areaKm2,
+        });
+      }
+
+      console.log(
+        `\n  · ${rows
+          .map((r) => `${r.properties.name} ${(r._area / 1e6).toFixed(2)}`)
+          .join("／")}（百萬 km²，總和 ${(totalKm2 / 1e6).toFixed(1)}）`,
+      );
+
+      /**
+       * 依面積由大到小——那正好是課本列七大洲的順序（亞、非、北美、南美、南極、
+       * 歐、大洋），而 feature 順序就是圖層抽屜裡可點清單的顯示順序。
+       */
+      return rows.sort((a, b) => b._area - a._area).map(({ _area, ...feature }) => feature);
     },
   },
   {

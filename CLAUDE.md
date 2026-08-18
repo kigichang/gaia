@@ -68,7 +68,7 @@ Node ≥ 22.12（vite 8 要求）。開發機與 CI 都用 Node 24。
 | 鄉鎮別人口與人口密度 | `data.gov.tw` 資料集 **8410**「各鄉鎮市區人口密度」→ `opdadm.moi.gov.tw` 的年度 CSV | **只在建置期呼叫**，內政部戶政司。⚠️ **前兩列都是標頭**，年份寫死不自動取最新，見下 |
 | 鄉鎮別作物種植面積 | `data.gov.tw` 資料集 **7302**「農情調查」→ `data.moa.gov.tw/Service/OpenData/FromM/TownCropData.aspx` | **只在建置期呼叫**（有 CORS 但 43,538 筆不該讓瀏覽器自己聚合）。⚠️ **不帶篩選只回 9999 筆**，且**不含水稻**，見下 |
 | 臺灣鄉鎮市區界線 | `data.gov.tw/api/v2/rest/dataset/**7441**` → TGOS 的 **SHP** zip（同一個單位） | **只在建置期呼叫**。⚠️ 這份**沒有 GML 只有 SHP**，而且 zip 裡有兩份 shapefile，見下 |
-| 世界行政區／河流幾何、國際換日線 | `raw.githubusercontent.com/nvkelso/natural-earth-vector`（Natural Earth） | **只在建置期呼叫**，public domain。換日線在 `ne_10m_geographic_lines`，見下 |
+| 世界行政區／河流幾何、國際換日線、大洲分區 | `raw.githubusercontent.com/nvkelso/natural-earth-vector`（Natural Earth） | **只在建置期呼叫**，public domain。換日線在 `ne_10m_geographic_lines`；大洲是 `ne_50m_admin_0_countries` 依 `CONTINENT` 併起來的，見下 |
 | 板塊與板塊邊界 | `raw.githubusercontent.com/fraxen/tectonicplates`（Bird 2003／Nordpil 轉製） | **只在建置期呼叫**，ODC-BY 1.0（**必須標示出處**）。邊界的三分類在 10 MB 的 `PB2002_steps.json` 裡，見下 |
 | 臺灣與鄰國專屬經濟海域 | `geo.vliz.be/geoserver/MarineRegions/wfs`（Marine Regions／Flanders Marine Institute，Maritime Boundaries v12） | **只在建置期呼叫**，免金鑰的公開 WFS，CC-BY（**必須標示出處**）。⚠️ 我國從未公告經濟海域外界線，官方那份 12／24 浬向量在 NODASS 要登入，見 `CLAUDE_TW.md` |
 | 地震目錄 | `earthquake.usgs.gov/fdsnws/event/1/query`（USGS） | **只在建置期呼叫**，免金鑰、`ACAO: *`。全球與臺灣兩層共用這一個端點 |
@@ -237,6 +237,84 @@ node <dataviz-skill>/scripts/validate_palette.js "#c95c1c,#2f74c9,#159c6b" --pai
 ⚠️ **不要「順手」改回實線**，也不要因為畫了虛線就以為這一層變成示意圖——它沒有標
 `schematic`，幾何是 Bird (2003) 的實測模型；虛線在這裡的語意是「模型化的界線」，
 跟 `notes` 早就寫著的「真實的變形區可以寬達數百公里」一致。
+
+### 大洲分區：把國界併成七大洲
+
+取得邏輯在 `scripts/lib/continents.mjs`，產物是 `public/data/geo/world-continents.geojson`
+（7 筆、326 KB）。
+
+#### 沒有可用的「大洲多邊形」，所以自己併
+
+公開又可自由使用的大洲圖資其實不存在（Esri Living Atlas 的 World Continents 不是
+開放資料），Natural Earth 只有國界，每個國家帶一個 `CONTINENT` 欄位。而「把同一洲的
+國家併起來」正好是本站已經有工具的事——`lib/dissolve.mjs` 的有向邊相消（當初為國家
+公園的分區圖寫的）。實測 Natural Earth 的國界**確實共用逐位元相同的邊**，七大洲一次
+就併起來了。
+
+⚠️ **但 NE 的環是順時針**（shapefile 老慣例，跟 GeoJSON 相反），不先反轉的話
+`dissolveRings` 會把每一個環都判成內環，然後丟「合併後沒有任何外環」——那個錯誤訊息
+完全不會讓人想到繞行方向。
+
+#### ⚠️ 上游「整個國家算一洲」，所以跨洲國家一定要自己切開
+
+Natural Earth 把**整個俄羅斯算成歐洲**。照單全收的話歐洲會變成 2,290 萬 km²、亞洲
+剩 3,120 萬——課本寫的是歐洲 1,018 萬、亞洲 4,458 萬，那不是「定義不同」而是錯的。
+
+所以 `DIVIDES` 依課本講的洲界把四個國家切開（烏拉山＝東經 60°、烏拉河、土耳其海峽、
+蘇伊士運河與蘇伊士灣），切完的數字對得上：歐洲 1,023 萬（歐俄 392 萬）、亞洲 4,386 萬、
+土耳其歐洲部分 2.5 萬（東色雷斯 2.4 萬）、西奈半島 5.6 萬（約 6 萬）。夏威夷另外依
+位置改判大洋洲（玻里尼西亞）。
+
+⚠️ **每一條分界線只切它該切的那一個國家（`countries`）。** 這一條踩過，症狀很好認：
+**地圖上冒出幾條橫貫大陸的直線**。半平面裁切（Sutherland–Hodgman）把環切兩半時會沿
+切線補「連接邊」；環只跨切線兩次時兩半的連接邊剛好相消，但跨**四次以上**時左半補的是
+X1→X2、X3→X4、右半補的是 X2→X3、X4→X1，**消不掉**，整條切線就被畫出來。實測把土耳其
+海峽那條線套用到全部國家時，它延伸出去橫掃俄羅斯，畫出一條從土耳其拉到西伯利亞的紫線。
+
+⚠️ 代價是切線與國界的交會處會留下一小片雙重覆蓋的三角形（被切的那一國多了一個交點、
+鄰國沒有）。它遠小於一個像素，而且 dissolve 仍然串得起來——比整條假線好得多。
+
+#### 面積總和就是自我檢查
+
+比照板塊那一層：七大洲的面積總和必須接近陸地總面積（1.49 億 km²），實測 1.466 億、
+誤差 -1.7%，超過 5% 就讓建置失敗。⚠️ 面積要在**切開之後、簡化與濾島之前**算。
+
+⚠️ 南極洲會少 12%（本層 1,226 萬 vs 常見的 1,400 萬）：NE 那份畫的是**岩床海岸線、
+不含冰棚**。這件事寫在圖層的 `notes` 與內容卡上，不要「修正」它。
+
+⚠️ 小於 0.02 度²（≈250 km²）的島在**簡化之前**濾掉（1,450 → 871 塊），但面積仍然算
+進所屬的洲。門檻不要再往上調：0.15 度²（生物群系那一層的值）會開始咬到新加坡、馬爾他、
+澎湖與大半個太平洋島群。
+
+#### ⚠️ 洲名是另外一層點，不是面的標註
+
+maplibre 對多邊形是**逐塊、逐圖磚**算標註錨點的，而這一層的亞洲有 240 塊——把 `label`
+掛在面上，實測全球視角會在菲律賓、印尼、日本、千島群島上各印一次「亞洲」，一個畫面
+六十幾個洲名。板塊那一層沒踩到只是因為一塊板塊通常就是一塊多邊形。
+
+修法是把洲名做成 `attach` 的一層點（`world-continent-labels`，`radius: 0` ＋ 標註）：
+名稱與 id 讀自母圖層那份 geojson（**共用 `resolveLayerData` 的快取，不會多抓一次**），
+七個錨點座標寫在 `resolve.ts`。⚠️ 錨點**刻意不用形心**——形心會把「北美洲」丟進加拿大
+北部、「大洋洲」丟進太平洋、「南極洲」丟到麥卡托投影上的無限遠。
+
+id 跟母圖徵**是同一個字串**（比照颱風的中心定位點），所以點洲名與點那一洲開的是同一
+張卡，`parentProperty` 讓兩邊互相連動強調。
+
+#### 顏色：掃描選色相、實測定明暗
+
+`CONTINENT_COLOR`（梅紫 `#a05a80`）是**非分類的固定角色**，比照板塊的暖褐——七大洲
+同色，畫出來的是外框與名字，「這一洲有多大」交給選取時那層 0.38 的面染（所以
+`fillOpacity` 是 0，跟板塊同一個理由）。七個分類色本來就不存在（本站掃出來的上限是六色）。
+
+掃遍 OKLCH 之後，能同時離世界主題所有同框色（板塊暖褐、參考線灰、風系板岩藍、面色票
+11 色、線點色）都遠的**只剩色相 320–350° 的紫紅那一族**。⚠️ **亮度不是取掃描最佳值**：
+最佳解在 L≈0.67（`#b581b0`，最差 ΔE 15.3），但那個亮度實際疊在 Liberty 上**讀不出來**
+——外框看起來只是「海岸線被染了一點粉紅」，烏拉山與蘇伊士那幾條洲界幾乎看不見。取
+L≈0.56 之後最差值掉到 11.5（針葉林），那是**刻意的**，判例是 `WIND_COLOR`（對參考線灰
+11.1）與保護區紫。詳細量測與補償見 `thematicColors.ts` 的 `CONTINENT_COLOR`。
+
+⚠️ 要改色的話兩件事都要做：整份同框名單重掃，**而且**在 Liberty 底圖的世界視角實際
+疊一次。
 
 ### 火山帶：1,214 座全新世活火山
 
@@ -691,6 +769,8 @@ ID 常數定義在 `src/map/layers/*.ts`，**一律 import 常數，不要寫死
 | `tw-townships-fill` / `tw-townships-outline` | fill + line |
 | `world-rivers-line` / `world-rivers-label` | line + symbol |
 | `world-places-points` | circle |
+| `world-continents-fill` / `-outline` | fill + line（七大洲；`fillOpacity: 0`，畫出來的是外框與名字）。⚠️ 洲名**不是**面的標註，見下 |
+| `world-continent-labels-points` / `-label` | circle + symbol（附屬圖層；`radius: 0`，整層只是七個洲名的錨點） |
 | `latitude-lines-line` / `latitude-lines-label` | line + symbol |
 | `quakes-points` | circle |
 | `volcanoes-points` | circle（1,214 座活火山，`strokeWidth: 0`；半徑固定不隨 zoom 變） |
@@ -748,7 +828,7 @@ maplibre-contour 把 worker 以 Blob URL 內嵌，**不需要額外部署 worker
 | 主題 | 路由 | 內容 |
 |---|---|---|
 | 臺灣地理 | `/theme/taiwan` | 臺灣123（土地與島群、專屬經濟海域、海峽中線、北回歸線）、行政區（縣市、鄉鎮市區）、地形、天然災害（活動斷層、地震、颱風路徑與災損）、水系（118 個列管水系、水庫即時水情、河川流域分區）、人文（原住民族、交通軸線、古蹟、人口與都市體系）、植被生態（特有種、國家公園與保護區、垂直植被帶）、農業物產（主要作物分布） |
-| 世界地理 | `/theme/world` | **全球尺度（骨架，排在前面）**：參考線（緯度參考線、國際換日線）、氣候與生物群系（森林與沙漠帶、柯本氣候分區、行星風系）、海洋（洋流：18 條暖流／寒流）、地體構造（板塊、板塊邊界、地震帶、火山帶）。**世界地理原有**：城市、國界與大洲、地形水系、人文專題 |
+| 世界地理 | `/theme/world` | **全球尺度（骨架，排在前面）**：參考線（緯度參考線、國際換日線）、氣候與生物群系（森林與沙漠帶、柯本氣候分區、行星風系）、海洋（洋流：18 條暖流／寒流）、地體構造（板塊、板塊邊界、地震帶、火山帶）。**世界地理原有**：城市、國界與大洲（大洲分區）、地形水系、人文專題 |
 
 兩個主題頁都是**滿版地圖 + 浮動控制**（仿 Google Map），沒有頁首也沒有側欄——版面機制見下面的「全螢幕地圖外框與浮動控制」。
 
@@ -1416,12 +1496,13 @@ maplibre 的四個角落容器是 map container 內的 `position: absolute; z-in
 
 **而且撞名時要把 `meta` 補進副標**，否則畫面上是兩列一模一樣的字。這件事**只對真的撞名的標題做**：水庫的 `meta` 是「蓄水 62%・有效容量 …」這種長字串，沒撞名還硬加只會把副標塞爆。實測搜「東區」會得到四列，各自標著新竹市／臺中市／嘉義市／臺南市。
 
-索引是 **lazy 的**：搜尋框第一次獲得焦點才 `buildSearchIndex()`。**實測（2026-08，production build 讀 `performance.getEntriesByType('resource')`）它會多抓 21 份、合計約 2.68 MB**：
+索引是 **lazy 的**：搜尋框第一次獲得焦點才 `buildSearchIndex()`。**實測（2026-08，production build 讀 `performance.getEntriesByType('resource')`）它會多抓 22 份、合計約 3.0 MB**：
 
 | 檔案 | 大小 |
 |---|---|
 | `tw-townships.geojson` | 517 KB |
 | `tw-basins.geojson` | 347 KB |
+| `world-continents.geojson` | 326 KB |
 | `tw-monuments-municipal.geojson` | 240 KB |
 | `tw-rivers.geojson` | 230 KB |
 | `tw-monuments-county.geojson` | 193 KB |
@@ -1446,6 +1527,11 @@ maplibre 的四個角落容器是 map container 內的 `position: absolute; z-in
 從母圖層切出來的子項目**沒有自己的 source**，所以那份 geojson 根本不會被索引抓。
 `tw-eez`（四片經濟海域）同理，實測聚焦搜尋框後 **0 次**請求。這也表示那兩層的搜尋
 完全靠 `LayerItem.keywords`，少填就搜不到（見 types.ts 的說明）。
+
+⚠️ **`world-continents.geojson` 是這張表上唯一「七筆圖徵卻要 326 KB」的項目。** 那是
+`browse` 的必然結果（有可點清單就會進索引），而它換到的是「搜『大洋洲』『Asia』
+『南極』找得到那一洲」——洲名是這一層唯一的檢索入口。**洲名那一層（attach）不另外
+算成本**：它的名稱讀自同一份 geojson，共用 `resolveLayerData` 的快取。
 
 （`tw-territory.geojson` 4 KB 與 `tw-ranges.geojson` 3 KB 不列在表上：那兩層 `defaultOn`，
 進站時就付過了，不是聚焦搜尋框才新增的成本。）
@@ -1666,6 +1752,7 @@ npm run build:geodata -- --force --only=date-line            # 國際換日線�
 npm run build:geodata -- --force --only=plates               # 52 塊板塊（含球面面積）
 npm run build:geodata -- --force --only=plate-boundaries    # 三種板塊邊界（下載 10 MB 的 step 檔）
 npm run build:geodata -- --force --only=volcanoes            # 1,214 座全新世活火山（GVP）
+npm run build:geodata -- --force --only=world-continents     # 七大洲（Natural Earth 國界 → 依洲別聯集）
 npm run build:geodata -- --force --only=koppen-zones-c       # 柯本五大類要各跑一次（a／b／c／d／e）
                                        # （一個 process 裡共用同一份下載，見 lib/koppen.mjs）
 npm run build:geodata -- --force --only=biomes-desert        # 生物群系六類要各跑一次
@@ -2147,6 +2234,40 @@ m.isSourceLoaded('contour-source')
     - `maxzoom: 6`：再放大整層應該消失
     - 切底圖之後重驗存在、顏色與排序（在 `contour-lines` 之上、`contour-labels` 之下）
 
+36. **大洲分區**（`/theme/world` → 國界與大洲，見上）：
+    ```js
+    const m = window.__gaiaMaps.at(-1);
+    m.jumpTo({ center: [0, 10], zoom: 1.9 });
+    new Set(m.queryRenderedFeatures({layers:['world-continents-fill']}).map(f=>f.properties.id)).size  // 7
+    m.queryRenderedFeatures({ layers: ['world-continent-labels-label'] }).map(f=>f.properties.name)
+    // 1920×873 實測 6 個（南極洲在這個視角的畫面外）；**每一洲最多一個**
+    m.getPaintProperty('world-continents-outline', 'line-color')   // "#a05a80"
+    ```
+    - ⚠️ **最重要的一項是「洲名有沒有重複」**，而且只有數標註或看畫面才抓得到：把
+      洲名改回掛在面上的話，實測全球視角會出現六十幾個「亞洲」「北美洲」散在各個島上
+      （maplibre 逐塊逐圖磚算錨點，見上）。`queryRenderedFeatures` 數出來每一洲 >1 就是回歸
+    - ⚠️ **不可以出現橫貫大陸的直線**（分界線被套用到不該切的國家的症狀，見上）。看
+      `jumpTo([40,35], 2.6)`：烏拉山（東經 60°）、烏拉河、土耳其海峽、蘇伊士各有一條
+      短短的洲界，**沒有**任何一條線延伸到別的大陸去
+    - 點南美洲內陸與點「大洋洲」那四個字，兩者都要開卡，而且開的是**那一洲自己的卡**
+      （洲名是附屬圖層，id 與母圖徵相同）
+    - 選取時整洲浮出 0.38 的面染：
+      ```js
+      JSON.stringify(m.getPaintProperty('world-continents-fill','fill-opacity'))
+      // ["case",["in",["get","id"],["literal",["africa"]]],0.38,0]
+      ```
+      ⚠️ 順便用眼睛確認**西奈半島沒有跟著非洲一起變深**——那是蘇伊士那條洲界有沒有
+      切對的唯一證據
+    - 抽屜清單是 7 列、依面積由大到小（亞、非、北美、南美、南極、歐、大洋），副標是
+      面積與占陸地比例
+    - 搜「大洋洲」「Asia」「南極」都要找得到；⚠️ 這一層有 `browse`，所以聚焦搜尋框
+      **會**多抓 `world-continents.geojson`（326 KB），那是已知成本
+    - 南極洲要是一整片完整的陸地（`jumpTo([20,-60], 1.6)`），**不可以有一條橫貫地圖的
+      橫線**——它的環沿著南緯 90° 繞回起點，建置期的檢查對那條邊是刻意放行的
+    - `maxzoom: 5`（面）與 `maxzoom: 4`（洲名）：zoom 4.2 應該只剩面、zoom 5.2 整層消失
+    - 切底圖之後重驗存在、顏色與排序（面 < 線 < 洲名，全部在 `contour-lines` 之上、
+      `contour-labels` 之下）
+
 ### ⚠️ 用瀏覽器自動化點 UI 的三個陷阱
 
 - **主題頁的底圖選單藏在左下角「圖層」彈出層裡**，必須先 `document.querySelector('.map-tile').click()` 才找得到 `<select>`；`/compare` 的仍然直接在頁首。
@@ -2269,6 +2390,7 @@ scripts/
 ├─ lib/faults.mjs         # 活動斷層的存取層（地質雲端點、33 條的 id 對照表、筆數檢查）
 ├─ lib/typhoons.mjs       # 侵臺颱風的存取層（氣象署最佳路徑 txt ＋ 概況表 HTML；14 個的 id 對照表）
 ├─ lib/volcanoes.mjs      # GVP 全新世活火山的存取層（19 個火山區與 17 種類型的中文對照、40 幾座知名火山的中文名、筆數檢查）
+├─ lib/continents.mjs     # 七大洲的存取層（NE 國界的洲別欄位、四條課本洲界的切線、陸地面積交叉檢查）
 ├─ lib/biomes.mjs         # RESOLVE 生態區的存取層（14 個生物群系 → 六個教學用大類、小碎塊過濾、跨 ±180 檢查）
 ├─ lib/koppen.mjs         # 柯本氣候分區的存取層（0.5° ASCII 網格、30 個亞型的中文名與判準、五大類分組）
 ├─ lib/population.mjs     # 各鄉鎮市區人口密度的存取層（年份寫死、site_id 切縣市／鄉鎮、行政層級）

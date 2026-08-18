@@ -146,6 +146,53 @@ const DERIVED_LOADERS: Record<
       }),
     };
   },
+
+  /**
+   * 七大洲的洲名標註錨點。名稱與 id 讀自 `world-continents.geojson`（跟母圖層
+   * **共用同一個快取項目**，不會多抓一次），位置取自下面那張手訂的錨點表。
+   *
+   * ⚠️ 為什麼標註要另外做成一層點，而不是掛在面上：見 types.ts 的
+   * `DerivedId["world-continent-labels"]`。
+   */
+  "world-continent-labels": async () => {
+    const fc = await resolveLayerData(remote(DERIVED_FILES["world-continent-labels"][0]));
+    if (!fc) return null;
+    const features = fc.features.flatMap((f) => {
+      const id = f.properties?.id;
+      const name = f.properties?.name;
+      const anchor = typeof id === "string" ? CONTINENT_LABEL_ANCHORS[id] : undefined;
+      // 對不到就不畫那一個標註——整層消失（或畫在 [0,0] 的幾內亞灣）都更糟
+      if (!anchor || typeof name !== "string") return [];
+      return [
+        {
+          type: "Feature" as const,
+          geometry: { type: "Point" as const, coordinates: [...anchor] },
+          /** id 刻意跟母圖徵**同一個字串**：點洲名開的就是那一洲的卡（比照颱風的中心定位點） */
+          properties: { id, name, continentId: id },
+        },
+      ];
+    });
+    return { type: "FeatureCollection", features };
+  },
+};
+
+/**
+ * 洲名擺在哪裡。
+ *
+ * ⚠️ **刻意不算形心**：形心會把「北美洲」丟進加拿大北部的荒地、把「大洋洲」丟進
+ * 太平洋、把「南極洲」丟到南極點（在麥卡托投影上那是無限遠）。這七個位置是照著
+ * 紙本世界地圖的習慣挑的——擺在該洲最大一塊陸地的中段、避開海岸線與鄰洲。
+ *
+ * ⚠️ 這裡**只有座標**：洲名與 id 一律讀 geojson，那份才是單一事實來源。
+ */
+const CONTINENT_LABEL_ANCHORS: Record<string, [number, number]> = {
+  asia: [90, 46],
+  africa: [20, 3],
+  "north-america": [-100, 45],
+  "south-america": [-58, -12],
+  antarctica: [20, -78],
+  europe: [22, 52],
+  oceania: [134, -24],
 };
 
 function placesCollection(

@@ -49,6 +49,8 @@ export function getTheme(id: string | undefined): ThemeDefinition | undefined {
 export const DERIVED_FILES: Record<DerivedId, readonly string[]> = {
   "tw-range-peaks": ["data/geo-manual/tw-ranges.geojson"],
   "tw-reservoirs": ["data/geo/tw-reservoirs.geojson", "data/reservoirs-live.json"],
+  // 洲名標註的名稱與 id 都取自母圖層那一份，所以共用同一個快取項目、不會多抓一次
+  "world-continent-labels": ["data/geo/world-continents.geojson"],
 };
 
 /** 全站所有圖層（含 planned），給驗證器與圖層 id 唯一性檢查用。 */

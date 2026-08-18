@@ -346,6 +346,18 @@ export const SOURCE_LINKS: Record<string, string> = {
   "柯本－蓋格氣候分類圖（Kottek et al. 2006）": "https://koeppen-geiger.vu-wien.ac.at/present.htm",
   "Esri Living Atlas":
     "https://www.arcgis.com/home/item.html?id=37ea320eebb647c6838c23f72abae5ef",
+  /**
+   * 七大洲的說明卡（src/content/geo/world-continents/）。幾何來自 Natural Earth，
+   * 但最高峰、面積比例、洲界怎麼畫這類敘述性的內容是查維基百科寫的（次級來源，
+   * 比照三種板塊邊界那幾張卡的既有作法）——逐洲登記條目，不要只寫泛稱的「維基百科」。
+   */
+  "維基百科 亞洲": "https://zh.wikipedia.org/wiki/%E4%BA%9E%E6%B4%B2",
+  "維基百科 非洲": "https://zh.wikipedia.org/wiki/%E9%9D%9E%E6%B4%B2",
+  "維基百科 北美洲": "https://zh.wikipedia.org/wiki/%E5%8C%97%E7%BE%8E%E6%B4%B2",
+  "維基百科 南美洲": "https://zh.wikipedia.org/wiki/%E5%8D%97%E7%BE%8E%E6%B4%B2",
+  "維基百科 南極洲": "https://zh.wikipedia.org/wiki/%E5%8D%97%E6%A5%B5%E6%B4%B2",
+  "維基百科 歐洲": "https://zh.wikipedia.org/wiki/%E6%AD%90%E6%B4%B2",
+  "維基百科 大洋洲": "https://zh.wikipedia.org/wiki/%E5%A4%A7%E6%B4%8B%E6%B4%B2",
   // 三種邊界的說明卡（src/content/geo/plate-boundaries/）查名稱與代表案例用的次級來源。
   // 幾何與三分類仍然一律以 Bird (2003) 為準，見上面那則說明。
   "維基百科 板塊構造論":

@@ -855,10 +855,77 @@ export const worldTheme: ThemeDefinition = {
       id: "world-continents",
       label: "大洲分區",
       group: "國界與大洲",
-      status: "planned",
-      render: { kind: "fill" },
-      detail: { type: "none" },
-      description: "七大洲的範圍分區。",
+      status: "ready",
+      source: { type: "remote", path: "data/geo/world-continents.geojson" },
+      /**
+       * ⚠️ **`fillOpacity: 0` 不是忘了設**，理由同板塊那一層：七大洲同色，均勻的
+       * 面染分不出「這是哪一洲」（那是名字的工作），只會把整片陸地壓暗一階，而且
+       * 會跟底下那條海岸線打架。這一層畫出來的是**外框與名字**；面留給「選取時
+       * 0.38」那個互動——點一下，整個亞洲浮出來，那才是「亞洲有多大」讀得出來的
+       * 唯一方式。`fill-opacity: 0` 不影響點擊命中（maplibre 的 hit test 不看
+       * 不透明度）。
+       *
+       * 外框比板塊粗（1.8 vs 1）：這一層的線大半疊在底圖自己的海岸線上，1.4 實測
+       * 還是會沒入那條線裡；而真正要讀的烏拉山、蘇伊士那幾條洲界也是同一個粗細。
+       */
+      render: {
+        kind: "fill",
+        fillOpacity: 0,
+        outlineWidth: 1.8,
+      },
+      colorRole: "continent",
+      /**
+       * 洲名是**另外一層點**，不是面的標註。
+       *
+       * ⚠️ 這不是設計潔癖，是實測逼出來的：maplibre 對多邊形是逐塊、逐圖磚算標註
+       * 錨點的（見 types.ts 的 `LayerRender.fill.label`），而這一層的亞洲有 240 塊
+       * ——把 `label` 掛在面上，全球視角會在菲律賓、印尼、日本、千島群島上各印一次
+       * 「亞洲」，整張圖鋪滿重複的洲名（實測一個畫面上六十幾個）。板塊那一層沒踩到
+       * 只是因為一塊板塊通常就是一塊多邊形。
+       *
+       * 錨點與名字怎麼來的見 resolve.ts 的 `world-continent-labels`。
+       *
+       * ⚠️ `radius: 0` 是刻意的——這一層要的只有那幾個字，錨點本身沒有任何地理
+       * 意義（它不是首都、也不是形心）。`parentProperty` 讓「點洲名」與「點那一洲」
+       * 互相連動，兩邊開出來的也是同一張卡（`detail` 與母圖層相同、id 也相同）。
+       */
+      attach: {
+        id: "world-continent-labels",
+        label: "洲名",
+        source: { type: "derived", derived: "world-continent-labels" },
+        render: {
+          kind: "circle",
+          radius: 0,
+          strokeWidth: 0,
+          // 錨點沒有實體，字要壓在錨點上而不是像一般圓點那樣浮在上方
+          label: { property: "name", size: 14, offset: [0, 0] },
+        },
+        colorRole: "continent",
+        detail: { type: "geo", collection: "world-continents" },
+        parentProperty: "continentId",
+        /**
+         * ⚠️ 縮放範圍不繼承母圖層（見 types.ts）。這裡比母圖層早一級收掉：
+         * 放大到 zoom 4 之後洲名早就讀過了，而底圖自己的國名與城市名開始變多，
+         * 一個橫在畫面中央的「亞洲」只是擋路。
+         */
+        maxzoom: 4,
+      },
+      detail: { type: "geo", collection: "world-continents" },
+      // 七筆、依面積由大到小（那正好是課本列七大洲的順序），不需要分組
+      browse: {},
+      /**
+       * ⚠️ `maxzoom: 5` 跟生物群系、柯本氣候分區同一個判斷：幾何是 0.05° 簡化過的
+       * （≈5.5 公里），再放大就會露出折線，而海岸線本來就該讀底圖那一條。
+       */
+      maxzoom: 5,
+      description:
+        "七大洲的範圍。點一下任何一洲會標出它的範圍與面積，也看得出歐亞、亞非、南北美洲之間的界線畫在哪裡。",
+      notes: [
+        "⚠️ 洲與洲的界線沒有國際公認的畫法。本層依課本講的那幾條：歐亞以烏拉山、烏拉河、裏海、高加索山、黑海與土耳其海峽為界，亞非以蘇伊士運河為界，南北美洲以巴拿馬為界——其中烏拉山、烏拉河、土耳其海峽與蘇伊士運河在圖上都是簡化過的直線。",
+        "⚠️ 跨洲國家依上面那幾條線切開，所以俄羅斯、哈薩克、土耳其、埃及會同時出現在兩洲；其餘國家一律整個算一洲——高加索三國（喬治亞、亞美尼亞、亞塞拜然）在這裡全部算亞洲，印尼全部算亞洲（新幾內亞島西半部在地理上屬大洋洲），這些都有不同的分法。",
+        "⚠️ 面積由幾何算出來，跟課本數字有小幅差距。南極洲差最多（本層 1,226 萬 km²、課本多寫 1,400 萬）：這份界線畫的是岩床海岸線，不含周圍的冰棚。",
+        "⚠️ 小於約 250 km² 的島嶼在圖上省略（世界尺度下不到一個像素），但面積仍然算進所屬的洲。",
+      ],
       sources: ["Natural Earth"],
     },
     {

@@ -53,6 +53,12 @@ export type ColorRole =
   | "vegetation"
   | "plate"
   /**
+   * ⚠️ `continent` 跟 `plate` 一樣是「一整層同一個顏色」的固定角色，但它**有掃過**
+   * ——世界主題會同框的所有顏色（面色票 11 色＋其餘固定角色＋線點色）都比過一輪，
+   * 理由與量測值見 thematicColors.ts 的 `CONTINENT_COLOR`。
+   */
+  | "continent"
+  /**
    * ⚠️ `volcano` 是**有驗過**的，只是驗的對象不是 POINT 色票而是板塊邊界那三個
    * 線色——火山幾乎全部長在板塊邊界上，跨幾何豁免在那一層不成立。
    * 理由與量測值見 thematicColors.ts 的 `VOLCANO_COLOR`。
@@ -92,7 +98,17 @@ export type DerivedId =
    * commit 一份 20 KB 的幾何。兩份都以**本站的水庫 id** 為 key（`zengwen`…），
    * 由 `scripts/lib/reservoirs.mjs` 的 `RESERVOIR_IDS` 對照表統一決定。
    */
-  | "tw-reservoirs";
+  | "tw-reservoirs"
+  /**
+   * 七大洲的**洲名標註錨點**：名稱與 id 取自 `world-continents.geojson`，
+   * 每一洲擺在哪裡則是 `resolve.ts` 裡一份手訂的錨點表。
+   *
+   * ⚠️ 為什麼標註不能直接掛在那一層的面上：maplibre 對多邊形是**逐塊、逐圖磚**
+   * 算標註錨點的（見 `LayerRender.fill.label`），而亞洲有 240 塊——實測全球視角
+   * 會在菲律賓、印尼、日本、千島群島上各印一次「亞洲」，整張圖鋪滿重複的洲名。
+   * 板塊那一層沒踩到，只是因為一塊板塊通常就是一塊多邊形。
+   */
+  | "world-continent-labels";
 
 /**
  * 圖層的資料來源。
