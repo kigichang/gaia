@@ -189,7 +189,6 @@ export const SOURCE_LINKS: Record<string, string> = {
   // 古蹟圖層的來源。網站名是「國家文化資產網」，每一處古蹟的官方頁面都在它底下
   // （MonumentCard 用 geojson 的 url 屬性直接連到個案頁）。
   文化部文化資產局: "https://data.gov.tw/dataset/6246",
-  維基百科: "https://zh.wikipedia.org/",
   /**
    * 洋流那一層的另一個來源。連的是 NOAA Ocean Service 的洋流教學專頁而不是首頁：
    * 暖流／寒流、環流方向與湧升流的說明都在這一頁，連到首頁等於追不到
@@ -490,4 +489,374 @@ export const SOURCE_LINKS: Record<string, string> = {
   "地質調查及礦業管理中心 池上斷層": "https://fault.gsmma.gov.tw/About/FaultMore/8060eee7113943109f047dabf46cd6c7",
   "地質調查及礦業管理中心 鹿野斷層": "https://fault.gsmma.gov.tw/About/FaultMore/f2f2b6e40b8b40a1b2aa38cf89a5daf8",
   "地質調查及礦業管理中心 利吉斷層": "https://fault.gsmma.gov.tw/About/FaultMore/f75a1cf5fc2e4a879e56b218f6e3d56f",
+  /**
+   * 維基百科的逐篇條目連結（150 篇）。
+   *
+   * ⚠️ **每一筆都是用 zh.wikipedia 的 API 查證過的，不是從名稱組出來的。**
+   * CLAUDE_TW.md 對 97 條河川那批已經記過這個教訓（公告名「大清水溪」的條目其實是
+   * 「良里溪」，自動組網址會靜默連到另一條河），這一批照同一條規矩重做了一次，
+   * 而且**自動查證真的又抓到六個會配錯的**：
+   *
+   *   連江縣   → 直接查會導向**中國福建的连江县**，正確條目是「連江縣 (中華民國)」
+   *   雪山     → 是消歧義頁，要「雪山 (台灣)」
+   *   磺溪     → 是消歧義頁；我們那條是 13.5 km／49 km²、金山注入東海，即「磺溪 (新北市)」
+   *   雙溪     → 是消歧義頁；26.81 km／132.5 km² 完全吻合「雙溪 (新北市)」
+   *   國道3號  → 是消歧義頁，要「福爾摩沙高速公路」
+   *   國道5號  → 是消歧義頁，要「蔣渭水高速公路」
+   *
+   * ⚠️ **新增時請照同一個流程**：用 API 查 `prop=extracts|pageprops`，同時檢查
+   * `pageprops.disambiguation` 與摘要開頭有沒有「也可以指：」，再比對摘要裡的
+   * 數字（長度、面積、行政區）跟我們的資料對不對得上。**只確認「網址回 200」是不夠的**
+   * ——消歧義頁與同名條目都會回 200。
+   */
+  "維基百科 阿公店溪":
+    "https://zh.wikipedia.org/zh-tw/%E9%98%BF%E5%85%AC%E5%BA%97%E6%BA%AA",
+  "維基百科 阿里山山脈":
+    "https://zh.wikipedia.org/zh-tw/%E9%98%BF%E9%87%8C%E5%B1%B1%E5%B1%B1%E8%84%88",
+  "維基百科 八卦台地":
+    "https://zh.wikipedia.org/zh-tw/%E5%85%AB%E5%8D%A6%E5%8F%B0%E5%9C%B0",
+  "維基百科 八掌溪":
+    "https://zh.wikipedia.org/zh-tw/%E5%85%AB%E6%8E%8C%E6%BA%AA",
+  "維基百科 保力溪":
+    "https://zh.wikipedia.org/zh-tw/%E4%BF%9D%E5%8A%9B%E6%BA%AA",
+  "維基百科 卑南溪":
+    "https://zh.wikipedia.org/zh-tw/%E5%8D%91%E5%8D%97%E6%BA%AA",
+  "維基百科 北港溪":
+    "https://zh.wikipedia.org/zh-tw/%E5%8C%97%E6%B8%AF%E6%BA%AA",
+  "維基百科 北橫公路":
+    "https://zh.wikipedia.org/zh-tw/%E5%8C%97%E6%A9%AB%E5%85%AC%E8%B7%AF",
+  "維基百科 埔里盆地群":
+    "https://zh.wikipedia.org/zh-tw/%E5%9F%94%E9%87%8C%E7%9B%86%E5%9C%B0%E7%BE%A4",
+  "維基百科 曾文溪":
+    "https://zh.wikipedia.org/zh-tw/%E6%9B%BE%E6%96%87%E6%BA%AA",
+  "維基百科 大安溪":
+    "https://zh.wikipedia.org/zh-tw/%E5%A4%A7%E5%AE%89%E6%BA%AA",
+  "維基百科 大甲溪":
+    "https://zh.wikipedia.org/zh-tw/%E5%A4%A7%E7%94%B2%E6%BA%AA",
+  "維基百科 大塔山":
+    "https://zh.wikipedia.org/zh-tw/%E5%A4%A7%E5%A1%94%E5%B1%B1",
+  "維基百科 大屯火山群":
+    "https://zh.wikipedia.org/zh-tw/%E5%A4%A7%E5%B1%AF%E7%81%AB%E5%B1%B1%E7%BE%A4",
+  "維基百科 淡水河":
+    "https://zh.wikipedia.org/zh-tw/%E6%B7%A1%E6%B0%B4%E6%B2%B3",
+  "維基百科 得子口溪":
+    "https://zh.wikipedia.org/zh-tw/%E5%BE%97%E5%AD%90%E5%8F%A3%E6%BA%AA",
+  "維基百科 釣魚臺":
+    "https://zh.wikipedia.org/zh-tw/%E9%87%A3%E9%AD%9A%E8%87%BA",
+  "維基百科 東部幹線":
+    "https://zh.wikipedia.org/zh-tw/%E6%9D%B1%E9%83%A8%E5%B9%B9%E7%B7%9A",
+  "維基百科 東港溪":
+    "https://zh.wikipedia.org/zh-tw/%E6%9D%B1%E6%B8%AF%E6%BA%AA",
+  "維基百科 東沙環礁國家公園":
+    "https://zh.wikipedia.org/zh-tw/%E6%9D%B1%E6%B2%99%E7%92%B0%E7%A4%81%E5%9C%8B%E5%AE%B6%E5%85%AC%E5%9C%92",
+  "維基百科 鵝鑾鼻":
+    "https://zh.wikipedia.org/zh-tw/%E9%B5%9D%E9%91%BE%E9%BC%BB",
+  "維基百科 二仁溪":
+    "https://zh.wikipedia.org/zh-tw/%E4%BA%8C%E4%BB%81%E6%BA%AA",
+  "維基百科 枋山溪":
+    "https://zh.wikipedia.org/zh-tw/%E6%9E%8B%E5%B1%B1%E6%BA%AA",
+  "維基百科 楓港溪":
+    "https://zh.wikipedia.org/zh-tw/%E6%A5%93%E6%B8%AF%E6%BA%AA",
+  "維基百科 鳳山溪":
+    "https://zh.wikipedia.org/zh-tw/%E9%B3%B3%E5%B1%B1%E6%BA%AA",
+  "維基百科 福爾摩沙高速公路":
+    "https://zh.wikipedia.org/zh-tw/%E7%A6%8F%E7%88%BE%E6%91%A9%E6%B2%99%E9%AB%98%E9%80%9F%E5%85%AC%E8%B7%AF",
+  "維基百科 富貴角":
+    "https://zh.wikipedia.org/zh-tw/%E5%AF%8C%E8%B2%B4%E8%A7%92",
+  "維基百科 港口溪":
+    "https://zh.wikipedia.org/zh-tw/%E6%B8%AF%E5%8F%A3%E6%BA%AA",
+  "維基百科 高屏溪":
+    "https://zh.wikipedia.org/zh-tw/%E9%AB%98%E5%B1%8F%E6%BA%AA",
+  "維基百科 高雄市":
+    "https://zh.wikipedia.org/zh-tw/%E9%AB%98%E9%9B%84%E5%B8%82",
+  "維基百科 高雄市政府":
+    "https://zh.wikipedia.org/zh-tw/%E9%AB%98%E9%9B%84%E5%B8%82%E6%94%BF%E5%BA%9C",
+  "維基百科 龜山島":
+    "https://zh.wikipedia.org/zh-tw/%E9%BE%9C%E5%B1%B1%E5%B3%B6",
+  "維基百科 國聖港燈塔":
+    "https://zh.wikipedia.org/zh-tw/%E5%9C%8B%E8%81%96%E6%B8%AF%E7%87%88%E5%A1%94",
+  "維基百科 海岸山脈":
+    "https://zh.wikipedia.org/zh-tw/%E6%B5%B7%E5%B2%B8%E5%B1%B1%E8%84%88",
+  "維基百科 和平溪":
+    "https://zh.wikipedia.org/zh-tw/%E5%92%8C%E5%B9%B3%E6%BA%AA",
+  "維基百科 後龍溪":
+    "https://zh.wikipedia.org/zh-tw/%E5%BE%8C%E9%BE%8D%E6%BA%AA",
+  "維基百科 花東縱谷":
+    "https://zh.wikipedia.org/zh-tw/%E8%8A%B1%E6%9D%B1%E7%B8%B1%E8%B0%B7",
+  "維基百科 花蓮溪":
+    "https://zh.wikipedia.org/zh-tw/%E8%8A%B1%E8%93%AE%E6%BA%AA",
+  "維基百科 花蓮縣":
+    "https://zh.wikipedia.org/zh-tw/%E8%8A%B1%E8%93%AE%E7%B8%A3",
+  "維基百科 花蓮縣政府":
+    "https://zh.wikipedia.org/zh-tw/%E8%8A%B1%E8%93%AE%E7%B8%A3%E6%94%BF%E5%BA%9C",
+  "維基百科 磺溪 (新北市)":
+    "https://zh.wikipedia.org/zh-tw/%E7%A3%BA%E6%BA%AA_(%E6%96%B0%E5%8C%97%E5%B8%82)",
+  "維基百科 火炎山 (苗栗縣)":
+    "https://zh.wikipedia.org/zh-tw/%E7%81%AB%E7%82%8E%E5%B1%B1_(%E8%8B%97%E6%A0%97%E7%B8%A3)",
+  "維基百科 基隆市":
+    "https://zh.wikipedia.org/zh-tw/%E5%9F%BA%E9%9A%86%E5%B8%82",
+  "維基百科 基隆市政府":
+    "https://zh.wikipedia.org/zh-tw/%E5%9F%BA%E9%9A%86%E5%B8%82%E6%94%BF%E5%BA%9C",
+  "維基百科 吉安溪":
+    "https://zh.wikipedia.org/zh-tw/%E5%90%89%E5%AE%89%E6%BA%AA",
+  "維基百科 急水溪":
+    "https://zh.wikipedia.org/zh-tw/%E6%80%A5%E6%B0%B4%E6%BA%AA",
+  "維基百科 嘉南平原":
+    "https://zh.wikipedia.org/zh-tw/%E5%98%89%E5%8D%97%E5%B9%B3%E5%8E%9F",
+  "維基百科 嘉義市":
+    "https://zh.wikipedia.org/zh-tw/%E5%98%89%E7%BE%A9%E5%B8%82",
+  "維基百科 嘉義市政府":
+    "https://zh.wikipedia.org/zh-tw/%E5%98%89%E7%BE%A9%E5%B8%82%E6%94%BF%E5%BA%9C",
+  "維基百科 嘉義縣":
+    "https://zh.wikipedia.org/zh-tw/%E5%98%89%E7%BE%A9%E7%B8%A3",
+  "維基百科 嘉義縣政府":
+    "https://zh.wikipedia.org/zh-tw/%E5%98%89%E7%BE%A9%E7%B8%A3%E6%94%BF%E5%BA%9C",
+  "維基百科 蔣渭水高速公路":
+    "https://zh.wikipedia.org/zh-tw/%E8%94%A3%E6%B8%AD%E6%B0%B4%E9%AB%98%E9%80%9F%E5%85%AC%E8%B7%AF",
+  "維基百科 金門國家公園":
+    "https://zh.wikipedia.org/zh-tw/%E9%87%91%E9%96%80%E5%9C%8B%E5%AE%B6%E5%85%AC%E5%9C%92",
+  "維基百科 金門縣":
+    "https://zh.wikipedia.org/zh-tw/%E9%87%91%E9%96%80%E7%B8%A3",
+  "維基百科 金門縣政府":
+    "https://zh.wikipedia.org/zh-tw/%E9%87%91%E9%96%80%E7%B8%A3%E6%94%BF%E5%BA%9C",
+  "維基百科 墾丁國家公園":
+    "https://zh.wikipedia.org/zh-tw/%E5%A2%BE%E4%B8%81%E5%9C%8B%E5%AE%B6%E5%85%AC%E5%9C%92",
+  "維基百科 蘭陽平原":
+    "https://zh.wikipedia.org/zh-tw/%E8%98%AD%E9%99%BD%E5%B9%B3%E5%8E%9F",
+  "維基百科 蘭陽溪":
+    "https://zh.wikipedia.org/zh-tw/%E8%98%AD%E9%99%BD%E6%BA%AA",
+  "維基百科 蘭嶼":
+    "https://zh.wikipedia.org/zh-tw/%E8%98%AD%E5%B6%BC",
+  "維基百科 老街溪":
+    "https://zh.wikipedia.org/zh-tw/%E8%80%81%E8%A1%97%E6%BA%AA",
+  "維基百科 立霧溪":
+    "https://zh.wikipedia.org/zh-tw/%E7%AB%8B%E9%9C%A7%E6%BA%AA",
+  "維基百科 利嘉溪":
+    "https://zh.wikipedia.org/zh-tw/%E5%88%A9%E5%98%89%E6%BA%AA",
+  "維基百科 連江縣 (中華民國)":
+    "https://zh.wikipedia.org/zh-tw/%E9%80%A3%E6%B1%9F%E7%B8%A3_(%E4%B8%AD%E8%8F%AF%E6%B0%91%E5%9C%8B)",
+  "維基百科 連江縣政府":
+    "https://zh.wikipedia.org/zh-tw/%E9%80%A3%E6%B1%9F%E7%B8%A3%E6%94%BF%E5%BA%9C",
+  "維基百科 林口台地":
+    "https://zh.wikipedia.org/zh-tw/%E6%9E%97%E5%8F%A3%E5%8F%B0%E5%9C%B0",
+  "維基百科 琉球嶼":
+    "https://zh.wikipedia.org/zh-tw/%E7%90%89%E7%90%83%E5%B6%BC",
+  "維基百科 率芒溪":
+    "https://zh.wikipedia.org/zh-tw/%E7%8E%87%E8%8A%92%E6%BA%AA",
+  "維基百科 綠島":
+    "https://zh.wikipedia.org/zh-tw/%E7%B6%A0%E5%B3%B6",
+  "維基百科 美崙溪":
+    "https://zh.wikipedia.org/zh-tw/%E7%BE%8E%E5%B4%99%E6%BA%AA",
+  "維基百科 苗栗縣":
+    "https://zh.wikipedia.org/zh-tw/%E8%8B%97%E6%A0%97%E7%B8%A3",
+  "維基百科 苗栗縣政府":
+    "https://zh.wikipedia.org/zh-tw/%E8%8B%97%E6%A0%97%E7%B8%A3%E6%94%BF%E5%BA%9C",
+  "維基百科 南澳溪":
+    "https://zh.wikipedia.org/zh-tw/%E5%8D%97%E6%BE%B3%E6%BA%AA",
+  "維基百科 南橫公路":
+    "https://zh.wikipedia.org/zh-tw/%E5%8D%97%E6%A9%AB%E5%85%AC%E8%B7%AF",
+  "維基百科 南迴線":
+    "https://zh.wikipedia.org/zh-tw/%E5%8D%97%E8%BF%B4%E7%B7%9A",
+  "維基百科 南崁溪":
+    "https://zh.wikipedia.org/zh-tw/%E5%8D%97%E5%B4%81%E6%BA%AA",
+  "維基百科 南沙群岛":
+    "https://zh.wikipedia.org/zh-tw/%E5%8D%97%E6%B2%99%E7%BE%A4%E5%B2%9B",
+  "維基百科 南投縣":
+    "https://zh.wikipedia.org/zh-tw/%E5%8D%97%E6%8A%95%E7%B8%A3",
+  "維基百科 南投縣政府":
+    "https://zh.wikipedia.org/zh-tw/%E5%8D%97%E6%8A%95%E7%B8%A3%E6%94%BF%E5%BA%9C",
+  "維基百科 澎湖南方四島國家公園":
+    "https://zh.wikipedia.org/zh-tw/%E6%BE%8E%E6%B9%96%E5%8D%97%E6%96%B9%E5%9B%9B%E5%B3%B6%E5%9C%8B%E5%AE%B6%E5%85%AC%E5%9C%92",
+  "維基百科 澎湖縣":
+    "https://zh.wikipedia.org/zh-tw/%E6%BE%8E%E6%B9%96%E7%B8%A3",
+  "維基百科 澎湖縣政府":
+    "https://zh.wikipedia.org/zh-tw/%E6%BE%8E%E6%B9%96%E7%B8%A3%E6%94%BF%E5%BA%9C",
+  "維基百科 屏東平原":
+    "https://zh.wikipedia.org/zh-tw/%E5%B1%8F%E6%9D%B1%E5%B9%B3%E5%8E%9F",
+  "維基百科 屏東縣":
+    "https://zh.wikipedia.org/zh-tw/%E5%B1%8F%E6%9D%B1%E7%B8%A3",
+  "維基百科 屏東縣政府":
+    "https://zh.wikipedia.org/zh-tw/%E5%B1%8F%E6%9D%B1%E7%B8%A3%E6%94%BF%E5%BA%9C",
+  "維基百科 朴子溪":
+    "https://zh.wikipedia.org/zh-tw/%E6%9C%B4%E5%AD%90%E6%BA%AA",
+  "維基百科 七股潟湖":
+    "https://zh.wikipedia.org/zh-tw/%E4%B8%83%E8%82%A1%E6%BD%9F%E6%B9%96",
+  "維基百科 清水斷崖":
+    "https://zh.wikipedia.org/zh-tw/%E6%B8%85%E6%B0%B4%E6%96%B7%E5%B4%96",
+  "維基百科 三貂角":
+    "https://zh.wikipedia.org/zh-tw/%E4%B8%89%E8%B2%82%E8%A7%92",
+  "維基百科 社子溪":
+    "https://zh.wikipedia.org/zh-tw/%E7%A4%BE%E5%AD%90%E6%BA%AA",
+  "維基百科 壽山國家自然公園":
+    "https://zh.wikipedia.org/zh-tw/%E5%A3%BD%E5%B1%B1%E5%9C%8B%E5%AE%B6%E8%87%AA%E7%84%B6%E5%85%AC%E5%9C%92",
+  "維基百科 雙溪 (新北市)":
+    "https://zh.wikipedia.org/zh-tw/%E9%9B%99%E6%BA%AA_(%E6%96%B0%E5%8C%97%E5%B8%82)",
+  "維基百科 四重溪":
+    "https://zh.wikipedia.org/zh-tw/%E5%9B%9B%E9%87%8D%E6%BA%AA",
+  "維基百科 蘇澳溪":
+    "https://zh.wikipedia.org/zh-tw/%E8%98%87%E6%BE%B3%E6%BA%AA",
+  "維基百科 台江國家公園":
+    "https://zh.wikipedia.org/zh-tw/%E5%8F%B0%E6%B1%9F%E5%9C%8B%E5%AE%B6%E5%85%AC%E5%9C%92",
+  "維基百科 台灣高鐵":
+    "https://zh.wikipedia.org/zh-tw/%E5%8F%B0%E7%81%A3%E9%AB%98%E9%90%B5",
+  "維基百科 臺北市":
+    "https://zh.wikipedia.org/zh-tw/%E8%87%BA%E5%8C%97%E5%B8%82",
+  "維基百科 臺北市政府":
+    "https://zh.wikipedia.org/zh-tw/%E8%87%BA%E5%8C%97%E5%B8%82%E6%94%BF%E5%BA%9C",
+  "維基百科 臺東縣":
+    "https://zh.wikipedia.org/zh-tw/%E8%87%BA%E6%9D%B1%E7%B8%A3",
+  "維基百科 臺東縣政府":
+    "https://zh.wikipedia.org/zh-tw/%E8%87%BA%E6%9D%B1%E7%B8%A3%E6%94%BF%E5%BA%9C",
+  "維基百科 臺南市":
+    "https://zh.wikipedia.org/zh-tw/%E8%87%BA%E5%8D%97%E5%B8%82",
+  "維基百科 臺南市政府":
+    "https://zh.wikipedia.org/zh-tw/%E8%87%BA%E5%8D%97%E5%B8%82%E6%94%BF%E5%BA%9C",
+  "維基百科 臺灣地震列表":
+    "https://zh.wikipedia.org/zh-tw/%E8%87%BA%E7%81%A3%E5%9C%B0%E9%9C%87%E5%88%97%E8%A1%A8",
+  "維基百科 臺灣行政區劃":
+    "https://zh.wikipedia.org/zh-tw/%E8%87%BA%E7%81%A3%E8%A1%8C%E6%94%BF%E5%8D%80%E5%8A%83",
+  "維基百科 臺灣山脈列表":
+    "https://zh.wikipedia.org/zh-tw/%E8%87%BA%E7%81%A3%E5%B1%B1%E8%84%88%E5%88%97%E8%A1%A8",
+  "維基百科 臺中盆地":
+    "https://zh.wikipedia.org/zh-tw/%E8%87%BA%E4%B8%AD%E7%9B%86%E5%9C%B0",
+  "維基百科 臺中市":
+    "https://zh.wikipedia.org/zh-tw/%E8%87%BA%E4%B8%AD%E5%B8%82",
+  "維基百科 臺中市政府":
+    "https://zh.wikipedia.org/zh-tw/%E8%87%BA%E4%B8%AD%E5%B8%82%E6%94%BF%E5%BA%9C",
+  "維基百科 太魯閣國家公園":
+    "https://zh.wikipedia.org/zh-tw/%E5%A4%AA%E9%AD%AF%E9%96%A3%E5%9C%8B%E5%AE%B6%E5%85%AC%E5%9C%92",
+  "維基百科 太平溪":
+    "https://zh.wikipedia.org/zh-tw/%E5%A4%AA%E5%B9%B3%E6%BA%AA",
+  "維基百科 桃園市":
+    "https://zh.wikipedia.org/zh-tw/%E6%A1%83%E5%9C%92%E5%B8%82",
+  "維基百科 桃園市政府":
+    "https://zh.wikipedia.org/zh-tw/%E6%A1%83%E5%9C%92%E5%B8%82%E6%94%BF%E5%BA%9C",
+  "維基百科 桃園臺地群":
+    "https://zh.wikipedia.org/zh-tw/%E6%A1%83%E5%9C%92%E8%87%BA%E5%9C%B0%E7%BE%A4",
+  "維基百科 桶盤嶼":
+    "https://zh.wikipedia.org/zh-tw/%E6%A1%B6%E7%9B%A4%E5%B6%BC",
+  "維基百科 頭前溪":
+    "https://zh.wikipedia.org/zh-tw/%E9%A0%AD%E5%89%8D%E6%BA%AA",
+  "維基百科 外傘頂洲":
+    "https://zh.wikipedia.org/zh-tw/%E5%A4%96%E5%82%98%E9%A0%82%E6%B4%B2",
+  "維基百科 烏溪":
+    "https://zh.wikipedia.org/zh-tw/%E7%83%8F%E6%BA%AA",
+  "維基百科 西部幹線":
+    "https://zh.wikipedia.org/zh-tw/%E8%A5%BF%E9%83%A8%E5%B9%B9%E7%B7%9A",
+  "維基百科 西湖溪":
+    "https://zh.wikipedia.org/zh-tw/%E8%A5%BF%E6%B9%96%E6%BA%AA",
+  "維基百科 新北市":
+    "https://zh.wikipedia.org/zh-tw/%E6%96%B0%E5%8C%97%E5%B8%82",
+  "維基百科 新北市政府":
+    "https://zh.wikipedia.org/zh-tw/%E6%96%B0%E5%8C%97%E5%B8%82%E6%94%BF%E5%BA%9C",
+  "維基百科 新城溪":
+    "https://zh.wikipedia.org/zh-tw/%E6%96%B0%E5%9F%8E%E6%BA%AA",
+  "維基百科 新港大山":
+    "https://zh.wikipedia.org/zh-tw/%E6%96%B0%E6%B8%AF%E5%A4%A7%E5%B1%B1",
+  "維基百科 新虎尾溪":
+    "https://zh.wikipedia.org/zh-tw/%E6%96%B0%E8%99%8E%E5%B0%BE%E6%BA%AA",
+  "維基百科 新竹市":
+    "https://zh.wikipedia.org/zh-tw/%E6%96%B0%E7%AB%B9%E5%B8%82",
+  "維基百科 新竹市政府":
+    "https://zh.wikipedia.org/zh-tw/%E6%96%B0%E7%AB%B9%E5%B8%82%E6%94%BF%E5%BA%9C",
+  "維基百科 新竹縣":
+    "https://zh.wikipedia.org/zh-tw/%E6%96%B0%E7%AB%B9%E7%B8%A3",
+  "維基百科 新竹縣政府":
+    "https://zh.wikipedia.org/zh-tw/%E6%96%B0%E7%AB%B9%E7%B8%A3%E6%94%BF%E5%BA%9C",
+  "維基百科 秀姑巒山":
+    "https://zh.wikipedia.org/zh-tw/%E7%A7%80%E5%A7%91%E5%B7%92%E5%B1%B1",
+  "維基百科 秀姑巒溪":
+    "https://zh.wikipedia.org/zh-tw/%E7%A7%80%E5%A7%91%E5%B7%92%E6%BA%AA",
+  "維基百科 雪霸國家公園":
+    "https://zh.wikipedia.org/zh-tw/%E9%9B%AA%E9%9C%B8%E5%9C%8B%E5%AE%B6%E5%85%AC%E5%9C%92",
+  "維基百科 雪山 (台灣)":
+    "https://zh.wikipedia.org/zh-tw/%E9%9B%AA%E5%B1%B1_(%E5%8F%B0%E7%81%A3)",
+  "維基百科 雪山山脈":
+    "https://zh.wikipedia.org/zh-tw/%E9%9B%AA%E5%B1%B1%E5%B1%B1%E8%84%88",
+  "維基百科 鹽水溪":
+    "https://zh.wikipedia.org/zh-tw/%E9%B9%BD%E6%B0%B4%E6%BA%AA",
+  "維基百科 陽明山國家公園":
+    "https://zh.wikipedia.org/zh-tw/%E9%99%BD%E6%98%8E%E5%B1%B1%E5%9C%8B%E5%AE%B6%E5%85%AC%E5%9C%92",
+  "維基百科 野柳風景特定區":
+    "https://zh.wikipedia.org/zh-tw/%E9%87%8E%E6%9F%B3%E9%A2%A8%E6%99%AF%E7%89%B9%E5%AE%9A%E5%8D%80",
+  "維基百科 宜蘭縣":
+    "https://zh.wikipedia.org/zh-tw/%E5%AE%9C%E8%98%AD%E7%B8%A3",
+  "維基百科 宜蘭縣政府":
+    "https://zh.wikipedia.org/zh-tw/%E5%AE%9C%E8%98%AD%E7%B8%A3%E6%94%BF%E5%BA%9C",
+  "維基百科 玉山國家公園":
+    "https://zh.wikipedia.org/zh-tw/%E7%8E%89%E5%B1%B1%E5%9C%8B%E5%AE%B6%E5%85%AC%E5%9C%92",
+  "維基百科 玉山山脈":
+    "https://zh.wikipedia.org/zh-tw/%E7%8E%89%E5%B1%B1%E5%B1%B1%E8%84%88",
+  "維基百科 月世界":
+    "https://zh.wikipedia.org/zh-tw/%E6%9C%88%E4%B8%96%E7%95%8C",
+  "維基百科 雲林縣":
+    "https://zh.wikipedia.org/zh-tw/%E9%9B%B2%E6%9E%97%E7%B8%A3",
+  "維基百科 雲林縣政府":
+    "https://zh.wikipedia.org/zh-tw/%E9%9B%B2%E6%9E%97%E7%B8%A3%E6%94%BF%E5%BA%9C",
+  "維基百科 彰化縣":
+    "https://zh.wikipedia.org/zh-tw/%E5%BD%B0%E5%8C%96%E7%B8%A3",
+  "維基百科 彰化縣政府":
+    "https://zh.wikipedia.org/zh-tw/%E5%BD%B0%E5%8C%96%E7%B8%A3%E6%94%BF%E5%BA%9C",
+  "維基百科 知本溪":
+    "https://zh.wikipedia.org/zh-tw/%E7%9F%A5%E6%9C%AC%E6%BA%AA",
+  "維基百科 中港溪":
+    "https://zh.wikipedia.org/zh-tw/%E4%B8%AD%E6%B8%AF%E6%BA%AA",
+  "維基百科 中橫公路":
+    "https://zh.wikipedia.org/zh-tw/%E4%B8%AD%E6%A9%AB%E5%85%AC%E8%B7%AF",
+  "維基百科 中華民國島嶼列表":
+    "https://zh.wikipedia.org/zh-tw/%E4%B8%AD%E8%8F%AF%E6%B0%91%E5%9C%8B%E5%B3%B6%E5%B6%BC%E5%88%97%E8%A1%A8",
+  "維基百科 中山高速公路":
+    "https://zh.wikipedia.org/zh-tw/%E4%B8%AD%E5%B1%B1%E9%AB%98%E9%80%9F%E5%85%AC%E8%B7%AF",
+  "維基百科 中央山脈":
+    "https://zh.wikipedia.org/zh-tw/%E4%B8%AD%E5%A4%AE%E5%B1%B1%E8%84%88",
+  "維基百科 濁水溪":
+    "https://zh.wikipedia.org/zh-tw/%E6%BF%81%E6%B0%B4%E6%BA%AA",
+
+  "維基百科 阿古拉斯洋流":
+    "https://zh.wikipedia.org/zh-tw/%E9%98%BF%E5%8F%A4%E6%8B%89%E6%96%AF%E6%B4%8B%E6%B5%81",
+  "維基百科 阿拉斯加洋流":
+    "https://zh.wikipedia.org/zh-tw/%E9%98%BF%E6%8B%89%E6%96%AF%E5%8A%A0%E6%B4%8B%E6%B5%81",
+  "維基百科 巴西洋流":
+    "https://zh.wikipedia.org/zh-tw/%E5%B7%B4%E8%A5%BF%E6%B4%8B%E6%B5%81",
+  "維基百科 北赤道暖流":
+    "https://zh.wikipedia.org/zh-tw/%E5%8C%97%E8%B5%A4%E9%81%93%E6%9A%96%E6%B5%81",
+  "維基百科 北大西洋漂流":
+    "https://zh.wikipedia.org/zh-tw/%E5%8C%97%E5%A4%A7%E8%A5%BF%E6%B4%8B%E6%BC%82%E6%B5%81",
+  "維基百科 北太平洋洋流":
+    "https://zh.wikipedia.org/zh-tw/%E5%8C%97%E5%A4%AA%E5%B9%B3%E6%B4%8B%E6%B4%8B%E6%B5%81",
+  "維基百科 本格拉寒流":
+    "https://zh.wikipedia.org/zh-tw/%E6%9C%AC%E6%A0%BC%E6%8B%89%E5%AF%92%E6%B5%81",
+  "維基百科 大氣環流":
+    "https://zh.wikipedia.org/zh-tw/%E5%A4%A7%E6%B0%A3%E7%92%B0%E6%B5%81",
+  "維基百科 東澳洋流":
+    "https://zh.wikipedia.org/zh-tw/%E6%9D%B1%E6%BE%B3%E6%B4%8B%E6%B5%81",
+  "維基百科 副熱帶高氣壓帶":
+    "https://zh.wikipedia.org/zh-tw/%E5%89%AF%E7%86%B1%E5%B8%B6%E9%AB%98%E6%B0%A3%E5%A3%93%E5%B8%B6",
+  "維基百科 黑潮":
+    "https://zh.wikipedia.org/zh-tw/%E9%BB%91%E6%BD%AE",
+  "維基百科 加利福尼亞洋流":
+    "https://zh.wikipedia.org/zh-tw/%E5%8A%A0%E5%88%A9%E7%A6%8F%E5%B0%BC%E4%BA%9E%E6%B4%8B%E6%B5%81",
+  "維基百科 加那利洋流":
+    "https://zh.wikipedia.org/zh-tw/%E5%8A%A0%E9%82%A3%E5%88%A9%E6%B4%8B%E6%B5%81",
+  "維基百科 拉布拉多洋流":
+    "https://zh.wikipedia.org/zh-tw/%E6%8B%89%E5%B8%83%E6%8B%89%E5%A4%9A%E6%B4%8B%E6%B5%81",
+  "維基百科 秘魯涼流":
+    "https://zh.wikipedia.org/zh-tw/%E7%A7%98%E9%AD%AF%E6%B6%BC%E6%B5%81",
+  "維基百科 墨西哥灣暖流":
+    "https://zh.wikipedia.org/zh-tw/%E5%A2%A8%E8%A5%BF%E5%93%A5%E7%81%A3%E6%9A%96%E6%B5%81",
+  "維基百科 南赤道洋流":
+    "https://zh.wikipedia.org/zh-tw/%E5%8D%97%E8%B5%A4%E9%81%93%E6%B4%8B%E6%B5%81",
+  "維基百科 南極繞極流":
+    "https://zh.wikipedia.org/zh-tw/%E5%8D%97%E6%A5%B5%E7%B9%9E%E6%A5%B5%E6%B5%81",
+  "維基百科 親潮":
+    "https://zh.wikipedia.org/zh-tw/%E8%A6%AA%E6%BD%AE",
+  "維基百科 熱帶輻合帶":
+    "https://zh.wikipedia.org/zh-tw/%E7%86%B1%E5%B8%B6%E8%BC%BB%E5%90%88%E5%B8%B6",
+  "維基百科 西澳洋流":
+    "https://zh.wikipedia.org/zh-tw/%E8%A5%BF%E6%BE%B3%E6%B4%8B%E6%B5%81",
+  "維基百科 西風帶":
+    "https://zh.wikipedia.org/zh-tw/%E8%A5%BF%E9%A2%A8%E5%B8%B6",
+  "維基百科 信風":
+    "https://zh.wikipedia.org/zh-tw/%E4%BF%A1%E9%A2%A8",
+
 };

@@ -106,7 +106,7 @@ export const taiwanTheme: ThemeDefinition = {
           "基隆市的彭佳嶼、最東是宜蘭縣的釣魚臺、最南是南沙的太平島。座標由內政部國土" +
           "測繪中心的縣市界幾何取極值算出，誤差約 90 公尺（該圖資的簡化容差）。",
       ],
-      sources: ["行政院 國情簡介－土地", "內政部", "維基百科", "內政部國土測繪中心"],
+      sources: ["行政院 國情簡介－土地", "內政部", "維基百科 中華民國島嶼列表", "內政部國土測繪中心"],
     },
     {
       id: "tw-eez",
@@ -507,7 +507,7 @@ export const taiwanTheme: ThemeDefinition = {
         browse: { zoom: 10 },
         description:
           "各縣市政府的辦公廳舍位置。臺南、高雄、臺中、苗栗有兩處辦公中心，這裡標的是主要那一處，另一處寫在說明裡。",
-        sources: ["維基百科"],
+        sources: ["維基百科 臺灣行政區劃"],
       },
       // 相鄰面各自簡化會在共用邊界留下次像素縫隙（見 scripts/lib/simplify.mjs）。
       // maxzoom 讓它在縫隙變得可解析之前就停止繪製——這同時也是正確的製圖判斷：
@@ -722,7 +722,7 @@ export const taiwanTheme: ThemeDefinition = {
       defaultOn: true,
       description:
         "中央、雪山、玉山、阿里山、海岸五大山脈的走向與分界，以及各自的主峰。搭配等高線一起看，可以對照稜線位置與高程分布。",
-      sources: ["維基百科", "內政部國土測繪中心"],
+      sources: ["維基百科 臺灣山脈列表", "內政部國土測繪中心"],
     },
     {
       id: "tw-rivers",
@@ -1277,7 +1277,7 @@ export const taiwanTheme: ThemeDefinition = {
         "⚠️ 也因為兩層來自不同目錄，同一次地震在兩層的震央會差幾公里到二十幾公里——" +
           "那是兩個地震目錄的真實差異，不是畫錯了。",
       ],
-      sources: ["交通部中央氣象署 災害地震", "維基百科", "USGS"],
+      sources: ["交通部中央氣象署 災害地震", "維基百科 臺灣地震列表", "USGS"],
     },
     {
       id: "tw-typhoons",
