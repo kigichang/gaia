@@ -453,6 +453,39 @@ chip 不會出現、`setFilter` 也不會下）。這與古蹟／作物那些子
 圖層會什麼都不顯示也不報錯。那個欄位已經換成 `featureIds`（在 `resolve.ts` 切資料，
 不是下 maplibre filter，理由見交通軸線那節）。
 
+#### 三級各有一張定義卡，而它是全站第一個 `items.detail`
+
+「國定／直轄市定／縣(市)定」是《文化資產保存法》的三級指定制度，光看三個核取方塊
+的名字看不出差在哪（**差的是主管機關，不是年代或價值高低**，而國定另有「重要、
+保存完整、典範」的加重基準）。所以三級各有一份內容檔：
+`src/content/geo/tw-monument-levels/{national,municipal,county}.json`。
+
+⚠️ **但這一層不能像板塊邊界那樣直接用 `layer.detail`。** 母圖層的 `detail` 是
+`monument`——點地圖上那顆圓點要開的是**那一處古蹟**的 `MonumentCard`（有沿革與
+個案連結），跟「這個級別是什麼」是兩件事。所以 `LayerItems` 新增了一個
+`detail`（見 `registry/types.ts`）：**點子項目名稱、或搜到子項目本身時走它，
+點地圖上的圖徵仍然走母圖層的 `detail`。**
+
+⚠️ **在那之前，點抽屜裡的「國定古蹟」四個字開出來的是一張空白面板**，而且完全靜默：
+`handleItemNameClick` 照樣 `setSelected`，item id `national` 拿去 `monument` 那一支查
+geojson 一定查不到（那邊的 id 是官方案號 `monument-19831228000008`）→ 卡片回 `null`
+→ 面板開著但什麼都沒有（`data-detail-open` 仍是 true）。搜「國定古蹟」也是同一條路徑。
+板塊邊界與垂直植被帶都踩過同一個坑，只是它們的母圖層 `detail` 剛好就是子項目要的
+那一種。
+
+⚠️ `validate-content.mjs` 兩個方向都擋（比照高程分帶）：內容檔的 id 不是任何一個
+子項目 → 報錯；子項目少一份內容檔 → 也報錯。少一份在畫面上只會看起來像「這一級的
+說明比較短」——那一格會退回成重複一次圖層說明的 fallback 卡，不會有任何錯誤。
+
+卡片裡的數字（112／524／427、各縣市與類別的前幾名、臺南 98 處在升格前公告…）
+**是從三份產物 geojson 數出來的**，不是抄的；法條與指定基準來自
+《文化資產保存法》第 4、17 條與《古蹟指定及廢止審查辦法》第 2 條（兩份法規各自
+連自己那一份，見 `sourceLinks.ts`），舊制第一級／第二級／第三級的沿革是次級來源
+（維基百科 國定古蹟），比照既有規範只拿來查沿革。
+
+⚠️ 重跑 `build:geodata` 之後**這三張卡上的數字要一起重數**（`authority`／`county`／
+`kind` 三個欄位聚合即可）。上游會新增與整併古蹟，數字對不上就是內容誠信的問題。
+
 #### 為什麼歷史沿革不進 geojson
 
 官方的 `pastHistory` 品質很好（中位數 409 字、100% 完整、**沒有 HTML 標籤**），是這一層
@@ -1885,6 +1918,21 @@ Web Mercator 下是直線，畫滿整圈也不貴；裁切是為了 `browse` 的
     - 搜「龍山寺」→ 四筆（艋舺／鹿港／鳳山／淡水）；搜「赤嵌樓」→ 一筆
       （官方寫「嵌」不是「崁」）。⚠️ 這一層**沒有可點清單**（`items` 圖層），
       搜尋是唯一的檢索入口，所以搜不到就等於這一層廢了
+    - **三個級別各要開得了定義卡**（`items.detail`，見上）。⚠️ 兩條路徑都要走一次，
+      而且開出來的必須是**同一張**：
+      ```js
+      const row = [...document.querySelectorAll('.layer-drawer .layer-row')]
+        .find(r => r.textContent.startsWith('古蹟'));
+      [...row.querySelectorAll('.species-name-btn')].find(b => b.textContent === '國定古蹟').click();
+      document.querySelector('.map-detail-panel').innerText.slice(0, 40)
+      // 「國定古蹟 / 國定古蹟 / National Monument / 由中央主管機關（文化部）審查指定…」
+      // ⚠️ 標題出現兩次是所有 geo 卡的既有版面（面板標題 + 卡片 h4），不是 bug
+      ```
+      搜「國定古蹟」「第一級古蹟」「Municipal Monument」也要開出同一張卡。
+      ⚠️ **回歸判準是「面板打開但整片空白」**：那代表 `items.detail` 掉了，item id
+      被拿去 `monument` 那一支查 geojson，而且完全靜默
+    - **點地圖上的圓點仍然要開 `MonumentCard`**（有沿革與個案連結），不是定義卡
+      ——`items.detail` 只管子項目名稱那條路徑
     - **特有種的搜尋結果不可以變多**（`items.indexFeatures` 只開在古蹟上）：
       搜「台灣黑熊」仍然只有一筆。⚠️ 是「台」不是「臺」——內容檔用的是台
     - ⚠️ **搜尋選到一處古蹟時，相機一定要真的飛過去**（搜「赤嵌樓」要飛到臺南，

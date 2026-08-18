@@ -581,6 +581,28 @@ export interface LayerItems {
    * 任何成本。取消勾選單一帶才是「只看某一種植被」那個用法。
    */
   defaultAll?: boolean;
+  /**
+   * 點**子項目名稱**時要開的詳情卡，覆蓋掉母圖層的 `detail`。
+   *
+   * ⚠️ 這是為了「子項目本身也是一個要解釋的概念」而存在的，古蹟三級是第一個
+   * 案例：母圖層的 `detail` 是 `monument`（點地圖上那顆圓點要開的是**那一處古蹟**
+   * 的卡片），但點抽屜裡的「國定古蹟」四個字要開的是**那個級別的定義**——
+   * 「誰指定的、指定基準是什麼、跟另外兩級差在哪」。兩者是不同的東西，
+   * 所以不能共用一個 `detail`。
+   *
+   * ⚠️ **不宣告它的後果是完全靜默的一張空白卡。** `handleItemNameClick` 一律
+   * `setSelected`，而 `DetailCard` 拿 item id 去 `monument` 那一支查 geojson 是
+   * 一定查不到的（那份 geojson 的 id 是 `monument-19831228000008` 這種官方案號）
+   * → 回 `null` → 面板打開但整片空白（`data-detail-open` 仍是 true）。
+   * 板塊邊界與垂直植被帶都踩過同一個坑，只是它們的母圖層 `detail` 剛好就是
+   * 子項目要的那一種，不必多這個欄位。
+   *
+   * 目前只支援 `type: "geo"`：卡片內容放 `src/content/geo/<collection>/<item id>.json`，
+   * **檔名必須等於子項目 id**（`validate-content.mjs` 兩個方向都會擋：內容檔的 id
+   * 不是任何一個子項目 → 報錯；子項目少一份內容檔 → 也報錯，否則那一格會退回成
+   * 「重複一次圖層說明」的卡片）。
+   */
+  detail?: DetailSpec;
 }
 
 interface LayerBase {

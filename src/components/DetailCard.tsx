@@ -229,6 +229,20 @@ function findGeoOwner(theme: ThemeDefinition, collection: string) {
         schematic: l.schematic,
       };
     }
+    /**
+     * 子項目自己的詳情卡（古蹟三級的定義，見 registry/types.ts 的 `LayerItems.detail`）。
+     * 母圖層的 `detail` 是 `monument`、對不到這個 collection，不看這裡的話 fallback
+     * 會拿不到圖層標題與來源，卡片會退化成用 collection 這個內部字串當標題。
+     */
+    if (l.items?.detail?.type === "geo" && l.items.detail.collection === collection) {
+      return {
+        id: l.id,
+        label: l.label,
+        description: fullDescription(l),
+        sources: l.sources,
+        schematic: l.schematic,
+      };
+    }
     const a = l.attach;
     if (a?.detail.type === "geo" && a.detail.collection === collection) {
       return {

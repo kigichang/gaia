@@ -604,18 +604,23 @@ export const taiwanTheme: ThemeDefinition = {
               label: "國定古蹟",
               source: { type: "remote", path: "data/geo/tw-monuments-national.geojson" },
               color: MONUMENT_LEVEL_COLORS["國定古蹟"],
+              // 舊制的級別名稱與英文名要進 haystack：課本與導覽牌上「第一級古蹟」
+              // 還很常見，而搜尋是這一層唯一的檢索入口（見 types.ts）。
+              keywords: ["National Monument", "文化部", "中央主管機關", "第一級古蹟", "一級古蹟"],
             },
             {
               id: "municipal",
               label: "直轄市定古蹟",
               source: { type: "remote", path: "data/geo/tw-monuments-municipal.geojson" },
               color: MONUMENT_LEVEL_COLORS["直轄市定古蹟"],
+              keywords: ["Municipal Monument", "直轄市政府", "市定古蹟", "六都"],
             },
             {
               id: "county",
               label: "縣(市)定古蹟",
               source: { type: "remote", path: "data/geo/tw-monuments-county.geojson" },
               color: MONUMENT_LEVEL_COLORS["縣(市)定古蹟"],
+              keywords: ["County (City) Monument", "縣市政府", "縣定古蹟", "市定古蹟"],
             },
           ],
         },
@@ -625,6 +630,17 @@ export const taiwanTheme: ThemeDefinition = {
         palette: Object.values(MONUMENT_LEVEL_COLORS),
         // items 圖層沒有可點清單，搜尋是這一層唯一的檢索入口（見 types.ts）
         indexFeatures: true,
+        /**
+         * 點「國定古蹟」這四個字要開的是**級別本身的定義卡**（誰指定的、指定基準
+         * 是什麼、跟另外兩級差在哪），不是某一處古蹟的卡片——所以覆蓋掉母圖層的
+         * `detail: { type: "monument" }`，內容檔在 `src/content/geo/tw-monument-levels/`。
+         *
+         * ⚠️ 沒有這一行的話點子項目名稱（或搜「國定古蹟」）會開出一張**空白面板**：
+         * item id 拿去 monument 那一支查 geojson 一定查不到（那邊的 id 是官方案號
+         * `monument-19831228000008`）→ 卡片回 null → 面板開著但什麼都沒有，
+         * 而且完全靜默。見 types.ts 的 `LayerItems.detail`。
+         */
+        detail: { type: "geo", collection: "tw-monument-levels" },
       },
       // 1,064 處大多在市區，縮到全島尺度只會是一團色點。zoom 9 大約是一個縣市
       // 填滿畫面的尺度，也是「古蹟聚在舊城區」這件事開始看得出來的地方。

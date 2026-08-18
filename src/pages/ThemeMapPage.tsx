@@ -482,7 +482,9 @@ function ThemeMapView({ theme, chrome }: { theme: ThemeDefinition; chrome: Chrom
     (layerId: string, itemId: string) => {
       const layer = theme.layers.find((l) => l.id === layerId);
       if (!layer) return;
-      setSelected({ detail: layer.detail, featureId: itemId });
+      // 子項目本身可以有自己的詳情卡（古蹟三級的定義），見 registry/types.ts 的
+      // `LayerItems.detail`。沒宣告就沿用母圖層的（特有種、作物…）。
+      setSelected({ detail: layer.items?.detail ?? layer.detail, featureId: itemId });
       flyToFeature(layer, itemId);
     },
     [theme, flyToFeature],
@@ -525,7 +527,17 @@ function ThemeMapView({ theme, chrome }: { theme: ThemeDefinition; chrome: Chrom
     if (pendingHit.kind === "feature") {
       // 附屬圖徵（主峰）的詳情卡與 zoom 都在 attach 上，不是母圖層的
       const attached = Boolean(pendingHit.attachedId);
-      const detail = attached ? layer.attach?.detail : layer.detail;
+      /**
+       * 「子項目本身」那種命中（搜一個物種、搜「國定古蹟」）跟「子項目裡的一個
+       * 圖徵」（搜「赤嵌樓」）是兩件事，下面三個地方都要分開：詳情卡要開哪一張、
+       * 能不能聚焦、相機怎麼取景。判準沿用 `flyToFeature` 的同一條。
+       */
+      const targetsItemItself =
+        layer.items && (pendingHit.itemId === undefined || pendingHit.itemId === pendingHit.featureId);
+      // 搜到的是子項目本身時，卡片要走 `items.detail`（古蹟三級的定義卡），
+      // 跟點抽屜裡那個名字開出來的是同一張。見 registry/types.ts。
+      const itemDetail = targetsItemItself ? (layer.items?.detail ?? layer.detail) : layer.detail;
+      const detail = attached ? layer.attach?.detail : itemDetail;
       // detail.type === "none" 的圖層（緯度參考線）飛過去就好——
       // 開一張沒有內容的詳情卡什麼都沒教到
       if (detail && detail.type !== "none") {
@@ -538,10 +550,8 @@ function ThemeMapView({ theme, chrome }: { theme: ThemeDefinition; chrome: Chrom
        *   `selected` 上，設了會被上面那條解除規則立刻清掉，變成閃一下。
        * - 高程分帶沒有 geojson、沒有圖徵可比對（`applySoloFilter` 也會擋一次）。
        * - 「子項目本身」那種命中（搜一個物種）目標是整份觀測點，那些點的 id 不是
-       *   物種 id，過濾下去會**整層消失**。判準沿用 `flyToFeature` 的同一條。
+       *   物種 id，過濾下去會**整層消失**。
        */
-      const targetsItemItself =
-        layer.items && (pendingHit.itemId === undefined || pendingHit.itemId === pendingHit.featureId);
       const canSolo =
         chrome.soloSearch === "solo" &&
         !isElevation &&

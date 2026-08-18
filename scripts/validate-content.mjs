@@ -379,6 +379,17 @@ for (const relDir of GEO_DATA_DIRS) {
         );
       }
     }
+
+    // 子項目自己的詳情卡（`items.detail`，見 registry/types.ts）：那個 collection
+    // 沒有 geojson，內容檔就是卡片的全部內容，所以一個 collection 都不能是空的。
+    if (layer.items?.detail?.type === "geo" && layer.status === "ready") {
+      const collection = layer.items.detail.collection;
+      if (!geoFeatures.some((f) => f.collection === collection)) {
+        errors.push(
+          `registry/${theme.id} → 圖層「${layer.id}」的 items.detail.collection「${collection}」底下一份內容檔都沒有（點子項目名稱會開出一張只重複圖層說明的卡）`,
+        );
+      }
+    }
   }
   console.log(`registry: ${THEMES.length} 個主題／${seenLayerIds.size} 個圖層通過交叉檢查`);
 }
@@ -405,6 +416,19 @@ for (const { layer } of allLayers()) {
  * 這同時擋掉兩個方向的打錯字：`featureIds` 指到不存在的圖徵（子項目變空圖層），
  * 以及內容檔的檔名跟圖徵對不起來（卡片退回只有圖層說明）。
  */
+/**
+ * 第三種例外：**子項目自己的詳情卡**（`items.detail`，目前只有古蹟三級的定義）。
+ * 那個 collection 同樣沒有 geojson——它的「圖徵」就是 `items` 那三個級別，所以
+ * id 改成跟 items 對。理由與高程分帶相同：`handleItemNameClick` 傳的 featureId
+ * 就是 item id，打錯字的話點下去會開出一張只重複圖層說明的卡，完全靜默。
+ */
+const itemDetailIds = new Map(); // collection → Set(item id)
+for (const { layer } of allLayers()) {
+  if (layer.items?.detail?.type !== "geo") continue;
+  const list = layer.items.from.type === "inline" ? layer.items.from.list : [];
+  itemDetailIds.set(layer.items.detail.collection, new Set(list.map((i) => i.id)));
+}
+
 const generatedIds = new Map(); // collection → Set(feature id)
 for (const { theme, layer } of allLayers()) {
   if (layer.source?.type !== "generated") continue;
@@ -443,6 +467,15 @@ for (const f of geoFeatures) {
     }
     continue;
   }
+  const itemIds = itemDetailIds.get(f.collection);
+  if (itemIds) {
+    if (!itemIds.has(f.id)) {
+      errors.push(
+        `geo/${f.collection}/${f.id}.json → 這個 collection 是某個圖層的 items.detail，但 items 裡沒有 id「${f.id}」`,
+      );
+    }
+    continue;
+  }
   const found = [...geoCollectionIds.entries()].some(
     ([path, ids]) => path.includes(f.collection) && ids.has(f.id),
   );
@@ -457,6 +490,17 @@ for (const [collection, ids] of elevationItemIds) {
   for (const id of ids) {
     if (!geoFeatures.some((f) => f.collection === collection && f.id === id)) {
       errors.push(`geo/${collection} → 高程分帶「${id}」缺內容檔，點帶名會開出沒有內容的卡`);
+    }
+  }
+}
+
+// `items.detail` 同理：宣告了「子項目名稱要開一張定義卡」，就每一個子項目都要有。
+// 少一份的話那一格會退回成「重複一次圖層說明」——三級古蹟裡有一級沒有定義，
+// 在畫面上看起來只是「這一級的說明比較短」，不會有任何錯誤。
+for (const [collection, ids] of itemDetailIds) {
+  for (const id of ids) {
+    if (!geoFeatures.some((f) => f.collection === collection && f.id === id)) {
+      errors.push(`geo/${collection} → 子項目「${id}」缺內容檔，點子項目名稱會開出沒有內容的卡`);
     }
   }
 }
