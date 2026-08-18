@@ -74,6 +74,84 @@ export const STEP_CLASS_TO_TYPE = Object.fromEntries(
 export const CATEGORY_ORDER = ["主要板塊", "次要板塊", "微板塊"];
 
 /**
+ * 中洋脊的 `STEPCLASS`。
+ *
+ * ⚠️ **中洋脊 ≠ 張裂型邊界。** 張裂型是 OSR ＋ CRB 兩類，而 CRB 是**大陸**裂谷
+ * （東非大裂谷、貝加爾裂谷、里約格蘭地裂谷）——那些在陸地上，不是海底山脈。
+ * 「世界之最・山脈」那一層要畫的是海底山脈，所以只取 OSR。
+ */
+export const MID_OCEAN_RIDGE_CLASS = "OSR";
+
+/**
+ * 10 MB 的 step 檔只下載一次（`plate-boundaries` 與 `world-superlatives-ranges`
+ * 是同一個 process 裡的兩個資料集）。比照 lib/mountains.mjs 與 lib/koppen.mjs。
+ */
+let stepsCache = null;
+export async function fetchSteps(fetchWithRetry) {
+  stepsCache ??= fetchWithRetry(STEPS_URL).then((r) => r.json());
+  return stepsCache;
+}
+
+/**
+ * 把 5,824 段 step 串成一條條連續的線。
+ *
+ * `keyOf(step)` 回傳這一段屬於哪一組（回 `null` 就跳過那一段）。相鄰的 step 幾乎
+ * 都首尾相接（實測 5,613 對接得上、只有 8 對接不上），所以**同一組、同一條邊界
+ * （`PLATEBOUND`）、而且前一段的終點等於後一段起點**的連續 step 併成一條線——
+ * 不併的話會得到 5,824 條各三十幾個點的碎線，Douglas–Peucker 幾乎砍不掉任何東西。
+ *
+ * ⚠️ 先依 `SEQNUM` 排序是必要的：串接靠的是「相鄰」，而上游檔案裡的順序不保證。
+ *
+ * 回傳 `Map<key, coords[][]>`，順序就是第一次遇到那個 key 的順序。
+ */
+export function mergeStepRuns(raw, keyOf) {
+  const steps = raw.features
+    .slice()
+    .sort((a, b) => a.properties.SEQNUM - b.properties.SEQNUM);
+  const samePoint = (a, b) => Math.abs(a[0] - b[0]) < 1e-6 && Math.abs(a[1] - b[1]) < 1e-6;
+  const runs = new Map();
+  let current = null;
+  for (const step of steps) {
+    const key = keyOf(step);
+    if (key == null) {
+      // 被跳過的段落會把串接切斷，這是對的：中間隔了一段別種邊界的兩段 OSR
+      // 本來就不該接成一條線。
+      current = null;
+      continue;
+    }
+    const coords = step.geometry.coordinates;
+    if (
+      current &&
+      current.key === key &&
+      current.bound === step.properties.PLATEBOUND &&
+      samePoint(current.coords.at(-1), coords[0])
+    ) {
+      current.coords.push(...coords.slice(1));
+      continue;
+    }
+    current = { key, bound: step.properties.PLATEBOUND, coords: [...coords] };
+    if (!runs.has(key)) runs.set(key, []);
+    runs.get(key).push(current);
+  }
+  return new Map([...runs].map(([key, list]) => [key, list.map((r) => r.coords)]));
+}
+
+/**
+ * ⚠️ 每一段都不可以跨越 ±180——跨了的話 maplibre 會畫一條繞過整個地球的橫線
+ * **而且不報錯**（跟國際換日線、世界主要山脈同一個坑）。實測板塊邊界最長的一段
+ * 只跨 57.5°。對不上就讓建置失敗，不要靜默產出。
+ */
+export function assertNoAntimeridianCrossing(lines, what) {
+  for (const line of lines) {
+    const lngs = line.map((p) => p[0]);
+    const span = Math.max(...lngs) - Math.min(...lngs);
+    if (span >= 180) {
+      throw new Error(`${what}有一段的經度跨距是 ${span.toFixed(1)}°，代表它跨過了 ±180`);
+    }
+  }
+}
+
+/**
  * Bird 的板塊代碼 → 本站的 id、中文名與分類。**52 筆，一筆不能少**
  * （`fetchPlates()` 會檢查），對不到就讓建置失敗——多一塊板塊是要由人決定
  * 中文名與分類的事件，不是可以自動猜的。
@@ -171,6 +249,33 @@ export function geometryAreaKm2(geometry) {
   const polygons =
     geometry.type === "Polygon" ? [geometry.coordinates] : geometry.coordinates;
   return polygons.reduce((sum, rings) => sum + polygonArea(rings), 0) * EARTH_RADIUS_KM ** 2;
+}
+
+/**
+ * GeoJSON 幾何（LineString／MultiLineString）的球面長度，單位公里。
+ *
+ * 這是「最長的海底山脈」那一筆唯一的自我檢查：算出來要落在常被引用的
+ * 6.5 萬公里附近（NOAA），差一個數量級就代表 `STEPCLASS` 的篩選或串接壞了。
+ * ⚠️ 但**產物不放這個數字**——它是從一份模型化的邊界幾何量出來的，寫進卡片
+ * 等於假精確（比照世界主要山脈刻意不放長度）。卡片上寫的是 NOAA 的公布值。
+ */
+export function geometryLengthKm(geometry) {
+  const lines =
+    geometry.type === "LineString" ? [geometry.coordinates] : geometry.coordinates;
+  let sum = 0;
+  for (const line of lines) {
+    for (let i = 1; i < line.length; i++) {
+      const [lng1, lat1] = line[i - 1];
+      const [lng2, lat2] = line[i];
+      const dLat = rad(lat2 - lat1);
+      const dLng = rad(lng2 - lng1);
+      const a =
+        Math.sin(dLat / 2) ** 2 +
+        Math.cos(rad(lat1)) * Math.cos(rad(lat2)) * Math.sin(dLng / 2) ** 2;
+      sum += 2 * EARTH_RADIUS_KM * Math.asin(Math.min(1, Math.sqrt(a)));
+    }
+  }
+  return sum;
 }
 
 /**

@@ -89,11 +89,112 @@ Node ≥ 22.12（vite 8 要求）。開發機與 CI 都用 Node 24。
 | 颱風最佳路徑／災情 | `rdc28.cwa.gov.tw/TDB/`（交通部中央氣象署颱風資料庫） | **只在建置期呼叫**。免金鑰、免登入，但是**沒有文件的內部端點**；災情欄轉載自內政部消防署與農業部，見下 |
 | 災害地震（官方清單） | `scweb.cwa.gov.tw/zh-tw/page/disaster/5`（交通部中央氣象署地震測報中心） | **只在建置期呼叫**。⚠️ 沒有開放資料 API（那邊要金鑰），只能剖析 HTML 表格；⚠️ **只收到 2022-09-18**，見下 |
 | 臺灣海峽中線的座標 | 國防部 2019-07-30 記者會公布的「北緯 27 度、東經 122 度至北緯 23 度、東經 118 度」 | **程式完全不呼叫**。⚠️ 國防部**沒有把它放成可連結的公告或開放資料**，只能人工轉錄進 `public/data/geo-manual/tw-strait-median-line.geojson`，見 `CLAUDE_TW.md` |
+| 日和山（世界櫥窗「海拔最低的山」）的位置與 3 公尺標高 | `maps.gsi.go.jp`（日本國土地理院 地理院地圖） | **程式完全不呼叫**。日本沒有把「哪些丘登載為山」做成可下載的資料集，官方依據就是地形圖本身，所以來源連的是**定位到那座山的地圖**，座標與標高人工轉錄進 `public/data/geo-manual/world-superlatives-peaks.geojson`（比照海峽中線） |
 | 基本地理事實（山脈走向、主峰高度、河川路徑、河川分界…） | `zh.wikipedia.org` 各條目 | **程式完全不呼叫**，人工查閱後寫進 `src/content/` 與 `public/data/geo-manual/`。次級來源，用法見「內容撰寫規範」，CC BY-SA |
 
 ### ⚠️ NLSC 的路徑順序陷阱
 
 NLSC WMTS 是 `{z}/{y}/{x}`——**y 在 x 前面**，跟絕大多數 XYZ 服務相反。寫成 `{z}/{x}/{y}` 仍然會回 HTTP 200，只是拿到位置完全錯亂的圖磚，不會有任何錯誤訊息。
+
+### 世界櫥窗：地表之最（四筆、兩個圖層）
+
+「世界櫥窗」是 2026-08 新增的分組，排在**參考線之後、氣候與生物群系之前**——先讓學生
+在地圖上找得到具體的地方，後面的氣候帶、洋流、板塊才有東西可以掛上去。目前有四筆：
+海拔最高的山峰（聖母峰）、海拔最低的山（日和山）、最長的陸上山脈（安地斯）、
+最長的海底山脈（中洋脊）。
+
+⚠️ **空的分組在抽屜上不會顯示**（`LayerPanel` 對 `layers.length === 0` 是 `return null`），
+所以之後再開新分組時，標題要等第一個圖層進去才會出現，那不是漏掉。
+
+#### 為什麼是兩個圖層而不是一個
+
+「最高／最低」是**點**、「最長」是**線**，而 `LayerRender` 一個圖層只能一種幾何
+（`items` 也不行——`LayerItem` 沒有自己的 `render`）。所以是
+`world-superlative-peaks`（circle）與 `world-superlative-ranges`（line）兩個核取方塊。
+四筆圖徵**共用同一個內容 collection**（`src/content/geo/world-superlatives/`）：
+id 在 collection 內唯一就夠，而這四張卡本來就是一組要一起讀的東西。
+
+⚠️ **圖徵 id 是「那個最」而不是那個地物的名字**（`highest-peak`／`lowest-mountain`／
+`longest-land-range`／`longest-undersea-range`）。不叫 `andes` 是刻意的：那個字串已經
+是「世界主要山脈」裡那一條的 id，而 `highlightIds` 是一份**跨圖層的扁平清單**——撞 id
+的話點這一層的安地斯會連帶把另一層的也加粗（CLAUDE.md 早就記著「同時可見的兩層撞 id
+實務上不會發生」，這一層正好是會發生的那種）。
+
+#### 兩層都不用新顏色，那是刻意的
+
+- **山峰沿用 `place` 藍**：POINT 色票已經是 all-pairs 全過的飽和狀態，而「藍點＝地圖上
+  一個有詳情卡的地點」本來就是本站記錄在案的規則（附屬點一律用藍）。同框的另外兩個
+  圓點圖層（火山帶洋紅、全球地震帶中性灰）都跟它驗過。
+- **山脈沿用 `mountain` 紫**：這兩條**就是**山脈，同一個角色本來就該同一個色（比照
+  地形景點藍與水系藍共用同一個 hex）。安地斯疊在「世界主要山脈」上時因此看起來是
+  同一條線，而不是兩條顏色打架的線。
+
+⚠️ 中洋脊必然會壓在**張裂型板塊邊界**（橘、虛線）上——它們是同一件事的兩種說法。
+紫對橘的分離度是 `MOUNTAIN_COLOR` 那次掃描驗過的，判讀靠線型與沿線名稱。
+
+#### 幾何：兩條線都不能用抄的
+
+`world-superlatives-ranges` 是 `build:geodata` 的一個資料集，**刻意跟既有圖層共用同一段
+程式**：
+
+- **安地斯**走 `polygonAxis()`、吃 `world-mountains` 同一個 `tolerance`（0.02），所以
+  產出的 100 個座標與 `world-mountains.geojson` 裡那一條**逐位元相同**（建置後實測過）。
+  兩層一起打開時那條線必須完全重合——手抄一份進 `geo-manual/`，上游或簡化參數一改就會
+  漂開成兩條平行線。
+- **中洋脊**取 Bird (2003) 的 **OSR** 段落。⚠️ **中洋脊 ≠ 張裂型邊界**：張裂型是
+  OSR ＋ CRB，而 CRB 是**大陸**裂谷（東非、貝加爾、里約格蘭地），那些在陸地上、不是
+  海底山脈。篩選常數在 `lib/plates.mjs` 的 `MID_OCEAN_RIDGE_CLASS`。
+
+為此把 `plate-boundaries` 的串接邏輯抽成 `lib/plates.mjs` 的 `mergeStepRuns(raw, keyOf)`
+（`keyOf` 回 `null` 就跳過那一段，順便切斷串接——中間隔了別種邊界的兩段 OSR 本來就不該
+接成一條線），跨 ±180 的檢查抽成 `assertNoAntimeridianCrossing()`。⚠️ **重構之後
+`plate-boundaries` 的產物實測逐位元相同**（只有 `generatedAt` 不同），改動這兩支函式後
+請照樣重跑一次比對。10 MB 的 step 檔由 `fetchSteps()` 快取，兩個資料集共用同一次下載。
+
+⚠️ **長度是自我檢查，不是產物**：`geometryLengthKm()` 算出中洋脊約 **67,000 公里**
+（594 段），對得上 NOAA 公布的 65,000——落在 4 萬～10 萬以外就讓建置失敗，那是唯一
+抓得到「STEPCLASS 篩選壞了」的檢查（比照板塊面積總和等於地球表面積）。但那個數字
+**不寫進 geojson**：它是從模型化的邊界幾何量出來的，寫進卡片就是假精確（比照世界主要
+山脈刻意不放長度）。卡片上寫的是 NOAA 的公布值。
+
+#### 兩座山峰是人工轉錄的官方數字，放 `geo-manual/`
+
+`public/data/geo-manual/world-superlatives-peaks.geojson`（比照臺灣海峽中線）：
+聖母峰取峰頂實測位置與 2020 年中尼聯合公布的 **8,848.86 公尺（雪面）**，日和山取
+國土地理院地形圖上的位置與 2014 年重新確認的 **3 公尺**。
+
+⚠️ **不要改成從 `world-mountain-peaks.geojson` 切出聖母峰。** 那一份是 Natural Earth
+的 1:10m 高程點，位置差約 **4 公里**、高度是舊值 8,848——對「畫出喜馬拉雅的最高點在
+哪一段」夠用，但這一層要講的正是那個數字本身。代價是兩層一起打開並放大之後會看到
+兩顆藍點，這件事寫在圖層的 `notes` 裡。
+
+⚠️ **取景寫在 geojson 的 `properties.zoom` 上、不是 `browse.zoom`**：兩筆的尺度差了
+五級（聖母峰要看整條喜馬拉雅、日和山是一顆 3 公尺高的沙丘），而 `ThemeMapPage` 對點
+圖層是 `feature.properties.zoom || browse.zoom || 11`——逐筆決定才對。
+
+#### ⚠️ 「世界最低的山」沒有權威名單，這件事必須寫出來
+
+怎樣才算一座山，各國定義並不相同：日本以「有沒有登載在國土地理院的地形圖上」為準，
+多數國家沒有這種制度。所以這一筆取的是**有官方測量、又正式登載在地形圖上的最低者**，
+而且它還是**人工築山**、高度還是**海嘯削掉山頭之後**重測的（震災前 6.05 公尺，當時
+日本最低的是大阪天保山 4.53 公尺）。這幾件事全部寫在圖層的 `notes` 與卡片的 `facts`
+裡——那正是這一筆的教學價值（「最」取決於怎麼定義與怎麼量），不是要遮起來的雜訊。
+
+#### ⚠️ 示意警語掛在內容檔上，不在圖層上
+
+`world-superlative-ranges` **沒有** `schematic: true`：兩筆的性質不同——安地斯是由範圍
+面算出來的中軸線（示意），中洋脊是 Bird (2003) 的模型幾何（跟「板塊邊界」一樣不標
+示意）。`FeatureCard` 是 `feature?.schematic ?? fallback.schematic`，所以警語寫在
+`src/content/geo/world-superlatives/longest-land-range.json` 的 `schematic` 上，只出現在
+該出現的那一張卡。代價是抽屜那一列不會顯示「（教學示意圖，非精確界線）」，改成寫在
+`notes` 裡。
+
+#### 這一組又把線圖層的名額擠得更緊
+
+世界主題現在有**八個**線圖層在搶 `MAX_ACTIVE_BY_KIND.line` 的三個名額（緯度參考線、
+國際換日線、行星風系、洋流、板塊邊界、世界主要河流、世界主要山脈、世界之最・山脈）。
+**這是預期行為，不要為此把上限調到 4**——理由見上面「合併之後線圖層變成七個」那一節，
+整段色彩分析都建立在「最多三條線同時出現」的前提上。
 
 ### 板塊與板塊邊界：全站第一個「面帶名字」的圖層
 
@@ -899,6 +1000,8 @@ ID 常數定義在 `src/map/layers/*.ts`，**一律 import 常數，不要寫死
 | `world-rivers-line` / `world-rivers-label` | line + symbol |
 | `world-mountains-line` / `world-mountains-label` | line + symbol（39 條山脈的**中軸線**，由上游的範圍面算出來，見下） |
 | `world-mountain-peaks-points` | circle（附屬圖層；一條山脈配一座最高峰，沿用 `place` 藍） |
+| `world-superlative-peaks-points` | circle（世界櫥窗；聖母峰與日和山兩筆，沿用 `place` 藍） |
+| `world-superlative-ranges-line` / `-label` | line + symbol（世界櫥窗；安地斯山脈與中洋脊兩筆，沿用 `mountain` 紫。⚠️ 安地斯的幾何跟 `world-mountains` **完全重合**是刻意的，見下） |
 | `world-places-points` | circle |
 | `world-continents-fill` / `-outline` | fill + line（七大洲；`fillOpacity: 0`，畫出來的是外框與名字）。⚠️ 洲名**不是**面的標註，見下 |
 | `world-continent-labels-points` / `-label` | circle + symbol（附屬圖層；`radius: 0`，整層只是七個洲名的錨點） |
@@ -959,7 +1062,7 @@ maplibre-contour 把 worker 以 Blob URL 內嵌，**不需要額外部署 worker
 | 主題 | 路由 | 內容 |
 |---|---|---|
 | 臺灣地理 | `/theme/taiwan` | 臺灣123（土地與島群、專屬經濟海域、海峽中線、北回歸線）、行政區（縣市、鄉鎮市區）、地形、天然災害（活動斷層、地震、颱風路徑與災損）、水系（118 個列管水系、水庫即時水情、河川流域分區）、人文（原住民族、交通軸線、古蹟、人口與都市體系）、植被生態（特有種、國家公園與保護區、垂直植被帶）、農業物產（主要作物分布） |
-| 世界地理 | `/theme/world` | **全球尺度（骨架，排在前面）**：參考線（緯度參考線、國際換日線）、氣候與生物群系（森林與沙漠帶、柯本氣候分區、行星風系）、海洋（洋流：18 條暖流／寒流）、地體構造（板塊、板塊邊界、地震帶、火山帶）。**世界地理原有**：城市、國界與大洲（大洲分區）、地形水系（世界主要河流、世界主要山脈）、人文專題 |
+| 世界地理 | `/theme/world` | **全球尺度（骨架，排在前面）**：參考線（緯度參考線、國際換日線）、**世界櫥窗**（世界之最・山峰、世界之最・山脈）、氣候與生物群系（森林與沙漠帶、柯本氣候分區、行星風系）、海洋（洋流：18 條暖流／寒流）、地體構造（板塊、板塊邊界、地震帶、火山帶）。**世界地理原有**：城市、國界與大洲（大洲分區）、地形水系（世界主要河流、世界主要山脈）、人文專題 |
 
 兩個主題頁都是**滿版地圖 + 浮動控制**（仿 Google Map），沒有頁首也沒有側欄——版面機制見下面的「全螢幕地圖外框與浮動控制」。
 
@@ -1668,10 +1771,12 @@ maplibre 的四個角落容器是 map container 內的 `position: absolute; z-in
 | `tw-quakes-major.geojson` | 49 KB |
 | `tw-faults.geojson` | 40 KB |
 | `world-mountains.geojson` | 30 KB |
+| `world-superlatives-ranges.geojson` | 31 KB |
 | `tw-crops-tea.geojson` | 25 KB |
 | `tw-reservoirs.geojson` + `reservoirs-live.json` | 20 + 2 KB |
 | `tw-typhoons.geojson` | 14 KB |
 | `world-mountain-peaks.geojson` | 10 KB |
+| `world-superlatives-peaks.geojson`（geo-manual） | 2 KB |
 | `tw-county-halls.geojson` | 8 KB |
 | `tw-strait-median-line.geojson` | <1 KB |
 
@@ -1913,6 +2018,8 @@ npm run build:geodata -- --force --only=volcanoes            # 1,214 座全新�
 npm run build:geodata -- --force --only=world-continents     # 七大洲（Natural Earth 國界 → 依洲別聯集）
 npm run build:geodata -- --force --only=world-mountains      # 39 條山脈（範圍面 → 中軸線）
 npm run build:geodata -- --force --only=world-mountain-peaks # 同一份下載的 39 座最高峰
+npm run build:geodata -- --force --only=world-superlatives-ranges
+                                       # 世界櫥窗：安地斯中軸線＋中洋脊（跟 plate-boundaries 共用那份 10 MB 的 step 檔）
 npm run build:geodata -- --force --only=koppen-zones-c       # 柯本五大類要各跑一次（a／b／c／d／e）
                                        # （一個 process 裡共用同一份下載，見 lib/koppen.mjs）
 npm run build:geodata -- --force --only=biomes-desert        # 生物群系六類要各跑一次
@@ -2479,6 +2586,52 @@ m.isSourceLoaded('contour-source')
     - 切底圖之後重驗存在、顏色與排序（線 < 最高峰 < 沿線標註，全部在 `contour-lines`
       之上、`contour-labels` 之下）
 
+38. **世界櫥窗：地表之最**（`/theme/world` → 世界櫥窗，兩層一起勾，見上）：
+    ```js
+    const m = window.__gaiaMaps.at(-1);
+    m.jumpTo({ center: [0, 10], zoom: 1.8 });
+    m.getPaintProperty('world-superlative-peaks-points', 'circle-color')  // "#2a78d6"（place 藍）
+    m.getPaintProperty('world-superlative-ranges-line', 'line-color')     // "#8e26ff"（mountain 紫）
+    const u = l => new Set(m.queryRenderedFeatures({layers:[l]}).map(f=>f.properties.id)).size;
+    [u('world-superlative-peaks-points'), u('world-superlative-ranges-line')]   // [2, 2]
+    m.queryRenderedFeatures({ layers: ['world-superlative-ranges-label'] }).length  // > 0
+    ```
+    - ⚠️ **中洋脊的形狀就是這一層的成敗，只能用眼睛驗**：大西洋正中央要有一條 S 形的
+      線從冰島一路彎到南大西洋、東太平洋隆起沿著南美西方外海往北、印度洋是一個
+      倒 Y。**一條橫貫整張圖的橫線**代表某一段跨過了 ±180（建置期已擋，改動
+      `mergeStepRuns` 之後要再看一次）
+    - ⚠️ **東非大裂谷與貝加爾湖那裡不可以有紫線**：那是大陸裂谷（CRB），不屬於中洋脊。
+      看得到就代表 `MID_OCEAN_RIDGE_CLASS` 的篩選被改成整個「張裂型」了
+    - **跟「板塊邊界」一起打開**（`jumpTo([-30, 0], 3)`）：紫色**實線**是中洋脊、
+      橘色**虛線**是張裂型邊界，兩條疊在一起是對的（同一件事的兩種說法），
+      分不出線型才是回歸
+    - **跟「世界主要山脈」一起打開**（`jumpTo([-70,-30], 4)`）：安地斯那條線必須
+      **完全重合**成一條（兩層同色同寬），看得到兩條平行的紫線就代表幾何漂開了：
+      ```js
+      // 建置期的比對（不需要瀏覽器）：兩份產物的安地斯幾何必須逐位元相同
+      // node -e "…world-superlatives-ranges 的 longest-land-range === world-mountains 的 andes"
+      ```
+    - 四張卡都要開得了，而且是**內容檔**那一版（標題下面有四格數據）：
+      點聖母峰 →「海拔最高的山峰，8,848.86 公尺」、點日和山 →「海拔最低的山，3 公尺」、
+      點安地斯 →「最長的陸上山脈，約 7,000 公里」、點中洋脊 →「最長的海底山脈，約 65,000 公里」
+    - ⚠️ **示意警語只能出現在安地斯那一張**（`schematic` 掛在內容檔上，見上）：
+      ```js
+      document.querySelector('.map-detail-panel').innerText.includes('教學示意')
+      // 安地斯 true；中洋脊、聖母峰、日和山都是 false
+      ```
+    - ⚠️ **抽屜那一列不會有「（教學示意圖，非精確界線）」**，那是刻意的（圖層層級沒標）
+    - 點日和山要飛到 zoom 14、點聖母峰要飛到 zoom 9（取景寫在 `properties.zoom` 上，
+      不是 `browse.zoom`）。日和山那一格要看得到仙台港南邊的海岸線，不是一片空白
+    - ⚠️ **聖母峰會有兩顆藍點**（本層 + 世界主要山脈的最高峰，相距約 4 公里），
+      放大到 zoom 10 以上看得出來。那是已知且記錄在案的，不是重複的資料
+    - 搜「聖母峰」會同時命中本層與「世界主要山脈」的最高峰；搜「中洋脊」「日和山」
+      「Everest」「Hiyoriyama」都要找得到。⚠️ 兩層都有 `browse`，所以聚焦搜尋框
+      **會**多抓 33 KB（31 + 2），那是已知成本
+    - `maxzoom: 6`（山脈那一層）：zoom 6.2 只剩兩顆山峰、線不見了。**山峰那一層沒有
+      maxzoom**（一個座標點沒有「再放大就是假精確」的問題）
+    - 切底圖之後重驗存在、顏色與排序（線 < 點 < 沿線標註，全部在 `contour-lines`
+      之上、`contour-labels` 之下）
+
 ### ⚠️ 用瀏覽器自動化點 UI 的三個陷阱
 
 - **主題頁的底圖選單藏在左下角「圖層」彈出層裡**，必須先 `document.querySelector('.map-tile').click()` 才找得到 `<select>`；`/compare` 的仍然直接在頁首。
@@ -2592,6 +2745,9 @@ scripts/
 │                         #   readShapefileZip()（.shp/.dbf/.prj/.cpg，已反轉＋已投影）供保護區用
 │                         #   parseShpPolygons()/parseDbf()（原始 TM2 座標）專供 tw-basins
 ├─ lib/twd97.mjs          # TWD97 TM2 → WGS84（中央子午線 121/119/117 由 .prj 決定）
+├─ lib/plates.mjs        # 板塊與板塊邊界的存取層（10 MB step 檔的快取 fetchSteps、
+│                         #   串接 mergeStepRuns、跨 ±180 檢查、球面面積與長度）。
+│                         #   ⚠️ 中洋脊（世界櫥窗）只取 STEPCLASS === "OSR"，不含大陸裂谷
 ├─ lib/dissolve.mjs       # 有向邊相消的多邊形聯集（分區圖 → 園區範圍）
 ├─ lib/csv.mjs            # CSV 剖析器（水庫與國家公園索引共用）
 ├─ lib/protected-areas.mjs # 國家公園與保護區四個資料集的存取層

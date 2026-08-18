@@ -111,8 +111,13 @@ import {
   SOURCE_LABELS as PLATE_SOURCE_LABELS,
   STEPS_URL as PLATE_STEPS_URL,
   STEP_CLASS_TO_TYPE,
+  MID_OCEAN_RIDGE_CLASS,
+  assertNoAntimeridianCrossing,
+  fetchSteps as fetchPlateSteps,
   formatArea as formatPlateArea,
   geometryAreaKm2,
+  geometryLengthKm,
+  mergeStepRuns,
 } from "./lib/plates.mjs";
 import {
   LICENSE as VOLCANO_LICENSE,
@@ -1115,6 +1120,111 @@ const SOURCES = [
           };
         }),
   },
+  /**
+   * 「世界之最・山脈」那一層的兩條線：**最長的陸上山脈**（安地斯）與
+   * **最長的海底山脈**（中洋脊）。
+   *
+   * ## 為什麼是一個資料集而不是兩個、也不是手繪
+   *
+   * 兩條線的幾何都已經有站上既有的來源，關鍵是**不能用抄的**：
+   *
+   * - **安地斯**跟「世界主要山脈」是同一條中軸線，所以走同一支 `polygonAxis()`、
+   *   同一個 `tolerance`。兩層一起打開時兩條線必須**完全重合**——手抄一份座標
+   *   進 `geo-manual/`，上游或簡化參數一改就會漂開成兩條平行線。
+   * - **中洋脊**是 Bird (2003) 的 OSR 段落（見 lib/plates.mjs 的
+   *   `MID_OCEAN_RIDGE_CLASS`），資料在一份 10 MB 的 step 檔裡，本來就只能在
+   *   建置期取得。
+   *
+   * 兩者併成一個產物是因為它們是**同一個核取方塊**下的兩筆圖徵（一層只能有一種
+   * 幾何，而這兩條都是線）。
+   *
+   * ⚠️ **id 刻意不叫 `andes`。** 那個字串已經是「世界主要山脈」裡那一條的 id，
+   * 而 `highlightIds` 是一份跨圖層的扁平清單——撞 id 的話點這一層的安地斯會連
+   * 帶把另一層的也加粗。這裡用**這筆圖徵在講的那個「最」**當 id，也正好對得上
+   * 內容檔 `src/content/geo/world-superlatives/<id>.json`。
+   */
+  {
+    id: "world-superlatives-ranges",
+    label: "世界之最 山脈",
+    load: async (fetch) => {
+      const mountains = await fetchMountainData(fetch);
+      // ⚠️ 10 MB，但跟 `plate-boundaries` 共用同一次下載（lib/plates.mjs 有快取）
+      const steps = await fetchPlateSteps(fetch);
+      return { mountains, steps };
+    },
+    sourceUrl: [MOUNTAIN_REGIONS_URL, PLATE_STEPS_URL],
+    license: `${MOUNTAIN_LICENSE}／${PLATE_LICENSE}`,
+    sourceLabel: MOUNTAIN_SOURCE_LABELS[0],
+    /** ⚠️ 必須跟 `world-mountains` 與 `plate-boundaries` 一致（都是 0.02），理由見上 */
+    tolerance: 0.02,
+    digits: 3,
+    transform: ({ mountains, steps }) => {
+      // ── 最長的陸上山脈：安地斯 ──────────────────────────────────────
+      const andesNeId = Object.keys(MOUNTAIN_RANGES).find(
+        (neId) => MOUNTAIN_RANGES[neId].id === "andes",
+      );
+      const polygons = mountains.polygonsById.get(Number(andesNeId));
+      if (!polygons) throw new Error("安地斯山脈在上游的自然地理區裡找不到");
+      const axis = polygonAxis(polygons);
+      if (axis.length === 0) throw new Error("安地斯山脈抽不出任何中軸線");
+      assertNoAntimeridianCrossing(axis, "安地斯山脈");
+
+      // ── 最長的海底山脈：中洋脊（只取 OSR，不含大陸裂谷）─────────────
+      const ridgeLines = mergeStepRuns(steps, (step) =>
+        step.properties.STEPCLASS === MID_OCEAN_RIDGE_CLASS ? "ridge" : null,
+      ).get("ridge");
+      if (!ridgeLines?.length) {
+        throw new Error("中洋脊（STEPCLASS = OSR）一段都沒有，上游的欄位可能變了");
+      }
+      assertNoAntimeridianCrossing(ridgeLines, "中洋脊");
+
+      const ridgeGeometry = { type: "MultiLineString", coordinates: ridgeLines };
+      /**
+       * 自我檢查：算出來的長度要落在 NOAA 公布的 6.5 萬公里附近。差一個數量級
+       * 就代表篩選或串接壞了（比照板塊面積總和等於地球表面積那道檢查）。
+       * ⚠️ 這個數字**不寫進產物**，理由見 lib/plates.mjs 的 `geometryLengthKm`。
+       */
+      const ridgeKm = geometryLengthKm(ridgeGeometry);
+      if (ridgeKm < 40000 || ridgeKm > 100000) {
+        throw new Error(
+          `中洋脊算出來 ${Math.round(ridgeKm).toLocaleString("en-US")} km，` +
+            "離常被引用的 6.5 萬公里太遠，請先確認 STEPCLASS 的篩選",
+        );
+      }
+      console.log(
+        `\n  · 中洋脊：${ridgeLines.length} 段、球面長度約 ` +
+          `${Math.round(ridgeKm / 1000)} 千公里（NOAA 公布值約 65 千公里）`,
+      );
+
+      return [
+        {
+          type: "Feature",
+          geometry:
+            axis.length === 1
+              ? { type: "LineString", coordinates: axis[0] }
+              : { type: "MultiLineString", coordinates: axis },
+          properties: {
+            id: "longest-land-range",
+            name: "安地斯山脈",
+            en: "Andes",
+            category: "陸上",
+            meta: "最長的陸上山脈・約 7,000 公里",
+          },
+        },
+        {
+          type: "Feature",
+          geometry: ridgeGeometry,
+          properties: {
+            id: "longest-undersea-range",
+            name: "中洋脊",
+            en: "Mid-Ocean Ridge",
+            category: "海底",
+            meta: "最長的海底山脈・約 65,000 公里",
+          },
+        },
+      ];
+    },
+  },
   {
     id: "plates",
     label: "板塊",
@@ -1211,7 +1321,12 @@ const SOURCES = [
   {
     id: "plate-boundaries",
     label: "板塊邊界",
-    url: PLATE_STEPS_URL,
+    /**
+     * ⚠️ 用 `load` 而不是 `url`，是為了跟 `world-superlatives-ranges`（中洋脊）
+     * **共用同一次下載**——兩個資料集吃的是同一份 10 MB 的 step 檔。
+     */
+    load: (fetch) => fetchPlateSteps(fetch),
+    sourceUrl: PLATE_STEPS_URL,
     license: PLATE_LICENSE,
     sourceLabel: PLATE_SOURCE_LABELS[0],
     tolerance: 0.02,
@@ -1225,52 +1340,20 @@ const SOURCES = [
      * 所以三筆剛剛好。
      */
     transform: (raw) => {
-      const steps = raw.features
-        .slice()
-        .sort((a, b) => a.properties.SEQNUM - b.properties.SEQNUM);
-      const runs = new Map(PLATE_BOUNDARY_TYPES.map((t) => [t.id, []]));
-      const samePoint = (a, b) => Math.abs(a[0] - b[0]) < 1e-6 && Math.abs(a[1] - b[1]) < 1e-6;
-      let current = null;
-      for (const step of steps) {
+      const runs = mergeStepRuns(raw, (step) => {
         const cls = step.properties.STEPCLASS;
         const type = STEP_CLASS_TO_TYPE[cls];
         if (!type) throw new Error(`未知的 STEPCLASS「${cls}」，請先決定它屬於哪一種邊界`);
-        const coords = step.geometry.coordinates;
-        /**
-         * 相鄰的 step 幾乎都首尾相接（實測 5,613 對接得上、只有 8 對接不上），
-         * 所以同一條邊界、同一種類型的連續 step 併成一條線——不併的話會得到
-         * 5,824 條各三十幾個點的碎線，Douglas–Peucker 幾乎砍不掉任何東西。
-         */
-        if (
-          current &&
-          current.type === type &&
-          current.bound === step.properties.PLATEBOUND &&
-          samePoint(current.coords.at(-1), coords[0])
-        ) {
-          current.coords.push(...coords.slice(1));
-        } else {
-          current = { type, bound: step.properties.PLATEBOUND, coords: [...coords] };
-          runs.get(type).push(current);
-        }
-      }
+        return type;
+      });
 
       return PLATE_BOUNDARY_TYPES.map((t) => {
         const lines = runs.get(t.id);
-        if (!lines.length) throw new Error(`${t.name}一段都沒有，上游的 STEPCLASS 可能變了`);
-        /**
-         * ⚠️ 每一段都不可以跨越 ±180——跨了的話 maplibre 會畫一條繞過整個地球的
-         * 橫線而且不報錯（跟國際換日線同一個坑）。實測上游最長的一段只跨 57.5°。
-         */
-        for (const line of lines) {
-          const lngs = line.coords.map((p) => p[0]);
-          const span = Math.max(...lngs) - Math.min(...lngs);
-          if (span >= 180) {
-            throw new Error(`${t.name}有一段的經度跨距是 ${span.toFixed(1)}°，代表它跨過了 ±180`);
-          }
-        }
+        if (!lines?.length) throw new Error(`${t.name}一段都沒有，上游的 STEPCLASS 可能變了`);
+        assertNoAntimeridianCrossing(lines, t.name);
         return {
           type: "Feature",
-          geometry: { type: "MultiLineString", coordinates: lines.map((l) => l.coords) },
+          geometry: { type: "MultiLineString", coordinates: lines },
           /**
            * ⚠️ id 就是 `BOUNDARY_TYPES[].id`，**不要再加 `boundary-` 前綴**：這個
            * 字串同時是註冊表的 item id、`featureIds`、以及
