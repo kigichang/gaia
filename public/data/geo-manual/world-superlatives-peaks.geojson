@@ -2,10 +2,10 @@
   "type": "FeatureCollection",
   "metadata": {
     "collection": "world-superlatives-peaks",
-    "source": "兩個座標都是人工轉錄的，不是描繪的。聖母峰取峰頂實測位置（27°59′17″N 86°55′31″E），高度取 2020-12-08 中國與尼泊爾聯合公布的雪面高程 8,848.86 公尺。日和山取日本國土地理院地形圖上的位置（38°15′21″N 141°00′43″E），高度 3 公尺是國土地理院 2011 年東北地方太平洋近海地震（東日本大震災）海嘯之後、2014 年重新確認的值（震災前是 6.05 公尺）。⚠️ 聖母峰的座標與 data/geo/world-mountain-peaks.geojson 那一顆（Natural Earth 高程點，86.8806/27.9805）相差約 4 公里，那不是筆誤：那份是 1:10m 的示意高程點，這裡要的是峰頂本身。兩層一起打開並放大之後會看到兩顆點，見註冊表的 notes。",
-    "license": "座標與高度為各國政府公開發布之事實資料",
+    "source": "五個座標都是人工轉錄的，不是描繪的。聖母峰取峰頂實測位置（27°59′17″N 86°55′31″E），高度取 2020-12-08 中國與尼泊爾聯合公布的雪面高程 8,848.86 公尺。日和山取日本國土地理院地形圖上的位置（38°15′21″N 141°00′43″E），高度 3 公尺是 2011 年東北地方太平洋近海地震（東日本大震災）海嘯之後、國土地理院 2014 年重新確認的值（震災前是 6.05 公尺）。普哈胡努取露出海面的加德納尖峰（24°59′56″N 167°59′58″W），體積約 15 萬 km³ 出自 Garcia et al. (2020)。奧霍斯－德爾薩拉多山與尤耶亞科山的座標**逐位元取自 data/geo/volcanoes.geojson**（GVP），所以跟「火山帶」那一層的同一顆火山完全重合；高度則採兩國公布的常用值（GVP 記的是 6,879 與 6,739）。⚠️ 聖母峰的座標與 data/geo/world-mountain-peaks.geojson 那一顆（Natural Earth 高程點，86.8806/27.9805）相差約 4 公里，那不是筆誤：那份是 1:10m 的示意高程點，這裡要的是峰頂本身。兩層一起打開並放大之後會看到兩顆點，見註冊表的 notes。",
+    "license": "座標與高度為各國政府與學術研究公開發布之事實資料",
     "generatedAt": "2026-08-18",
-    "featureCount": 2
+    "featureCount": 5
   },
   "features": [
     {
@@ -15,7 +15,7 @@
         "id": "highest-peak",
         "name": "聖母峰",
         "en": "Mount Everest",
-        "category": "最高",
+        "category": "山",
         "meta": "海拔最高的山峰・8,848.86 公尺",
         "elevation_m": 8848.86,
         "zoom": 9
@@ -28,10 +28,48 @@
         "id": "lowest-mountain",
         "name": "日和山",
         "en": "Hiyoriyama",
-        "category": "最低",
+        "category": "山",
         "meta": "海拔最低的山・3 公尺",
         "elevation_m": 3,
         "zoom": 14
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [-167.9994, 24.9989] },
+      "properties": {
+        "id": "largest-volcano",
+        "name": "普哈胡努",
+        "en": "Pūhāhonu",
+        "category": "火山",
+        "meta": "體積最大的火山・約 150,000 km³",
+        "zoom": 7
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [-68.541, -27.109] },
+      "properties": {
+        "id": "highest-volcano",
+        "name": "奧霍斯－德爾薩拉多山",
+        "en": "Ojos del Salado",
+        "category": "火山",
+        "meta": "海拔最高的火山・6,893 公尺",
+        "elevation_m": 6893,
+        "zoom": 9
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [-68.53, -24.72] },
+      "properties": {
+        "id": "highest-active-volcano",
+        "name": "尤耶亞科山",
+        "en": "Llullaillaco",
+        "category": "火山",
+        "meta": "海拔最高的活火山・6,739 公尺",
+        "elevation_m": 6739,
+        "zoom": 9
       }
     }
   ]

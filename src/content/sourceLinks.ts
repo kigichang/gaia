@@ -487,6 +487,22 @@ export const SOURCE_LINKS: Record<string, string> = {
    */
   "日本國土地理院 地理院地圖（日和山）": "https://maps.gsi.go.jp/#16/38.255750/141.011806/",
   /**
+   * ⚠️ 連的是**英文**維基百科：普哈胡努（加德納尖峰）在中文維基百科沒有條目。
+   * 體積 15 萬 km³ 的原始出處是下面那篇 2020 年的論文，維基百科只是查閱管道。
+   */
+  "維基百科 Pūhāhonu": "https://en.wikipedia.org/wiki/P%C5%ABh%C4%81honu",
+  // 「體積最大的火山」這個紀錄換人的原始研究（Earth and Planetary Science Letters）。
+  // ⚠️ 數值型的權威資料一律以原始文獻為準，維基百科只是次級來源（見 CLAUDE.md）。
+  "Garcia et al. (2020) 普哈胡努：地球上最大最熱的盾狀火山":
+    "https://doi.org/10.1016/j.epsl.2020.116296",
+  // 露出海面那兩塊岩石的官方介紹頁（不是紀念區首頁）
+  "帕帕哈瑙莫夸基亞海洋國家紀念區 加德納尖峰":
+    "https://www.papahanaumokuakea.gov/visit/gardner.html",
+  // 世界櫥窗的兩座安地斯火山（中文名與沿革；座標、海拔與噴發年代以 GVP 為準）
+  "維基百科 奧霍斯-德爾薩拉多山":
+    "https://zh.wikipedia.org/zh-tw/%E5%A5%A5%E9%9C%8D%E6%96%AF-%E5%BE%B7%E5%B0%94%E8%90%A8%E6%8B%89%E5%A4%9A%E5%B1%B1",
+  "維基百科 尤耶亞科山": "https://zh.wikipedia.org/zh-tw/%E5%B0%A4%E8%80%B6%E4%BA%9E%E7%A7%91%E5%B1%B1",
+  /**
    * 全球活火山。GVP 的授權方式是「引用即可自由使用」，所以來源標籤要留著全名，
    * 不要簡寫成「Smithsonian」。知名火山的中文名另外標維基百科（次級來源）。
    */
