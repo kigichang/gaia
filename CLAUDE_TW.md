@@ -453,6 +453,39 @@ chip 不會出現、`setFilter` 也不會下）。這與古蹟／作物那些子
 圖層會什麼都不顯示也不報錯。那個欄位已經換成 `featureIds`（在 `resolve.ts` 切資料，
 不是下 maplibre filter，理由見交通軸線那節）。
 
+#### 三級各有一張定義卡，而它是全站第一個 `items.detail`
+
+「國定／直轄市定／縣(市)定」是《文化資產保存法》的三級指定制度，光看三個核取方塊
+的名字看不出差在哪（**差的是主管機關，不是年代或價值高低**，而國定另有「重要、
+保存完整、典範」的加重基準）。所以三級各有一份內容檔：
+`src/content/geo/tw-monument-levels/{national,municipal,county}.json`。
+
+⚠️ **但這一層不能像板塊邊界那樣直接用 `layer.detail`。** 母圖層的 `detail` 是
+`monument`——點地圖上那顆圓點要開的是**那一處古蹟**的 `MonumentCard`（有沿革與
+個案連結），跟「這個級別是什麼」是兩件事。所以 `LayerItems` 新增了一個
+`detail`（見 `registry/types.ts`）：**點子項目名稱、或搜到子項目本身時走它，
+點地圖上的圖徵仍然走母圖層的 `detail`。**
+
+⚠️ **在那之前，點抽屜裡的「國定古蹟」四個字開出來的是一張空白面板**，而且完全靜默：
+`handleItemNameClick` 照樣 `setSelected`，item id `national` 拿去 `monument` 那一支查
+geojson 一定查不到（那邊的 id 是官方案號 `monument-19831228000008`）→ 卡片回 `null`
+→ 面板開著但什麼都沒有（`data-detail-open` 仍是 true）。搜「國定古蹟」也是同一條路徑。
+板塊邊界與垂直植被帶都踩過同一個坑，只是它們的母圖層 `detail` 剛好就是子項目要的
+那一種。
+
+⚠️ `validate-content.mjs` 兩個方向都擋（比照高程分帶）：內容檔的 id 不是任何一個
+子項目 → 報錯；子項目少一份內容檔 → 也報錯。少一份在畫面上只會看起來像「這一級的
+說明比較短」——那一格會退回成重複一次圖層說明的 fallback 卡，不會有任何錯誤。
+
+卡片裡的數字（112／524／427、各縣市與類別的前幾名、臺南 98 處在升格前公告…）
+**是從三份產物 geojson 數出來的**，不是抄的；法條與指定基準來自
+《文化資產保存法》第 4、17 條與《古蹟指定及廢止審查辦法》第 2 條（兩份法規各自
+連自己那一份，見 `sourceLinks.ts`），舊制第一級／第二級／第三級的沿革是次級來源
+（維基百科 國定古蹟），比照既有規範只拿來查沿革。
+
+⚠️ 重跑 `build:geodata` 之後**這三張卡上的數字要一起重數**（`authority`／`county`／
+`kind` 三個欄位聚合即可）。上游會新增與整併古蹟，數字對不上就是內容誠信的問題。
+
 #### 為什麼歷史沿革不進 geojson
 
 官方的 `pastHistory` 品質很好（中位數 409 字、100% 完整、**沒有 HTML 標籤**），是這一層
@@ -523,6 +556,32 @@ chip 不會出現、`setFilter` 也不會下）。這與古蹟／作物那些子
    避開，但**新增作物類別前要先看它的量級合不合理**。
 5. **面積是跨期作相加的年種植面積**，一塊地一年種兩期就算兩次。這是農業統計的標準
    定義，不是重複計算的 bug，但卡片與說明都要寫「年種植面積」，不要寫成耕地面積。
+
+#### 三種作物各有一張說明卡（`items.detail`，比照古蹟三級）
+
+點抽屜裡的「果樹」兩個字，原本開出來的是 `DetailCard` 那條 township fallback：
+標題「主要作物分布」＋整段圖層說明，三個子項目**逐字相同**——而「果樹跟蔬菜差在
+哪」正是點下去想知道的事。現在三種各有一份內容檔
+`src/content/geo/tw-crop-kinds/{fruit,vegetable,tea}.json`，
+`items.detail: { type: "geo", collection: "tw-crop-kinds" }` 覆蓋掉母圖層的
+`detail: { type: "township" }`；**點地圖上的圓點仍然是三層共用的 `TownshipCard`**。
+
+三張卡各自要回答的是「這一類收哪些作物、面積怎麼算、分布為什麼長這樣」，其中兩件事
+是這一層最容易讀錯、而圖層說明塞不下的：
+
+- ⚠️ **檳榔算果樹**（官方代碼 6 開頭）。323 個鄉鎮裡有 44 個的第一大「果樹」是檳榔，
+  冠軍的嘉義中埔鄉 5,432 公頃裡就有 3,711 公頃是檳榔——不講的話會把檳榔園讀成果園。
+- ⚠️ **竹筍算蔬菜**，而且它是 92 個鄉鎮的第一大蔬菜（多在丘陵與山區）。所以蔬菜的點
+  不是只落在平原上，山區冒出來的那幾顆多半是竹筍。
+
+⚠️ **卡片上的每個數字都是從三份產物 geojson 現數出來的**（鄉鎮數、總面積、縣市與
+鄉鎮前幾名、以及「第一名作物」的次數是數 `top` 字串的第一項），不是抄的。**重跑
+`build:geodata -- --only=tw-crops-*` 之後三張卡要一起重數**——農情調查逐年更新。
+
+⚠️ `DetailCard` 的 township fallback（featureId 不是 TOWNCODE 時退回圖層說明）
+**不要因此拿掉**：那條路徑現在雖然不是主要入口了，但這一層有三個子項目、五份資料與
+三個共用 featureId 的圖層，任何新路徑傳進一個非 TOWNCODE 的 id，症狀都是一張完全
+靜默的空白面板。
 
 #### ⚠️ 多年生作物要濾掉「沒有收成」的列
 
@@ -1885,6 +1944,21 @@ Web Mercator 下是直線，畫滿整圈也不貴；裁切是為了 `browse` 的
     - 搜「龍山寺」→ 四筆（艋舺／鹿港／鳳山／淡水）；搜「赤嵌樓」→ 一筆
       （官方寫「嵌」不是「崁」）。⚠️ 這一層**沒有可點清單**（`items` 圖層），
       搜尋是唯一的檢索入口，所以搜不到就等於這一層廢了
+    - **三個級別各要開得了定義卡**（`items.detail`，見上）。⚠️ 兩條路徑都要走一次，
+      而且開出來的必須是**同一張**：
+      ```js
+      const row = [...document.querySelectorAll('.layer-drawer .layer-row')]
+        .find(r => r.textContent.startsWith('古蹟'));
+      [...row.querySelectorAll('.species-name-btn')].find(b => b.textContent === '國定古蹟').click();
+      document.querySelector('.map-detail-panel').innerText.slice(0, 40)
+      // 「國定古蹟 / 國定古蹟 / National Monument / 由中央主管機關（文化部）審查指定…」
+      // ⚠️ 標題出現兩次是所有 geo 卡的既有版面（面板標題 + 卡片 h4），不是 bug
+      ```
+      搜「國定古蹟」「第一級古蹟」「Municipal Monument」也要開出同一張卡。
+      ⚠️ **回歸判準是「面板打開但整片空白」**：那代表 `items.detail` 掉了，item id
+      被拿去 `monument` 那一支查 geojson，而且完全靜默
+    - **點地圖上的圓點仍然要開 `MonumentCard`**（有沿革與個案連結），不是定義卡
+      ——`items.detail` 只管子項目名稱那條路徑
     - **特有種的搜尋結果不可以變多**（`items.indexFeatures` 只開在古蹟上）：
       搜「台灣黑熊」仍然只有一筆。⚠️ 是「台」不是「臺」——內容檔用的是台
     - ⚠️ **搜尋選到一處古蹟時，相機一定要真的飛過去**（搜「赤嵌樓」要飛到臺南，
@@ -1949,11 +2023,19 @@ Web Mercator 下是直線，畫滿整圈也不貴；裁切是為了 `browse` 的
     - 點嘉義縣中埔鄉的果樹點 → 開的是**三層共用的 `TownshipCard`**：標題「中埔鄉」、
       副標「嘉義縣・鄉」、人口／密度／面積三個 stat，底下「主要作物（年種植面積）」
       列出果樹 5,432 公頃（檳榔／香蕉／其他果樹）、蔬菜、茶
-    - ⚠️ **在圖層抽屜點「果樹」這個子項目名稱**（不是核取方塊）→ 要顯示作物圖層的
-      說明，**不是空白面板**。那條路徑傳的 featureId 是 `"fruit"`，不是 TOWNCODE：
+    - ⚠️ **在圖層抽屜點「果樹」這個子項目名稱**（不是核取方塊）→ 開的是**那一類
+      作物自己的說明卡**（`items.detail`，見上），不是空白面板、也不是重複一次
+      圖層說明：
       ```js
-      document.querySelector('.map-detail-panel').innerText.trim().length > 0
+      const row = [...document.querySelectorAll('.layer-drawer .layer-row')]
+        .find(r => r.textContent.startsWith('主要作物分布'));
+      [...row.querySelectorAll('.species-name-btn')].find(b => b.textContent === '果樹').click();
+      document.querySelector('.map-detail-panel').innerText.slice(0, 30)
+      // 「果樹 / 果樹 / Fruit Trees / 農情調查裡作物代碼 6 開頭的那一大類…」
       ```
+      三種都要試（果樹／蔬菜／茶），搜「檳榔」「竹筍」「茶」也要開出同一張卡。
+      ⚠️ 那條路徑傳的 featureId 是 `"fruit"`、不是 TOWNCODE，所以 `DetailCard` 的
+      township fallback **仍然要留著**當守衛（見那裡的說明）
     - 搜「鹿谷」現在只有**一筆**鄉鎮（副標「鄉鎮市區界」），不再是鄉鎮界＋三筆作物
       ——三層共用同一張卡，五筆一樣的標題只是雜訊（見「搜尋合併成一筆」）。
       但搜「茶」仍然要找得到「茶・主要作物分布」那個子圖層
