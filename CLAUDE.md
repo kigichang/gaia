@@ -1738,9 +1738,21 @@ source 也 loaded。這一類「畫得出來但看不見」的缺陷**只能看�
 
 `.map-top-left` **刻意不讀 `--left-panel-w`**：詳情面板現在排在它正下方而不是旁邊，本來就沒有要閃避的東西。它的 `z-index` 是 `--z-popover`（不是 `--z-map-ui`），否則建議清單會被 `--z-panel` 的詳情面板蓋掉——`.map-top-left` 自己有 z-index，子節點爬不出這個堆疊脈絡。它因此也高過抽屜，但抽屜開著時整欄是 `visibility: hidden`，兩者不會同時出現。
 
-`.map-top-left` 是 `display: flex` 的一列，`MapSearchBox` 用 `flex: 1; min-width: 0` 佔滿剩下的寬度，`DonateButton`（`src/components/DonateButton.tsx`）用 `flex: none` 排在右邊——這是唯一一個心型固定用暖紅色（不是 `.map-fab` 預設的中性灰）的浮動按鈕，因為它要引導點擊而不是單純導覽，是 `<a target="_blank">` 連到均一的贊助頁，不是 React Router 內部連結。抽屜開著時整欄一起 `visibility: hidden`，贊助按鈕也會跟著收起。
+`.map-top-left` 是 `display: flex` 的一列，`MapSearchBox` 用 `flex: 1; min-width: 0` 佔滿剩下的寬度，`DonateButton`（`src/components/DonateButton.tsx`）用 `flex: none` 排在右邊——這是唯一一個心型固定用暖紅色（不是 `.map-fab` 預設的中性灰）的浮動按鈕，因為它要引導點擊而不是單純導覽。抽屜開著時整欄一起 `visibility: hidden`，心型也會跟著收起。
 
-⚠️ **窄螢幕（≤860px）的 `.map-top-left` 會變成滿寬，於是它跟右上角的 `.map-top-right`（⋮⋮⋮，絕對定位的另一欄）重疊，而它的 `z-index` 比較高——所以蓋掉的一定是主題選單那顆按鈕，而且是連看都看不到、也點不到**（實測 500px 寬時整顆被搜尋藥丸的右端吃掉；使用者在 Pixel 7a 上的回報是「愛心蓋住選主題的按鈕」）。修法有兩條、缺一不可：媒體查詢裡替這一欄補 `padding-right: calc(var(--top-right-fab-w) + var(--fab-gap) + 8px)`（`--top-right-fab-w` 是那顆 fab 的寬度 46px＝圖示 20 + padding 12×2 + 框線 1×2），並且把 `.map-donate` 整個 `display: none`——讓出那段留白之後，412px 的手機上搜尋框只剩三百出頭，再擺一顆 46px 的心型就不夠打字了。⚠️ **只藏愛心是不夠的**，搜尋藥丸自己一樣會蓋住 ⋮⋮⋮。驗法是 `document.elementFromPoint()` 打在 ⋮⋮⋮ 的正中心要命中那顆按鈕，光看截圖上愛心不見了會誤判成修好了。
+⚠️ **心型不是連結，是第三個 `MapPopover`。** 它原本是 `<a target="_blank">` 直接跳到均一的贊助頁，2026-08 改成先開一張「問題、建議與贊助」的小卡（GitHub Issue／`mailto:` ／贊助頁三個連結）。理由是這顆按鈕其實承擔兩件事，而**回報問題在整個站上沒有別的入口**——主題頁是滿版地圖，沒有頁首也沒有頁尾，直接外跳等於把那條路徹底藏起來，使用者在按下去之前也不知道自己會被帶去哪裡。
+
+⚠️ **`flex: none` 要掛在 `MapPopover` 的根節點上（`.map-donate-root`），不是心型按鈕上。** 這就是 `MapPopover` 那個 `rootClassName` 存在的唯一理由：flex 子元素是根節點、心型只是它的孫節點，掛錯地方時搜尋框一長按鈕就被壓扁。窄螢幕那條 `display: none` 同理（見下）。
+
+⚠️ **開關、Escape、點外面關閉一律走 `usePopover`，不要自己寫一份。** 尤其是 Escape：`usePopover` 把它掛在面板上並 `stopPropagation()`，所以不會冒到 `ThemeMapPage` 那個 document 層級的三段式 Escape——按 Escape 只關掉這張小卡，不會順手把詳情面板或抽屜一起關掉（實測層數不變）。
+
+⚠️ **窄螢幕（≤860px）由 ⋮⋮⋮ 選單接手同一段內容，兩者永遠只出現一個。** 心型在那個寬度整顆是 `display: none`（要讓出 ⋮⋮⋮ 的位置與打字空間，見下），而**贊助還有別的管道、回報問題沒有**——少了這一段，手機上就完全沒有入口。所以內文抽成 `ContactNote`（`src/components/ContactNote.tsx`）給兩邊共用，`AppMenu` 那一段包在 `.map-menu-contact` 裡預設 `display: none`、只在窄螢幕變 `block`。
+
+⚠️ **`.map-donate-root` 與 `.map-menu-contact` 那兩條 CSS 是一組的，改一條就要改另一條**——只改其中一條的後果分別是「手機上沒有回報入口」（回歸成上一版）或「桌機上同一段內容講兩次」，兩者在建置期都抓不到。窄螢幕還要把 `.map-menu` 加寬到 300px：⋮⋮⋮ 面板本來只靠 `min-width: 220px` 撐著，兩個完整網址在那個寬度下會斷得很碎。
+
+⚠️ `/compare` 的 `variant="inline"` **沒有**這一段（那裡是頁首的一列，塞不下兩段文字），這是已知的。
+
+⚠️ **窄螢幕（≤860px）的 `.map-top-left` 會變成滿寬，於是它跟右上角的 `.map-top-right`（⋮⋮⋮，絕對定位的另一欄）重疊，而它的 `z-index` 比較高——所以蓋掉的一定是主題選單那顆按鈕，而且是連看都看不到、也點不到**（實測 500px 寬時整顆被搜尋藥丸的右端吃掉；使用者在 Pixel 7a 上的回報是「愛心蓋住選主題的按鈕」）。修法有兩條、缺一不可：媒體查詢裡替這一欄補 `padding-right: calc(var(--top-right-fab-w) + var(--fab-gap) + 8px)`（`--top-right-fab-w` 是那顆 fab 的寬度 46px＝圖示 20 + padding 12×2 + 框線 1×2），並且把 `.map-donate-root`（`MapPopover` 的根節點，不是心型按鈕本身）整個 `display: none`——讓出那段留白之後，412px 的手機上搜尋框只剩三百出頭，再擺一顆 46px 的心型就不夠打字了。⚠️ **只藏愛心是不夠的**，搜尋藥丸自己一樣會蓋住 ⋮⋮⋮。驗法是 `document.elementFromPoint()` 打在 ⋮⋮⋮ 的正中心要命中那顆按鈕，光看截圖上愛心不見了會誤判成修好了。
 
 ### `<MapView>` 必須是 shell 的第一個、無條件的子節點
 
@@ -2268,6 +2280,17 @@ m.isSourceLoaded('contour-source')
      - 焦點在搜尋輸入框、建議清單開著 → Escape 只收清單，`shell.dataset.detailOpen` **不變**
      - ⋮⋮⋮ 開著 → Escape 只關選單，`shell.dataset.detailOpen` **不變**
      - 左下「圖層」磚的彈出層開著 → Escape 只關彈出層，**已勾選的圖層一個都不能掉**
+     - 心型的「問題、建議與贊助」小卡開著 → Escape 只關小卡、焦點回到心型，
+       `shell.dataset.detailOpen` **不變**、**已勾選的圖層一個都不能掉**
+       （它是第三個 `MapPopover`，走的是同一條 `usePopover` 路徑）
+   - **「問題、建議與贊助」在任一寬度剛好一個入口**（⚠️ 用 `offsetParent`，不要用
+     `querySelector` 的有無——兩邊的 DOM 一直都在，差別只在 CSS）：
+     ```js
+     const vis = el => el && el.offsetParent !== null;   // 祖先 display:none 時是 null
+     // 寬螢幕：心型看得到、⋮⋮⋮ 裡那一段看不到
+     // ≤860px：完全相反，而且 .map-menu 要是 300px（不是 min-width 的 220）
+     ```
+     ⚠️ 窄螢幕還要照第 8 項既有那條驗 ⋮⋮⋮ 沒有被蓋住（`document.elementFromPoint()`）
    - 面板閃避：抽屜或詳情開啟時 `document.querySelector('.map-bottom-left').getBoundingClientRect().left >= 360`
    - 面板開關**不得**改變 canvas 尺寸（證明不需要 `resize()`）：
      ```js
@@ -2855,10 +2878,11 @@ src/
 └─ components/
    ├─ SiteHeader.tsx      # /compare 專用頁首（主題頁沒有頁首）
    ├─ AppMenu.tsx         # 主題導覽 + 淺深色（floating=⋮⋮⋮ 彈出層／inline=頁首）
-   ├─ MapPopover.tsx      # ⋮⋮⋮ 與「圖層」磚共用的泡泡容器
+   ├─ MapPopover.tsx      # ⋮⋮⋮、「圖層」磚與心型小卡共用的泡泡容器（rootClassName 見上）
    ├─ MapLayersPopover.tsx# 左下「圖層」磚（內容重用 LayerToggles）
    ├─ MapSearchBox.tsx    # 左上搜尋藥丸（含開抽屜的 ☰）與建議清單
-   ├─ DonateButton.tsx    # 搜尋藥丸右邊的贊助按鈕，另開分頁連到均一
+   ├─ DonateButton.tsx    # 搜尋藥丸右邊的心型：開一張「問題、建議與贊助」小卡（寬螢幕才有）
+   ├─ ContactNote.tsx     # 那張卡的內文（Issue／mailto／均一）。⚠️ 窄螢幕改由 ⋮⋮⋮ 選單顯示，共用這一份
    ├─ LayerDrawer.tsx     # 圖層抽屜外框（觸發器在搜尋藥丸裡，見上）
    ├─ MapDetailPanel.tsx  # 左側詳情面板外框（≤860px 變底部卡）
    ├─ DetailCard.tsx      # 選取 → 對應詳情卡的分派

@@ -874,13 +874,64 @@ input {
   min-width: 0;
 }
 
-/* 搜尋框右邊的贊助按鈕，另開分頁連到均一的贊助頁（見 DonateButton.tsx）。
+/* 搜尋框右邊的心型按鈕：點下去開一張「問題、建議與贊助」的小卡（見 DonateButton.tsx）。
    心型固定用暖紅色，跟其他 .map-fab 的中性灰圖示區隔——這是唯一一個要引導
    點擊而不是單純導覽的按鈕。.map-fab:hover 本身的 background 換色已經夠，
    不需要額外的 hover 規則。 */
 .map-donate {
-  flex: none;
   color: #e5484d;
+}
+
+/* ⚠️ flex: none 要掛在**根節點**上，不是心型按鈕上：搜尋欄那一列的 flex 子元素
+   是 MapPopover 的根節點（心型只是它的孫節點），掛錯地方時搜尋框一長按鈕就被壓扁。 */
+.map-donate-root {
+  flex: none;
+}
+
+/* 小卡本身。比 .map-popover-panel 的 min-width(220px) 寬一些——裡面有兩個完整的
+   網址，太窄會斷成一堆兩三個字的行；同時不能超出視窗（窄螢幕整顆心型收起來，見下）。 */
+.map-donate-panel {
+  width: 300px;
+  max-width: calc(100vw - var(--fab-gap) * 2);
+}
+
+.map-donate-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+/* ---------- 「問題、建議與贊助」的內文（心型小卡與 ⋮⋮⋮ 選單共用，見 ContactNote.tsx） ---------- */
+
+.contact-note-title {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.contact-note {
+  font-size: 13px;
+  line-height: 1.7;
+  color: var(--text-secondary);
+}
+
+.contact-note p {
+  margin: 8px 0 0;
+}
+
+/* ⚠️ 網址原樣印出來（使用者要看得到位址，不是只有一個「這裡」），所以一定要允許
+   在任意字元換行，否則長網址會把面板撐寬、溢出視窗。 */
+.contact-note a {
+  overflow-wrap: anywhere;
+}
+
+/* ⚠️ ⋮⋮⋮ 選單裡那一段**預設不顯示**：寬螢幕的入口是搜尋框右邊的心型，兩個都出現
+   等於同一段內容講兩次。它只在窄螢幕接手（見下面的媒體查詢），因為那個寬度心型
+   整顆是 display: none 的。**兩條規則是一組的，改一條就要改另一條。** */
+.map-menu-contact {
+  display: none;
 }
 
 .map-search {
@@ -1777,8 +1828,21 @@ input {
   /* ⚠️ 而且贊助按鈕整個收起來：讓出上面那段留白之後，搜尋框在 412px 的手機上
      只剩三百出頭，再擺一顆 46px 的心型就不夠打字了。贊助入口不是這一頁的主要
      任務（桌機仍然看得到），主要入口是搜尋框與 ☰。 */
-  .map-donate {
+  .map-donate-root {
     display: none;
+  }
+
+  /* ⚠️ 而且 ⋮⋮⋮ 選單要把同一段內容接回來——不然這個寬度**完全沒有**回報問題的
+     入口（贊助還有別的管道，回報沒有）。這一條與上面那條是一組的。 */
+  .map-menu-contact {
+    display: block;
+  }
+
+  /* ⋮⋮⋮ 面板本來只靠 min-width(220px) 撐著，兩個完整網址在那個寬度下會斷得很碎。
+     加寬到跟心型那張小卡一樣，右緣仍然對齊 ⋮⋮⋮、左緣不會超出視窗。 */
+  .map-menu {
+    width: 300px;
+    max-width: calc(100vw - var(--fab-gap) * 2);
   }
 
   .drawer-scrim {

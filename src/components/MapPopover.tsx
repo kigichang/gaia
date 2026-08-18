@@ -8,6 +8,11 @@ interface MapPopoverProps {
   /** 決定面板從哪一角展開（只影響 CSS class） */
   placement: "top-right" | "bottom-left";
   triggerClassName: string;
+  /**
+   * 加在根節點上的 class。⚠️ 版面上的必要條件，不是裝飾：根節點才是 flex 子元素，
+   * 所以「不要被壓縮」與「窄螢幕整個收起來」這種規則只能掛在它身上（贊助按鈕）。
+   */
+  rootClassName?: string;
   triggerContent: ReactNode;
   panelClassName?: string;
   /** 用 render prop 拿到 close，讓面板裡的導覽連結按下去可以順手收起來 */
@@ -24,6 +29,7 @@ export function MapPopover({
   label,
   placement,
   triggerClassName,
+  rootClassName,
   triggerContent,
   panelClassName,
   children,
@@ -33,7 +39,7 @@ export function MapPopover({
   const close = useCallback(() => setOpen(false), []);
 
   return (
-    <div className="map-popover" ref={rootRef}>
+    <div className={"map-popover" + (rootClassName ? ` ${rootClassName}` : "")} ref={rootRef}>
       <button {...triggerProps} className={triggerClassName} aria-label={label} title={label}>
         {triggerContent}
       </button>

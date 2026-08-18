@@ -3,6 +3,7 @@ import { DEFAULT_THEME_ID, THEMES } from "../map/registry/index";
 import { ThemeToggle } from "./ThemeToggle";
 import { SoloSearchToggle } from "./SoloSearchToggle";
 import { MapPopover } from "./MapPopover";
+import { ContactNote, CONTACT_TITLE } from "./ContactNote";
 import type { ThemePreference } from "../useTheme";
 import type { SoloSearchMode } from "../useSoloSearch";
 
@@ -85,6 +86,17 @@ export function AppMenu({
               <SoloSearchToggle mode={soloSearch} onChange={onSoloSearchChange} />
             </>
           )}
+          {/*
+            ⚠️ 這一段**只在窄螢幕出現**（CSS：`.map-menu-contact`），不是永遠都有。
+            寬螢幕的入口是搜尋框右邊的心型，而心型在 ≤860px 是 `display: none` 的
+            ——少了這一段，手機上就完全沒有回報問題的入口。兩邊剛好互補，任一寬度
+            都只會有一個入口，所以不必擔心同一段內容出現兩次。
+          */}
+          <div className="map-menu-contact">
+            <hr className="map-menu-sep" />
+            <h2 className="contact-note-title">{CONTACT_TITLE}</h2>
+            <ContactNote />
+          </div>
         </>
       )}
     </MapPopover>
