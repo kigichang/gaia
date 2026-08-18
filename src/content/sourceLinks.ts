@@ -394,8 +394,17 @@ export const SOURCE_LINKS: Record<string, string> = {
   // ne_50m_admin_0_countries（大洲分區＝依 CONTINENT 欄位併起來的；國界那一層也用它）
   "Natural Earth 1:50m 國界":
     "https://www.naturalearthdata.com/downloads/50m-cultural-vectors/50m-admin-0-countries/",
-  // ne_10m_geography_regions_polys（世界主要山脈，planned——山脈在這份的 featurecla "Range/mtn"）
+  // ne_10m_geography_regions_polys（世界主要山脈的範圍面＝這份裡 featurecla 為 "Range/mtn" 的 222 筆）
   "Natural Earth 1:10m 自然地理區":
+    "https://www.naturalearthdata.com/downloads/10m-physical-vectors/10m-physical-labels/",
+  /**
+   * ne_10m_geography_regions_elevation_points（世界主要山脈的最高峰）。
+   *
+   * ⚠️ 網址跟上面那筆**是同一頁**（NE 把自然地理的面、線、點放在同一個下載頁），
+   * 但標籤仍然要分成兩個：卡片上寫「Natural Earth 1:10m 自然地理區」而讀者拿到的
+   * 是山峰高度時，他沒辦法知道那個數字出自哪一份檔案。
+   */
+  "Natural Earth 1:10m 高程點":
     "https://www.naturalearthdata.com/downloads/10m-physical-vectors/10m-physical-labels/",
   // ne_10m_populated_places（世界人口分布 planned；三個世界地點的座標也出自它）
   "Natural Earth 1:10m 城市聚落":
@@ -407,6 +416,8 @@ export const SOURCE_LINKS: Record<string, string> = {
   "Peter Bird (2003) 板塊模型": "https://doi.org/10.1029/2001GC000252",
   "Nordpil 板塊資料集": "https://github.com/fraxen/tectonicplates",
   "維基百科 板塊列表": "https://zh.wikipedia.org/zh-tw/%E6%9D%BF%E5%A1%8A%E5%88%97%E8%A1%A8",
+  // 世界主要山脈：39 條的中文名與成因說明的查閱來源（次級來源，見 CLAUDE.md「內容撰寫規範」）
+  "維基百科 山脈列表": "https://zh.wikipedia.org/zh-tw/%E5%B1%B1%E8%84%88%E5%88%97%E8%A1%A8",
   /**
    * 全球活火山。GVP 的授權方式是「引用即可自由使用」，所以來源標籤要留著全名，
    * 不要簡寫成「Smithsonian」。知名火山的中文名另外標維基百科（次級來源）。

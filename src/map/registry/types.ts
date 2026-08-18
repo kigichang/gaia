@@ -63,7 +63,14 @@ export type ColorRole =
    * 線色——火山幾乎全部長在板塊邊界上，跨幾何豁免在那一層不成立。
    * 理由與量測值見 thematicColors.ts 的 `VOLCANO_COLOR`。
    */
-  | "volcano";
+  | "volcano"
+  /**
+   * ⚠️ `mountain` 也是**有驗過**的：世界主要山脈的紫要跟在陸地上同框的每一個
+   * 顏色分得開（三種板塊邊界、火山洋紅、水系／城市／主峰藍、三個中性角色）。
+   * 它跟臺灣五大山脈的 `relief` **刻意不是同一個顏色**，理由與量測值見
+   * thematicColors.ts 的 `MOUNTAIN_COLOR`。
+   */
+  | "mountain";
 
 /** `src/content` 底下用 import.meta.glob 載入、已經打包進 bundle 的內容集合。 */
 export type BundledContentId =
@@ -478,6 +485,16 @@ export interface LayerAttachment {
   /** 沒填就沿用母圖層的——同一個勾選項底下的東西，說明與來源多半一致 */
   description?: string;
   sources?: string[];
+  /**
+   * 覆蓋母圖層的示意警語。**沒填就沿用母圖層的**（同一個勾選項底下的東西，
+   * 幾何多半出自同一份資料）。
+   *
+   * ⚠️ 會用到它的情境只有一種：**母圖層是示意的、附屬圖徵卻是實測的**。世界主要
+   * 山脈就是——中軸線是從範圍面算出來的示意軸線，但主峰是 Natural Earth 高程點的
+   * 真實座標與高度。不覆蓋的話，聖母峰的卡片底下會印一行「這是簡化的教學示意
+   * 幾何」，那是對讀者說謊。
+   */
+  schematic?: boolean;
 }
 
 export interface LayerItem {

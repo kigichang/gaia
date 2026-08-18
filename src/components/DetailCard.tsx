@@ -254,7 +254,9 @@ function findGeoOwner(theme: ThemeDefinition, collection: string) {
         label: a.label,
         description: a.description ?? fullDescription(l),
         sources: a.sources ?? l.sources,
-        schematic: l.schematic,
+        // ⚠️ 附屬圖徵可以不是示意的（世界主要山脈的中軸線是算出來的，主峰卻是
+        // 上游的真實座標），所以這裡讓 attach 覆蓋得掉，見 registry/types.ts
+        schematic: a.schematic ?? l.schematic,
       };
     }
   }

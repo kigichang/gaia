@@ -934,13 +934,126 @@ export const worldTheme: ThemeDefinition = {
       id: "world-mountains",
       label: "世界主要山脈",
       group: "地形水系",
-      status: "planned",
-      render: { kind: "line" },
-      detail: { type: "none" },
-      description: "喜馬拉雅、安地斯、洛磯等主要山脈的走向，對照板塊聚合帶。",
-      // 山脈在 Natural Earth 是 `ne_10m_geography_regions_polys` 裡 featurecla 為
-      // "Range/mtn" 的那些面，屬於「自然地理區」那份資料集
-      sources: ["Natural Earth 1:10m 自然地理區"],
+      status: "ready",
+      /**
+       * ## 上游是「面」，這一層畫的是「線」
+       *
+       * Natural Earth 的自然地理區把山脈收成**範圍面**，但這一層要教的是**走向**
+       * ——安地斯山脈從委內瑞拉一路拉到火地島、洛磯山脈與海岸山脈平行排列、
+       * 喜馬拉雅山脈沿著板塊聚合帶橫過。`build-geodata.mjs` 因此把每一塊範圍面
+       * 化成一條中軸線（做法與實測長度見 scripts/lib/mountains.mjs）。
+       *
+       * ⚠️ 面還有兩個硬問題，都在那份檔頭裡：**第 14 個面色不存在**（本站的分類色
+       * 上限是六色，大洲＋生物群系＋柯本＋板塊已經把面色票用滿），而且面會吃掉
+       * `MAX_ACTIVE_BY_KIND.fill` 的兩個名額之一，而「山脈擋住水氣 → 背風側是沙漠」
+       * 正好要跟柯本氣候分區或生物群系疊著看。畫成線就不用搶。
+       */
+      source: { type: "remote", path: "data/geo/world-mountains.geojson" },
+      /**
+       * ⚠️ `maxAngle: 150` 照抄臺灣河川那次的教訓：真實（而不是手繪）的曲線用
+       * maplibre 預設的 60 會讓沿線標註被**靜默拒絕**掉大半。這一層的標註不是
+       * 裝飾——39 條山脈同色，畫面上唯一寫出「這是安地斯山脈」的東西就是它，
+       * 而且它同時是 `MOUNTAIN_COLOR` 那個 CVD WARN 的補償（見 thematicColors.ts）。
+       */
+      render: { kind: "line", width: 2.6, label: { property: "name", maxAngle: 150 } },
+      /**
+       * ⚠️ **不是臺灣五大山脈的 `relief` 洋紅。** 洋紅對火山帶的洋紅一般視覺
+       * ΔE 只有 4.6，而環太平洋那一段的山脈上滿是火山（安地斯、喀斯開、巴里桑、
+       * 新幾內亞高地），兩層一起打開會變成「洋紅的點壓在洋紅的線上」。從前兩層
+       * 分屬不同主題碰不到，山脈進了世界主題之後就碰得到了。完整的掃描結論見
+       * thematicColors.ts 的 `MOUNTAIN_COLOR`。
+       */
+      colorRole: "mountain",
+      /**
+       * 39 條都還沒有內容檔，所以卡片走 `FeatureCard` 的 fallback：標題是山脈名、
+       * 副標是 geojson 的 `meta`（洲＋最高峰）、下一行是 `detail`（成因）。
+       *
+       * ⚠️ `hideLayerDescription` 的判準跟活動斷層與全球活火山一樣：**圖徵很多、
+       * 而且圖層說明在每一張卡上逐字相同**。這一層的卡片本來就有洲、最高峰與成因
+       * 三件逐條不同的事可講，不必再貼一段跟抽屜那一列一模一樣的字。
+       */
+      detail: { type: "geo", collection: "world-mountains", hideLayerDescription: true },
+      /**
+       * 39 筆平鋪太長，依洲分組（`properties.category`，順序由 `build-geodata.mjs`
+       * 的 feature 順序決定：亞、歐、非、北美、南美、大洋、南極，洲內依主峰高度
+       * 由高到低）。⚠️ `groupBy` 是**依序切、不排序**，所以那個順序不能在這裡改。
+       */
+      browse: { groupBy: "category" },
+      /**
+       * 主峰跟著這個核取方塊一起出現，比照臺灣五大山脈的 `tw-range-peaks`。
+       *
+       * ⚠️ 顏色沿用 `place` 藍而不是山脈的紫，那是 CLAUDE.md 記錄的既有規則
+       * （POINT 色票已經飽和，附屬點一律用藍；語意上也對——藍點＝地圖上一個
+       * 有詳情卡的地點）。
+       *
+       * ⚠️ `schematic: false` 不是多餘的：母圖層的中軸線是**算出來的**示意幾何，
+       * 主峰卻是 Natural Earth 高程點的真實座標與高度。不覆蓋的話聖母峰的卡片
+       * 底下會印一行「這是簡化的教學示意幾何」，那是對讀者說謊。
+       */
+      attach: {
+        id: "world-mountain-peaks",
+        label: "最高峰",
+        source: { type: "remote", path: "data/geo/world-mountain-peaks.geojson" },
+        render: { kind: "circle" },
+        colorRole: "place",
+        detail: {
+          type: "geo",
+          collection: "world-mountain-peaks",
+          hideLayerDescription: true,
+        },
+        parentProperty: "rangeId",
+        /**
+         * ⚠️ 縮放範圍不繼承母圖層（見 types.ts），所以主峰本身在任何尺度都畫得出來
+         * ——「一座山峰的座標」沒有中軸線那種「再放大就是假精確」的問題。
+         *
+         * ⚠️ **但取景要讓母圖徵留在畫面上**，這一條是實測改回來的：`zoom: 8` 時
+         * 點「聖母峰」會飛到 zoom 8，而山脈線的 `maxzoom` 是 6——詳情卡、相機、
+         * 強調表達式全都正常，只有喜馬拉雅山脈**整條消失**（`queryRenderedFeatures`
+         * 回 0），畫面上只剩一顆藍點。判準同縣市政府那一層（見 types.ts）：這一層
+         * 的教學重點是「這條山脈的最高點在哪一段」，取景必須讓山峰與山脈同時在。
+         * 5.5 是母圖層 `maxzoom` 之下留半級餘裕，跟 `fitMaxZoom()` 給線／面的上限
+         * 是同一個值。
+         */
+        browse: { zoom: 5.5 },
+        schematic: false,
+        description:
+          "各山脈的最高峰。高度取自 Natural Earth 的高程點，與各國最新公告值可能差幾公尺。",
+      },
+      /**
+       * 中軸線是從一份 1:10m、而且本來就是製圖判斷的範圍面算出來的，不是實測稜線
+       * ——比照臺灣五大山脈與洋流，一定要標。
+       */
+      schematic: true,
+      /**
+       * ⚠️ `maxzoom: 6`：一個像素在 zoom 6 約 0.04°，正好是產物的簡化容差
+       * （0.02°）的兩倍。再放大，那條線就會變成一條假的精確稜線，而山地地形
+       * 本來就該讀等高線與地形陰影（那兩層在 zoom 9 以上才有意義，剛好接得上）。
+       */
+      maxzoom: 6,
+      description:
+        "喜馬拉雅、安地斯、洛磯等 39 條主要山脈的走向與最高峰。" +
+        "跟「板塊邊界」疊著看，可以看出年輕的褶曲山脈幾乎都長在聚合型邊界上；" +
+        "跟「柯本氣候分區」或「森林與沙漠帶」疊著看，則看得出山脈如何把水氣擋在" +
+        "迎風坡（安地斯山脈西側的阿他加馬沙漠、西高止山脈背風的德干高原）。",
+      notes: [
+        "⚠️ 這 39 條是課本會點名的主要山脈，不是完整名單；上游收錄的 222 條山地裡，" +
+          "課本不會提到的那些沒有畫出來。",
+        "⚠️ 線是**中軸線**，由上游的山脈範圍面算出來的示意走向，不是實測稜線，" +
+          "也不代表山脈的寬度。山脈的界線本來就沒有官方定義——「阿爾卑斯山脈到哪裡為止」" +
+          "是製圖上的判斷，不同地圖畫得不一樣。",
+        "⚠️ 帕米爾高原、衣索比亞高原與新幾內亞高地嚴格說是高原而不是山脈，" +
+          "但課本都會提到，而且在上游的資料裡歸在同一類，所以一起收進來。",
+        "⚠️ 最高峰的高度取自 Natural Earth 的高程點，與各國最新測量值可能差幾公尺" +
+          "（例如聖母峰現行的官方值是 8,848.86 公尺）。庫克山已改用 1991 年山頂崩落後" +
+          "重測的 3,724 公尺。",
+        "⚠️ 這一層的紫與世界重要城市、最高峰的藍在紅綠色盲下比較接近，" +
+          "兩者一起打開時請以形狀（線與圓點）與山脈的沿線名稱判讀。",
+      ],
+      sources: [
+        "Natural Earth 1:10m 自然地理區",
+        "Natural Earth 1:10m 高程點",
+        "維基百科 山脈列表",
+      ],
     },
     {
       id: "world-population",

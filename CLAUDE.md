@@ -68,7 +68,7 @@ Node ≥ 22.12（vite 8 要求）。開發機與 CI 都用 Node 24。
 | 鄉鎮別人口與人口密度 | `data.gov.tw` 資料集 **8410**「各鄉鎮市區人口密度」→ `opdadm.moi.gov.tw` 的年度 CSV | **只在建置期呼叫**，內政部戶政司。⚠️ **前兩列都是標頭**，年份寫死不自動取最新，見下 |
 | 鄉鎮別作物種植面積 | `data.gov.tw` 資料集 **7302**「農情調查」→ `data.moa.gov.tw/Service/OpenData/FromM/TownCropData.aspx` | **只在建置期呼叫**（有 CORS 但 43,538 筆不該讓瀏覽器自己聚合）。⚠️ **不帶篩選只回 9999 筆**，且**不含水稻**，見下 |
 | 臺灣鄉鎮市區界線 | `data.gov.tw/api/v2/rest/dataset/**7441**` → TGOS 的 **SHP** zip（同一個單位） | **只在建置期呼叫**。⚠️ 這份**沒有 GML 只有 SHP**，而且 zip 裡有兩份 shapefile，見下 |
-| 世界行政區／河流幾何、國際換日線、大洲分區 | `raw.githubusercontent.com/nvkelso/natural-earth-vector`（Natural Earth） | **只在建置期呼叫**，public domain。換日線在 `ne_10m_geographic_lines`；大洲是 `ne_50m_admin_0_countries` 依 `CONTINENT` 併起來的，見下 |
+| 世界行政區／河流幾何、國際換日線、大洲分區、主要山脈與最高峰 | `raw.githubusercontent.com/nvkelso/natural-earth-vector`（Natural Earth） | **只在建置期呼叫**，public domain。換日線在 `ne_10m_geographic_lines`；大洲是 `ne_50m_admin_0_countries` 依 `CONTINENT` 併起來的；山脈是 `ne_10m_geography_regions_polys` 裡 `FEATURECLA === "Range/mtn"` 的**面**、最高峰是 `ne_10m_geography_regions_elevation_points`，見下 |
 | 板塊與板塊邊界 | `raw.githubusercontent.com/fraxen/tectonicplates`（Bird 2003／Nordpil 轉製） | **只在建置期呼叫**，ODC-BY 1.0（**必須標示出處**）。邊界的三分類在 10 MB 的 `PB2002_steps.json` 裡，見下 |
 | 臺灣與鄰國專屬經濟海域 | `geo.vliz.be/geoserver/MarineRegions/wfs`（Marine Regions／Flanders Marine Institute，Maritime Boundaries v12） | **只在建置期呼叫**，免金鑰的公開 WFS，CC-BY（**必須標示出處**）。⚠️ 我國從未公告經濟海域外界線，官方那份 12／24 浬向量在 NODASS 要登入，見 `CLAUDE_TW.md` |
 | 地震目錄 | `earthquake.usgs.gov/fdsnws/event/1/query`（USGS） | **只在建置期呼叫**，免金鑰、`ACAO: *`。全球與臺灣兩層共用這一個端點 |
@@ -386,6 +386,129 @@ deutan 6.7，落在「只有搭配次要編碼才合法」的 6–8 band。
 全球地震帶踩過那個坑（1.5 px + 0.35 的灰點＝「勾了圖層但什麼都沒有」），這裡直接沿用它
 修好之後的量級。半徑**不隨 zoom 變**：放大時靠點與點拉開，不是點變大。**不畫白色外框**
 ——1,214 個亮外框在投影機上會糊成一片白雜訊，而這一層常常跟地震帶疊著看。
+
+### 世界主要山脈：從「面」算出來的中軸線，配一座最高峰
+
+取得邏輯在 `scripts/lib/mountains.mjs`，產物是 `public/data/geo/world-mountains.geojson`
+（39 條線、30 KB）與 `public/data/geo/world-mountain-peaks.geojson`（39 個點、10 KB）。
+
+#### 上游是「面」，這一層畫的是「線」——中軸線是算出來的
+
+山脈沒有像國界那樣的官方界線圖資（「阿爾卑斯山脈到哪裡為止」本來就是製圖判斷）。
+公開、免金鑰、涵蓋全球又逐筆標了種類的只有 Natural Earth 的
+`ne_10m_geography_regions_polys`（`FEATURECLA === "Range/mtn"`，222 筆），而它收的是
+**範圍面**。這一層要教的是**走向**，而且面在這個站上還有兩個硬問題：
+
+1. **第 14 個面色不存在。** 掃遍 OKLCH（做法同大洲那次），要跟大洲梅紫、生物群系
+   六色、柯本五色、板塊暖褐都分得開的面色**一組都沒有**——本站的分類色上限是六色，
+   面色票早就滿了。實測最好的候選（玫瑰 `#c47581`、青綠 `#1aa67a`）一般視覺最差值
+   只有 9.1／10.7，而且分別撞上「B 乾燥氣候」與「溫帶林」——雨影沙漠與森林正好是
+   山脈旁邊那一格。
+2. **面會吃掉 `MAX_ACTIVE_BY_KIND.fill` 的兩個名額之一**，而「山脈擋住水氣 → 背風側
+   是沙漠」正好要跟柯本氣候分區或生物群系疊著看。
+
+所以 `polygonAxis()` 把每一塊範圍面化成一條**中軸線**：掃描線點陣化 → chamfer 距離
+變換 → 每個連通分量做兩次 BFS 找出兩端 → Dijkstra（離邊界越近越貴，路徑因此貼著中軸
+而不是抄捷徑貼著邊）→ 移動平均 → Douglas–Peucker。
+
+⚠️ **經緯度要先做 cos(緯度) 校正再進網格**，否則高緯度的山脈（烏拉、斯堪地那維亞）
+在網格上會被縱向拉長，中軸線會偏。
+
+⚠️ **移動平均那一步不能省。** Douglas–Peucker 只會**刪點**，而階梯狀的轉角剛好是它
+認定「不能刪」的那種點——不先平滑，簡化完仍然是一條鋸齒線，點數也降不下來。
+
+實測長度對得上常識（喜馬拉雅 2,165 km／常見值約 2,400、阿爾卑斯 1,006／約 1,200、
+安地斯 8,907／7,000–8,900、大分水嶺 3,498／約 3,500），但**產物刻意不放長度**：
+那是這一層最容易產生假精確的地方。圖層與 39 條全部標 `schematic`。
+
+#### ⚠️ 收錄名單是人工挑的，`SCALERANK` 篩不出來
+
+39 條的界線是「臺灣課本、新聞與科普讀物會直接叫出名字的山脈，七大洲都要有」。
+機械篩選會同時出兩種錯：`SCALERANK <= 3` 漏掉**秦嶺**（rank 4，中國南北的自然界線）
+與**托魯斯山脈**（rank 5），卻收進雅布羅諾維嶺、塔爾巴哈台山這種課本不會提的。
+
+⚠️ **上游的 `NAME_ZHT` 不能用**：欄位名字叫 zht，內容卻簡繁混雜（阿爾卑斯寫
+「阿尔卑斯山」、烏拉寫「乌拉尔山脉」、喜馬拉雅寫「喜马拉雅山脉」），跟世界底圖
+`name:zh-Hant` 是同一個坑。中文名、洲別、成因說明與最高峰全部人工整理在 `RANGES`，
+key 用 **`NE_ID`**（上游會改拼寫，數值 id 穩定；橫貫南極山脈上游拆成兩筆但共用同一個
+NE_ID，正好自動併回一條，產物是 2 段的 MultiLineString）。
+
+#### ⚠️ 最高峰不可以用「面內海拔最高的那個高程點」自動決定
+
+那個做法實測會出兩種錯，而且都不會報錯：
+
+- **上游的興都庫什面蓋到了南迦帕爾巴特峰**（那是喜馬拉雅的西端），自動選會選到
+  8,125 公尺的它，而不是興都庫什真正的最高峰蒂里奇米爾峰 7,708。
+- **西高止山脈真正的最高峰阿奈穆迪山落在面的外面**，自動選會退而選到多達貝塔山。
+
+所以 39 座逐條指名（`RANGES[].peak.en`，必須對得到上游 `featurecla === "mountain"`
+的某一筆，對不到就讓建置失敗），面內面外都不管。**高度取自上游、不自己抄數字**，
+只有庫克山例外（`ELEVATION_OVERRIDES`：上游仍是 1991 年山頂崩落前的 3,754，
+現行公告值是 3,724）。聖母峰 8,848 → 8,848.86 這種小數位差異不列，`notes` 有交代。
+
+#### ⚠️ 顏色不是臺灣五大山脈的 `relief` 洋紅
+
+直覺上兩層都是山脈該共用同一個角色，**實測不行**：洋紅 `#c23f8f` 對火山帶的洋紅
+`#c0259c` 一般視覺 ΔE 只有 **4.6**——同一個顏色。「跨幾何不驗」那條豁免在這裡不成立，
+因為它的前提是**地理分佈相反**，而這兩層正好相同：安地斯、喀斯開、巴里桑、新幾內亞
+高地全都是火山密集的山脈。從前兩層分屬不同主題碰不到，山脈進了世界主題就碰得到了。
+
+`MOUNTAIN_COLOR`（紫 `#8e26ff`）是**非分類的固定角色**（39 條同色），比照板塊暖褐與
+大洲梅紫。條件是「跟山脈在**陸地上**同框的每一個顏色都分得開」：三種板塊邊界、火山
+洋紅、水系藍（＝世界城市與本層最高峰的 `place` 藍）、地震灰、參考線灰、風系板岩藍。
+洋流的紅與藍**不列**——洋流全在海上、山脈全在陸上，一個像素都不會疊（比照已記錄的
+寒流藍↔水系藍豁免）。
+
+```bash
+node <dataviz-skill>/scripts/validate_palette.js "#8e26ff,#c95c1c,#2f74c9,#159c6b" --pairs all --mode light|dark
+# → 兩模式五項全數 PASS、零 WARN（CVD 最差 8.3、一般視覺最差 19.7，都對聚合型邊界藍）
+node <dataviz-skill>/scripts/validate_palette.js "#8e26ff,#c0259c,#2a78d6" --pairs all --mode light|dark
+# → 兩模式五項 PASS，一個 WARN：對藍的 CVD 6.6（deutan）
+```
+
+⚠️ 掃遍 OKLCH 之後，能讓一般視覺最差值站上 15 的**只剩色相 295–302° 的紫**，而且
+**彩度必須拉到 0.28**（同色相降到 0.20，對藍的 CVD 就從 6.6 掉到 2.8）。看起來偏鮮豔
+是掃描的結果，不是隨手挑的。那個 CVD WARN 依驗證器的規則「只有搭配次要編碼才合法」，
+補償有兩層：每一條山脈都有**沿線標註**（畫面上寫著「安地斯山脈」），而藍色的對象是
+**圓點**——線與點的形狀差異本身就是區辨通道（判例是洋流那一組）。
+
+#### 最高峰是附屬圖層，而且它**不是**示意的
+
+比照臺灣五大山脈的 `tw-range-peaks`：一條山脈配一座最高峰、跟母圖層同一個核取方塊、
+在可點清單裡巢狀排在各自的山脈底下、母子雙向連動強調（`parentProperty: "rangeId"`）。
+顏色沿用 `place` 藍（附屬點一律用藍，見「附屬圖層」那節）。
+
+⚠️ 這一層是 `remote` 而不是 `derived`（臺灣那層是在 `resolve.ts` join 的）：這裡的
+join 需要 NE 的高程點，那是一份 843 KB、只在建置期該碰的檔案。
+
+⚠️ **`attach.schematic: false` 不是多餘的，那個欄位就是為它加的。** `findGeoOwner()`
+本來一律把母圖層的 `schematic` 傳給附屬圖徵，而母圖層的中軸線是**算出來的**、最高峰
+卻是上游的真實座標與高度——不覆蓋的話，聖母峰的卡片底下會印一行「這是簡化的教學示意
+幾何」，那是對讀者說謊。
+
+⚠️ **`attach.browse.zoom` 是 5.5，不是 8，這是實測改回來的。** 母圖層的 `maxzoom`
+是 6，所以 `zoom: 8` 時點「聖母峰」會飛到一個**看不到喜馬拉雅山脈**的畫面：詳情卡、
+相機、強調表達式全都正常，只有那條線 `queryRenderedFeatures` 回 0，畫面上只剩一顆
+藍點。判準同縣市政府那一層——取景必須讓山峰與山脈同時在畫面上。
+
+#### 其餘幾個實測值
+
+- **卡片走 `FeatureCard` 的 fallback**（39 條都還沒有內容檔，比照世界主要河流與
+  全球活火山）：標題是山脈名、副標是 `meta`（洲＋最高峰）、下一行是 `detail`（成因）。
+  `hideLayerDescription` 的判準同活動斷層與火山——圖徵很多、而且圖層說明在每一張卡上
+  逐字相同。
+- `maxzoom: 6`：一個像素在 zoom 6 約 0.04°，正好是產物簡化容差（0.02°）的兩倍。
+  再放大，中軸線就會變成一條假的精確稜線。
+- **標註的 `maxAngle: 150`** 照抄臺灣河川那次的教訓（真實曲線用預設的 60 會被靜默
+  拒絕大半）。實測主題預設視角（`[0,10]`、zoom 1.8、1920×873）38 條畫得出來、12 個
+  標註，沒有同一條線重複出現名字。
+- `browse.groupBy: "category"` 依**洲**分組。⚠️ 不依「新褶曲／古老褶曲」是刻意的：
+  後者在教學上更有力，但對半數的山脈說不清楚（衣索比亞高原是熔岩高原、西高止山脈是
+  斷層崖、帕米爾是山結），硬分等於製造一堆查不到出處的斷言。成因逐條寫在 `formation`
+  裡，那是講得出來也標得出來源的層級。
+- **搜尋索引多抓 40 KB**（30 + 10），兩層都有 `browse` 所以都會進索引。實測搜「安地斯」
+  會同時命中山脈、阿空加瓜山（它的 `meta` 裡有「安地斯山脈主峰」）與板塊；搜「Andes」
+  「聖母峰」「庫克山」都找得到。
 
 ### 森林與沙漠帶：六個生物群系大類
 
@@ -768,6 +891,8 @@ ID 常數定義在 `src/map/layers/*.ts`，**一律 import 常數，不要寫死
 | `tw-counties-fill` / `tw-counties-outline` | fill + line（面的外框一定是獨立圖層） |
 | `tw-townships-fill` / `tw-townships-outline` | fill + line |
 | `world-rivers-line` / `world-rivers-label` | line + symbol |
+| `world-mountains-line` / `world-mountains-label` | line + symbol（39 條山脈的**中軸線**，由上游的範圍面算出來，見下） |
+| `world-mountain-peaks-points` | circle（附屬圖層；一條山脈配一座最高峰，沿用 `place` 藍） |
 | `world-places-points` | circle |
 | `world-continents-fill` / `-outline` | fill + line（七大洲；`fillOpacity: 0`，畫出來的是外框與名字）。⚠️ 洲名**不是**面的標註，見下 |
 | `world-continent-labels-points` / `-label` | circle + symbol（附屬圖層；`radius: 0`，整層只是七個洲名的錨點） |
@@ -828,7 +953,7 @@ maplibre-contour 把 worker 以 Blob URL 內嵌，**不需要額外部署 worker
 | 主題 | 路由 | 內容 |
 |---|---|---|
 | 臺灣地理 | `/theme/taiwan` | 臺灣123（土地與島群、專屬經濟海域、海峽中線、北回歸線）、行政區（縣市、鄉鎮市區）、地形、天然災害（活動斷層、地震、颱風路徑與災損）、水系（118 個列管水系、水庫即時水情、河川流域分區）、人文（原住民族、交通軸線、古蹟、人口與都市體系）、植被生態（特有種、國家公園與保護區、垂直植被帶）、農業物產（主要作物分布） |
-| 世界地理 | `/theme/world` | **全球尺度（骨架，排在前面）**：參考線（緯度參考線、國際換日線）、氣候與生物群系（森林與沙漠帶、柯本氣候分區、行星風系）、海洋（洋流：18 條暖流／寒流）、地體構造（板塊、板塊邊界、地震帶、火山帶）。**世界地理原有**：城市、國界與大洲（大洲分區）、地形水系、人文專題 |
+| 世界地理 | `/theme/world` | **全球尺度（骨架，排在前面）**：參考線（緯度參考線、國際換日線）、氣候與生物群系（森林與沙漠帶、柯本氣候分區、行星風系）、海洋（洋流：18 條暖流／寒流）、地體構造（板塊、板塊邊界、地震帶、火山帶）。**世界地理原有**：城市、國界與大洲（大洲分區）、地形水系（世界主要河流、世界主要山脈）、人文專題 |
 
 兩個主題頁都是**滿版地圖 + 浮動控制**（仿 Google Map），沒有頁首也沒有側欄——版面機制見下面的「全螢幕地圖外框與浮動控制」。
 
@@ -870,12 +995,13 @@ maplibre-contour 把 worker 以 Blob URL 內嵌，**不需要額外部署 worker
 
 ⚠️ **要把板塊邊界改回實線，就得先解掉那個 ΔE 2.1。**
 
-#### ⚠️ 合併之後線圖層變成六個，而上限仍然是 3
+#### ⚠️ 合併之後線圖層變成七個，而上限仍然是 3
 
-合併前「全球地理形貌」有五個 ready 的線圖層、「世界地理」只有一個；現在六個擠在同一個
-主題裡搶 `MAX_ACTIVE_BY_KIND.line` 的三個名額（緯度參考線、國際換日線、行星風系、洋流、
-板塊邊界、世界主要河流）。**這是預期行為，不是 bug**——實測「緯度參考線（`defaultOn`）
-＋板塊邊界＋世界主要河流」勾滿之後，洋流的核取方塊就是 `disabled`。
+合併前「全球地理形貌」有五個 ready 的線圖層、「世界地理」只有一個；再加上 2026-08
+補上線的世界主要山脈，現在**七個**擠在同一個主題裡搶 `MAX_ACTIVE_BY_KIND.line` 的三個
+名額（緯度參考線、國際換日線、行星風系、洋流、板塊邊界、世界主要河流、世界主要山脈）。
+**這是預期行為，不是 bug**——實測「緯度參考線（`defaultOn`）＋板塊邊界＋世界主要河流」
+勾滿之後，洋流的核取方塊就是 `disabled`。
 
 ⚠️ **不要為了「東西變多了」就把上限調到 4。** 那個 3 是三組色票策略的執行面，而且
 上面整段色彩分析都是在「最多三條線同時出現」的前提下做的——調高等於讓那份分析失效。
@@ -1294,6 +1420,12 @@ CVD 9.1、一般視覺 22.9。也就是說本檔案舊版寫的「物種三色 a
 
 `reference`（緯度參考線）與 `hazard`（地震帶）是**非分類的固定角色**，比照 hillshade 的棕色，刻意排除在色票驗證之外。地震帶尤其不該給分類色相：2800 個依震級縮放的點是**密度場**，教學內容是「地震帶沿板塊邊緣浮現」，不是「這個色相代表地震」；給它色相不但擠爆色票驗證，2800 個不透明白框圓點在投影機上也只是一坨糊的（所以 `strokeWidth: 0` 必須是可設定的）。
 
+⚠️ **「非分類的固定角色」不等於「沒驗過」。** `plate`（暖褐）、`continent`（梅紫）、
+`mountain`（世界主要山脈的紫）與 `volcano`（洋紅）都是「一整層同一個顏色」所以不進
+三組色票，但它們**各自掃過同框名單**（見 `thematicColors.ts` 逐個常數的說明）——只有
+`reference`、`hazard`、`wind` 與 `vegetation` 是真的不驗。加新角色時先確認自己屬於
+哪一種。
+
 #### ⚠️ 但中性色的另一頭是「看不見」，那不是「低調」是壞掉
 
 「全球地震帶」初版是 `radius: mag 6.5→1.5, 9→6` ＋ `opacity: 0.35`，實測在**主題預設
@@ -1498,7 +1630,7 @@ maplibre 的四個角落容器是 map container 內的 `position: absolute; z-in
 
 **而且撞名時要把 `meta` 補進副標**，否則畫面上是兩列一模一樣的字。這件事**只對真的撞名的標題做**：水庫的 `meta` 是「蓄水 62%・有效容量 …」這種長字串，沒撞名還硬加只會把副標塞爆。實測搜「東區」會得到四列，各自標著新竹市／臺中市／嘉義市／臺南市。
 
-索引是 **lazy 的**：搜尋框第一次獲得焦點才 `buildSearchIndex()`。**實測（2026-08，production build 讀 `performance.getEntriesByType('resource')`）它會多抓 22 份、合計約 3.0 MB**：
+索引是 **lazy 的**：搜尋框第一次獲得焦點才 `buildSearchIndex()`。**實測（2026-08，production build 讀 `performance.getEntriesByType('resource')`）它會多抓 24 份、合計約 3.04 MB**：
 
 | 檔案 | 大小 |
 |---|---|
@@ -1518,9 +1650,11 @@ maplibre 的四個角落容器是 map container 內的 `position: absolute; z-in
 | `tw-monuments-national.geojson` | 51 KB |
 | `tw-quakes-major.geojson` | 49 KB |
 | `tw-faults.geojson` | 40 KB |
+| `world-mountains.geojson` | 30 KB |
 | `tw-crops-tea.geojson` | 25 KB |
 | `tw-reservoirs.geojson` + `reservoirs-live.json` | 20 + 2 KB |
 | `tw-typhoons.geojson` | 14 KB |
+| `world-mountain-peaks.geojson` | 10 KB |
 | `tw-county-halls.geojson` | 8 KB |
 | `tw-strait-median-line.geojson` | <1 KB |
 
@@ -1760,6 +1894,8 @@ npm run build:geodata -- --force --only=plates               # 52 塊板塊（�
 npm run build:geodata -- --force --only=plate-boundaries    # 三種板塊邊界（下載 10 MB 的 step 檔）
 npm run build:geodata -- --force --only=volcanoes            # 1,214 座全新世活火山（GVP）
 npm run build:geodata -- --force --only=world-continents     # 七大洲（Natural Earth 國界 → 依洲別聯集）
+npm run build:geodata -- --force --only=world-mountains      # 39 條山脈（範圍面 → 中軸線）
+npm run build:geodata -- --force --only=world-mountain-peaks # 同一份下載的 39 座最高峰
 npm run build:geodata -- --force --only=koppen-zones-c       # 柯本五大類要各跑一次（a／b／c／d／e）
                                        # （一個 process 裡共用同一份下載，見 lib/koppen.mjs）
 npm run build:geodata -- --force --only=biomes-desert        # 生物群系六類要各跑一次
@@ -2275,6 +2411,53 @@ m.isSourceLoaded('contour-source')
     - 切底圖之後重驗存在、顏色與排序（面 < 線 < 洲名，全部在 `contour-lines` 之上、
       `contour-labels` 之下）
 
+37. **世界主要山脈**（`/theme/world` → 地形水系，見上）：
+    ```js
+    const m = window.__gaiaMaps.at(-1);
+    m.jumpTo({ center: [0, 10], zoom: 1.8 });
+    m.getPaintProperty('world-mountains-line', 'line-color')   // "#8e26ff"（**不是** relief 的 #c23f8f）
+    new Set(m.queryRenderedFeatures({layers:['world-mountains-line']}).map(f=>f.properties.id)).size
+    // 主題預設視角、1920×873 實測 38（橫貫南極山脈在畫面外）
+    m.queryRenderedFeatures({ layers: ['world-mountains-label'] }).length          // 12
+    m.queryRenderedFeatures({ layers: ['world-mountain-peaks-points'] }).length    // 38
+    ```
+    - ⚠️ **這一層的成敗只能用眼睛驗**：中軸線要真的落在山脈上。看安地斯（沿南美西緣
+      一路到火地島）、洛磯與海岸山脈（平行的兩條）、喜馬拉雅（沿青藏高原南緣的弧）、
+      大分水嶺（澳洲東岸）。**一條穿過平原或海面的直線就是回歸**（多半代表
+      `polygonAxis()` 的平滑或連通分量過濾被改壞了）
+    - ⚠️ **跟「火山帶」一起打開**（`jumpTo([-70,-30], 4)`）：紫色的線是安地斯山脈、
+      洋紅的點是火山。**兩者分不出來就是回歸**——那正是這一層不能沿用 `relief` 洋紅的
+      唯一理由（見上）。冰島與東非大裂谷那一帶也要看一次
+    - **跟「板塊邊界」一起打開**（`jumpTo([84,31], 4)`）：藍色**虛線**是聚合型邊界、
+      紫色**實線**是喜馬拉雅山脈，兩條平行貼著
+    - 點地圖上的線要開得了卡，內容是「名稱／原名／洲＋最高峰／成因／示意警語／來源」，
+      而且**沒有**圖層說明（`hideLayerDescription`）
+    - **點最高峰開的是山峰自己的卡，而且卡上不可以有示意警語**（`attach.schematic: false`，
+      見上）：
+      ```js
+      // 點抽屜裡的「聖母峰」→ 卡片是「聖母峰／Mount Everest／喜馬拉雅山脈主峰・8,848 公尺」
+      document.querySelector('.map-detail-panel').innerText.includes('教學示意')   // false
+      ```
+    - **母子雙向連動強調**，清單一定是兩筆（比照五大山脈 → 主峰）：
+      ```js
+      JSON.stringify(m.getPaintProperty('world-mountains-line','line-width'))
+      // ["case",["in",["get","id"],["literal",["himalaya","himalaya-peak"]]],["*",2.6,2.2],2.6]
+      ```
+    - ⚠️ **點最高峰之後山脈必須還在畫面上**（`attach.browse.zoom` 是 5.5、母圖層
+      `maxzoom` 是 6，見上）。只看卡片有沒有開是抓不到的：
+      ```js
+      // 點「聖母峰」之後
+      m.getZoom()                                                              // 5.5
+      m.queryRenderedFeatures({ layers: ['world-mountains-line'] }).length > 0  // true
+      ```
+    - 抽屜清單是 78 列（39 條山脈各帶一座巢狀的最高峰）、依洲分七組
+      （亞、歐、非、北美、南美、大洋、南極），組內依主峰高度由高到低，開頭是喜馬拉雅
+    - 搜「安地斯」「Andes」「聖母峰」「庫克山」都要找得到；⚠️ 兩層都有 `browse`，
+      所以聚焦搜尋框**會**多抓 40 KB（30 + 10），那是已知成本
+    - `maxzoom: 6`：zoom 6.2 整層應該消失（中軸線再放大就是假精確）
+    - 切底圖之後重驗存在、顏色與排序（線 < 最高峰 < 沿線標註，全部在 `contour-lines`
+      之上、`contour-labels` 之下）
+
 ### ⚠️ 用瀏覽器自動化點 UI 的三個陷阱
 
 - **主題頁的底圖選單藏在左下角「圖層」彈出層裡**，必須先 `document.querySelector('.map-tile').click()` 才找得到 `<select>`；`/compare` 的仍然直接在頁首。
@@ -2398,6 +2581,7 @@ scripts/
 ├─ lib/typhoons.mjs       # 侵臺颱風的存取層（氣象署最佳路徑 txt ＋ 概況表 HTML；14 個的 id 對照表）
 ├─ lib/volcanoes.mjs      # GVP 全新世活火山的存取層（19 個火山區與 17 種類型的中文對照、40 幾座知名火山的中文名、筆數檢查）
 ├─ lib/continents.mjs     # 七大洲的存取層（NE 國界的洲別欄位、四條課本洲界的切線、陸地面積交叉檢查）
+├─ lib/mountains.mjs      # 世界主要山脈的存取層（39 條的中文名／洲別／成因／最高峰對照表、範圍面 → 中軸線）
 ├─ lib/biomes.mjs         # RESOLVE 生態區的存取層（14 個生物群系 → 六個教學用大類、小碎塊過濾、跨 ±180 檢查）
 ├─ lib/koppen.mjs         # 柯本氣候分區的存取層（0.5° ASCII 網格、30 個亞型的中文名與判準、五大類分組）
 ├─ lib/population.mjs     # 各鄉鎮市區人口密度的存取層（年份寫死、site_id 切縣市／鄉鎮、行政層級）

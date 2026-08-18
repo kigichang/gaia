@@ -161,6 +161,18 @@ import {
   ringSignedArea,
   splitPolygon,
 } from "./lib/continents.mjs";
+import {
+  CONTINENT_ORDER as MOUNTAIN_CONTINENT_ORDER,
+  LICENSE as MOUNTAIN_LICENSE,
+  PEAKS_URL as MOUNTAIN_PEAKS_URL,
+  RANGES as MOUNTAIN_RANGES,
+  REGIONS_URL as MOUNTAIN_REGIONS_URL,
+  SOURCE_LABELS as MOUNTAIN_SOURCE_LABELS,
+  fetchMountainData,
+  formatElevation as formatPeakElevation,
+  peakOf,
+  polygonAxis,
+} from "./lib/mountains.mjs";
 
 /**
  * 「這一組的清單順序與副標由官方數字當主角」——`tw-rivers` 與 `tw-basins` 共用。
@@ -987,6 +999,121 @@ const SOURCES = [
        */
       return rows.sort((a, b) => b._area - a._area).map(({ _area, ...feature }) => feature);
     },
+  },
+  {
+    id: "world-mountains",
+    label: "世界主要山脈",
+    /**
+     * 兩份 Natural Earth 資料集（範圍面 + 高程點）一起抓，因為主峰的中文名要跟
+     * 山脈綁在一起檢查。取得與快取關在 lib/mountains.mjs（同一個 process 裡的
+     * `world-mountain-peaks` 共用那份下載）。
+     */
+    load: (fetch) => fetchMountainData(fetch),
+    sourceUrl: [MOUNTAIN_REGIONS_URL, MOUNTAIN_PEAKS_URL],
+    license: MOUNTAIN_LICENSE,
+    sourceLabel: MOUNTAIN_SOURCE_LABELS[0],
+    /**
+     * 0.02° ≈ 2.2 km。這一層的 `maxzoom` 是 6，一個像素在 zoom 6 約 0.04°，
+     * 所以簡化誤差在半個像素以內。⚠️ 再小沒有意義——中軸線本來就是從一份
+     * 1:10m 的範圍面推出來的示意軸線（見 lib/mountains.mjs 檔頭），把它保留到
+     * 公尺級只是假精確。
+     */
+    tolerance: 0.02,
+    digits: 3,
+    transform: ({ polygonsById, peaksByName }) => {
+      const rows = [];
+      for (const [neId, polygons] of polygonsById) {
+        const meta = MOUNTAIN_RANGES[neId];
+        const lines = polygonAxis(polygons);
+        if (lines.length === 0) throw new Error(`${meta.name} 抽不出任何中軸線`);
+        /**
+         * ⚠️ **每一段都不可以跨越 ±180**，理由同國際換日線與板塊邊界：跨了
+         * maplibre 會畫一條繞過整個地球的橫線而且不報錯。目前收錄的 39 條沒有
+         * 一條靠近換日線（最東的是大分水嶺 153°E），但這道檢查要留著——
+         * 之後補收楚科奇或阿留申一帶的山脈時它會直接擋下來。
+         */
+        for (const line of lines) {
+          const lngs = line.map((p) => p[0]);
+          const span = Math.max(...lngs) - Math.min(...lngs);
+          if (span >= 180) {
+            throw new Error(`${meta.name} 有一段的經度跨距是 ${span.toFixed(1)}°，代表它跨過了 ±180`);
+          }
+        }
+        const peak = peakOf(meta, peaksByName);
+        rows.push({
+          type: "Feature",
+          geometry:
+            lines.length === 1
+              ? { type: "LineString", coordinates: lines[0] }
+              : { type: "MultiLineString", coordinates: lines },
+          properties: {
+            id: meta.id,
+            name: meta.name,
+            /** 搜尋 haystack 會收 `en`，讓學生打 Andes、Alps 也找得到 */
+            en: meta.en,
+            /** `browse.groupBy` 的分組值 */
+            category: meta.continent,
+            /** 清單次標。⚠️ 刻意**不放長度**，見 lib/mountains.mjs 檔頭 */
+            meta: `${meta.continent}・最高峰 ${peak.name} ${formatPeakElevation(peak.elevation)}`,
+            /** 沒有內容檔時 `FeatureCard` 會把這一行印出來（比照臺灣河川的管理等級） */
+            detail: meta.formation,
+          },
+          _order: MOUNTAIN_CONTINENT_ORDER.indexOf(meta.continent),
+          _elevation: peak.elevation,
+        });
+      }
+      /**
+       * ⚠️ feature 順序就是 `browse.groupBy: "category"` 的切分依據（依序切、
+       * 不排序），所以同一洲必須連續；洲內依主峰高度由高到低，清單開頭就是
+       * 喜馬拉雅與喀喇崑崙。
+       */
+      return rows
+        .sort((a, b) => a._order - b._order || b._elevation - a._elevation)
+        .map(({ _order, _elevation, ...feature }) => feature);
+    },
+  },
+  {
+    id: "world-mountain-peaks",
+    label: "世界主要山脈 主峰",
+    /**
+     * 附屬圖層（`attach`），比照臺灣的 `tw-range-peaks`：一條山脈配一座主峰，
+     * 跟母圖層同一個核取方塊，在可點清單裡巢狀排在各自的山脈底下。
+     *
+     * ⚠️ 這一層是 `remote` 而不是 `derived`（臺灣那層是在 resolve.ts 裡 join 的）：
+     * 這裡的 join 需要 NE 的高程點，那是一份 843 KB、只在建置期該碰的檔案。
+     * id 與 `rangeId` 都跟母圖徵對得起來，母子連動強調照樣成立。
+     */
+    load: (fetch) => fetchMountainData(fetch),
+    sourceUrl: MOUNTAIN_PEAKS_URL,
+    license: MOUNTAIN_LICENSE,
+    sourceLabel: MOUNTAIN_SOURCE_LABELS[1],
+    digits: 4,
+    transform: ({ polygonsById, peaksByName }) =>
+      [...polygonsById.keys()]
+        .map((neId) => MOUNTAIN_RANGES[neId])
+        .sort(
+          (a, b) =>
+            MOUNTAIN_CONTINENT_ORDER.indexOf(a.continent) -
+              MOUNTAIN_CONTINENT_ORDER.indexOf(b.continent) ||
+            peakOf(b, peaksByName).elevation - peakOf(a, peaksByName).elevation,
+        )
+        .map((meta) => {
+          const peak = peakOf(meta, peaksByName);
+          return {
+            type: "Feature",
+            geometry: { type: "Point", coordinates: peak.coordinates },
+            properties: {
+              /** ⚠️ 山脈 id 加 `-peak`：主峰與山脈是兩筆不同的圖徵，不共用 id */
+              id: `${meta.id}-peak`,
+              name: peak.name,
+              en: peak.en,
+              /** 母圖徵的 id。`attach.parentProperty` 用它做雙向的連動強調 */
+              rangeId: meta.id,
+              meta: `${meta.name}主峰・${formatPeakElevation(peak.elevation)}`,
+              elevation_m: peak.elevation,
+            },
+          };
+        }),
   },
   {
     id: "plates",
