@@ -1,0 +1,31 @@
+{
+  "type": "FeatureCollection",
+  "metadata": {
+    "collection": "world-picks-areas",
+    "source": "「作者精選」裡有範圍而不是單點的項目，逐筆人工繪製。⚠️ 百慕達三角**沒有官方界線**（美國海軍與海岸防衛隊明講它不存在於任何官方海圖上），各家畫法不同——這裡取最常見的一種：邁阿密（25.76/-80.19）、百慕達（32.30/-64.78）、波多黎各聖胡安（18.47/-66.11）三個頂點連成的三角形，三個頂點座標取自各地的中心點。所以這一筆的內容檔標了 schematic。",
+    "license": "頂點為公開的地名座標；範圍畫法與說明文字為本站編寫",
+    "generatedAt": "2026-08-18",
+    "featureCount": 1
+  },
+  "features": [
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [-80.19, 25.76],
+          [-64.78, 32.3],
+          [-66.11, 18.47],
+          [-80.19, 25.76]
+        ]
+      },
+      "properties": {
+        "id": "bermuda-triangle",
+        "name": "百慕達三角",
+        "en": "Bermuda Triangle",
+        "category": "傳說中的地方",
+        "meta": "北大西洋・邁阿密－百慕達－聖胡安"
+      }
+    }
+  ]
+}

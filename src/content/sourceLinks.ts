@@ -509,6 +509,14 @@ export const SOURCE_LINKS: Record<string, string> = {
     "https://zh.wikipedia.org/zh-tw/%E8%A5%BF%E5%85%8379%E5%B9%B4%E7%B6%AD%E8%98%87%E5%A8%81%E7%81%AB%E5%B1%B1%E7%88%86%E7%99%BC",
   "維基百科 龐貝": "https://zh.wikipedia.org/zh-tw/%E5%BA%9E%E8%B4%9D",
   /**
+   * 百慕達三角那一筆的關鍵來源。連的是 NOAA 海洋服務處的事實問答頁——「沒有證據
+   * 顯示這裡的失蹤比其他繁忙海域更常發生」這句話出自這一頁，那正是這張卡的重點。
+   * ⚠️ 不要改連 `oceanservice.noaa.gov/facts/bermudatriangle.html`：那個網址會回
+   * HTTP 200 但內容是站內的 404 頁面（實測），檔名是 `bermudatri.html`。
+   */
+  "美國國家海洋暨大氣總署 百慕達三角": "https://oceanservice.noaa.gov/facts/bermudatri.html",
+  "維基百科 百慕達三角": "https://zh.wikipedia.org/zh-tw/%E7%99%BE%E6%85%95%E5%A4%A7%E4%B8%89%E8%A7%92",
+  /**
    * 全球活火山。GVP 的授權方式是「引用即可自由使用」，所以來源標籤要留著全名，
    * 不要簡寫成「Smithsonian」。知名火山的中文名另外標維基百科（次級來源）。
    */
