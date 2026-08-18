@@ -502,6 +502,12 @@ export const SOURCE_LINKS: Record<string, string> = {
   "維基百科 奧霍斯-德爾薩拉多山":
     "https://zh.wikipedia.org/zh-tw/%E5%A5%A5%E9%9C%8D%E6%96%AF-%E5%BE%B7%E5%B0%94%E8%90%A8%E6%8B%89%E5%A4%9A%E5%B1%B1",
   "維基百科 尤耶亞科山": "https://zh.wikipedia.org/zh-tw/%E5%B0%A4%E8%80%B6%E4%BA%9E%E7%A7%91%E5%B1%B1",
+  // 維蘇威火山那一筆：火山本身、西元 79 年那次噴發、被埋掉的城市，三個條目分開登記
+  // ——「那次噴發」與「那座城市」是這一筆真正要講的東西，連到火山條目追不到。
+  "維基百科 維蘇威火山": "https://zh.wikipedia.org/zh-tw/%E7%B6%AD%E8%98%87%E5%A8%81%E7%81%AB%E5%B1%B1",
+  "維基百科 西元79年維蘇威火山爆發":
+    "https://zh.wikipedia.org/zh-tw/%E8%A5%BF%E5%85%8379%E5%B9%B4%E7%B6%AD%E8%98%87%E5%A8%81%E7%81%AB%E5%B1%B1%E7%88%86%E7%99%BC",
+  "維基百科 龐貝": "https://zh.wikipedia.org/zh-tw/%E5%BA%9E%E8%B4%9D",
   /**
    * 全球活火山。GVP 的授權方式是「引用即可自由使用」，所以來源標籤要留著全名，
    * 不要簡寫成「Smithsonian」。知名火山的中文名另外標維基百科（次級來源）。

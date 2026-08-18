@@ -1,0 +1,25 @@
+{
+  "type": "FeatureCollection",
+  "metadata": {
+    "collection": "world-picks",
+    "source": "編者挑選的地點，逐筆人工轉錄座標，不是描繪的。維蘇威火山的座標（14.426/40.821）、海拔 1,281 公尺與最後噴發年代 1944 年逐位元取自 data/geo/volcanoes.geojson（史密森尼學會全球火山計畫），所以跟「火山帶」那一層的同一座火山完全重合。⚠️ 這一層是編輯選集，不是排名也不是完整名單，收錄界線見註冊表的 notes。",
+    "license": "座標與海拔為公開發布之事實資料；選錄與說明文字為本站編寫",
+    "generatedAt": "2026-08-18",
+    "featureCount": 1
+  },
+  "features": [
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [14.426, 40.821] },
+      "properties": {
+        "id": "vesuvius",
+        "name": "維蘇威火山",
+        "en": "Mount Vesuvius",
+        "category": "火山與災害",
+        "meta": "義大利那不勒斯灣・西元 79 年埋掉龐貝城",
+        "elevation_m": 1281,
+        "zoom": 11
+      }
+    }
+  ]
+}
