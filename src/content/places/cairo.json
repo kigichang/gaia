@@ -15,5 +15,5 @@
     { "label": "對照重點", "value": "與臺灣中北部緯度接近，卻是典型的乾燥氣候" }
   ],
   "curriculum": { "level": "senior", "unit": "乾燥地區的人地關係" },
-  "sources": ["Open-Meteo ERA5 再分析資料", "Natural Earth"]
+  "sources": ["Open-Meteo ERA5 再分析資料", "Natural Earth 1:10m 城市聚落"]
 }

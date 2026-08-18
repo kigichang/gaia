@@ -15,5 +15,5 @@
     { "label": "對照重點", "value": "與撒哈拉緯度相近，卻因位於海洋上、迎信風坡而多雨" }
   ],
   "curriculum": { "level": "senior", "unit": "世界氣候與地形雨" },
-  "sources": ["Open-Meteo ERA5 再分析資料", "USGS"]
+  "sources": ["Open-Meteo ERA5 再分析資料", "USGS 夏威夷火山觀測站"]
 }

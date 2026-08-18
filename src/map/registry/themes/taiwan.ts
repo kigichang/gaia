@@ -1237,7 +1237,7 @@ export const taiwanTheme: ThemeDefinition = {
           "仍然收到 1900 年，是因為 1920 花蓮（規模 8.2）、1935 新竹－臺中、1951 縱谷這些課本會提到的大地震都在那之前。",
         "⚠️ 中央氣象署的地震目錄對臺灣更完整，但它需要申請 API key，純靜態站沒有地方藏金鑰。",
       ],
-      sources: ["USGS"],
+      sources: ["USGS 地震目錄"],
     },
     {
       id: "tw-quakes-major",
@@ -1277,7 +1277,7 @@ export const taiwanTheme: ThemeDefinition = {
         "⚠️ 也因為兩層來自不同目錄，同一次地震在兩層的震央會差幾公里到二十幾公里——" +
           "那是兩個地震目錄的真實差異，不是畫錯了。",
       ],
-      sources: ["交通部中央氣象署 災害地震", "維基百科 臺灣地震列表", "USGS"],
+      sources: ["交通部中央氣象署 災害地震", "維基百科 臺灣地震列表", "USGS 地震目錄"],
     },
     {
       id: "tw-typhoons",

@@ -95,7 +95,8 @@ export const worldTheme: ThemeDefinition = {
       detail: { type: "none" },
       defaultOn: true,
       description: "赤道、南北回歸線、南北緯 30°／60° 與南北極圈。",
-      sources: [],
+      // 幾何是算出來的，唯一的「資料」是回歸線與極圈用的轉軸傾角實際值（約 23.436°）
+      sources: ["維基百科 轉軸傾角"],
     },
     {
       id: "date-line",
@@ -134,7 +135,7 @@ export const worldTheme: ThemeDefinition = {
         "⚠️ 這條線沒有國際條約規定，是各國各自公告時區的結果，所以它會變動：吉里巴斯在 1995 年把最東邊的萊恩群島改到線的西側，才形成現在往東凸出到西經 150° 的那一大塊。",
         "⚠️ 幾何取自 Natural Earth 的製圖用線，是世界尺度的標準畫法，不是條約界線；白令海峽兩座小島之間那一段這類細部已經簡化掉了。",
       ],
-      sources: ["Natural Earth"],
+      sources: ["Natural Earth 1:10m 地理線"],
     },
     {
       id: "quakes",
@@ -173,7 +174,7 @@ export const worldTheme: ThemeDefinition = {
       detail: { type: "none" },
       description:
         "1960 年以來規模 6.5 以上的地震。點會自己沿著板塊邊緣浮現出地震帶。",
-      sources: ["USGS"],
+      sources: ["USGS 地震目錄"],
     },
     {
       id: "plates",
@@ -357,7 +358,7 @@ export const worldTheme: ThemeDefinition = {
         "⚠️ 海底火山只收錄已知的部分（本層最深的一座在海面下 5,700 公尺）。洋底大部分區域沒有被詳細調查過，所以中洋脊沿線的點比實際稀疏。",
         "⚠️ 中文名只給臺灣的兩座與課本、新聞會叫出名字的知名火山（40 幾座），其餘沿用 GVP 的原名——1,214 座逐一翻譯既無法完成也無法查證。",
       ],
-      sources: ["史密森尼學會 全球火山計畫（GVP）", "維基百科"],
+      sources: ["史密森尼學會 全球火山計畫（GVP）", "維基百科 火山列表"],
     },
     {
       id: "biomes",
@@ -679,7 +680,8 @@ export const worldTheme: ThemeDefinition = {
         "⚠️ 風的命名慣例是「從哪裡吹來」：西風是從西邊吹來、往東邊去；東北信風從東北吹來、往西南去。箭頭畫的是**去向**。",
         "⚠️ 極地東風那一帶（南北緯 65–85°）在 Web Mercator 上被縱向拉得很長，箭頭的斜度是依緯度校正過的，看起來才跟其他帶一樣。",
       ],
-      sources: [],
+      // 三胞環流是模型不是測量值，幾何完全由程式產生；模型本身的出處
+      sources: ["維基百科 大氣環流"],
     },
     {
       id: "ocean-currents",
@@ -781,7 +783,7 @@ export const worldTheme: ThemeDefinition = {
         "⚠️ 這一層與「板塊邊界」的顏色會互相干擾：寒流藍與聚合型邊界的藍、暖流紅與張裂型邊界的橘都很接近，而祕魯寒流正好貼著祕魯－智利海溝、親潮正好貼著千島海溝。兩層一起打開時請以線型（洋流是實線、板塊邊界是虛線）與洋流的沿線名稱判讀。",
         "⚠️ 寒流藍與「世界主要河流」的藍也很接近，但兩者不會疊在一起——洋流全部在海上、河流全部在陸上。",
       ],
-      sources: ["維基百科", "美國國家海洋暨大氣總署（NOAA）"],
+      sources: ["維基百科 洋流", "美國國家海洋暨大氣總署（NOAA）"],
     },
 
     // ── 以下是「全球地理形貌」併進來之前，世界地理主題原本的圖層 ──────────
@@ -839,7 +841,7 @@ export const worldTheme: ThemeDefinition = {
       notes: [
         "⚠️ 河流是實線、板塊邊界是虛線，兩者的藍色非常接近——喜馬拉雅、安地斯、阿爾卑斯這些聚合帶正好是大河的源頭，兩層一起打開時請以線型（實線／虛線）與河流的沿線名稱判讀。",
       ],
-      sources: ["Natural Earth"],
+      sources: ["Natural Earth 1:50m 河流與湖泊中心線"],
     },
     {
       id: "world-countries",
@@ -849,7 +851,7 @@ export const worldTheme: ThemeDefinition = {
       render: { kind: "line" },
       detail: { type: "none" },
       description: "各國國界線，用來對照政治疆界與自然地理界線的差異。",
-      sources: ["Natural Earth"],
+      sources: ["Natural Earth 1:50m 國界"],
     },
     {
       id: "world-continents",
@@ -926,7 +928,7 @@ export const worldTheme: ThemeDefinition = {
         "⚠️ 面積由幾何算出來，跟課本數字有小幅差距。南極洲差最多（本層 1,226 萬 km²、課本多寫 1,400 萬）：這份界線畫的是岩床海岸線，不含周圍的冰棚。",
         "⚠️ 小於約 250 km² 的島嶼在圖上省略（世界尺度下不到一個像素），但面積仍然算進所屬的洲。",
       ],
-      sources: ["Natural Earth"],
+      sources: ["Natural Earth 1:50m 國界"],
     },
     {
       id: "world-mountains",
@@ -936,7 +938,9 @@ export const worldTheme: ThemeDefinition = {
       render: { kind: "line" },
       detail: { type: "none" },
       description: "喜馬拉雅、安地斯、洛磯等主要山脈的走向，對照板塊聚合帶。",
-      sources: ["Natural Earth"],
+      // 山脈在 Natural Earth 是 `ne_10m_geography_regions_polys` 裡 featurecla 為
+      // "Range/mtn" 的那些面，屬於「自然地理區」那份資料集
+      sources: ["Natural Earth 1:10m 自然地理區"],
     },
     {
       id: "world-population",
@@ -946,7 +950,7 @@ export const worldTheme: ThemeDefinition = {
       render: { kind: "circle" },
       detail: { type: "none" },
       description: "主要都會區的人口規模，看世界人口為什麼集中在少數地帶。",
-      sources: ["Natural Earth"],
+      sources: ["Natural Earth 1:10m 城市聚落"],
     },
     {
       id: "world-agriculture",
@@ -956,7 +960,11 @@ export const worldTheme: ThemeDefinition = {
       render: { kind: "fill" },
       detail: { type: "none" },
       description: "小麥帶、稻作區、放牧區等主要農業型態的分布。",
-      sources: ["Natural Earth"],
+      /**
+       * ⚠️ 這一層原本掛著「Natural Earth」，那是照抄隔壁圖層填的——**NE 沒有任何
+       * 農業資料**。改成真正做得出這一層的公開資料集（FAO 的全球農業生態區）。
+       */
+      sources: ["聯合國糧農組織 全球農業生態區（GAEZ）"],
     },
   ],
 };

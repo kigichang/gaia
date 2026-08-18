@@ -15,5 +15,5 @@
     { "label": "對照重點", "value": "同樣位於北回歸線，乾濕季分明的程度與臺灣、撒哈拉都不同" }
   ],
   "curriculum": { "level": "senior", "unit": "世界氣候分區" },
-  "sources": ["Open-Meteo ERA5 再分析資料", "Natural Earth"]
+  "sources": ["Open-Meteo ERA5 再分析資料", "Natural Earth 1:10m 城市聚落"]
 }

@@ -196,6 +196,16 @@ export const SOURCE_LINKS: Record<string, string> = {
    */
   "美國國家海洋暨大氣總署（NOAA）":
     "https://oceanservice.noaa.gov/education/tutorial_currents/",
+  // 洋流圖層本身（18 條的分類與流向）。逐條洋流的條目另外登記在下面那 150 篇裡。
+  "維基百科 洋流": "https://zh.wikipedia.org/zh-tw/%E6%B4%8B%E6%B5%81",
+  // 緯度參考線的回歸線與極圈用的是轉軸傾角的實際值（約 23.436°），不是課本的 23.5°
+  "維基百科 轉軸傾角": "https://zh.wikipedia.org/zh-tw/%E8%BD%89%E8%BB%B8%E5%82%BE%E8%A7%92",
+  /**
+   * 主要農業帶（planned）。⚠️ 這一層原本掛著「Natural Earth」，但 **NE 根本沒有
+   * 農業資料**——那是照抄隔壁圖層填的。改成真正做得出這一層的公開資料集：
+   * 聯合國糧農組織的全球農業生態區（GAEZ v4，免金鑰、可下載作物適宜性與實際產區）。
+   */
+  "聯合國糧農組織 全球農業生態區（GAEZ）": "https://gaez.fao.org/pages/data-viewer",
 
   // 97 條沒有官方詳細資料的河川，改用維基百科（見 CLAUDE_TW.md 的說明）。
   // ⚠️ 這裡刻意逐條登記真正的條目名，不要改成從河川名自動組網址：
@@ -355,7 +365,30 @@ export const SOURCE_LINKS: Record<string, string> = {
   // ⚠️ 這個網址用 curl 測會回 403（Cloudflare 的 bot 防護），瀏覽器開是正常的
   // ——本檔案其餘網址都實測 200，只有這一筆沒辦法用指令驗證。
   "GBIF Global Biodiversity Information Facility": "https://www.gbif.org/occurrence/search?country=TW",
-  "Natural Earth": "https://www.naturalearthdata.com/",
+  /**
+   * Natural Earth **不能只寫一個「Natural Earth」連到首頁**：世界主題有五個圖層用它，
+   * 而它們吃的是五份不同的資料集（換日線是 10m 地理線、河流是 50m 河流中心線、
+   * 大洲是 50m 國界…）。連到首頁等於把「這個數字哪來的」丟給讀者自己在下載頁裡翻，
+   * 比照「農業部農業兒童網 山地植群帶分布」與 NOAA 那兩筆的既有判斷。
+   *
+   * ⚠️ 每一筆都對應 `scripts/lib/*.mjs` 或 `build-geodata.mjs` 裡真正抓的那個檔名，
+   * 換資料集（例如河流從 50m 換成 10m）時這裡要跟著換。
+   */
+  // ne_10m_geographic_lines（國際換日線）
+  "Natural Earth 1:10m 地理線":
+    "https://www.naturalearthdata.com/downloads/10m-physical-vectors/10m-geographic-lines/",
+  // ne_50m_rivers_lake_centerlines（世界主要河流）
+  "Natural Earth 1:50m 河流與湖泊中心線":
+    "https://www.naturalearthdata.com/downloads/50m-physical-vectors/50m-rivers-lake-centerlines/",
+  // ne_50m_admin_0_countries（大洲分區＝依 CONTINENT 欄位併起來的；國界那一層也用它）
+  "Natural Earth 1:50m 國界":
+    "https://www.naturalearthdata.com/downloads/50m-cultural-vectors/50m-admin-0-countries/",
+  // ne_10m_geography_regions_polys（世界主要山脈，planned——山脈在這份的 featurecla "Range/mtn"）
+  "Natural Earth 1:10m 自然地理區":
+    "https://www.naturalearthdata.com/downloads/10m-physical-vectors/10m-physical-labels/",
+  // ne_10m_populated_places（世界人口分布 planned；三個世界地點的座標也出自它）
+  "Natural Earth 1:10m 城市聚落":
+    "https://www.naturalearthdata.com/downloads/10m-cultural-vectors/10m-populated-places/",
   /**
    * 板塊與板塊邊界。授權是 ODC-BY 1.0，**要求標示出處**，所以原作者（Bird）與
    * 轉製者（Nordpil）兩個都要列，少一個就違反授權。
@@ -367,7 +400,11 @@ export const SOURCE_LINKS: Record<string, string> = {
    * 全球活火山。GVP 的授權方式是「引用即可自由使用」，所以來源標籤要留著全名，
    * 不要簡寫成「Smithsonian」。知名火山的中文名另外標維基百科（次級來源）。
    */
-  "史密森尼學會 全球火山計畫（GVP）": "https://volcano.si.edu/",
+  // ⚠️ 連 VOTW 資料庫的說明頁，不是 GVP 首頁：本站抓的就是這個資料庫（全新世火山），
+  // 而它的引用格式、目前版本與 DOI 都印在這一頁上（實測 2026-08 是 v. 5.4.0）。
+  "史密森尼學會 全球火山計畫（GVP）": "https://volcano.si.edu/gvp_votw.cfm",
+  // 40 幾座知名火山的中文名（次級來源，逐條登記條目，不寫泛稱的「維基百科」）
+  "維基百科 火山列表": "https://zh.wikipedia.org/zh-tw/%E7%81%AB%E5%B1%B1%E5%88%97%E8%A1%A8",
   /**
    * 陸域生物群系。授權是 CC-BY 4.0，**要求標示出處**，所以原始資料集（RESOLVE／
    * Dinerstein et al. 2017）與取得管道（Esri Living Atlas 的 FeatureServer）
@@ -407,7 +444,11 @@ export const SOURCE_LINKS: Record<string, string> = {
   臺灣鐵路公司: "https://www.railway.gov.tw/tra-tip-web/adr/about-vision",
   台灣高鐵: "https://www.thsrc.com.tw/event/Governance/THSRC_Introduction.pdf",
   "Open-Meteo ERA5 再分析資料": "https://open-meteo.com/en/docs/historical-weather-api",
-  USGS: "https://earthquake.usgs.gov/earthquakes/search/",
+  // ⚠️ 泛稱的「USGS」拆成兩個標籤：三個地震圖層抓的是地震目錄（ANSS ComCat，
+  // 端點是 fdsnws/event/1/query，這裡連它的查詢介面），而希洛那張地點卡引用的是
+  // 夏威夷火山觀測站的火山資料——同一個機關、兩份完全不同的東西。
+  "USGS 地震目錄": "https://earthquake.usgs.gov/earthquakes/search/",
+  "USGS 夏威夷火山觀測站": "https://www.usgs.gov/observatories/hvo",
 
   // 43 處保留區／保護區各自的官方介紹頁（林業及自然保育署）。走既有的 sources
   // 機制而不是另外開欄位，比照 22 個縣市政府的既有決定：那一頁同時是「這筆

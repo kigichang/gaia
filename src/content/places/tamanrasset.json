@@ -15,5 +15,5 @@
     { "label": "對照重點", "value": "與臺灣同緯度，卻因位於副熱帶高壓帶且遠離海洋而極度乾燥" }
   ],
   "curriculum": { "level": "senior", "unit": "世界氣候與乾燥地區" },
-  "sources": ["Open-Meteo ERA5 再分析資料", "Natural Earth"]
+  "sources": ["Open-Meteo ERA5 再分析資料", "Natural Earth 1:10m 城市聚落"]
 }
