@@ -509,6 +509,20 @@ export const SOURCE_LINKS: Record<string, string> = {
     "https://zh.wikipedia.org/zh-tw/%E8%A5%BF%E5%85%8379%E5%B9%B4%E7%B6%AD%E8%98%87%E5%A8%81%E7%81%AB%E5%B1%B1%E7%88%86%E7%99%BC",
   "維基百科 龐貝": "https://zh.wikipedia.org/zh-tw/%E5%BA%9E%E8%B4%9D",
   /**
+   * 理查特結構（撒哈拉之眼）那一筆。三個來源各自回答這張卡的一件事：
+   * ⚠️ IUGS 那一頁是「撞擊說已被推翻」這句話的出處（2022 年全球百大地質遺產的
+   * 認定文件，`SITE 048`），維基百科追不到那個層級的判斷；NASA 那一頁是「太空人
+   * 拿它當地標」與 45 公里那個尺寸的出處。
+   * ⚠️ NASA 的網址寫 `science.nasa.gov`，**不要改回 `earthobservatory.nasa.gov`**：
+   * 舊網址現在是 301 轉址（實測），連過去會多跳一次。
+   */
+  "維基百科 理查特結構":
+    "https://zh.wikipedia.org/zh-tw/%E7%90%86%E6%9F%A5%E7%89%B9%E7%B5%90%E6%A7%8B",
+  "IUGS 全球地質遺產 理查特結構":
+    "https://iugs-geoheritage.org/geoheritage_sites/richat-structure-a-cretaceous-alkaline-complex/",
+  "NASA 地球觀測站 理查特結構":
+    "https://science.nasa.gov/earth/earth-observatory/richat-structure-92071",
+  /**
    * 百慕達三角那一筆的關鍵來源。連的是 NOAA 海洋服務處的事實問答頁——「沒有證據
    * 顯示這裡的失蹤比其他繁忙海域更常發生」這句話出自這一頁，那正是這張卡的重點。
    * ⚠️ 不要改連 `oceanservice.noaa.gov/facts/bermudatriangle.html`：那個網址會回
