@@ -98,6 +98,17 @@ NLSC WMTS 是 `{z}/{y}/{x}`——**y 在 x 前面**，跟絕大多數 XYZ 服務
 
 ### 世界櫥窗：地表之最（四筆、兩個圖層）
 
+> ⚠️ **「世界之最」那兩層（`world-superlative-peaks`、`world-superlative-ranges`）
+> 2026-08 起已從註冊表下架，等待重新設計。** 下面這一整節寫的是它們被下架前的設計與
+> 實測結論，**刻意留著**：內容檔（`src/content/geo/world-superlatives/` 7 份）與兩份
+> 幾何（`geo-manual/world-superlatives-peaks.geojson`、
+> `geo/world-superlatives-ranges.geojson`）都原封不動，`build:geodata` 的
+> `world-superlatives-ranges` 資料集也沒動——只有 `themes/world.ts` 裡那兩個圖層物件
+> 被拿掉（在 git 上一版）。**重新設計時先把這一節讀完**，尤其是「為什麼是兩個圖層而
+> 不是一個」「三項火山紀錄各有一個定義問題」與「講不出憑據的『最』不收」那三段：
+> 那是這一層當初存在的理由，也是它值得重做的地方。
+> 「作者精選」（`world-picks`／`world-picks-areas`）**不受影響，仍在線上**。
+
 「世界櫥窗」是 2026-08 新增的分組，排在**參考線之後、氣候與生物群系之前**——先讓學生
 在地圖上找得到具體的地方，後面的氣候帶、洋流、板塊才有東西可以掛上去。底下有**兩種**
 東西，分成三個圖層：
@@ -277,6 +288,9 @@ id 在 collection 內唯一就夠，而這幾張卡本來就是一組要一起�
 其餘的核取方塊會是 `disabled`。這是預期行為，**不要為此把上限調到 5**：理由同線圖層
 那一節，三組色票的分析都建立在各幾何的同框上限上。要一次看更多層就先取消不需要的
 那一層。
+
+⚠️ **「世界之最」下架之後圓點圖層暫時回到四個**，所以現在勾不滿、看不到 disabled 的
+核取方塊——那是下架的連帶結果，不是上限被改過。重新設計那一組時這件事會再回來。
 
 #### ⚠️ 「世界最低的山」沒有權威名單，這件事必須寫出來
 
@@ -1106,8 +1120,8 @@ ID 常數定義在 `src/map/layers/*.ts`，**一律 import 常數，不要寫死
 | `world-rivers-line` / `world-rivers-label` | line + symbol |
 | `world-mountains-line` / `world-mountains-label` | line + symbol（39 條山脈的**中軸線**，由上游的範圍面算出來，見下） |
 | `world-mountain-peaks-points` | circle（附屬圖層；一條山脈配一座最高峰，沿用 `place` 藍） |
-| `world-superlative-peaks-points` | circle（世界櫥窗；兩座山＋三座火山共五筆，沿用 `place` 藍。⚠️ 圖層 id 留著 `-peaks`，label 卻是「高山與火山」，見下） |
-| `world-superlative-ranges-line` / `-label` | line + symbol（世界櫥窗；安地斯山脈與中洋脊兩筆，沿用 `mountain` 紫。⚠️ 安地斯的幾何跟 `world-mountains` **完全重合**是刻意的，見下） |
+| `world-superlative-peaks-points` | circle（⚠️ **已下架待重新設計**，見上；兩座山＋三座火山共五筆，沿用 `place` 藍。⚠️ 圖層 id 留著 `-peaks`，label 卻是「高山與火山」，見下） |
+| `world-superlative-ranges-line` / `-label` | line + symbol（⚠️ **已下架待重新設計**，見上；安地斯山脈與中洋脊兩筆，沿用 `mountain` 紫。⚠️ 安地斯的幾何跟 `world-mountains` **完全重合**是刻意的，見下） |
 | `world-picks-points` | circle（世界櫥窗；**編者選集**，跟「世界之最」是兩種東西，同樣沿用 `place` 藍，見下） |
 | `world-picks-areas-line` / `-label` | line + symbol（世界櫥窗；編者選集裡**有範圍**的項目，`reference` 中性灰虛線——那條虛線的語意是「這是示意的線」，⚠️ 但兩筆的理由不同，見下） |
 | `world-places-points` | circle |
@@ -1170,7 +1184,7 @@ maplibre-contour 把 worker 以 Blob URL 內嵌，**不需要額外部署 worker
 | 主題 | 路由 | 內容 |
 |---|---|---|
 | 臺灣地理 | `/theme/taiwan` | 臺灣123（土地與島群、專屬經濟海域、海峽中線、北回歸線）、行政區（縣市、鄉鎮市區）、地形、天然災害（活動斷層、地震、颱風路徑與災損）、水系（118 個列管水系、水庫即時水情、河川流域分區）、人文（原住民族、交通軸線、古蹟、人口與都市體系）、植被生態（特有種、國家公園與保護區、垂直植被帶）、農業物產（主要作物分布） |
-| 世界地理 | `/theme/world` | **全球尺度（骨架，排在前面）**：參考線（緯度參考線、國際換日線）、**世界櫥窗**（世界之最・高山與火山、世界之最・山脈、作者精選、作者精選・範圍）、氣候與生物群系（森林與沙漠帶、柯本氣候分區、行星風系）、海洋（洋流：18 條暖流／寒流）、地體構造（板塊、板塊邊界、地震帶、火山帶）。**世界地理原有**：城市、國界與大洲（大洲分區）、地形水系（世界主要河流、世界主要山脈）、人文專題 |
+| 世界地理 | `/theme/world` | **全球尺度（骨架，排在前面）**：參考線（緯度參考線、國際換日線）、**世界櫥窗**（作者精選、作者精選・範圍；⚠️「世界之最」兩層已下架待重新設計，見上）、氣候與生物群系（森林與沙漠帶、柯本氣候分區、行星風系）、海洋（洋流：18 條暖流／寒流）、地體構造（板塊、板塊邊界、地震帶、火山帶）。**世界地理原有**：城市、國界與大洲（大洲分區）、地形水系（世界主要河流、世界主要山脈）、人文專題 |
 
 兩個主題頁都是**滿版地圖 + 浮動控制**（仿 Google Map），沒有頁首也沒有側欄——版面機制見下面的「全螢幕地圖外框與浮動控制」。
 
@@ -1870,7 +1884,7 @@ maplibre 的四個角落容器是 map container 內的 `position: absolute; z-in
 
 **而且撞名時要把 `meta` 補進副標**，否則畫面上是兩列一模一樣的字。這件事**只對真的撞名的標題做**：水庫的 `meta` 是「蓄水 62%・有效容量 …」這種長字串，沒撞名還硬加只會把副標塞爆。實測搜「東區」會得到四列，各自標著新竹市／臺中市／嘉義市／臺南市。
 
-索引是 **lazy 的**：搜尋框第一次獲得焦點才 `buildSearchIndex()`。**實測（2026-08，production build 讀 `performance.getEntriesByType('resource')`）它會多抓 28 份、合計約 3.05 MB**：
+索引是 **lazy 的**：搜尋框第一次獲得焦點才 `buildSearchIndex()`。**實測（2026-08，production build 讀 `performance.getEntriesByType('resource')`）它會多抓 28 份、合計約 3.05 MB**（⚠️ 那次實測含「世界之最」兩層的 33 KB，該組下架後是 26 份、約 3.02 MB）：
 
 | 檔案 | 大小 |
 |---|---|
@@ -1891,12 +1905,10 @@ maplibre 的四個角落容器是 map container 內的 `position: absolute; z-in
 | `tw-quakes-major.geojson` | 49 KB |
 | `tw-faults.geojson` | 40 KB |
 | `world-mountains.geojson` | 30 KB |
-| `world-superlatives-ranges.geojson` | 31 KB |
 | `tw-crops-tea.geojson` | 25 KB |
 | `tw-reservoirs.geojson` + `reservoirs-live.json` | 20 + 2 KB |
 | `tw-typhoons.geojson` | 14 KB |
 | `world-mountain-peaks.geojson` | 10 KB |
-| `world-superlatives-peaks.geojson`（geo-manual） | 2 KB |
 | `world-picks-areas.geojson`（geo-manual） | 3 KB |
 | `world-picks.geojson`（geo-manual） | 1 KB |
 | `tw-county-halls.geojson` | 8 KB |
@@ -2730,7 +2742,7 @@ m.isSourceLoaded('contour-source')
     - 切底圖之後重驗存在、顏色與排序（線 < 最高峰 < 沿線標註，全部在 `contour-lines`
       之上、`contour-labels` 之下）
 
-38. **世界櫥窗：地表之最**（`/theme/world` → 世界櫥窗，兩層一起勾，見上）：
+38. **世界櫥窗：地表之最**（⚠️ **這兩層 2026-08 起已下架，整項暫時跳過**；下面留著是為了重新設計後照著重驗一次，見上）：
     ```js
     const m = window.__gaiaMaps.at(-1);
     m.jumpTo({ center: [0, 10], zoom: 1.8 });
@@ -2804,8 +2816,9 @@ m.isSourceLoaded('contour-source')
     - ⚠️ **它不可以出現在「世界之最・高山與火山」的清單裡**（那一層是 5 列、
       沒有維蘇威）。混回去就是回歸——兩層的判準不同，見上
     - 搜「維蘇威」「Vesuvius」要找得到，而且會**同時命中**本層與「火山帶」那一座
-    - ⚠️ 這一層讓世界主題的圓點圖層變成五個，而上限是 4：勾滿四個之後其餘的
+    - ⚠️ 這一層原本讓世界主題的圓點圖層變成五個，而上限是 4：勾滿四個之後其餘的
       核取方塊要是 `disabled`（那是預期行為，不是 bug）
+      （⚠️ **「世界之最」下架後暫時只剩四個圓點圖層，這一項現在勾不滿，跳過**）
 
 40. **世界櫥窗：作者精選・範圍**（`/theme/world` → 世界櫥窗，見上）：
     ```js
