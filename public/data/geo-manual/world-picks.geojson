@@ -2,15 +2,21 @@
   "type": "FeatureCollection",
   "metadata": {
     "collection": "world-picks",
-    "source": "編者挑選的地點，逐筆人工轉錄座標，不是描繪的。維蘇威火山的座標（14.426/40.821）、海拔 1,281 公尺與最後噴發年代 1944 年逐位元取自 data/geo/volcanoes.geojson（史密森尼學會全球火山計畫），所以跟「火山帶」那一層的同一座火山完全重合。理查特結構的座標取自維基百科條目所載的 21°7′29.67″N 11°24′12.96″W（結構直徑四、五十公里，這個點是中心而不是某個可辨識的地物）。⚠️ 這一層是編輯選集，不是排名也不是完整名單，收錄界線見註冊表的 notes。",
+    "source": "編者挑選的地點，逐筆人工轉錄座標，不是描繪的。維蘇威火山的座標（14.426/40.821）、海拔 1,281 公尺與最後噴發年代 1944 年逐位元取自 data/geo/volcanoes.geojson（史密森尼學會全球火山計畫），所以跟「火山帶」那一層的同一座火山完全重合。理查特結構的座標取自維基百科條目所載的 21°7′29.67″N 11°24′12.96″W（結構直徑四、五十公里，這個點是中心而不是某個可辨識的地物）。尼莫點的座標（48°52.6′S 123°23.6′W）是 Lukatela (1992) 算出來的海洋難達極，同樣取自維基百科條目所載的度分秒——海面上沒有任何地物可以對位。⚠️ 這一層是編輯選集，不是排名也不是完整名單，收錄界線見註冊表的 notes。",
     "license": "座標與海拔為公開發布之事實資料；選錄與說明文字為本站編寫",
     "generatedAt": "2026-08-19",
-    "featureCount": 2
+    "featureCount": 3
   },
   "features": [
     {
       "type": "Feature",
-      "geometry": { "type": "Point", "coordinates": [14.426, 40.821] },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          14.426,
+          40.821
+        ]
+      },
       "properties": {
         "id": "vesuvius",
         "name": "維蘇威火山",
@@ -23,7 +29,13 @@
     },
     {
       "type": "Feature",
-      "geometry": { "type": "Point", "coordinates": [-11.4036, 21.1249] },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -11.4036,
+          21.1249
+        ]
+      },
       "properties": {
         "id": "richat-structure",
         "name": "理查特結構",
@@ -31,6 +43,24 @@
         "category": "地形與地質",
         "meta": "茅利塔尼亞 撒哈拉沙漠・直徑約 40 公里的同心圓，又稱「撒哈拉之眼」",
         "zoom": 9.5
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -123.3933,
+          -48.8767
+        ]
+      },
+      "properties": {
+        "id": "point-nemo",
+        "name": "尼莫點",
+        "en": "Point Nemo",
+        "category": "海洋",
+        "meta": "南太平洋・離最近的陸地 2,688 公里，又稱「南太平洋無人區」",
+        "zoom": 2.6
       }
     }
   ]

@@ -523,6 +523,15 @@ export const SOURCE_LINKS: Record<string, string> = {
   "NASA 地球觀測站 理查特結構":
     "https://science.nasa.gov/earth/earth-observatory/richat-structure-92071",
   /**
+   * 尼莫點那一筆。⚠️ NOAA 那一頁是「Bloop 是冰震、而且這種聲音能傳五千公里以上」
+   * 的出處——那句話是這張卡的重點（「聽起來來自附近」不等於來源在附近），
+   * 維基百科追不到那個層級的判斷。拉萊耶另外登記條目：它是小說設定，
+   * 跟前兩者不是同一種東西，混在一個「維基百科」標籤底下讀者分不出來。
+   */
+  "維基百科 尼莫點": "https://zh.wikipedia.org/zh-tw/%E5%B0%BC%E8%8E%AB%E9%BB%9E",
+  "美國國家海洋暨大氣總署 Bloop 聲響": "https://www.pmel.noaa.gov/acoustics/sounds/bloop.html",
+  "維基百科 拉萊耶": "https://zh.wikipedia.org/zh-tw/%E6%8B%89%E8%90%8A%E8%80%B6",
+  /**
    * 百慕達三角那一筆的關鍵來源。連的是 NOAA 海洋服務處的事實問答頁——「沒有證據
    * 顯示這裡的失蹤比其他繁忙海域更常發生」這句話出自這一頁，那正是這張卡的重點。
    * ⚠️ 不要改連 `oceanservice.noaa.gov/facts/bermudatriangle.html`：那個網址會回
