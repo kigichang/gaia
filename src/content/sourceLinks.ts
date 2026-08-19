@@ -532,6 +532,22 @@ export const SOURCE_LINKS: Record<string, string> = {
   "美國國家海洋暨大氣總署 Bloop 聲響": "https://www.pmel.noaa.gov/acoustics/sounds/bloop.html",
   "維基百科 拉萊耶": "https://zh.wikipedia.org/zh-tw/%E6%8B%89%E8%90%8A%E8%80%B6",
   /**
+   * 荷姆茲海峽那一筆。四個來源各自撐起卡片的一段：
+   * ⚠️ 石油流量一律以**美國能源資訊署（EIA）**那一頁為準（2,100 萬桶／日、占全球
+   * 石油液體消費 21%），不要改用新聞轉述的數字——那些多半沒寫是哪一年、哪一種口徑。
+   * ⚠️ 臺灣那一段的百分比是**自己從能源署的年資料算出來的**（波斯灣內五國占 61.7%，
+   * 2025 年），所以來源連的是那份資料集本身而不是任何一篇報導；重算時記得阿曼的油港
+   * 在海峽外面，不能算進來。
+   * ⚠️ Lloyd's List Intelligence 那一條撐的是卡片上**有時效**的那一段（2026 年 8 月的
+   * 通行量），日期已經寫進內文，之後要更新的就是那一句。
+   */
+  "維基百科 荷姆茲海峽":
+    "https://zh.wikipedia.org/zh-tw/%E9%9C%8D%E5%B0%94%E6%9C%A8%E5%85%B9%E6%B5%B7%E5%B3%A1",
+  "美國能源資訊署 荷姆茲海峽石油流量": "https://www.eia.gov/todayinenergy/detail.php?id=61002",
+  "經濟部能源署 原油進口來源年資料": "https://data.gov.tw/dataset/163714",
+  "Lloyd's List Intelligence 荷姆茲海峽簡報":
+    "https://www.lloydslistintelligence.com/resources/blog/strait-of-hormuz-brief-5-august-2026",
+  /**
    * 百慕達三角那一筆的關鍵來源。連的是 NOAA 海洋服務處的事實問答頁——「沒有證據
    * 顯示這裡的失蹤比其他繁忙海域更常發生」這句話出自這一頁，那正是這張卡的重點。
    * ⚠️ 不要改連 `oceanservice.noaa.gov/facts/bermudatriangle.html`：那個網址會回
