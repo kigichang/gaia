@@ -933,9 +933,14 @@ export const worldTheme: ThemeDefinition = {
       label: "世界重要城市",
       group: "城市",
       status: "ready",
-      // places 內容裡 region === "world" 的部分。目前只有 4 筆（開羅、塔曼拉塞特、
-      // 馬薩特蘭、希洛），都是為了同緯度比較挑的；之後回補城市資料時直接加
+      // places 內容裡 region === "world" 的部分。目前 5 筆：開羅、塔曼拉塞特、
+      // 馬薩特蘭、希洛（都是為了同緯度比較挑的），加上雅庫茨克——那一筆是為了
+      // 「世界最冷的大城市」本身收的，不是為了配對。之後回補城市資料時直接加
       // src/content/places/*.json 即可，這裡不用改。
+      //
+      // ⚠️ 這一層的卡片是 `PlaceCard`，而 **`PlaceCard` 沒有氣候圖表**——ClimateChart
+      // 只用在 `/compare`。內容檔裡不要寫「下面那張氣溫圖」，那句話在主題頁是假的
+      // （踩過，已改成請讀者到同緯度比較頁去看）。
       source: { type: "bundled", content: "places-world" },
       render: { kind: "circle" },
       /**

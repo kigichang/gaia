@@ -567,6 +567,12 @@ export const SOURCE_LINKS: Record<string, string> = {
   "維基百科 貝加爾湖": "https://zh.wikipedia.org/zh-tw/%E8%B2%9D%E5%8A%A0%E7%88%BE%E6%B9%96",
   "UNESCO 世界遺產 貝加爾湖": "https://whc.unesco.org/en/list/754/",
   /**
+   * 雅庫茨克（世界重要城市）。⚠️ 這是這一層第一個帶維基百科來源的地點——
+   * 其餘四個城市的數值全部來自 ERA5，而這一筆的「最冷的大城市」「年溫差
+   * 102.8 °C」「35 萬人」是氣候正常值以外的事實，追不到 Open-Meteo。
+   */
+  "維基百科 雅庫茨克": "https://zh.wikipedia.org/zh-tw/%E9%9B%85%E5%BA%AB%E8%8C%A8%E5%85%8B",
+  /**
    * 百慕達三角那一筆的關鍵來源。連的是 NOAA 海洋服務處的事實問答頁——「沒有證據
    * 顯示這裡的失蹤比其他繁忙海域更常發生」這句話出自這一頁，那正是這張卡的重點。
    * ⚠️ 不要改連 `oceanservice.noaa.gov/facts/bermudatriangle.html`：那個網址會回
