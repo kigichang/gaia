@@ -548,6 +548,25 @@ export const SOURCE_LINKS: Record<string, string> = {
   "Lloyd's List Intelligence 荷姆茲海峽簡報":
     "https://www.lloydslistintelligence.com/resources/blog/strait-of-hormuz-brief-5-august-2026",
   /**
+   * 三個湖（死海、裏海、貝加爾湖）。
+   * ⚠️ 死海那一筆連的是 USGS 的 Earthshots——它把 1973 至 2024 年的衛星影像排在一起，
+   * 「湖在縮」這件事看得見，比任何一個數字都有說服力；卡片上的水位數字會過期，
+   * 那一頁不會。
+   * ⚠️ 裏海的法律地位另外登記英文維基（2018 年那份公約），中文維基沒有對應條目，
+   * 而「算海還是算湖」正是那張卡的重點，只連主條目追不到。
+   * ⚠️ 貝加爾湖的深度有好幾個流傳的數字（1,642／1,700／1,741 公尺），卡片採
+   * 1,642，那是現行的測深值；UNESCO 那一頁是「最老、最深、全球五分之一未結冰
+   * 地表淡水」這組說法的官方出處。
+   */
+  "維基百科 死海": "https://zh.wikipedia.org/zh-tw/%E6%AD%BB%E6%B5%B7",
+  "USGS 死海地表變化衛星影像":
+    "https://eros.usgs.gov/earthshots/dead-sea-israel-jordan-west-bank",
+  "維基百科 裏海": "https://zh.wikipedia.org/zh-tw/%E9%87%8C%E6%B5%B7",
+  "維基百科（英文） 裏海法律地位公約":
+    "https://en.wikipedia.org/wiki/Convention_on_the_legal_status_of_the_Caspian_Sea",
+  "維基百科 貝加爾湖": "https://zh.wikipedia.org/zh-tw/%E8%B2%9D%E5%8A%A0%E7%88%BE%E6%B9%96",
+  "UNESCO 世界遺產 貝加爾湖": "https://whc.unesco.org/en/list/754/",
+  /**
    * 百慕達三角那一筆的關鍵來源。連的是 NOAA 海洋服務處的事實問答頁——「沒有證據
    * 顯示這裡的失蹤比其他繁忙海域更常發生」這句話出自這一頁，那正是這張卡的重點。
    * ⚠️ 不要改連 `oceanservice.noaa.gov/facts/bermudatriangle.html`：那個網址會回
