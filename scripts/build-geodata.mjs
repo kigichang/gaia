@@ -2188,7 +2188,7 @@ const SOURCES = [
           geometry: { type: "MultiLineString", coordinates: f.lines },
           properties: {
             // ⚠️ 用 lib/faults.mjs 的人工對照表，**不是 slugify**：那支把中文全部
-            // 剝掉，33 條斷層會得到 33 個空字串（實測踩過）
+            // 剝掉，37 條斷層會得到 37 個空字串（實測踩過）
             id: `fault-${f.id}`,
             name: f.name,
             /**

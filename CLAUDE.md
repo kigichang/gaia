@@ -75,7 +75,7 @@ Node ≥ 22.12（vite 8 要求）。開發機與 CI 都用 Node 24。
 | 全球活火山 | `webservices.volcano.si.edu/geoserver/GVP-VOTW/ows`（史密森尼學會 全球火山計畫 GVP） | **只在建置期呼叫**，WFS 一次回 2.4 MB 的 GeoJSON。免金鑰、不需要 User-Agent；授權是「引用即可自由使用」，見下 |
 | 陸域生物群系 | `services.arcgis.com/…/Resolve_Ecoregions/FeatureServer`（RESOLVE Ecoregions 2017，Esri Living Atlas 代管） | **只在建置期呼叫**，用伺服器端的 `maxAllowableOffset` 取已化簡的幾何。⚠️ 授權 CC-BY 4.0（**必須標示出處**）；⚠️ 連發會回一個指著參數的假 400，見下 |
 | 柯本氣候分區 | `koeppen-geiger.vu-wien.ac.at/data/Koeppen-Geiger-ASCII.zip`（Kottek et al. 2006） | **只在建置期呼叫**，zip 裡是一個 `Lat Lon Cls` 三欄的 0.5° 網格文字檔（92,416 格）。⚠️ 期距是 1951–2000；新版與 Esri 那份都只有點陣，見下 |
-| 臺灣活動斷層 | `geologycloud.tw/data/zh-tw/ActiveFault`（經濟部地質調查及礦業管理中心「地質雲」） | **只在建置期呼叫**。⚠️ data.gov.tw 那份**只有 WMS 影像**，拿不到向量；⚠️ **少了 `?all=true` 只會拿到前 100 段**，見 `CLAUDE_TW.md` |
+| 臺灣活動斷層 | `geologycloud.tw/data/zh-tw/ActiveFault?all=true`（經濟部地質調查及礦業管理中心「地質雲」） | **只在建置期呼叫**。⚠️ data.gov.tw 那份**只有 WMS 影像**，拿不到向量；⚠️ **`?all=true` 不能省**——少了它只回前 100 段（HTTP 200），這一層踩過整整一輪，見 `CLAUDE_TW.md` |
 | 臺灣地質圖（地層面） | `geologycloud.tw/data/zh-tw/Stratum25?all=true`（同一個平臺的二十五萬分之一地質圖） | **只在建置期呼叫**。⚠️ **`?all=true` 不能省**——少了它上游只回 100 筆而且 HTTP 200；官方地質圖在網路上只發圖磚影像，見 `CLAUDE_TW.md` |
 | 交通軸線幾何（高鐵／國道／橫貫公路／臺鐵幹線）、河川幹流河道 | `overpass-api.de/api/interpreter`（OpenStreetMap Overpass） | **只在建置期呼叫**，ODbL 1.0。⚠️ **沒有 User-Agent 一律回 HTTP 406**；河川的選擇器**不能寫 `waterway=river`**（一半以上是 `stream`），要用 `type=waterway`＋`ref`，見下 |
 | 水庫基本資料／水庫水情 | `opendata.wra.gov.tw/api/v2/…?format=CSV`（經濟部水利署） | **只在建置期呼叫**。⚠️ **沒有 CORS 標頭**（瀏覽器一定抓不到），而且掛著 bot 防護，見下 |
@@ -1384,7 +1384,7 @@ registry/
 
 | 圖層 | 效果 |
 |---|---|
-| `tw-faults` | 33 條都沒有內容檔，卡片本來整片都是圖層說明；現在是「車籠埔斷層／第一類・全新世（一萬年內）曾活動／觀察／資料來源」 |
+| `tw-faults` | 37 條都沒有內容檔時，卡片整片都是圖層說明；現在是「車籠埔斷層／第一類・全新世（一萬年內）曾活動／觀察／資料來源」 |
 | `tw-rivers`、`tw-protected-areas`、`tw-counties`、`tw-county-halls`、`world-mountains` | 147／53／22／22／39 筆**都有內容檔**，所以**今天都是 no-op**；掛著是為了規則一致——新公告一條河或一處保留區而內容檔還沒寫時，卡片會是「名稱＋類別＋來源」而不是整片圖層說明。（保護區那 43 份是 2026-08 補的，見下一節；河川最後那 97 份是用維基百科補的，見「另外 97 條沒有官方詳細資料」） |
 
 ⚠️ **有內容檔的圖徵完全不受影響**（`FeatureCard` 只在沒有內容檔時才走 fallback）：實測濁水溪、嘉義縣的卡片逐字未變。ODbL 要求的 `OpenStreetMap` 署名也還在——那是 `sources`，不是 description。
@@ -2264,7 +2264,7 @@ npm run build:geodata -- --force --only=tw-population         # 368 個鄉鎮的
 npm run build:geodata -- --force --only=tw-geology-slate      # 岩石分布六類要各跑一次
                                        # （alluvium／terrace／sedimentary／schist／igneous 同理；
                                        #   一個 process 裡共用同一次 2.9 MB 的下載，見 lib/geology.mjs）
-npm run build:geodata -- --force --only=tw-faults             # 33 條活動斷層
+npm run build:geodata -- --force --only=tw-faults             # 37 條活動斷層
 npm run build:geodata -- --force --only=tw-quakes             # 臺灣周邊 M≥5.5（612 筆）
 npm run build:geodata -- --force --only=tw-quakes-major       # 災害性地震（自己查 USGS，不依賴 tw-quakes）
 npm run build:geodata -- --force --only=tw-typhoons           # 14 個侵臺颱風的官方最佳路徑
@@ -3176,7 +3176,7 @@ scripts/
 ├─ lib/reservoirs.mjs     # 水利署開放資料的共用存取層（CSV 剖析、bot 防護、id 對照表）
 ├─ lib/monuments.mjs      # 文資局古蹟的存取層（經緯度顛倒修正、名稱前綴剝除、縣市分片）
 ├─ lib/quakes-major.mjs   # 氣象署〈災害地震〉表的剖析（＋2023 年後補錄的人工抄錄表）
-├─ lib/faults.mjs         # 活動斷層的存取層（地質雲端點、33 條的 id 對照表、筆數檢查）
+├─ lib/faults.mjs         # 活動斷層的存取層（地質雲端點**含 `?all=true`**、37 條的 id 對照表、筆數檢查）
 ├─ lib/typhoons.mjs       # 侵臺颱風的存取層（氣象署最佳路徑 txt ＋ 概況表 HTML；14 個的 id 對照表）
 ├─ lib/volcanoes.mjs      # GVP 全新世活火山的存取層（19 個火山區與 17 種類型的中文對照、40 幾座知名火山的中文名、筆數檢查）
 ├─ lib/continents.mjs     # 七大洲的存取層（NE 國界的洲別欄位、四條課本洲界的切線、陸地面積交叉檢查）

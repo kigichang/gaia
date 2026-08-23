@@ -108,7 +108,7 @@ export const SOURCE_LINKS: Record<string, string> = {
 
   /**
    * 47 條河川各自的官方介紹頁（水利署「讓我們看河去」）。走既有的 sources 機制
-   * 而不是另外開一個欄位，比照 33 條活動斷層與 43 處保留區的既有決定：內容檔的
+   * 而不是另外開一個欄位，比照 37 條活動斷層與 43 處保留區的既有決定：內容檔的
    * `sources` 寫 `經濟部水利署 濁水溪`，SourceLinks 就會把它渲染成連到那一頁的
    * 連結，同時滿足「標示出處」與「使用者想點進去看官方原文」兩件事。
    *
@@ -713,12 +713,18 @@ export const SOURCE_LINKS: Record<string, string> = {
   "經濟部地質調查及礦業管理中心 二十五萬分之一地質圖":
     "https://www.geologycloud.tw/map/Stratum/zh-tw",
   /**
-   * 33 條活動斷層各自的官方詳細說明頁（「臺灣活動斷層」網站，編號依官網現行的
+   * 37 條活動斷層各自的官方詳細說明頁（「臺灣活動斷層」網站，編號依官網現行的
    * 36 條分布圖）。⚠️ 三義斷層之分支斷層在 36 條的版本裡沒有單列，它跟三義斷層
-   * 共用同一頁。
+   * 共用同一頁——所以這裡是 **36 個網址**、不是 37 個。
    */
   "地質調查及礦業管理中心 山腳斷層": "https://fault.gsmma.gov.tw/About/FaultMore/0f0ba96791b44c849d9515ef3df9fd7c",
   "地質調查及礦業管理中心 湖口斷層": "https://fault.gsmma.gov.tw/About/FaultMore/be5c5a21d104434280f17a88d8c2cbca",
+  // 2026-08 補的四條。它們原本被誤判成「官方有、地質雲那個端點沒有」，其實只是
+  // 上游少了 `?all=true` 而被截斷（見 scripts/lib/faults.mjs 的檔頭）。
+  "地質調查及礦業管理中心 初鄉斷層": "https://fault.gsmma.gov.tw/About/FaultMore/b45e1277e17f4a26b66cda330e33165f",
+  "地質調查及礦業管理中心 九芎坑斷層": "https://fault.gsmma.gov.tw/About/FaultMore/5539bc89555149b59fc874459dd350ef",
+  "地質調查及礦業管理中心 口宵里斷層": "https://fault.gsmma.gov.tw/About/FaultMore/900a4f075851474d8c94a61a2c0c4548",
+  "地質調查及礦業管理中心 車瓜林斷層": "https://fault.gsmma.gov.tw/About/FaultMore/66714cf680c2418ebbc44042d4e5c55e",
   "地質調查及礦業管理中心 新竹斷層": "https://fault.gsmma.gov.tw/About/FaultMore/d85876f69018479196f28121e5176de5",
   "地質調查及礦業管理中心 新城斷層": "https://fault.gsmma.gov.tw/About/FaultMore/1e36747a19b048aa910f81220c8a393a",
   "地質調查及礦業管理中心 獅潭斷層": "https://fault.gsmma.gov.tw/About/FaultMore/3fd6c05b2efd4d91b35847c0b3d71c77",
