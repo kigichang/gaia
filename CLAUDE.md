@@ -75,7 +75,8 @@ Node ≥ 22.12（vite 8 要求）。開發機與 CI 都用 Node 24。
 | 全球活火山 | `webservices.volcano.si.edu/geoserver/GVP-VOTW/ows`（史密森尼學會 全球火山計畫 GVP） | **只在建置期呼叫**，WFS 一次回 2.4 MB 的 GeoJSON。免金鑰、不需要 User-Agent；授權是「引用即可自由使用」，見下 |
 | 陸域生物群系 | `services.arcgis.com/…/Resolve_Ecoregions/FeatureServer`（RESOLVE Ecoregions 2017，Esri Living Atlas 代管） | **只在建置期呼叫**，用伺服器端的 `maxAllowableOffset` 取已化簡的幾何。⚠️ 授權 CC-BY 4.0（**必須標示出處**）；⚠️ 連發會回一個指著參數的假 400，見下 |
 | 柯本氣候分區 | `koeppen-geiger.vu-wien.ac.at/data/Koeppen-Geiger-ASCII.zip`（Kottek et al. 2006） | **只在建置期呼叫**，zip 裡是一個 `Lat Lon Cls` 三欄的 0.5° 網格文字檔（92,416 格）。⚠️ 期距是 1951–2000；新版與 Esri 那份都只有點陣，見下 |
-| 臺灣活動斷層 | `geologycloud.tw/data/zh-tw/ActiveFault`（經濟部地質調查及礦業管理中心「地質雲」） | **只在建置期呼叫**。⚠️ data.gov.tw 那份**只有 WMS 影像**，拿不到向量；而且這是 **33 條的舊版**，見下 |
+| 臺灣活動斷層 | `geologycloud.tw/data/zh-tw/ActiveFault`（經濟部地質調查及礦業管理中心「地質雲」） | **只在建置期呼叫**。⚠️ data.gov.tw 那份**只有 WMS 影像**，拿不到向量；⚠️ **少了 `?all=true` 只會拿到前 100 段**，見 `CLAUDE_TW.md` |
+| 臺灣地質圖（地層面） | `geologycloud.tw/data/zh-tw/Stratum25?all=true`（同一個平臺的二十五萬分之一地質圖） | **只在建置期呼叫**。⚠️ **`?all=true` 不能省**——少了它上游只回 100 筆而且 HTTP 200；官方地質圖在網路上只發圖磚影像，見 `CLAUDE_TW.md` |
 | 交通軸線幾何（高鐵／國道／橫貫公路／臺鐵幹線）、河川幹流河道 | `overpass-api.de/api/interpreter`（OpenStreetMap Overpass） | **只在建置期呼叫**，ODbL 1.0。⚠️ **沒有 User-Agent 一律回 HTTP 406**；河川的選擇器**不能寫 `waterway=river`**（一半以上是 `stream`），要用 `type=waterway`＋`ref`，見下 |
 | 水庫基本資料／水庫水情 | `opendata.wra.gov.tw/api/v2/…?format=CSV`（經濟部水利署） | **只在建置期呼叫**。⚠️ **沒有 CORS 標頭**（瀏覽器一定抓不到），而且掛著 bot 防護，見下 |
 | 水庫蓄水範圍 | `gic.wra.gov.tw/gis/gic/API/Google/DownLoad.aspx?fname=ressub&filetype=KML` | **只在建置期呼叫**，約 38 MB 的 KML，只用來算形心 |
@@ -1173,7 +1174,7 @@ stops 物件），JSON 化之後一樣比對得到 `name`。實測它的 28 個 
 ### 臺灣各圖層的資料來源與坑 → 見 `CLAUDE_TW.md`
 
 水庫、國家公園與保護區、河川與流域、交通軸線、古蹟、作物、人口、垂直植被帶、
-活動斷層與地震、颱風、特有種觀測點——這些圖層的來源、取得邏輯與實測踩過的坑
+岩石分布、活動斷層與地震、颱風、特有種觀測點——這些圖層的來源、取得邏輯與實測踩過的坑
 全部搬到 **`CLAUDE_TW.md`** 了（上面那張端點總表仍然是完整的）。
 **要動臺灣主題的圖層就先讀那一份。**
 
@@ -1244,6 +1245,7 @@ ID 常數定義在 `src/map/layers/*.ts`，**一律 import 常數，不要寫死
 | `tw-crops-<crop>-points` | circle，三種作物各自一組（`fruit`／`vegetable`／`tea`） |
 | `tw-population-points` | circle（半徑＝人口、顏色＝依人口密度分級的 ramp） |
 | `tw-vegetation-belts-elevation` | **color-relief**（不是幾何圖層，見「垂直植被帶」） |
+| `tw-geology-<class>-fill` / `-outline` | fill + line，**六個岩石大類各自一組**（`alluvium`／`terrace`／`sedimentary`／`slate`／`schist`／`igneous`）。⚠️ 顏色是大類、**圖徵是 45 個圖例單位**（點下去才知道是廬山層還是大南澳片岩）；外框是拿來**補相鄰面之間的縫**的，比照生物群系，見 `CLAUDE_TW.md` |
 | `tw-faults-line` / `tw-faults-label` | line + symbol（線寬依 `classRank` 分第一類／第二類；標註**依 zoom 換長短名**） |
 | `tw-quakes-points` | circle（半徑依規模，`strokeWidth: 0`） |
 | `tw-quakes-major-points` | circle（同一個 hazard 色但更深、更大、有白框） |
@@ -1285,7 +1287,7 @@ maplibre-contour 把 worker 以 Blob URL 內嵌，**不需要額外部署 worker
 
 | 主題 | 路由 | 內容 |
 |---|---|---|
-| 臺灣地理 | `/theme/taiwan` | 臺灣123（土地與島群、專屬經濟海域、海峽中線、北回歸線）、行政區（縣市、鄉鎮市區）、地形、天然災害（活動斷層、地震、颱風路徑與災損）、水系（118 個列管水系、水庫即時水情、河川流域分區）、人文（原住民族、交通軸線、古蹟、人口與都市體系）、植被生態（特有種、國家公園與保護區、垂直植被帶）、農業物產（主要作物分布） |
+| 臺灣地理 | `/theme/taiwan` | 臺灣123（土地與島群、專屬經濟海域、海峽中線、北回歸線）、行政區（縣市、鄉鎮市區）、地形（地形景點、五大山脈、岩石分布）、天然災害（活動斷層、地震、颱風路徑與災損）、水系（118 個列管水系、水庫即時水情、河川流域分區）、人文（原住民族、交通軸線、古蹟、人口與都市體系）、植被生態（特有種、國家公園與保護區、垂直植被帶）、農業物產（主要作物分布） |
 | 世界地理 | `/theme/world` | **全球尺度（骨架，排在前面）**：參考線（緯度參考線、國際換日線）、**世界櫥窗**（作者精選、作者精選・範圍；⚠️「世界之最」兩層已下架待重新設計，見上）、氣候與生物群系（森林與沙漠帶、柯本氣候分區、行星風系）、海洋（洋流：18 條暖流／寒流）、地體構造（板塊、板塊邊界、地震帶、火山帶）。**世界地理原有**：城市、國界與大洲（大洲分區）、地形水系（世界主要河流、世界主要山脈）、人文專題 |
 
 兩個主題頁都是**滿版地圖 + 浮動控制**（仿 Google Map），沒有頁首也沒有側欄——版面機制見下面的「全螢幕地圖外框與浮動控制」。
@@ -2022,6 +2024,12 @@ maplibre 的四個角落容器是 map container 內的 `position: absolute; z-in
 `tw-eez`（四片經濟海域）同理，實測聚焦搜尋框後 **0 次**請求。這也表示那兩層的搜尋
 完全靠 `LayerItem.keywords`，少填就搜不到（見 types.ts 的說明）。
 
+⚠️ **`tw-geology-*.geojson`（六份、合計約 796 KB）也不在表上，但那是另一種理由：**
+它的六個子項目**各自有 `source`**，所以只要開了 `items.indexFeatures` 就會被抓下來
+——這一層**刻意不開**（比照柯本氣候分區）。45 個圖例單位的檢索一樣全靠 `keywords`。
+實測聚焦搜尋框後 `tw-geology` 的請求數是 **0**；選了「片岩與大理岩」那一筆之後才
+多抓那一類的 41 KB。
+
 ⚠️ **`world-continents.geojson` 是這張表上唯一「七筆圖徵卻要 326 KB」的項目。** 那是
 `browse` 的必然結果（有可點清單就會進索引），而它換到的是「搜『大洋洲』『Asia』
 『南極』找得到那一洲」——洲名是這一層唯一的檢索入口。**洲名那一層（attach）不另外
@@ -2253,6 +2261,9 @@ npm run build:geodata -- --force --only=tw-rivers             # 118 個列管水
                                        #   這是正常的，不要以為卡住了。跑背景並看日誌的長度對照）
 npm run build:geodata -- --force --only=tw-crops-fruit        # 作物三種要各跑一次（需先有鄉鎮界）
 npm run build:geodata -- --force --only=tw-population         # 368 個鄉鎮的人口（同樣需先有鄉鎮界）
+npm run build:geodata -- --force --only=tw-geology-slate      # 岩石分布六類要各跑一次
+                                       # （alluvium／terrace／sedimentary／schist／igneous 同理；
+                                       #   一個 process 裡共用同一次 2.9 MB 的下載，見 lib/geology.mjs）
 npm run build:geodata -- --force --only=tw-faults             # 33 條活動斷層
 npm run build:geodata -- --force --only=tw-quakes             # 臺灣周邊 M≥5.5（612 筆）
 npm run build:geodata -- --force --only=tw-quakes-major       # 災害性地震（自己查 USGS，不依賴 tw-quakes）
@@ -2521,9 +2532,9 @@ m.isSourceLoaded('contour-source')
 
     ⚠️ **`src/content/places/` 新增一筆地點，就會同時改動三個地方**：地形景點圖層、`/compare` 的兩個下拉選單、主題頁搜尋索引。所以新增後 `npm run build:climate` 是必須的——`/compare` 選到一個沒有氣候 JSON 的地點會得到空圖表，而 `npm run validate` **不會**擋（climate 驗證只檢查「有 JSON 的必須對得到地點」，反向不檢查）。
 
-> **第 15–27 項是臺灣主題各圖層的驗證，搬到 `CLAUDE_TW.md` 了**（水庫、保護區、
-> 交通軸線、河川、流域、古蹟、鄉鎮界、作物、人口、三層共用卡、植被帶、斷層與地震、
-> 颱風）。編號沒有重排，所以下面直接從第 28 項接下去。
+> **第 15–27 項與第 41 項是臺灣主題各圖層的驗證，搬到 `CLAUDE_TW.md` 了**（水庫、
+> 保護區、交通軸線、河川、流域、古蹟、鄉鎮界、作物、人口、三層共用卡、植被帶、
+> 斷層與地震、颱風、岩石分布）。編號沒有重排，所以下面直接從第 28 項接下去。
 
 28. **世界底圖的地名語系**（`/theme/world`，底圖維持「世界地圖」，見上）：
     ```js
