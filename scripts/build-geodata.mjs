@@ -142,6 +142,14 @@ import {
   subtypeProperties,
 } from "./lib/koppen.mjs";
 import {
+  ROCK_CLASSES,
+  LICENSE as GEOLOGY_LICENSE,
+  SOURCE_LABEL as GEOLOGY_SOURCE_LABEL,
+  SOURCE_URL as GEOLOGY_URL,
+  fetchStrata,
+  unitProperties,
+} from "./lib/geology.mjs";
+import {
   CLIP_BOX as EEZ_CLIP_BOX,
   EEZ_BY_MRGID,
   EEZ_URL,
@@ -1455,6 +1463,54 @@ const SOURCES = [
       }),
   })),
 
+  /**
+   * 臺灣岩石分布：六個岩石大類各一筆產物，每一筆裡是**該類的各個圖例單位**。
+   *
+   * 顏色是大類（六個核取方塊），圖徵是圖例單位（45 個地層各一個 MultiPolygon）
+   * ——比照柯本氣候分區「顏色是大類、圖徵是亞型」的既有形狀，理由相同：
+   * 45 個分類色沒有人分得出來，而「點下去告訴你這裡是廬山層還是大南澳片岩」
+   * 正是這一層存在的理由。
+   *
+   * **產物是六個檔而不是一個**：合計約 790 KB，併成一份會直接撞上 1 MB 的硬上限；
+   * 拆開之後每一份都在 300 KB 以下，註冊表的 `items` 也才能一類一個 source
+   * （比照生物群系六類與古蹟三級）。六個資料集共用 `lib/geology.mjs` 的
+   * module-level 快取，上游那 2.9 MB 一個 process 只下載一次。
+   *
+   * ⚠️ `tolerance: 0.0006`（≈67 公尺）配 `maxzoom: 12`（一個像素約 38 公尺）：
+   * 上游是二十五萬分之一的圖，再放大就是假精確。⚠️ 相鄰的面各自簡化會裂出白縫
+   * （Douglas–Peucker 不保拓樸），那由註冊表的**同色半透明外框**補起來，
+   * 比照生物群系——不要為此把容差調到 0，那會讓產物爆掉大小預算。
+   */
+  ...ROCK_CLASSES.map((cls) => ({
+    id: `tw-geology-${cls.id}`,
+    label: `臺灣岩石分布：${cls.label}`,
+    load: async (fetchWithRetry) => {
+      const { byUnit, totalAreaKm2, polygons } = await fetchStrata(fetchWithRetry);
+      const mine = [...byUnit.values()].filter((e) => e.unit.cls === cls.id);
+      const parts = mine.reduce((n, e) => n + e.rings.length, 0);
+      return {
+        byUnit,
+        warnings: [
+          `${cls.label}：${mine.length} 個圖例單位／${parts} 塊多邊形` +
+            `（全島 ${polygons} 塊、總面積 ${totalAreaKm2.toFixed(0)} km²）`,
+        ],
+      };
+    },
+    sourceUrl: GEOLOGY_URL,
+    license: GEOLOGY_LICENSE,
+    sourceLabel: GEOLOGY_SOURCE_LABEL,
+    tolerance: 0.0006,
+    digits: 4,
+    transform: ({ byUnit }) =>
+      [...byUnit.values()]
+        .filter((entry) => entry.unit.cls === cls.id)
+        .map((entry) => ({
+          type: "Feature",
+          geometry: { type: "MultiPolygon", coordinates: entry.rings },
+          properties: unitProperties(entry),
+        })),
+  })),
+
   {
     id: "tw-reservoirs",
     label: "臺灣主要水庫",
@@ -2132,7 +2188,7 @@ const SOURCES = [
           geometry: { type: "MultiLineString", coordinates: f.lines },
           properties: {
             // ⚠️ 用 lib/faults.mjs 的人工對照表，**不是 slugify**：那支把中文全部
-            // 剝掉，33 條斷層會得到 33 個空字串（實測踩過）
+            // 剝掉，37 條斷層會得到 37 個空字串（實測踩過）
             id: `fault-${f.id}`,
             name: f.name,
             /**

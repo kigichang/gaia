@@ -2,15 +2,21 @@
   "type": "FeatureCollection",
   "metadata": {
     "collection": "world-picks",
-    "source": "編者挑選的地點，逐筆人工轉錄座標，不是描繪的。維蘇威火山的座標（14.426/40.821）、海拔 1,281 公尺與最後噴發年代 1944 年逐位元取自 data/geo/volcanoes.geojson（史密森尼學會全球火山計畫），所以跟「火山帶」那一層的同一座火山完全重合。⚠️ 這一層是編輯選集，不是排名也不是完整名單，收錄界線見註冊表的 notes。",
+    "source": "編者挑選的地點，逐筆人工轉錄座標，不是描繪的。維蘇威火山的座標（14.426/40.821）、海拔 1,281 公尺與最後噴發年代 1944 年逐位元取自 data/geo/volcanoes.geojson（史密森尼學會全球火山計畫），所以跟「火山帶」那一層的同一座火山完全重合。理查特結構的座標取自維基百科條目所載的 21°7′29.67″N 11°24′12.96″W（結構直徑四、五十公里，這個點是中心而不是某個可辨識的地物）。尼莫點的座標（48°52.6′S 123°23.6′W）是 Lukatela (1992) 算出來的海洋難達極，同樣取自維基百科條目所載的度分秒——海面上沒有任何地物可以對位。荷姆茲海峽取最窄處主航道中間的一個點（26.685N/56.44E，伊朗拉拉克島與阿曼奎恩群島之間），那是水道本身而不是任何一個地物。三個湖取的是湖體中央的一點（死海 31.5N/35.47E、裏海 41.8N/50.7E、貝加爾湖 53.5N/108.2E），不是任何一處岸邊地標。⚠️ 這一層是編輯選集，不是排名也不是完整名單，收錄界線見註冊表的 notes。",
     "license": "座標與海拔為公開發布之事實資料；選錄與說明文字為本站編寫",
-    "generatedAt": "2026-08-18",
-    "featureCount": 1
+    "generatedAt": "2026-08-19",
+    "featureCount": 7
   },
   "features": [
     {
       "type": "Feature",
-      "geometry": { "type": "Point", "coordinates": [14.426, 40.821] },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          14.426,
+          40.821
+        ]
+      },
       "properties": {
         "id": "vesuvius",
         "name": "維蘇威火山",
@@ -19,6 +25,114 @@
         "meta": "義大利那不勒斯灣・西元 79 年埋掉龐貝城",
         "elevation_m": 1281,
         "zoom": 11
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -11.4036,
+          21.1249
+        ]
+      },
+      "properties": {
+        "id": "richat-structure",
+        "name": "理查特結構",
+        "en": "Richat Structure",
+        "category": "地形與地質",
+        "meta": "茅利塔尼亞 撒哈拉沙漠・直徑約 40 公里的同心圓，又稱「撒哈拉之眼」",
+        "zoom": 9.5
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -123.3933,
+          -48.8767
+        ]
+      },
+      "properties": {
+        "id": "point-nemo",
+        "name": "尼莫點",
+        "en": "Point Nemo",
+        "category": "海洋",
+        "meta": "南太平洋・離最近的陸地 2,688 公里，又稱「南太平洋無人區」",
+        "zoom": 2.6
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          56.44,
+          26.685
+        ]
+      },
+      "properties": {
+        "id": "strait-of-hormuz",
+        "name": "荷姆茲海峽",
+        "en": "Strait of Hormuz",
+        "category": "海洋",
+        "meta": "伊朗與阿曼之間（又譯霍爾木茲海峽）・最窄處約 33 公里，全球五分之一的石油由此進出",
+        "zoom": 7.5
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          35.47,
+          31.5
+        ]
+      },
+      "properties": {
+        "id": "dead-sea",
+        "name": "死海",
+        "en": "Dead Sea",
+        "category": "湖泊",
+        "meta": "以色列、約旦與巴勒斯坦交界・陸地最低點，湖面約在海平面下 440 公尺",
+        "zoom": 8.4
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          50.7,
+          41.8
+        ]
+      },
+      "properties": {
+        "id": "caspian-sea",
+        "name": "裏海",
+        "en": "Caspian Sea",
+        "category": "湖泊",
+        "meta": "歐亞之間・世界最大的湖（也寫作裡海），面積約 37 萬平方公里",
+        "zoom": 4.8
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          108.2,
+          53.5
+        ]
+      },
+      "properties": {
+        "id": "lake-baikal",
+        "name": "貝加爾湖",
+        "en": "Lake Baikal",
+        "category": "湖泊",
+        "meta": "俄羅斯西伯利亞・世界最深的湖，全球五分之一的地表淡水",
+        "zoom": 5.8
       }
     }
   ]

@@ -2,6 +2,7 @@
 import {
   CROP_COLORS,
   EEZ_COLORS,
+  GEOLOGY_COLORS,
   MAX_SIMULTANEOUS_SPECIES,
   MONUMENT_LEVEL_COLORS,
   POPULATION_DENSITY_RAMP,
@@ -741,6 +742,153 @@ export const taiwanTheme: ThemeDefinition = {
       sources: ["維基百科 臺灣山脈列表", "內政部國土測繪中心"],
     },
     {
+      id: "tw-geology",
+      label: "岩石分布",
+      group: "地形",
+      status: "ready",
+      /**
+       * ⚠️ **外框是拿來「補縫」的，不是畫界線**（比照世界地理主題的生物群系）：
+       * 45 個圖例單位彼此相鄰，而 `build:geodata` 是**逐塊**簡化的
+       * （Douglas–Peucker 不保拓樸），共用邊界因此對不齊，放大之後兩類之間會露出
+       * 一條一條的白縫。畫一圈**跟面同色、同樣半透明**的外框剛好把縫蓋掉。
+       *
+       * ⚠️ **不要改回預設的 0.9**：這一層有 1,569 塊多邊形，實色外框會在西部平原
+       * 與海岸山脈織成一張線網，色帶本身反而讀不出來。
+       */
+      render: { kind: "fill", fillOpacity: 0.25, outlineWidth: 1, outlineOpacity: 0.15 },
+      /**
+       * 六個岩石大類各一個檔（40–285 KB）。⚠️ **顏色是大類、圖徵是圖例單位**：
+       * 45 個地層不可能各給一個顏色（本站掃出來的分類色上限是六色），但「這一塊
+       * 到底是廬山層還是大南澳片岩」正是這一層存在的理由，所以那件事交給點擊後的
+       * 卡片。併法與 45 個單位的對照表在 `scripts/lib/geology.mjs`。
+       */
+      items: {
+        from: {
+          type: "inline",
+          list: [
+            {
+              id: "alluvium",
+              label: "沖積層",
+              source: { type: "remote", path: "data/geo/tw-geology-alluvium.geojson" },
+              color: GEOLOGY_COLORS.alluvium,
+              /**
+               * ⚠️ 這一層沒有可點清單（`items` 圖層），也**刻意沒有開
+               * `indexFeatures`**（六份合計約 790 KB，開了等於讓每個學生一聚焦
+               * 搜尋框就付這筆流量）。所以 45 個地層名稱唯一的搜尋入口就是這裡的
+               * keywords——比照柯本氣候分區把亞型代碼寫進 keywords 的既有做法。
+               */
+              keywords: ["沖積平原", "沖積扇", "嘉南平原", "屏東平原", "礫石", "砂", "泥", "Q6"],
+            },
+            {
+              id: "terrace",
+              label: "臺地與階地堆積",
+              source: { type: "remote", path: "data/geo/tw-geology-terrace.geojson" },
+              color: GEOLOGY_COLORS.terrace,
+              keywords: [
+                "紅土臺地堆積", "臺地堆積", "紅土", "礫石層", "桃園臺地", "林口臺地",
+                "大肚臺地", "八卦臺地", "階地", "海階", "大南灣層", "米崙層", "Q3", "Q4", "Q1",
+              ],
+            },
+            {
+              id: "sedimentary",
+              label: "沉積岩",
+              source: { type: "remote", path: "data/geo/tw-geology-sedimentary.geojson" },
+              color: GEOLOGY_COLORS.sedimentary,
+              keywords: [
+                "砂岩", "頁岩", "泥岩", "礫岩", "石灰岩", "珊瑚礁", "麓山帶",
+                "三峽群", "野柳群", "瑞芳群", "卓蘭層", "錦水頁岩", "嵙山層", "頭嵙山層",
+                "大港口層", "奇美層", "澳底層", "利吉層", "墾丁層", "混同層", "惡地",
+                "恆春石灰岩", "卑南山礫岩", "Ms", "Mj", "My", "P1", "P2", "PQs",
+              ],
+            },
+            {
+              id: "slate",
+              label: "板岩與千枚岩",
+              source: { type: "remote", path: "data/geo/tw-geology-slate.geojson" },
+              color: GEOLOGY_COLORS.slate,
+              keywords: [
+                "板岩", "千枚岩", "硬頁岩", "變質砂岩", "石英岩", "雪山山脈",
+                "廬山層", "乾溝層", "四稜砂岩", "大桶山層", "西村層", "新高層",
+                "Ml", "OM1", "OM2", "EO", "Eh",
+              ],
+            },
+            {
+              id: "schist",
+              label: "片岩與大理岩",
+              source: { type: "remote", path: "data/geo/tw-geology-schist.geojson" },
+              color: GEOLOGY_COLORS.schist,
+              keywords: [
+                "片岩", "大理岩", "片麻岩", "混合岩", "變質石灰岩", "大南澳片岩",
+                "大南澳變質雜岩", "太魯閣", "黑色片岩", "綠色片岩", "PM1", "PM3", "PM4", "PM5",
+              ],
+            },
+            {
+              id: "igneous",
+              label: "火成岩",
+              source: { type: "remote", path: "data/geo/tw-geology-igneous.geojson" },
+              color: GEOLOGY_COLORS.igneous,
+              keywords: [
+                "火成岩", "安山岩", "玄武岩", "集塊岩", "凝灰岩", "蛇紋岩", "蛇綠岩",
+                "石英斑岩", "輝長岩", "橄欖岩", "大屯火山群", "基隆火山群", "澎湖",
+                "都巒山層", "海岸山脈", "外來岩塊", "α", "β", "ω",
+              ],
+            },
+          ],
+        },
+        maxActive: 6,
+        palette: Object.values(GEOLOGY_COLORS),
+        /**
+         * 勾圖層就六類全開：這一層看的是「整座島是由哪幾種岩石拼起來的」，
+         * 只顯示一類看不出分區（比照柯本氣候分區與生物群系）。取消其餘五個
+         * 核取方塊才是「只看變質岩在哪」那個用法。
+         */
+        defaultAll: true,
+        /**
+         * 點抽屜裡的「片岩與大理岩」六個字要開的是**這一類岩石本身**的說明
+         * （怎麼形成、在臺灣的哪裡、對地形有什麼影響），不是某一塊地層的卡片
+         * ——所以覆蓋掉母圖層的 `detail`。比照古蹟三級與主要作物分布，
+         * 見 registry/types.ts 的 `LayerItems.detail`。
+         */
+        detail: { type: "geo", collection: "tw-rock-classes" },
+      },
+      /**
+       * 點地圖上的面開的是**那一個圖例單位**的卡片（地層名稱、岩性、年代、圖例
+       * 代碼），走 `FeatureCard` 的 fallback——45 個單位沒有內容檔，屬性在建置期
+       * 就寫進 geojson 了（見 lib/geology.mjs 的 `unitProperties`）。
+       *
+       * `hideLayerDescription`：那段圖層說明在 45 張卡上逐字相同，而且就是抽屜
+       * 那一列（比照活動斷層與柯本氣候分區）。
+       */
+      detail: { type: "geo", collection: "tw-geology", hideLayerDescription: true },
+      /**
+       * 上游是**二十五萬分之一**的地質圖，簡化容差 0.0006°（≈67 公尺）。
+       * zoom 12 時一個像素約 38 公尺，再放大就是把一張小比例尺的圖當成精確界線讀
+       * ——那正是這一層最容易被誤用的地方（比照縣市界的 maxzoom 11）。
+       */
+      maxzoom: 12,
+      description:
+        "經濟部地質調查及礦業管理中心二十五萬分之一地質圖的地層面，" +
+        "依岩性併成六大類。整座島的骨架一眼看得出來：西部平原是還在堆的沖積層、" +
+        "外圍一圈紅土臺地，往東進入麓山帶的砂岩頁岩，中央山脈西半是板岩與千枚岩、" +
+        "東半是更老的大南澳片岩與大理岩，火成岩則集中在大屯火山群、澎湖與海岸山脈。" +
+        "點任何一塊會告訴你它是哪一個地層、什麼岩性、什麼年代。",
+      notes: [
+        "⚠️ 沖積層與臺地堆積**還不是岩石**——它們是尚未膠結成岩的沉積物，" +
+          "分成兩類是因為一個還在堆積（現在的河川平原），一個是更新世抬升後被紅土化、" +
+          "切割成階地的老堆積。",
+        "⚠️ 六大類是本站為了教學把 45 個圖例單位併起來的，不是官方的分類。" +
+          "官方圖例（地層名稱、岩性、年代與圖例代碼）原封不動放在每一塊的詳情卡上。",
+        "⚠️ **不含金門與馬祖**：這份二十五萬分之一的圖只涵蓋臺灣本島、澎湖與周邊島嶼" +
+          "（含綠島、蘭嶼、小琉球）。五萬分之一的圖有金門，但那一份全島有 585 種未整編的" +
+          "圖例，做不出可讀的分類。",
+        "⚠️ 這是小比例尺的地質圖，界線是概化過的。放大到 zoom 12 以上這一層會自動關掉——" +
+          "不要拿它判斷某一塊土地下面是什麼岩石。",
+        "⚠️ 這一層與「縣市界」「鄉鎮市區界」「流域分區」搶同樣的兩個面圖層名額，" +
+          "而且兩片半透明面疊起來會互相蓋住，建議一次只看一層。",
+      ],
+      sources: ["經濟部地質調查及礦業管理中心 二十五萬分之一地質圖"],
+    },
+    {
       id: "tw-rivers",
       label: "臺灣河川",
       group: "水系",
@@ -1158,7 +1306,7 @@ export const taiwanTheme: ThemeDefinition = {
        *   冒出好幾次。這跟臺鐵幹線那次是同一個坑。
        * - `maxAngle: 150`（預設 60）：斷層線沿麓山帶蜿蜒，跟臺灣河川同一類，60 度
        *   會讓放置演算法拒絕掉大半。
-       * - `size: 10`：比預設小一級，33 條斷層擠在西部麓山帶，字大了互相碰撞。
+       * - `size: 10`：比預設小一級，37 條斷層擠在西部麓山帶，字大了互相碰撞。
        */
       render: {
         kind: "line",
@@ -1172,7 +1320,7 @@ export const taiwanTheme: ThemeDefinition = {
       },
       colorRole: "fault",
       /**
-       * ⚠️ `hideLayerDescription`：33 條**現在都有內容檔**了（2026-08 逐條取自官方
+       * ⚠️ `hideLayerDescription`：37 條**現在都有內容檔**了（2026-08 逐條取自官方
        * 詳細說明頁），所以這個旗標今天是 no-op——`FeatureCard` 只在沒有內容檔時才走
        * fallback。掛著是為了規則一致，比照 `tw-protected-areas`／`tw-counties`：
        * 上游哪天新增一條斷層而內容檔還沒寫時，卡片會是「名稱＋類別＋線形＋來源」，
@@ -1180,22 +1328,22 @@ export const taiwanTheme: ThemeDefinition = {
        */
       detail: { type: "geo", collection: "tw-faults", hideLayerDescription: true },
       /**
-       * 可點清單依類別分組（第一類 22 條、第二類 11 條）。
+       * 可點清單依類別分組（第一類 23 條、第二類 14 條）。
        * ⚠️ `groupBy` 依序切、不排序，所以 geojson 的 feature 必須讓同一類連續
        * ——排序在 build-geodata.mjs 的 transform 裡做掉了。
        */
       browse: { groupBy: "faultClass" },
-      // 33 條斷層線在全島尺度就看得出「集中在西部麓山帶與花東縱谷」這件事
+      // 37 條斷層線在全島尺度就看得出「集中在西部麓山帶與花東縱谷」這件事
       minzoom: 6,
       description:
-        "經濟部地質調查及礦業管理中心公告的 33 條活動斷層。" +
-        "第一類（22 條，線較粗）是全新世、也就是一萬年以來曾經活動過的；" +
-        "第二類（11 條，線較細）是更新世晚期、十萬年以來曾經活動過的。" +
+        "經濟部地質調查及礦業管理中心公告的活動斷層，圖上是 37 條。" +
+        "第一類（23 條，線較粗）是全新世、也就是一萬年以來曾經活動過的；" +
+        "第二類（14 條，線較細）是更新世晚期、十萬年以來曾經活動過的。" +
         "打開「臺灣地震」一起看，會發現地震並不是隨機散布，而是沿著這些構造線與板塊聚合帶排列。",
       notes: [
-        "⚠️ 這是 33 條的版本，官方現行的分布圖是 36 條：多了初鄉、九芎坑、口宵里、" +
-          "車瓜林四條，而「三義斷層之分支斷層」已併回三義斷層、不再單列。" +
-          "目前能取得向量圖資的是改版前那一版——課本會點名的斷層都在裡面。",
+        "⚠️ 官方現行的〈活動斷層分布圖〉列 36 條，這裡是 37 條——多出來的是" +
+          "「三義斷層之分支斷層」，官方已經把它併回三義斷層，但這份圖資還單獨畫著，" +
+          "兩者共用同一頁官方說明。",
         "⚠️ 斷層線位本身也有數化誤差，不要當成地籍尺度的精確位置。",
         "⚠️ 每一條的詳細說明取自官方各斷層的說明頁（卡片最下面的連結）。" +
           "官方原文用改制前的縣市名（臺中縣豐原市、臺南縣新化鎮…），卡片改寫成現行行政區名。",

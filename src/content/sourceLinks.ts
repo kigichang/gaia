@@ -108,7 +108,7 @@ export const SOURCE_LINKS: Record<string, string> = {
 
   /**
    * 47 條河川各自的官方介紹頁（水利署「讓我們看河去」）。走既有的 sources 機制
-   * 而不是另外開一個欄位，比照 33 條活動斷層與 43 處保留區的既有決定：內容檔的
+   * 而不是另外開一個欄位，比照 37 條活動斷層與 43 處保留區的既有決定：內容檔的
    * `sources` 寫 `經濟部水利署 濁水溪`，SourceLinks 就會把它渲染成連到那一頁的
    * 連結，同時滿足「標示出處」與「使用者想點進去看官方原文」兩件事。
    *
@@ -509,6 +509,70 @@ export const SOURCE_LINKS: Record<string, string> = {
     "https://zh.wikipedia.org/zh-tw/%E8%A5%BF%E5%85%8379%E5%B9%B4%E7%B6%AD%E8%98%87%E5%A8%81%E7%81%AB%E5%B1%B1%E7%88%86%E7%99%BC",
   "維基百科 龐貝": "https://zh.wikipedia.org/zh-tw/%E5%BA%9E%E8%B4%9D",
   /**
+   * 理查特結構（撒哈拉之眼）那一筆。三個來源各自回答這張卡的一件事：
+   * ⚠️ IUGS 那一頁是「撞擊說已被推翻」這句話的出處（2022 年全球百大地質遺產的
+   * 認定文件，`SITE 048`），維基百科追不到那個層級的判斷；NASA 那一頁是「太空人
+   * 拿它當地標」與 45 公里那個尺寸的出處。
+   * ⚠️ NASA 的網址寫 `science.nasa.gov`，**不要改回 `earthobservatory.nasa.gov`**：
+   * 舊網址現在是 301 轉址（實測），連過去會多跳一次。
+   */
+  "維基百科 理查特結構":
+    "https://zh.wikipedia.org/zh-tw/%E7%90%86%E6%9F%A5%E7%89%B9%E7%B5%90%E6%A7%8B",
+  "IUGS 全球地質遺產 理查特結構":
+    "https://iugs-geoheritage.org/geoheritage_sites/richat-structure-a-cretaceous-alkaline-complex/",
+  "NASA 地球觀測站 理查特結構":
+    "https://science.nasa.gov/earth/earth-observatory/richat-structure-92071",
+  /**
+   * 尼莫點那一筆。⚠️ NOAA 那一頁是「Bloop 是冰震、而且這種聲音能傳五千公里以上」
+   * 的出處——那句話是這張卡的重點（「聽起來來自附近」不等於來源在附近），
+   * 維基百科追不到那個層級的判斷。拉萊耶另外登記條目：它是小說設定，
+   * 跟前兩者不是同一種東西，混在一個「維基百科」標籤底下讀者分不出來。
+   */
+  "維基百科 尼莫點": "https://zh.wikipedia.org/zh-tw/%E5%B0%BC%E8%8E%AB%E9%BB%9E",
+  "美國國家海洋暨大氣總署 Bloop 聲響": "https://www.pmel.noaa.gov/acoustics/sounds/bloop.html",
+  "維基百科 拉萊耶": "https://zh.wikipedia.org/zh-tw/%E6%8B%89%E8%90%8A%E8%80%B6",
+  /**
+   * 荷姆茲海峽那一筆。四個來源各自撐起卡片的一段：
+   * ⚠️ 石油流量一律以**美國能源資訊署（EIA）**那一頁為準（2,100 萬桶／日、占全球
+   * 石油液體消費 21%），不要改用新聞轉述的數字——那些多半沒寫是哪一年、哪一種口徑。
+   * ⚠️ 臺灣那一段的百分比是**自己從能源署的年資料算出來的**（波斯灣內五國占 61.7%，
+   * 2025 年），所以來源連的是那份資料集本身而不是任何一篇報導；重算時記得阿曼的油港
+   * 在海峽外面，不能算進來。
+   * ⚠️ Lloyd's List Intelligence 那一條撐的是卡片上**有時效**的那一段（2026 年 8 月的
+   * 通行量），日期已經寫進內文，之後要更新的就是那一句。
+   */
+  "維基百科 荷姆茲海峽":
+    "https://zh.wikipedia.org/zh-tw/%E9%9C%8D%E5%B0%94%E6%9C%A8%E5%85%B9%E6%B5%B7%E5%B3%A1",
+  "美國能源資訊署 荷姆茲海峽石油流量": "https://www.eia.gov/todayinenergy/detail.php?id=61002",
+  "經濟部能源署 原油進口來源年資料": "https://data.gov.tw/dataset/163714",
+  "Lloyd's List Intelligence 荷姆茲海峽簡報":
+    "https://www.lloydslistintelligence.com/resources/blog/strait-of-hormuz-brief-5-august-2026",
+  /**
+   * 三個湖（死海、裏海、貝加爾湖）。
+   * ⚠️ 死海那一筆連的是 USGS 的 Earthshots——它把 1973 至 2024 年的衛星影像排在一起，
+   * 「湖在縮」這件事看得見，比任何一個數字都有說服力；卡片上的水位數字會過期，
+   * 那一頁不會。
+   * ⚠️ 裏海的法律地位另外登記英文維基（2018 年那份公約），中文維基沒有對應條目，
+   * 而「算海還是算湖」正是那張卡的重點，只連主條目追不到。
+   * ⚠️ 貝加爾湖的深度有好幾個流傳的數字（1,642／1,700／1,741 公尺），卡片採
+   * 1,642，那是現行的測深值；UNESCO 那一頁是「最老、最深、全球五分之一未結冰
+   * 地表淡水」這組說法的官方出處。
+   */
+  "維基百科 死海": "https://zh.wikipedia.org/zh-tw/%E6%AD%BB%E6%B5%B7",
+  "USGS 死海地表變化衛星影像":
+    "https://eros.usgs.gov/earthshots/dead-sea-israel-jordan-west-bank",
+  "維基百科 裏海": "https://zh.wikipedia.org/zh-tw/%E9%87%8C%E6%B5%B7",
+  "維基百科（英文） 裏海法律地位公約":
+    "https://en.wikipedia.org/wiki/Convention_on_the_legal_status_of_the_Caspian_Sea",
+  "維基百科 貝加爾湖": "https://zh.wikipedia.org/zh-tw/%E8%B2%9D%E5%8A%A0%E7%88%BE%E6%B9%96",
+  "UNESCO 世界遺產 貝加爾湖": "https://whc.unesco.org/en/list/754/",
+  /**
+   * 雅庫茨克（世界重要城市）。⚠️ 這是這一層第一個帶維基百科來源的地點——
+   * 其餘四個城市的數值全部來自 ERA5，而這一筆的「最冷的大城市」「年溫差
+   * 102.8 °C」「35 萬人」是氣候正常值以外的事實，追不到 Open-Meteo。
+   */
+  "維基百科 雅庫茨克": "https://zh.wikipedia.org/zh-tw/%E9%9B%85%E5%BA%AB%E8%8C%A8%E5%85%8B",
+  /**
    * 百慕達三角那一筆的關鍵來源。連的是 NOAA 海洋服務處的事實問答頁——「沒有證據
    * 顯示這裡的失蹤比其他繁忙海域更常發生」這句話出自這一頁，那正是這張卡的重點。
    * ⚠️ 不要改連 `oceanservice.noaa.gov/facts/bermudatriangle.html`：那個網址會回
@@ -639,12 +703,28 @@ export const SOURCE_LINKS: Record<string, string> = {
   "經濟部地質調查及礦業管理中心 臺灣活動斷層分布圖":
     "https://fault.gsmma.gov.tw/About/Fault_map",
   /**
-   * 33 條活動斷層各自的官方詳細說明頁（「臺灣活動斷層」網站，編號依官網現行的
+   * 岩石分布那一層的實際來源頁：地質雲加值應用平臺的「基本地質圖」圖台。
+   *
+   * ⚠️ 不能只寫泛稱的「經濟部地質調查及礦業管理中心」（那條連的是機關首頁）——
+   * 同一個機關在這個站上被引用了三份完全不同的東西（活動斷層分布圖、各斷層的
+   * 說明頁、二十五萬分之一地質圖），比照 Natural Earth 那次把五份資料集拆開標示
+   * 的既有決定：`sources` 的每一筆都要連得到「那份資料本身」。
+   */
+  "經濟部地質調查及礦業管理中心 二十五萬分之一地質圖":
+    "https://www.geologycloud.tw/map/Stratum/zh-tw",
+  /**
+   * 37 條活動斷層各自的官方詳細說明頁（「臺灣活動斷層」網站，編號依官網現行的
    * 36 條分布圖）。⚠️ 三義斷層之分支斷層在 36 條的版本裡沒有單列，它跟三義斷層
-   * 共用同一頁。
+   * 共用同一頁——所以這裡是 **36 個網址**、不是 37 個。
    */
   "地質調查及礦業管理中心 山腳斷層": "https://fault.gsmma.gov.tw/About/FaultMore/0f0ba96791b44c849d9515ef3df9fd7c",
   "地質調查及礦業管理中心 湖口斷層": "https://fault.gsmma.gov.tw/About/FaultMore/be5c5a21d104434280f17a88d8c2cbca",
+  // 2026-08 補的四條。它們原本被誤判成「官方有、地質雲那個端點沒有」，其實只是
+  // 上游少了 `?all=true` 而被截斷（見 scripts/lib/faults.mjs 的檔頭）。
+  "地質調查及礦業管理中心 初鄉斷層": "https://fault.gsmma.gov.tw/About/FaultMore/b45e1277e17f4a26b66cda330e33165f",
+  "地質調查及礦業管理中心 九芎坑斷層": "https://fault.gsmma.gov.tw/About/FaultMore/5539bc89555149b59fc874459dd350ef",
+  "地質調查及礦業管理中心 口宵里斷層": "https://fault.gsmma.gov.tw/About/FaultMore/900a4f075851474d8c94a61a2c0c4548",
+  "地質調查及礦業管理中心 車瓜林斷層": "https://fault.gsmma.gov.tw/About/FaultMore/66714cf680c2418ebbc44042d4e5c55e",
   "地質調查及礦業管理中心 新竹斷層": "https://fault.gsmma.gov.tw/About/FaultMore/d85876f69018479196f28121e5176de5",
   "地質調查及礦業管理中心 新城斷層": "https://fault.gsmma.gov.tw/About/FaultMore/1e36747a19b048aa910f81220c8a393a",
   "地質調查及礦業管理中心 獅潭斷層": "https://fault.gsmma.gov.tw/About/FaultMore/3fd6c05b2efd4d91b35847c0b3d71c77",
