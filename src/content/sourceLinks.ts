@@ -416,6 +416,144 @@ export const SOURCE_LINKS: Record<string, string> = {
   "Peter Bird (2003) 板塊模型": "https://doi.org/10.1029/2001GC000252",
   "Nordpil 板塊資料集": "https://github.com/fraxen/tectonicplates",
   "維基百科 板塊列表": "https://zh.wikipedia.org/zh-tw/%E6%9D%BF%E5%A1%8A%E5%88%97%E8%A1%A8",
+  /**
+   * 世界主題「板塊」那一層的 52 份圖徵說明（`src/content/geo/plates/`）。分類與面積
+   * 一律以 Bird (2003) 為準（上面那兩筆），這 52 條維基百科條目只用來查已有共識的
+   * 敘述性事實——板塊怎麼形成、邊界屬於哪一種、上面有哪些地形與地震火山事件。
+   * ⚠️ 逐條登記，不要只寫泛稱的「維基百科」（那個標籤不在這份表裡，會渲染成沒有
+   * 連結的純文字）。⚠️ 排序刻意跟 geojson 的圖徵順序一致（依面積由大到小），方便
+   * 跟抽屜裡的清單對照。
+   *
+   * ⚠️ 中文條目名與本站採用的板塊中文名不一定相同（本站的「湯加板塊」在維基百科
+   * 是〈東加板塊〉、「揚子板塊」是〈華南板塊〉、「新海布里地板塊」是
+   * 〈新赫布里底板塊〉…）。這裡一律用**本站的名字**當標籤與網址，維基百科的
+   * `/zh-tw/` 路徑會自己做重新導向與字形轉換——52 條實測全部回 200 並落在正確的
+   * 條目上。改動時請重跑一次那個檢查，不要只看有沒有拼錯字。
+   *
+   * ⚠️ 菲律賓海、揚子、巽他、阿穆爾、沖繩五塊**不在這一段裡**：它們早就登記在下面
+   * 臺灣主題那一段，兩個主題共用同一個標籤，所以這裡刻意不重複登記。
+   */
+  "維基百科 太平洋板塊":
+    "https://zh.wikipedia.org/zh-tw/%E5%A4%AA%E5%B9%B3%E6%B4%8B%E6%9D%BF%E5%A1%8A",
+  "維基百科 非洲板塊":
+    "https://zh.wikipedia.org/zh-tw/%E9%9D%9E%E6%B4%B2%E6%9D%BF%E5%A1%8A",
+  "維基百科 南極洲板塊":
+    "https://zh.wikipedia.org/zh-tw/%E5%8D%97%E6%A5%B5%E6%B4%B2%E6%9D%BF%E5%A1%8A",
+  "維基百科 北美洲板塊":
+    "https://zh.wikipedia.org/zh-tw/%E5%8C%97%E7%BE%8E%E6%B4%B2%E6%9D%BF%E5%A1%8A",
+  "維基百科 歐亞板塊":
+    "https://zh.wikipedia.org/zh-tw/%E6%AD%90%E4%BA%9E%E6%9D%BF%E5%A1%8A",
+  "維基百科 澳洲板塊":
+    "https://zh.wikipedia.org/zh-tw/%E6%BE%B3%E6%B4%B2%E6%9D%BF%E5%A1%8A",
+  "維基百科 南美洲板塊":
+    "https://zh.wikipedia.org/zh-tw/%E5%8D%97%E7%BE%8E%E6%B4%B2%E6%9D%BF%E5%A1%8A",
+  "維基百科 印度板塊":
+    "https://zh.wikipedia.org/zh-tw/%E5%8D%B0%E5%BA%A6%E6%9D%BF%E5%A1%8A",
+  "維基百科 索馬利亞板塊":
+    "https://zh.wikipedia.org/zh-tw/%E7%B4%A2%E9%A6%AC%E5%88%A9%E4%BA%9E%E6%9D%BF%E5%A1%8A",
+  "維基百科 納斯卡板塊":
+    "https://zh.wikipedia.org/zh-tw/%E7%B4%8D%E6%96%AF%E5%8D%A1%E6%9D%BF%E5%A1%8A",
+  "維基百科 阿拉伯板塊":
+    "https://zh.wikipedia.org/zh-tw/%E9%98%BF%E6%8B%89%E4%BC%AF%E6%9D%BF%E5%A1%8A",
+  "維基百科 鄂霍次克板塊":
+    "https://zh.wikipedia.org/zh-tw/%E9%84%82%E9%9C%8D%E6%AC%A1%E5%85%8B%E6%9D%BF%E5%A1%8A",
+  "維基百科 加勒比板塊":
+    "https://zh.wikipedia.org/zh-tw/%E5%8A%A0%E5%8B%92%E6%AF%94%E6%9D%BF%E5%A1%8A",
+  "維基百科 科科斯板塊":
+    "https://zh.wikipedia.org/zh-tw/%E7%A7%91%E7%A7%91%E6%96%AF%E6%9D%BF%E5%A1%8A",
+  "維基百科 斯科舍板塊":
+    "https://zh.wikipedia.org/zh-tw/%E6%96%AF%E7%A7%91%E8%88%8D%E6%9D%BF%E5%A1%8A",
+  "維基百科 加洛林板塊":
+    "https://zh.wikipedia.org/zh-tw/%E5%8A%A0%E6%B4%9B%E6%9E%97%E6%9D%BF%E5%A1%8A",
+  "維基百科 新海布里地板塊":
+    "https://zh.wikipedia.org/zh-tw/%E6%96%B0%E6%B5%B7%E5%B8%83%E9%87%8C%E5%9C%B0%E6%9D%BF%E5%A1%8A",
+  "維基百科 緬甸板塊":
+    "https://zh.wikipedia.org/zh-tw/%E7%B7%AC%E7%94%B8%E6%9D%BF%E5%A1%8A",
+  "維基百科 北安地斯板塊":
+    "https://zh.wikipedia.org/zh-tw/%E5%8C%97%E5%AE%89%E5%9C%B0%E6%96%AF%E6%9D%BF%E5%A1%8A",
+  "維基百科 阿爾蒂普拉諾板塊":
+    "https://zh.wikipedia.org/zh-tw/%E9%98%BF%E7%88%BE%E8%92%82%E6%99%AE%E6%8B%89%E8%AB%BE%E6%9D%BF%E5%A1%8A",
+  "維基百科 班達海板塊":
+    "https://zh.wikipedia.org/zh-tw/%E7%8F%AD%E9%81%94%E6%B5%B7%E6%9D%BF%E5%A1%8A",
+  "維基百科 安那托利亞板塊":
+    "https://zh.wikipedia.org/zh-tw/%E5%AE%89%E9%82%A3%E6%89%98%E5%88%A9%E4%BA%9E%E6%9D%BF%E5%A1%8A",
+  "維基百科 鳥首板塊":
+    "https://zh.wikipedia.org/zh-tw/%E9%B3%A5%E9%A6%96%E6%9D%BF%E5%A1%8A",
+  "維基百科 克馬德克板塊":
+    "https://zh.wikipedia.org/zh-tw/%E5%85%8B%E9%A6%AC%E5%BE%B7%E5%85%8B%E6%9D%BF%E5%A1%8A",
+  "維基百科 木百靈板塊":
+    "https://zh.wikipedia.org/zh-tw/%E6%9C%A8%E7%99%BE%E9%9D%88%E6%9D%BF%E5%A1%8A",
+  "維基百科 馬里亞納板塊":
+    "https://zh.wikipedia.org/zh-tw/%E9%A6%AC%E9%87%8C%E4%BA%9E%E7%B4%8D%E6%9D%BF%E5%A1%8A",
+  "維基百科 摩鹿加海板塊":
+    "https://zh.wikipedia.org/zh-tw/%E6%91%A9%E9%B9%BF%E5%8A%A0%E6%B5%B7%E6%9D%BF%E5%A1%8A",
+  "維基百科 北俾斯麥板塊":
+    "https://zh.wikipedia.org/zh-tw/%E5%8C%97%E4%BF%BE%E6%96%AF%E9%BA%A5%E6%9D%BF%E5%A1%8A",
+  "維基百科 帝汶板塊":
+    "https://zh.wikipedia.org/zh-tw/%E5%B8%9D%E6%B1%B6%E6%9D%BF%E5%A1%8A",
+  "維基百科 愛琴海板塊":
+    "https://zh.wikipedia.org/zh-tw/%E6%84%9B%E7%90%B4%E6%B5%B7%E6%9D%BF%E5%A1%8A",
+  "維基百科 南俾斯麥板塊":
+    "https://zh.wikipedia.org/zh-tw/%E5%8D%97%E4%BF%BE%E6%96%AF%E9%BA%A5%E6%9D%BF%E5%A1%8A",
+  "維基百科 巴拿馬板塊":
+    "https://zh.wikipedia.org/zh-tw/%E5%B7%B4%E6%8B%BF%E9%A6%AC%E6%9D%BF%E5%A1%8A",
+  "維基百科 胡安·德富卡板塊":
+    "https://zh.wikipedia.org/zh-tw/%E8%83%A1%E5%AE%89%C2%B7%E5%BE%B7%E5%AF%8C%E5%8D%A1%E6%9D%BF%E5%A1%8A",
+  "維基百科 湯加板塊":
+    "https://zh.wikipedia.org/zh-tw/%E6%B9%AF%E5%8A%A0%E6%9D%BF%E5%A1%8A",
+  "維基百科 巴爾莫勒爾礁板塊":
+    "https://zh.wikipedia.org/zh-tw/%E5%B7%B4%E7%88%BE%E8%8E%AB%E5%8B%92%E7%88%BE%E7%A4%81%E6%9D%BF%E5%A1%8A",
+  "維基百科 南桑威奇板塊":
+    "https://zh.wikipedia.org/zh-tw/%E5%8D%97%E6%A1%91%E5%A8%81%E5%A5%87%E6%9D%BF%E5%A1%8A",
+  "維基百科 復活節島板塊":
+    "https://zh.wikipedia.org/zh-tw/%E5%BE%A9%E6%B4%BB%E7%AF%80%E5%B3%B6%E6%9D%BF%E5%A1%8A",
+  "維基百科 康威礁板塊":
+    "https://zh.wikipedia.org/zh-tw/%E5%BA%B7%E5%A8%81%E7%A4%81%E6%9D%BF%E5%A1%8A",
+  "維基百科 所羅門海板塊":
+    "https://zh.wikipedia.org/zh-tw/%E6%89%80%E7%BE%85%E9%96%80%E6%B5%B7%E6%9D%BF%E5%A1%8A",
+  "維基百科 紐阿福歐板塊":
+    "https://zh.wikipedia.org/zh-tw/%E7%B4%90%E9%98%BF%E7%A6%8F%E6%AD%90%E6%9D%BF%E5%A1%8A",
+  "維基百科 毛克板塊":
+    "https://zh.wikipedia.org/zh-tw/%E6%AF%9B%E5%85%8B%E6%9D%BF%E5%A1%8A",
+  "維基百科 里維拉板塊":
+    "https://zh.wikipedia.org/zh-tw/%E9%87%8C%E7%B6%AD%E6%8B%89%E6%9D%BF%E5%A1%8A",
+  "維基百科 胡安·費爾南德斯板塊":
+    "https://zh.wikipedia.org/zh-tw/%E8%83%A1%E5%AE%89%C2%B7%E8%B2%BB%E7%88%BE%E5%8D%97%E5%BE%B7%E6%96%AF%E6%9D%BF%E5%A1%8A",
+  "維基百科 設得蘭板塊":
+    "https://zh.wikipedia.org/zh-tw/%E8%A8%AD%E5%BE%97%E8%98%AD%E6%9D%BF%E5%A1%8A",
+  "維基百科 富圖納板塊":
+    "https://zh.wikipedia.org/zh-tw/%E5%AF%8C%E5%9C%96%E7%B4%8D%E6%9D%BF%E5%A1%8A",
+  "維基百科 加拉巴哥板塊":
+    "https://zh.wikipedia.org/zh-tw/%E5%8A%A0%E6%8B%89%E5%B7%B4%E5%93%A5%E6%9D%BF%E5%A1%8A",
+  "維基百科 馬努斯板塊":
+    "https://zh.wikipedia.org/zh-tw/%E9%A6%AC%E5%8A%AA%E6%96%AF%E6%9D%BF%E5%A1%8A",
+  /**
+   * 臺灣主題的「板塊」與「板塊邊界」兩層（`src/content/geo/tw-plates/` 與
+   * `tw-plate-boundaries/`）。幾何與分類一律以 Bird (2003) 為準（上面那兩筆），
+   * 這幾條維基百科條目只用來查已有共識的敘述性事實——板塊的中文名、沖繩海槽是
+   * 弧後盆地、南海何時停止擴張這一類。⚠️ 逐條登記，不要只寫泛稱的「維基百科」
+   * （那個標籤不在這份表裡，會渲染成沒有連結的純文字）。
+   */
+  "維基百科 菲律賓海板塊":
+    "https://zh.wikipedia.org/zh-tw/%E8%8F%B2%E5%BE%8B%E8%B3%93%E6%B5%B7%E6%9D%BF%E5%A1%8A",
+  "維基百科 揚子板塊":
+    "https://zh.wikipedia.org/zh-tw/%E6%8F%9A%E5%AD%90%E6%9D%BF%E5%A1%8A",
+  "維基百科 巽他板塊":
+    "https://zh.wikipedia.org/zh-tw/%E5%B7%BD%E4%BB%96%E6%9D%BF%E5%A1%8A",
+  "維基百科 阿穆爾板塊":
+    "https://zh.wikipedia.org/zh-tw/%E9%98%BF%E7%A9%86%E7%88%BE%E6%9D%BF%E5%A1%8A",
+  "維基百科 沖繩板塊":
+    "https://zh.wikipedia.org/zh-tw/%E6%B2%96%E7%B9%A9%E6%9D%BF%E5%A1%8A",
+  "維基百科 沖繩海槽":
+    "https://zh.wikipedia.org/zh-tw/%E6%B2%96%E7%B9%A9%E6%B5%B7%E6%A7%BD",
+  "維基百科 琉球海溝":
+    "https://zh.wikipedia.org/zh-tw/%E7%90%89%E7%90%83%E6%B5%B7%E6%BA%9D",
+  "維基百科 馬尼拉海溝":
+    "https://zh.wikipedia.org/zh-tw/%E9%A6%AC%E5%B0%BC%E6%8B%89%E6%B5%B7%E6%BA%9D",
+  "維基百科 臺灣海峽":
+    "https://zh.wikipedia.org/zh-tw/%E8%87%BA%E7%81%A3%E6%B5%B7%E5%B3%BD",
+  "維基百科 南海":
+    "https://zh.wikipedia.org/zh-tw/%E5%8D%97%E6%B5%B7",
   // 世界主要山脈：39 條的中文名與成因說明的查閱來源（次級來源，見 CLAUDE.md「內容撰寫規範」）
   "維基百科 山脈列表": "https://zh.wikipedia.org/zh-tw/%E5%B1%B1%E8%84%88%E5%88%97%E8%A1%A8",
   /**

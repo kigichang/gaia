@@ -5,6 +5,14 @@ import { Stat } from "./PlaceCard";
 interface FeatureCardProps {
   /** 對應的內容檔。沒有就走 fallback。 */
   feature?: GeoFeature;
+  /**
+   * 內容檔還在抓（見 `content/index.ts` 的分片說明）。
+   *
+   * ⚠️ **不能把載入中當成「沒有內容檔」**：那會先畫一整段圖層說明、幾百毫秒後
+   * 再整個換掉，而那兩種畫面長得完全不一樣。載入中只顯示 geojson 那邊就有的
+   * 名稱與 `meta`，加一行「說明載入中…」——標題不跳，內容補上來。
+   */
+  loading?: boolean;
   /** fallback：geojson 的 name 屬性 + 圖層自己的說明與來源 */
   fallback: {
     name?: string;
@@ -48,7 +56,7 @@ interface FeatureCardProps {
  * 跟 PlaceCard 不同，這裡一定要有 `<h4>` 標題——被點到的縣市不像地點那樣
  * 在清單裡有一個 active 的按鈕、或詳情面板的標題在提供上下文。
  */
-export function FeatureCard({ feature, fallback }: FeatureCardProps) {
+export function FeatureCard({ feature, loading, fallback }: FeatureCardProps) {
   const title = feature?.name.zh ?? fallback.name ?? fallback.layerLabel;
   const schematic = feature?.schematic ?? fallback.schematic;
 
@@ -79,6 +87,12 @@ export function FeatureCard({ feature, fallback }: FeatureCardProps) {
             </li>
           ))}
         </ul>
+      ) : loading ? (
+        // 分片還在路上：只給 geojson 那邊已經有的東西，不要先畫一段等一下會被換掉的字
+        <>
+          {fallback.meta && <p className="feature-subtitle">{fallback.meta}</p>}
+          <p className="feature-loading">說明載入中…</p>
+        </>
       ) : (
         // 還沒寫內容檔：至少把圖層自己的說明交代清楚，不要給一張空卡
         <>
@@ -89,15 +103,21 @@ export function FeatureCard({ feature, fallback }: FeatureCardProps) {
         </>
       )}
 
-      {schematic && (
+      {/* ⚠️ 載入中不畫這一段：`attach.schematic: false`（世界主要山脈的最高峰）會讓
+          它「先出現再消失」——那等於對讀者說了一句幾百毫秒的假話。 */}
+      {!loading && schematic && (
         <p className="feature-schematic">
           這是簡化的教學示意幾何，用來說明分布趨勢，<strong>不是</strong>精確的測繪界線。
         </p>
       )}
 
-      <p className="detail-sources">
-        資料來源：<SourceLinks sources={feature?.sources ?? fallback.sources} />
-      </p>
+      {/* ⚠️ 載入中不畫來源：內容檔有自己的 `sources`（板塊那 52 張多了維基百科條目），
+          先畫圖層的那一組會在幾百毫秒後整行換掉。 */}
+      {!loading && (
+        <p className="detail-sources">
+          資料來源：<SourceLinks sources={feature?.sources ?? fallback.sources} />
+        </p>
+      )}
     </div>
   );
 }

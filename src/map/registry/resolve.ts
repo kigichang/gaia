@@ -174,6 +174,53 @@ const DERIVED_LOADERS: Record<
     });
     return { type: "FeatureCollection", features };
   },
+
+  /**
+   * 臺灣周邊的板塊名。做法逐字照抄上面的洲名（同一個坑的另一半，見
+   * `DerivedId["tw-plate-labels"]`），只有錨點表換成臺灣周邊那六塊。
+   */
+  "tw-plate-labels": async () => {
+    const fc = await resolveLayerData(remote(DERIVED_FILES["tw-plate-labels"][0]));
+    if (!fc) return null;
+    const features = fc.features.flatMap((f) => {
+      const id = f.properties?.id;
+      const name = f.properties?.name;
+      const anchor = typeof id === "string" ? TW_PLATE_LABEL_ANCHORS[id] : undefined;
+      // 對不到就不畫那一個標註——整層消失（或畫在 [0,0]）都更糟
+      if (!anchor || typeof name !== "string") return [];
+      return [
+        {
+          type: "Feature" as const,
+          geometry: { type: "Point" as const, coordinates: [...anchor] },
+          /** id 刻意跟母圖徵**同一個字串**：點板塊名開的就是那一塊的卡 */
+          properties: { id, name, plateId: id },
+        },
+      ];
+    });
+    return { type: "FeatureCollection", features };
+  },
+};
+
+/**
+ * 臺灣周邊的板塊名擺在哪裡。
+ *
+ * ⚠️ **刻意不算形心**，理由跟洲名相同再加一條：這六塊都是被裁切框切過的，形心會
+ * 被切出來的形狀拉著跑；而沖繩板塊是一條沿著琉球島弧的**細長帶**，形心會落到
+ * 帶外面的沖繩海槽裡（那是揚子板塊）。
+ *
+ * ⚠️ 六個點全部用點在多邊形內實測過，而且刻意挑在**臺灣主題預設視角**
+ * （`[120.98, 23.97]`、zoom 7，約東經 110–132、北緯 19–29）看得到的位置——
+ * 歐亞與阿穆爾那兩塊在框裡只露出一個角，錨點放遠了就等於沒有名字。
+ *
+ * ⚠️ 這裡**只有座標**：板塊名與 id 一律讀 geojson，那份才是單一事實來源。
+ */
+const TW_PLATE_LABEL_ANCHORS: Record<string, [number, number]> = {
+  "tw-plate-ya": [118.6, 24.6],
+  "tw-plate-ps": [123.6, 22.4],
+  "tw-plate-on": [124.5, 24.4],
+  "tw-plate-su": [118.2, 19.2],
+  "tw-plate-eu": [110.8, 20.4],
+  "tw-plate-am": [131.5, 32.6],
 };
 
 /**

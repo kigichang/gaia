@@ -6,7 +6,15 @@ import { ReservoirCard } from "./ReservoirCard";
 import { MonumentCard } from "./MonumentCard";
 import { TownshipCard } from "./TownshipCard";
 import { QuakeCard } from "./QuakeCard";
-import { getGeoFeature, getIndigenousGroup, getPlace, getSpecies } from "../content";
+import { useEffect, useState } from "react";
+import {
+  getIndigenousGroup,
+  getLoadedGeoFeature,
+  getPlace,
+  getSpecies,
+  loadGeoCollection,
+} from "../content";
+import { useGeoFeature } from "../content/useGeoContent";
 import type { DetailSpec, LayerDefinition, ThemeDefinition } from "../map/registry/types";
 import type { GeoLayerInstance } from "../map/useGeoLayers";
 
@@ -36,58 +44,12 @@ export function DetailCard({
 
   const { detail, featureId } = selection;
   if (detail.type === "geo") {
-    // 找出這個圖徵屬於哪個圖層，好在沒有內容檔時退回顯示圖層自己的說明。
-    // **附屬圖層也要找**（縣市界 → 縣市政府）：它不在 theme.layers 裡，漏掉的話
-    // fallback 會拿不到名稱與說明，卡片標題會退化成 collection 這個內部字串。
-    const owner = findGeoOwner(theme, detail.collection);
-    /**
-     * ⚠️ **不能只找 `instanceId === owner.id`。** 子項目圖層的 instance id 是
-     * `<圖層 id>-<子項目 id>`（主要作物分布是 tw-crops-fruit／-vegetable／-tea），
-     * 只比對圖層 id 會一個都對不到 → props 是 undefined → 卡片退化成「只有圖層
-     * 標題與說明」，看起來像 fallback 正常運作，其實是查錯了地方。
-     * 改成掃過所有指向同一個 collection 的 instance。
-     */
-    const props = instances
-      .filter((i) => i.detail.type === "geo" && i.detail.collection === detail.collection)
-      .flatMap((i) => i.data?.features ?? [])
-      .find((f) => f.properties?.id === featureId)?.properties;
     return (
-      <FeatureCard
-        feature={getGeoFeature(detail.collection, featureId)}
-        fallback={{
-          name:
-            typeof props?.[detail.fallbackNameProperty ?? "name"] === "string"
-              ? String(props[detail.fallbackNameProperty ?? "name"])
-              : undefined,
-          meta: typeof props?.meta === "string" ? props.meta : undefined,
-          // 原始外文名（世界主要河流與全球活火山都靠它才顯示得出原名）
-          en: typeof props?.en === "string" ? props.en : undefined,
-          /**
-           * ⚠️ 兩個屬性名都要讀。`detail` 是這個欄位本來的名字（`FeatureCard`
-           * 的 prop 就叫這個），臺灣河川用它放公告的管理等級；`top` 是主要作物
-           * 分布先前用的名字（那個鄉鎮種最多的前三種）。
-           *
-           * 之所以不統一成一個：`tw-crops-*.geojson` 是產物，改個 key 就得重跑
-           * `build:geodata` 去打農情調查的 API 逐縣市重抓一次——為了一個屬性名
-           * 付那個代價不值得。**新圖層一律用 `detail`。**
-           */
-          detail:
-            typeof props?.detail === "string"
-              ? props.detail
-              : typeof props?.top === "string"
-                ? props.top
-                : undefined,
-          layerLabel: owner?.label ?? detail.collection,
-          /**
-           * ⚠️ `hideLayerDescription` 的圖層（活動斷層）不印這一段：37 條斷層的卡片
-           * 上那段字逐字相同，而且就是圖層抽屜那一列的說明。圖層層級的話全部留在
-           * 抽屜（說明在核取方塊下面、資料限制在 ⚠️ 小視窗），卡片只講這一條斷層
-           * 自己的事。見 registry/types.ts 的說明。
-           */
-          description: detail.hideLayerDescription || !owner ? "" : fullDescription(owner),
-          sources: owner?.sources ?? [],
-          schematic: owner?.schematic,
-        }}
+      <GeoDetailCard
+        spec={detail}
+        featureId={featureId}
+        theme={theme}
+        instances={instances}
       />
     );
   }
@@ -263,13 +225,112 @@ function findGeoOwner(theme: ThemeDefinition, collection: string) {
   return undefined;
 }
 
-/** 詳情卡的標題（面板 head 用）。沒有對應內容時回 undefined。 */
-export function detailTitle(selection: Selection): string | undefined {
+/**
+ * 地理要素的詳情卡。
+ *
+ * ⚠️ **它必須是一個獨立的元件，不能寫回 `DetailCard` 的 if 分支裡。** 說明改成
+ * 延遲載入之後這裡要用 hook（`useGeoFeature`），而 `DetailCard` 對每一種
+ * `detail.type` 都是提早 return 的——在那種位置呼叫 hook 會違反 hooks 規則。
+ */
+function GeoDetailCard({
+  spec,
+  featureId,
+  theme,
+  instances,
+}: {
+  spec: Extract<DetailSpec, { type: "geo" }>;
+  featureId: string;
+  theme: ThemeDefinition;
+  instances: GeoLayerInstance[];
+}) {
+  const { feature, loading } = useGeoFeature(spec.collection, featureId);
+  // 找出這個圖徵屬於哪個圖層，好在沒有內容檔時退回顯示圖層自己的說明。
+  // **附屬圖層也要找**（縣市界 → 縣市政府）：它不在 theme.layers 裡，漏掉的話
+  // fallback 會拿不到名稱與說明，卡片標題會退化成 collection 這個內部字串。
+  const owner = findGeoOwner(theme, spec.collection);
+  /**
+   * ⚠️ **不能只找 `instanceId === owner.id`。** 子項目圖層的 instance id 是
+   * `<圖層 id>-<子項目 id>`（主要作物分布是 tw-crops-fruit／-vegetable／-tea），
+   * 只比對圖層 id 會一個都對不到 → props 是 undefined → 卡片退化成「只有圖層
+   * 標題與說明」，看起來像 fallback 正常運作，其實是查錯了地方。
+   * 改成掃過所有指向同一個 collection 的 instance。
+   */
+  const props = instances
+    .filter((i) => i.detail.type === "geo" && i.detail.collection === spec.collection)
+    .flatMap((i) => i.data?.features ?? [])
+    .find((f) => f.properties?.id === featureId)?.properties;
+  return (
+    <FeatureCard
+      feature={feature}
+      loading={loading}
+      fallback={{
+        name:
+          typeof props?.[spec.fallbackNameProperty ?? "name"] === "string"
+            ? String(props[spec.fallbackNameProperty ?? "name"])
+            : undefined,
+        meta: typeof props?.meta === "string" ? props.meta : undefined,
+        // 原始外文名（世界主要河流與全球活火山都靠它才顯示得出原名）
+        en: typeof props?.en === "string" ? props.en : undefined,
+        /**
+         * ⚠️ 兩個屬性名都要讀。`detail` 是這個欄位本來的名字（`FeatureCard`
+         * 的 prop 就叫這個），臺灣河川用它放公告的管理等級；`top` 是主要作物
+         * 分布先前用的名字（那個鄉鎮種最多的前三種）。
+         *
+         * 之所以不統一成一個：`tw-crops-*.geojson` 是產物，改個 key 就得重跑
+         * `build:geodata` 去打農情調查的 API 逐縣市重抓一次——為了一個屬性名
+         * 付那個代價不值得。**新圖層一律用 `detail`。**
+         */
+        detail:
+          typeof props?.detail === "string"
+            ? props.detail
+            : typeof props?.top === "string"
+              ? props.top
+              : undefined,
+        layerLabel: owner?.label ?? spec.collection,
+        /**
+         * ⚠️ `hideLayerDescription` 的圖層（活動斷層）不印這一段：37 條斷層的卡片
+         * 上那段字逐字相同，而且就是圖層抽屜那一列的說明。圖層層級的話全部留在
+         * 抽屜（說明在核取方塊下面、資料限制在 ⚠️ 小視窗），卡片只講這一條斷層
+         * 自己的事。見 registry/types.ts 的說明。
+         */
+        description: spec.hideLayerDescription || !owner ? "" : fullDescription(owner),
+        sources: owner?.sources ?? [],
+        schematic: owner?.schematic,
+      }}
+    />
+  );
+}
+
+/**
+ * 詳情卡的標題（面板 head 用）。沒有對應內容時回 undefined。
+ *
+ * ⚠️ **它是 hook 不是純函式**，而且必須在 `ThemeMapPage` 的**本體**呼叫、不能寫進
+ * `{detailOpen && …}` 那段 JSX 裡（條件式呼叫 hook 會壞）。
+ *
+ * 之所以要是 hook：地理要素的說明改成延遲載入之後（見 `content/index.ts`），第一次
+ * 開某個 collection 的卡片時分片可能還沒到，同步查一定是 undefined——而純函式版本
+ * **不會在分片到了之後重新算**，標題就會一直空著。這裡等分片落地再逼一次重繪。
+ */
+export function useDetailTitle(selection: Selection): string | undefined {
+  const collection = selection?.detail.type === "geo" ? selection.detail.collection : null;
+  const [, bump] = useState(0);
+
+  useEffect(() => {
+    if (!collection) return;
+    let cancelled = false;
+    void loadGeoCollection(collection).then(() => {
+      if (!cancelled) bump((v) => v + 1);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [collection]);
+
   if (!selection) return undefined;
   const { detail, featureId } = selection;
   if (detail.type === "place") return getPlace(featureId)?.name.zh;
   if (detail.type === "indigenous") return getIndigenousGroup(featureId)?.name.zh;
   if (detail.type === "species") return getSpecies(featureId)?.name.zh;
-  if (detail.type === "geo") return getGeoFeature(detail.collection, featureId)?.name.zh;
+  if (detail.type === "geo") return getLoadedGeoFeature(detail.collection, featureId)?.name.zh;
   return undefined;
 }

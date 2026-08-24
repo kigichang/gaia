@@ -93,6 +93,81 @@ export async function fetchSteps(fetchWithRetry) {
 }
 
 /**
+ * 板塊面也只下載一次：`plates`（世界地理）與 `tw-plates`（臺灣地理）吃的是同一份
+ * 檔案。比照上面的 `fetchSteps()`——⚠️ 兩個資料集因此都要走 `load:` 而不是 `url:`，
+ * 用 `url:` 的那一個不會經過這個快取。
+ */
+let platesCache = null;
+export async function fetchPlatePolygons(fetchWithRetry) {
+  platesCache ??= fetchWithRetry(PLATES_URL).then((r) => r.json());
+  return platesCache;
+}
+
+/**
+ * 把一條線裁切到矩形範圍內（Liang–Barsky），回傳**多段**折線。
+ *
+ * 跟 `lib/eez.mjs` 的 `clipRingToBox()`（Sutherland–Hodgman，環）是一對：環裁切完
+ * 仍然是一個閉合的環，線裁切完則會**斷成好幾截**（一條邊界進出裁切框好幾次），
+ * 所以不能共用同一支。同樣是自己寫，理由也相同：只為了一個**矩形**，用不著
+ * 真正的裁剪器。
+ *
+ * ⚠️ 進出框的接點要補在框線上（`t0`／`t1` 的插值點），不補的話線會在畫面邊緣
+ * 前幾度就停住，看起來像資料缺了一塊（洋流切 ±180 那次踩過同一件事）。
+ *
+ * @param line 折線座標
+ * @param box `[西, 南, 東, 北]`
+ * @returns 裁切後的折線陣列（完全在框外時回空陣列）
+ */
+export function clipLineToBox(line, [west, south, east, north]) {
+  const out = [];
+  let current = [];
+  const same = (a, b) => Math.abs(a[0] - b[0]) < 1e-9 && Math.abs(a[1] - b[1]) < 1e-9;
+
+  for (let i = 1; i < line.length; i++) {
+    const a = line[i - 1];
+    const b = line[i];
+    const dx = b[0] - a[0];
+    const dy = b[1] - a[1];
+    const p = [-dx, dx, -dy, dy];
+    const q = [a[0] - west, east - a[0], a[1] - south, north - a[1]];
+    let t0 = 0;
+    let t1 = 1;
+    let visible = true;
+    for (let k = 0; k < 4 && visible; k++) {
+      if (p[k] === 0) {
+        // 平行於這條框線：只要起點在框外，整段都在框外
+        if (q[k] < 0) visible = false;
+        continue;
+      }
+      const r = q[k] / p[k];
+      if (p[k] < 0) {
+        if (r > t1) visible = false;
+        else if (r > t0) t0 = r;
+      } else {
+        if (r < t0) visible = false;
+        else if (r < t1) t1 = r;
+      }
+    }
+    if (!visible) {
+      if (current.length > 1) out.push(current);
+      current = [];
+      continue;
+    }
+    const from = [a[0] + t0 * dx, a[1] + t0 * dy];
+    const to = [a[0] + t1 * dx, a[1] + t1 * dy];
+    if (current.length === 0) current.push(from);
+    else if (!same(current.at(-1), from)) {
+      // 上一段在框內結束、這一段從別的地方進來 → 中間出過框，要斷開
+      if (current.length > 1) out.push(current);
+      current = [from];
+    }
+    current.push(to);
+  }
+  if (current.length > 1) out.push(current);
+  return out;
+}
+
+/**
  * 把 5,824 段 step 串成一條條連續的線。
  *
  * `keyOf(step)` 回傳這一段屬於哪一組（回 `null` 就跳過那一段）。相鄰的 step 幾乎
@@ -220,6 +295,88 @@ export const PLATES = {
   SW: { id: "plate-sw", name: "南桑威奇板塊", category: "微板塊" },
   PM: { id: "plate-pm", name: "巴拿馬板塊", category: "微板塊" },
 };
+
+/**
+ * 上游的 54 筆 → 52 塊板塊：克馬德克與巴爾莫勒爾礁各自被拆成兩個 Polygon，
+ * 一塊板塊在圖上就該是一個圖徵（一張詳情卡、一個標註目標），所以先依代碼合併。
+ *
+ * ⚠️ 太平洋與澳洲上游本來就是 MultiPolygon——那是轉製者在 ±180 手動切開的，
+ * **不要試著把它們接回去**，接了會得到一條橫貫地球的圖徵。
+ *
+ * `plates`（世界）與 `tw-plates`（臺灣）共用這一支，兩層的幾何才不會各自走樣。
+ *
+ * @returns `Map<code, { en, polygons }>`
+ */
+export function groupPlatePolygons(raw) {
+  const byCode = new Map();
+  for (const f of raw.features) {
+    const code = f.properties.Code;
+    const polygons =
+      f.geometry.type === "Polygon" ? [f.geometry.coordinates] : f.geometry.coordinates;
+    const entry = byCode.get(code) ?? { en: f.properties.PlateName, polygons: [] };
+    entry.polygons.push(...polygons);
+    byCode.set(code, entry);
+  }
+  if (byCode.size !== Object.keys(PLATES).length) {
+    throw new Error(
+      `上游有 ${byCode.size} 塊板塊，對照表有 ${Object.keys(PLATES).length} 筆——請先更新 lib/plates.mjs`,
+    );
+  }
+  return byCode;
+}
+
+/**
+ * 臺灣主題那兩層（`tw-plates`／`tw-plate-boundaries`）的收錄範圍。
+ *
+ * 六塊是**實測**落在裁切框（＝`tw-eez` 那個框，東經 108–136、北緯 8–34）裡的
+ * 全部板塊，一塊不多一塊不少——`buildTaiwanPlates()` 會硬檢查這件事，上游改版時
+ * 直接失敗，不要靜默少畫一塊。
+ *
+ * `blurb` 是「這一塊在臺灣周邊佔的是哪裡」，寫進 geojson 的 `meta` 當副標。
+ * ⚠️ **那個字串必須跟世界主題那一層的 `meta` 不同**：搜尋索引的去重 key 是
+ * 「名稱＋meta」（見 CLAUDE.md），兩層的圖徵同名同副標的話，搜「菲律賓海板塊」
+ * 只會剩下一筆，而消失的是哪一筆取決於 `THEMES` 的順序——完全靜默。
+ *
+ * ⚠️ 位置全部用點在多邊形內實測過（香港、上海、廈門在揚子；海南島、華北在歐亞；
+ * 那霸、西表島在沖繩；九州、濟州在阿穆爾；馬尼拉、太平島在巽他）。
+ */
+export const TAIWAN_PLATES = {
+  YA: "臺灣西半部與華南",
+  PS: "臺灣東半部與東部海域",
+  SU: "南海南部與呂宋島",
+  EU: "華北與海南島",
+  ON: "宜蘭外海與琉球群島",
+  AM: "東海北端與九州",
+};
+
+/**
+ * 臺灣周邊那三種邊界各自「實際上是哪幾條」，寫進 geojson 的 `meta`。
+ *
+ * 課本講的是三種**機制**，而學生在臺灣這張圖上看到的是三條有名字的東西
+ * （琉球海溝、馬尼拉海溝、沖繩海槽）——副標把兩者接起來。⚠️ 名字是**編者**
+ * 依 Bird (2003) 那幾段的位置對上去的，不是上游的欄位（那份模型只標機制、
+ * 不標地物名），所以改動裁切框之後要重看一次段落還在不在。
+ */
+export const TAIWAN_BOUNDARIES = {
+  divergent: "沖繩海槽與南海古擴張中心",
+  convergent: "琉球海溝、馬尼拉海溝與臺灣西部麓山帶",
+  transform: "南海與琉球島弧西端的錯動段",
+};
+
+/**
+ * 矩形裁切框的閉合環（給 `geometryAreaKm2()` 當自我檢查用）。
+ *
+ * ⚠️ 只有四個角是不夠的：`ringSteradians()` 是逐邊累加的球面公式，而東西向的
+ * 框線在球面上不是大圓——四個角算出來的是**四個角點連成的球面多邊形**面積，
+ * 跟「等緯度的框」差好幾個百分點。沿著上下兩條邊各補幾個中間點就收斂了。
+ */
+export function boxRing([west, south, east, north], steps = 64) {
+  const ring = [];
+  for (let i = 0; i <= steps; i++) ring.push([west + ((east - west) * i) / steps, south]);
+  for (let i = 0; i <= steps; i++) ring.push([east - ((east - west) * i) / steps, north]);
+  ring.push([west, south]);
+  return ring;
+}
 
 const EARTH_RADIUS_KM = 6371.0088;
 const rad = (deg) => (deg * Math.PI) / 180;

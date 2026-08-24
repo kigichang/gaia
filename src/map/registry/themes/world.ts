@@ -6,6 +6,7 @@ import {
   KOPPEN_COLORS,
   OCEAN_CURRENT_COLORS,
   PLATE_BOUNDARY_COLORS,
+  PLATE_BOUNDARY_DASH,
   WIND_COLOR,
 } from "../../thematicColors.ts";
 
@@ -17,14 +18,6 @@ import {
  * `TRANSPORT_DASH` 的既有做法）。
  */
 const PRESSURE_DASH: [number, number] = [1, 2.5];
-
-/**
- * 板塊邊界的虛線（同樣要有型別註記，理由見上）。
- *
- * 實線段刻意偏長：這一層要讀得出「一條連續的邊界帶」，碎成點就看不出走向了。
- * 為什麼非虛線不可見 `plate-boundaries` 圖層的說明。
- */
-const PLATE_BOUNDARY_DASH: [number, number] = [4, 1.5];
 
 /**
  * 世界地理。純資料——限制見 ../types.ts。
@@ -337,7 +330,15 @@ export const worldTheme: ThemeDefinition = {
         label: { property: "name", size: 12, minzoom: 2 },
       },
       colorRole: "plate",
-      detail: { type: "geo", collection: "plates" },
+      /**
+       * 52 塊板塊各有一份內容檔（`src/content/geo/plates/`，2026-08 補齊）。
+       *
+       * ⚠️ `hideLayerDescription` 因此**今天是 no-op**（有內容檔的圖徵不走 fallback），
+       * 比照 `world-mountains` 與 `tw-rivers`：留著是為了規則一致——上游哪天多出一塊
+       * 板塊而內容檔還沒寫時，卡片會是「名稱＋分類＋面積＋來源」，而不是把這段
+       * 52 張卡逐字相同的圖層說明整片印上去。
+       */
+      detail: { type: "geo", collection: "plates", hideLayerDescription: true },
       // 清單依分類分三組（主要 8／次要 14／微板塊 30），組內依面積由大到小
       browse: { groupBy: "category" },
       maxzoom: 8,
