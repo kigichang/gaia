@@ -410,6 +410,11 @@ id 在 collection 內唯一就夠，而這幾張卡本來就是一組要一起�
 
 ### 板塊與板塊邊界：全站第一個「面帶名字」的圖層
 
+> ⚠️ **臺灣主題也有這兩層**（`tw-plates`／`tw-plate-boundaries`，2026-08 新增）：
+> 同一份 Bird (2003) 模型裁到臺灣周邊，六塊板塊、三種邊界。
+> 那兩層的裁切、色彩衝突（三個顏色在臺灣主題各撞一個既有色）與內容決定
+> **全部寫在 `CLAUDE_TW.md`**，這一節只講世界主題那兩層。
+
 「地體構造」群組底下的 `plates`（52 塊板塊，面）與 `plate-boundaries`（三種邊界，線）
 是同一份資料的兩層，取得邏輯關在 `scripts/lib/plates.mjs`。
 
@@ -1246,6 +1251,9 @@ ID 常數定義在 `src/map/layers/*.ts`，**一律 import 常數，不要寫死
 | `tw-population-points` | circle（半徑＝人口、顏色＝依人口密度分級的 ramp） |
 | `tw-vegetation-belts-elevation` | **color-relief**（不是幾何圖層，見「垂直植被帶」） |
 | `tw-geology-<class>-fill` / `-outline` | fill + line，**六個岩石大類各自一組**（`alluvium`／`terrace`／`sedimentary`／`slate`／`schist`／`igneous`）。⚠️ 顏色是大類、**圖徵是 45 個圖例單位**（點下去才知道是廬山層還是大南澳片岩）；外框是拿來**補相鄰面之間的縫**的，比照生物群系，見 `CLAUDE_TW.md` |
+| `tw-plates-fill` / `-outline` | fill + line（臺灣周邊 6 塊板塊；`fillOpacity: 0`，畫出來的是外框與名字。⚠️ **板塊名不是面的標註**，見下） |
+| `tw-plate-labels-points` / `-label` | circle + symbol（附屬圖層；`radius: 0`，整層只是六個板塊名的錨點——比照世界主題的洲名，理由見 `CLAUDE_TW.md`） |
+| `tw-plate-boundaries-<type>-line` / `-label` | line + symbol，**三種邊界各自一組**（`divergent`／`convergent`／`transform`）。顏色與虛線沿用世界主題那一組；⚠️ **沿線標註在這一層是必要條件**（聚合藍對水系藍 ΔE 2.1），見 `CLAUDE_TW.md` |
 | `tw-faults-line` / `tw-faults-label` | line + symbol（線寬依 `classRank` 分第一類／第二類；標註**依 zoom 換長短名**） |
 | `tw-quakes-points` | circle（半徑依規模，`strokeWidth: 0`） |
 | `tw-quakes-major-points` | circle（同一個 hazard 色但更深、更大、有白框） |
@@ -1287,7 +1295,7 @@ maplibre-contour 把 worker 以 Blob URL 內嵌，**不需要額外部署 worker
 
 | 主題 | 路由 | 內容 |
 |---|---|---|
-| 臺灣地理 | `/theme/taiwan` | 臺灣123（土地與島群、專屬經濟海域、海峽中線、北回歸線）、行政區（縣市、鄉鎮市區）、地形（地形景點、五大山脈、岩石分布）、天然災害（活動斷層、地震、颱風路徑與災損）、水系（118 個列管水系、水庫即時水情、河川流域分區）、人文（原住民族、交通軸線、古蹟、人口與都市體系）、植被生態（特有種、國家公園與保護區、垂直植被帶）、農業物產（主要作物分布） |
+| 臺灣地理 | `/theme/taiwan` | 臺灣123（土地與島群、專屬經濟海域、海峽中線、北回歸線）、行政區（縣市、鄉鎮市區）、**地體構造（板塊、板塊邊界）**、地形（地形景點、五大山脈、岩石分布）、天然災害（活動斷層、地震、颱風路徑與災損）、水系（118 個列管水系、水庫即時水情、河川流域分區）、人文（原住民族、交通軸線、古蹟、人口與都市體系）、植被生態（特有種、國家公園與保護區、垂直植被帶）、農業物產（主要作物分布） |
 | 世界地理 | `/theme/world` | **全球尺度（骨架，排在前面）**：參考線（緯度參考線、國際換日線）、**世界櫥窗**（作者精選、作者精選・範圍；⚠️「世界之最」兩層已下架待重新設計，見上）、氣候與生物群系（森林與沙漠帶、柯本氣候分區、行星風系）、海洋（洋流：18 條暖流／寒流）、地體構造（板塊、板塊邊界、地震帶、火山帶）。**世界地理原有**：城市、國界與大洲（大洲分區）、地形水系（世界主要河流、世界主要山脈）、人文專題 |
 
 兩個主題頁都是**滿版地圖 + 浮動控制**（仿 Google Map），沒有頁首也沒有側欄——版面機制見下面的「全螢幕地圖外框與浮動控制」。
@@ -2007,6 +2015,7 @@ maplibre 的四個角落容器是 map container 內的 `position: absolute; z-in
 | `tw-population.geojson` | 93 KB |
 | `tw-monuments-national.geojson` | 51 KB |
 | `tw-quakes-major.geojson` | 49 KB |
+| `tw-plates.geojson` | 8 KB |
 | `tw-faults.geojson` | 40 KB |
 | `world-mountains.geojson` | 30 KB |
 | `tw-crops-tea.geojson` | 25 KB |
@@ -2272,6 +2281,8 @@ npm run build:geodata -- --force --only=tw-typhoon-centers    # 同一份資料�
 npm run build:geodata -- --force --only=date-line            # 國際換日線（Natural Earth）
 npm run build:geodata -- --force --only=plates               # 52 塊板塊（含球面面積）
 npm run build:geodata -- --force --only=plate-boundaries    # 三種板塊邊界（下載 10 MB 的 step 檔）
+npm run build:geodata -- --force --only=tw-plates            # 臺灣周邊 6 塊板塊（跟 plates 共用同一次下載）
+npm run build:geodata -- --force --only=tw-plate-boundaries # 臺灣周邊三種邊界（跟 plate-boundaries 共用那份 step 檔）
 npm run build:geodata -- --force --only=volcanoes            # 1,214 座全新世活火山（GVP）
 npm run build:geodata -- --force --only=world-continents     # 七大洲（Natural Earth 國界 → 依洲別聯集）
 npm run build:geodata -- --force --only=world-mountains      # 39 條山脈（範圍面 → 中軸線）

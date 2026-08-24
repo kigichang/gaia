@@ -6,6 +6,7 @@ import {
   KOPPEN_COLORS,
   OCEAN_CURRENT_COLORS,
   PLATE_BOUNDARY_COLORS,
+  PLATE_BOUNDARY_DASH,
   WIND_COLOR,
 } from "../../thematicColors.ts";
 
@@ -17,14 +18,6 @@ import {
  * `TRANSPORT_DASH` 的既有做法）。
  */
 const PRESSURE_DASH: [number, number] = [1, 2.5];
-
-/**
- * 板塊邊界的虛線（同樣要有型別註記，理由見上）。
- *
- * 實線段刻意偏長：這一層要讀得出「一條連續的邊界帶」，碎成點就看不出走向了。
- * 為什麼非虛線不可見 `plate-boundaries` 圖層的說明。
- */
-const PLATE_BOUNDARY_DASH: [number, number] = [4, 1.5];
 
 /**
  * 世界地理。純資料——限制見 ../types.ts。

@@ -416,6 +416,33 @@ export const SOURCE_LINKS: Record<string, string> = {
   "Peter Bird (2003) 板塊模型": "https://doi.org/10.1029/2001GC000252",
   "Nordpil 板塊資料集": "https://github.com/fraxen/tectonicplates",
   "維基百科 板塊列表": "https://zh.wikipedia.org/zh-tw/%E6%9D%BF%E5%A1%8A%E5%88%97%E8%A1%A8",
+  /**
+   * 臺灣主題的「板塊」與「板塊邊界」兩層（`src/content/geo/tw-plates/` 與
+   * `tw-plate-boundaries/`）。幾何與分類一律以 Bird (2003) 為準（上面那兩筆），
+   * 這幾條維基百科條目只用來查已有共識的敘述性事實——板塊的中文名、沖繩海槽是
+   * 弧後盆地、南海何時停止擴張這一類。⚠️ 逐條登記，不要只寫泛稱的「維基百科」
+   * （那個標籤不在這份表裡，會渲染成沒有連結的純文字）。
+   */
+  "維基百科 菲律賓海板塊":
+    "https://zh.wikipedia.org/zh-tw/%E8%8F%B2%E5%BE%8B%E8%B3%93%E6%B5%B7%E6%9D%BF%E5%A1%8A",
+  "維基百科 揚子板塊":
+    "https://zh.wikipedia.org/zh-tw/%E6%8F%9A%E5%AD%90%E6%9D%BF%E5%A1%8A",
+  "維基百科 巽他板塊":
+    "https://zh.wikipedia.org/zh-tw/%E5%B7%BD%E4%BB%96%E6%9D%BF%E5%A1%8A",
+  "維基百科 阿穆爾板塊":
+    "https://zh.wikipedia.org/zh-tw/%E9%98%BF%E7%A9%86%E7%88%BE%E6%9D%BF%E5%A1%8A",
+  "維基百科 沖繩板塊":
+    "https://zh.wikipedia.org/zh-tw/%E6%B2%96%E7%B9%A9%E6%9D%BF%E5%A1%8A",
+  "維基百科 沖繩海槽":
+    "https://zh.wikipedia.org/zh-tw/%E6%B2%96%E7%B9%A9%E6%B5%B7%E6%A7%BD",
+  "維基百科 琉球海溝":
+    "https://zh.wikipedia.org/zh-tw/%E7%90%89%E7%90%83%E6%B5%B7%E6%BA%9D",
+  "維基百科 馬尼拉海溝":
+    "https://zh.wikipedia.org/zh-tw/%E9%A6%AC%E5%B0%BC%E6%8B%89%E6%B5%B7%E6%BA%9D",
+  "維基百科 臺灣海峽":
+    "https://zh.wikipedia.org/zh-tw/%E8%87%BA%E7%81%A3%E6%B5%B7%E5%B3%BD",
+  "維基百科 南海":
+    "https://zh.wikipedia.org/zh-tw/%E5%8D%97%E6%B5%B7",
   // 世界主要山脈：39 條的中文名與成因說明的查閱來源（次級來源，見 CLAUDE.md「內容撰寫規範」）
   "維基百科 山脈列表": "https://zh.wikipedia.org/zh-tw/%E5%B1%B1%E8%84%88%E5%88%97%E8%A1%A8",
   /**

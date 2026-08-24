@@ -112,11 +112,17 @@ import {
   STEPS_URL as PLATE_STEPS_URL,
   STEP_CLASS_TO_TYPE,
   MID_OCEAN_RIDGE_CLASS,
+  TAIWAN_BOUNDARIES,
+  TAIWAN_PLATES,
   assertNoAntimeridianCrossing,
+  boxRing,
+  clipLineToBox,
+  fetchPlatePolygons,
   fetchSteps as fetchPlateSteps,
   formatArea as formatPlateArea,
   geometryAreaKm2,
   geometryLengthKm,
+  groupPlatePolygons,
   mergeStepRuns,
 } from "./lib/plates.mjs";
 import {
@@ -1236,7 +1242,13 @@ const SOURCES = [
   {
     id: "plates",
     label: "板塊",
-    url: PLATES_URL,
+    /**
+     * ⚠️ 用 `load` 而不是 `url`，理由同 `plate-boundaries`：**跟 `tw-plates`
+     * 共用同一次下載**（`lib/plates.mjs` 有 module-level 快取）。改回 `url:`
+     * 的話同一份檔案會在同一個 process 裡被抓兩次。
+     */
+    load: (fetch) => fetchPlatePolygons(fetch),
+    sourceUrl: PLATES_URL,
     license: PLATE_LICENSE,
     sourceLabel: PLATE_SOURCE_LABELS[0],
     /**
@@ -1247,28 +1259,8 @@ const SOURCES = [
     tolerance: 0.02,
     digits: 3,
     transform: (raw) => {
-      /**
-       * 上游是 54 筆而不是 52 筆：克馬德克與巴爾莫勒爾礁各自被拆成兩個 Polygon。
-       * 一塊板塊在圖上就該是一個圖徵（一張詳情卡、一個標註目標），所以先依代碼
-       * 合併成 MultiPolygon 再往下走。
-       *
-       * ⚠️ 太平洋與澳洲上游本來就是 MultiPolygon——那是轉製者在 ±180 手動切開的，
-       * **不要試著把它們接回去**，接了會得到一條橫貫地球的圖徵。
-       */
-      const byCode = new Map();
-      for (const f of raw.features) {
-        const code = f.properties.Code;
-        const polygons =
-          f.geometry.type === "Polygon" ? [f.geometry.coordinates] : f.geometry.coordinates;
-        const entry = byCode.get(code) ?? { en: f.properties.PlateName, polygons: [] };
-        entry.polygons.push(...polygons);
-        byCode.set(code, entry);
-      }
-      if (byCode.size !== Object.keys(PLATES).length) {
-        throw new Error(
-          `上游有 ${byCode.size} 塊板塊，對照表有 ${Object.keys(PLATES).length} 筆——請先更新 lib/plates.mjs`,
-        );
-      }
+      // 上游 54 筆 → 52 塊（含 52 筆的硬檢查），與 `tw-plates` 共用同一支
+      const byCode = groupPlatePolygons(raw);
 
       const rows = [];
       let totalKm2 = 0;
@@ -1371,6 +1363,212 @@ const SOURCES = [
            * 而且「只顯示這一筆」下的 filter 會一筆都比對不到、整層消失。
            */
           properties: { id: t.id, name: t.name, segments: lines.length },
+        };
+      });
+    },
+  },
+  /**
+   * ## 臺灣主題的兩層：同一份 Bird (2003) 模型，裁到臺灣周邊
+   *
+   * 世界主題那兩層（`plates`／`plate-boundaries`）畫的是全球 52 塊板塊與三種邊界，
+   * 直接掛到臺灣主題上是**不行**的，三件事都會壞掉：
+   *
+   * 1. 可點清單會列出 52 塊板塊，其中 46 塊跟臺灣無關；
+   * 2. 點「太平洋板塊」會 `fitBounds` 到半個地球——而這個主題的建議底圖 NLSC
+   *    只有臺灣範圍，拉遠之後畫面上是一片沒有圖磚的空白（`tw-eez` 那次的同一個坑）；
+   * 3. 全球版為了在 zoom 1–3 看而簡化到 0.02°（≈2.2 公里），而這個主題常用的是
+   *    zoom 7–10。
+   *
+   * 所以裁切成兩個獨立的資料集。⚠️ **裁切框刻意跟 `tw-eez` 用同一個**
+   * （`EEZ_CLIP_BOX`）：拉遠時看到的那幾條筆直的邊是裁切線，兩層共用同一個框，
+   * 邊就會**重合成一條**而不是兩組位置不同的假界線。
+   */
+  {
+    id: "tw-plates",
+    label: "臺灣周邊板塊",
+    /** ⚠️ `load` 而不是 `url`：跟世界主題的 `plates` 共用同一次下載，見 lib/plates.mjs */
+    load: (fetch) => fetchPlatePolygons(fetch),
+    sourceUrl: PLATES_URL,
+    license: PLATE_LICENSE,
+    sourceLabel: PLATE_SOURCE_LABELS[0],
+    /**
+     * ⚠️ **要跟 `tw-plate-boundaries` 用同一個容差**（理由同世界主題那兩層：
+     * 不一致的話兩層一起打開時，板塊外框與彩色的邊界線會被各自簡化到差幾個像素，
+     * 沿線露出一圈暖褐色毛邊）。
+     *
+     * 0.0005°（≈55 公尺）而不是世界版的 0.02：這個主題會放大到 zoom 10，而
+     * 0.02° 在那個尺度是 30 個像素。代價幾乎是零——實測邊界從 9,980 點降到
+     * 253 點就已經進入高原（0.02 也只再省到 156 點），兩層加起來仍然只有十幾 KB。
+     */
+    tolerance: 0.0005,
+    digits: 4,
+    transform: (raw) => {
+      // 上游 54 筆 → 52 塊（含 52 筆的硬檢查），與世界主題那一層共用同一支
+      const byCode = groupPlatePolygons(raw);
+
+      const rows = [];
+      let clippedKm2 = 0;
+      for (const [code, { en, polygons }] of byCode) {
+        const clipped = [];
+        for (const rings of polygons) {
+          // 外環整個在框外 → 這一塊不用留（洞自然也不用）
+          const outer = clipRingToBox(rings[0], EEZ_CLIP_BOX);
+          if (!outer) continue;
+          const holes = rings
+            .slice(1)
+            .map((ring) => clipRingToBox(ring, EEZ_CLIP_BOX))
+            .filter(Boolean);
+          clipped.push([outer, ...holes]);
+        }
+        if (clipped.length === 0) continue;
+
+        const geometry =
+          clipped.length === 1
+            ? { type: "Polygon", coordinates: clipped[0] }
+            : { type: "MultiPolygon", coordinates: clipped };
+        const inBoxKm2 = geometryAreaKm2(geometry);
+        // 沿著框邊擦過去的零碎角：留著只會在清單上多一列點不到的東西
+        if (inBoxKm2 < 1_000) continue;
+        clippedKm2 += inBoxKm2;
+
+        const blurb = TAIWAN_PLATES[code];
+        if (!blurb) {
+          throw new Error(
+            `板塊「${PLATES[code].name}」落在臺灣周邊的框裡，但 TAIWAN_PLATES 沒有它——請先決定它在臺灣周邊佔的是哪裡`,
+          );
+        }
+        /**
+         * ⚠️ 面積是**整塊板塊**的面積（在裁切之前算），不是畫出來那一塊。
+         * 「菲律賓海板塊有多大」是這張卡要回答的問題，框內那一塊的平方公里數
+         * 只是裁切框的產物（比照 `tw-eez` 的卡片寫完整海域面積）。
+         */
+        const fullKm2 = geometryAreaKm2(
+          polygons.length === 1
+            ? { type: "Polygon", coordinates: polygons[0] }
+            : { type: "MultiPolygon", coordinates: polygons },
+        );
+        const { name, category } = PLATES[code];
+        rows.push({
+          type: "Feature",
+          geometry,
+          properties: {
+            /** ⚠️ 跟世界主題那一層**刻意不共用 id**（比照 tw-rivers vs tw-basins） */
+            id: `tw-plate-${code.toLowerCase()}`,
+            name,
+            /** 搜尋 haystack 會收 `en`，讓學生打 Philippine 也找得到 */
+            en,
+            category,
+            area_km2: Math.round(fullKm2),
+            /**
+             * ⚠️ **這個字串必須跟世界主題那一層的 `meta` 不同**：搜尋索引的去重
+             * key 是「名稱＋meta」，同名同副標的話搜「菲律賓海板塊」只會剩一筆，
+             * 而消失的是哪一筆取決於 `THEMES` 的順序——完全靜默。
+             */
+            meta: `${blurb}・${category}・${formatPlateArea(fullKm2)}`,
+          },
+          _inBox: inBoxKm2,
+        });
+      }
+
+      /**
+       * ⚠️ 這是唯一能抓到「裁切或投影弄錯」的檢查，比照世界版「52 塊的面積總和
+       * ＝地球表面積」：框內的板塊**鋪滿整個框**，所以裁切後的面積總和必須等於
+       * 那個矩形的球面面積。實測兩邊都是 8.331 百萬 km²。
+       */
+      const boxKm2 = geometryAreaKm2({ type: "Polygon", coordinates: [boxRing(EEZ_CLIP_BOX)] });
+      if (Math.abs(clippedKm2 / boxKm2 - 1) > 0.01) {
+        throw new Error(
+          `裁切後的板塊面積總和 ${(clippedKm2 / 1e6).toFixed(3)} 百萬 km²，` +
+            `與裁切框本身的 ${(boxKm2 / 1e6).toFixed(3)} 差太多——裁切或環的內外判斷可能錯了`,
+        );
+      }
+
+      /**
+       * ⚠️ 少一塊也要失敗：`TAIWAN_PLATES` 那六塊是實測落在框裡的**全部**板塊，
+       * 上游改版時要直接停下來，不要靜默少畫一塊（比照活動斷層的筆數檢查——
+       * 但那裡的教訓是「硬檢查會鎖住錯誤的初始值」，所以這六塊是逐一用點在多邊形內
+       * 驗過的，不是拿第一次跑出來的結果回填）。
+       */
+      const missing = Object.keys(TAIWAN_PLATES).filter(
+        (code) => !rows.some((r) => r.properties.id === `tw-plate-${code.toLowerCase()}`),
+      );
+      if (missing.length) {
+        throw new Error(`TAIWAN_PLATES 列了 ${missing.join("、")}，但裁切後找不到它們`);
+      }
+      console.log(
+        `\n  · 臺灣周邊 ${rows.length} 塊板塊，裁切後面積總和 ${(clippedKm2 / 1e6).toFixed(3)} 百萬 km²（裁切框 ${(boxKm2 / 1e6).toFixed(3)}）`,
+      );
+
+      /**
+       * feature 順序＝`browse.groupBy: "category"` 的切分依據（依序切、不排序），
+       * 所以同一類必須連續。⚠️ 類別之內依**框內**面積由大到小，不是整塊板塊的面積：
+       * 這一層問的是「臺灣周邊這張圖上，哪一塊佔得最多」，照整塊排的話巽他板塊
+       * （892 萬 km²，但主要在南洋）會排到菲律賓海板塊前面。
+       */
+      return rows
+        .sort(
+          (a, b) =>
+            PLATE_CATEGORY_ORDER.indexOf(a.properties.category) -
+              PLATE_CATEGORY_ORDER.indexOf(b.properties.category) || b._inBox - a._inBox,
+        )
+        .map(({ _inBox, ...feature }) => feature);
+    },
+  },
+  {
+    id: "tw-plate-boundaries",
+    label: "臺灣周邊板塊邊界",
+    /** ⚠️ `load`：跟 `plate-boundaries` 與中洋脊共用同一份 10 MB 的 step 檔 */
+    load: (fetch) => fetchPlateSteps(fetch),
+    sourceUrl: PLATE_STEPS_URL,
+    license: PLATE_LICENSE,
+    sourceLabel: PLATE_SOURCE_LABELS[0],
+    /** ⚠️ 必須跟 `tw-plates` 一致，見上 */
+    tolerance: 0.0005,
+    digits: 4,
+    /**
+     * 一樣是**剛好三筆**（張裂／聚合／錯動），每一筆是一個 MultiLineString，
+     * 理由與世界版相同：`featureIds` 是寫在 `themes/taiwan.ts` 裡的 id 清單，
+     * 而逐段點選沒有教學意義（點的是「哪一種邊界」不是「哪一小段」）。
+     */
+    transform: (raw) => {
+      const runs = mergeStepRuns(raw, (step) => {
+        const cls = step.properties.STEPCLASS;
+        const type = STEP_CLASS_TO_TYPE[cls];
+        if (!type) throw new Error(`未知的 STEPCLASS「${cls}」，請先決定它屬於哪一種邊界`);
+        return type;
+      });
+
+      return PLATE_BOUNDARY_TYPES.map((t) => {
+        /**
+         * ⚠️ 先串接（`mergeStepRuns`）**再**裁切，順序不能反：先裁的話，被框邊
+         * 切斷的兩截會落在不同的 run 裡，串接就接不回去了。
+         */
+        const lines = (runs.get(t.id) ?? []).flatMap((line) =>
+          clipLineToBox(line, EEZ_CLIP_BOX),
+        );
+        if (!lines.length) {
+          throw new Error(`臺灣周邊的${t.name}一段都沒有，裁切框或上游的 STEPCLASS 可能變了`);
+        }
+        assertNoAntimeridianCrossing(lines, t.name);
+        // ⚠️ 點數是**簡化之前**的（build() 在 transform 之後才簡化），日誌只當量級參考
+        console.log(
+          `\n  · ${t.name}：框內 ${lines.length} 段（簡化前 ${lines.reduce((n, l) => n + l.length, 0)} 點）`,
+        );
+        return {
+          type: "Feature",
+          geometry: { type: "MultiLineString", coordinates: lines },
+          /**
+           * ⚠️ id 跟世界版一樣是不帶前綴的三個字串——它同時是註冊表的 item id、
+           * `featureIds`、以及 `src/content/geo/tw-plate-boundaries/<id>.json` 的
+           * 檔名，三者一致「點子項目名稱」與「點地圖上的線」才會開出同一張卡。
+           * 內容 collection 不同，所以跟世界主題那三份內容檔不會互相蓋到。
+           */
+          properties: {
+            id: t.id,
+            name: t.name,
+            meta: TAIWAN_BOUNDARIES[t.id],
+            segments: lines.length,
+          },
         };
       });
     },
