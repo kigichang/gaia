@@ -1470,6 +1470,17 @@ input {
   color: var(--text-secondary);
 }
 
+/*
+ * 說明分片還在抓（見 content/index.ts）。刻意跟 .feature-fallback 同一個量級：
+ * 這一行等一下會被 facts 取代，版面不該因此跳動。
+ */
+.feature-loading {
+  margin: 0 0 8px;
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--text-muted);
+}
+
 .feature-schematic {
   margin: 0 0 8px;
   padding: 6px 8px;

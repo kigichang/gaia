@@ -79,20 +79,65 @@ export function getSpecies(id: string): Species | undefined {
  *
  * 幾何在 public/data/geo 底下，這裡只有文字說明。**不是每個圖徵都需要內容檔**——
  * 查不到就由 FeatureCard 退回顯示 geojson 的 name 與圖層自己的說明。
+ *
+ * ## ⚠️ 這一組**不是** `import.meta.glob`，是延遲載入的分片
+ *
+ * 地點／原住民族／物種那三組加起來只有 51 份，而且**搜尋索引要同步讀得到**
+ * （`searchIndex.ts` 的別名就是從那三組來的），所以它們仍然 eager。
+ *
+ * 地理要素相反：500 多份、原始檔 680 KB，而搜尋索引**一個字都沒用到**
+ * （`searchIndex.ts` 只 import place／indigenous／species 三支）。原本 eager 的
+ * 後果是主 chunk 的 gzip 多背一百多 KB，**每個進站的人都要付**——即使他只打開
+ * 一個圖層、只點一張卡。所以改成由 `scripts/build-geo-content.mjs` 按 collection
+ * 打包到 `public/data/geo-content/<collection>.json`，點開卡片才抓那一份
+ * （比照古蹟歷史沿革的縣市分片與搜尋索引的 lazy 化）。
+ *
+ * ⚠️ **內容仍然寫在 `src/content/geo/`**，分片是產物、禁止手改；
+ * `validate-content.mjs` 會逐 byte 比對，忘了跑 `npm run build:geo-content`
+ * 就讓建置失敗。
  */
-const geoFeatureModules = import.meta.glob<{ default: GeoFeature }>("./geo/*/*.json", {
-  eager: true,
-});
+type GeoShard = Record<string, GeoFeature>;
 
-const geoFeatureByKey = new Map(
-  Object.values(geoFeatureModules).map((m) => [
-    `${m.default.collection}/${m.default.id}`,
-    m.default,
-  ]),
-);
+/** collection → 分片。存 Promise 讓並發的呼叫共用同一次請求（比照 MonumentCard）。 */
+const geoShardPromises = new Map<string, Promise<GeoShard | null>>();
+/** 已經解析完成的分片。`getLoadedGeoFeature()` 只看這一份，所以它是同步的。 */
+const geoShardsLoaded = new Map<string, GeoShard | null>();
 
-export function getGeoFeature(collection: string, id: string): GeoFeature | undefined {
-  return geoFeatureByKey.get(`${collection}/${id}`);
+export function loadGeoCollection(collection: string): Promise<GeoShard | null> {
+  let promise = geoShardPromises.get(collection);
+  if (!promise) {
+    promise = fetch(`${import.meta.env.BASE_URL}data/geo-content/${collection}.json`)
+      .then((res) => (res.ok ? (res.json() as Promise<GeoShard>) : null))
+      .catch(() => null)
+      .then((shard) => {
+        geoShardsLoaded.set(collection, shard);
+        return shard;
+      });
+    geoShardPromises.set(collection, promise);
+  }
+  return promise;
+}
+
+/**
+ * 先把某個 collection 的說明抓起來放著。
+ *
+ * 呼叫時機是**圖層被勾選**而不是卡片被點開：那時候本來就在抓那一層的 geojson，
+ * 順手多抓幾十 KB 幾乎感覺不到；等使用者真的點下去，卡片就不必先閃一段
+ * 「說明載入中…」。沒有勾那一層的人一個 byte 都不會付，這正是分片的重點。
+ */
+export function prefetchGeoCollection(collection: string): void {
+  void loadGeoCollection(collection);
+}
+
+/**
+ * 同步取用**已經載入**的說明。
+ *
+ * ⚠️ 分片還沒到就回 `undefined`，跟「這個圖徵沒有內容檔」長得一模一樣。所以要
+ * 渲染卡片請用 `useGeoFeature()`（它會等），這一支只給「還沒到就先不顯示也無所謂」
+ * 的地方用——目前只有詳情面板的標題列。
+ */
+export function getLoadedGeoFeature(collection: string, id: string): GeoFeature | undefined {
+  return geoShardsLoaded.get(collection)?.[id];
 }
 
 /**

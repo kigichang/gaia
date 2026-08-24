@@ -475,11 +475,13 @@ id 在 collection 內唯一就夠，而這幾張卡本來就是一組要一起�
 ⚠️ **菲律賓海、揚子、巽他、阿穆爾、沖繩五塊的來源標籤與臺灣主題共用**（早就登記在
 `sourceLinks.ts` 的臺灣那一段），所以世界主題這一段刻意不重複登記那五筆。
 
-⚠️ **代價是主 bundle 變大**：`src/content/index.ts` 對 `./geo/*/*.json` 是
-`eager: true`，所以這 52 份（原始檔 208 KB）會被打包進 `index-*.js`——實測
-gzip 從 **346.5 KB 變成 375.2 KB（＋28.7 KB）**，每一個進站的人都要付。這是知道並
-接受的取捨（既有的 484 份 geo 內容檔本來就走同一條路）；真的要省，正確的做法是比照
-古蹟歷史沿革改成 `public/data/` 的延遲載入分片，而不是把內容刪掉。
+⚠️ **這 52 份一度讓主 bundle 多背 gzip 28.7 KB**（`content/index.ts` 當時對
+`./geo/*/*.json` 是 `eager: true`）。**現在不會了**——地理要素說明整組改成
+`public/data/geo-content/` 的延遲載入分片，主 chunk 反而比補這 52 張卡之前還小了
+一半（375.2 → 165.2 KB）。做法與踩過的坑見上面「地理要素說明為什麼要延遲載入」。
+⚠️ 連帶的規矩：**改完 `src/content/geo/plates/` 底下任何一份就要跑
+`npm run build:geo-content`**，忘了跑的話卡片顯示的是上一版的文字（`npm run validate`
+會擋）。
 
 #### 三種邊界各有一張說明卡，而三個 id 必須是同一個字串
 
@@ -1220,6 +1222,69 @@ stops 物件），JSON 化之後一樣比對得到 `name`。實測它的 28 個 
 全部搬到 **`CLAUDE_TW.md`** 了（上面那張端點總表仍然是完整的）。
 **要動臺灣主題的圖層就先讀那一份。**
 
+### 地理要素說明為什麼要延遲載入
+
+`src/content/geo/<collection>/<id>.json` 是**單一事實來源**（zod 驗證、git 追蹤、
+人手寫的），但**執行期讀的不是它**——`scripts/build-geo-content.mjs` 把每個
+collection 打包成一份 `public/data/geo-content/<collection>.json`（key 是圖徵 id），
+詳情卡開的時候才抓那一份。
+
+#### 為什麼不能繼續用 `import.meta.glob({ eager: true })`
+
+原本 `content/index.ts` 對 `./geo/*/*.json` 是 eager 的，所以 536 份說明**全部**打包
+進主 chunk。實測那一段是 gzip **210 KB**——主 chunk 從 375.2 KB 掉到 165.2 KB，
+少了 **56%**。那是每一個進站的人都要付的，即使他只打開一個圖層、只點一張卡；一個班
+30 個學生同時開站時，這正是本站一路在避免的成本（比照搜尋索引的 lazy 化與古蹟歷史
+沿革的縣市分片）。
+
+⚠️ **地點／原住民族／物種那三組刻意維持 eager，不要順手一起改**：它們合計只有 51 份，
+而且 `searchIndex.ts` 要**同步**讀得到別名。地理要素相反——`searchIndex.ts` 一個字
+都沒用到（它只 import 那三支），所以改成非同步不影響搜尋。
+
+#### 分片單位是 collection，不是逐筆
+
+逐筆會變成 536 個請求；而一張卡打開之後，同一層的其他圖徵幾乎一定會被點到（抽屜的
+可點清單就擺在旁邊）。判斷同古蹟按縣市切成 21 份。最大的一份是 `tw-rivers`
+（147 條、96 KB），仍遠低於本站的單檔預算（分片的硬上限設在 512 KB）。
+
+#### ⚠️ 沒有任何內容檔的 collection 也要寫一份空分片
+
+有五個 collection 是**宣告了但刻意一份內容檔都沒有**的（`volcanoes` 1,214 座、
+`world-rivers` 118 條、`koppen-zones` 30 個亞型、`tw-geology` 45 個圖例單位、
+`world-mountain-peaks` 39 座），一律走 `FeatureCard` 的 fallback。改成延遲載入之後，
+那些卡片每開一次就會去抓一份不存在的分片 → **console 一行 404**，而且會先閃一下
+「說明載入中…」才退回 fallback。所以 `lib/geo-content.mjs` 會**讀註冊表**補上 `{}`：
+兩個 byte 換掉一個 404 與一次閃動。三個位置都要看——`layer.detail`、`items.detail`
+（岩石分布的圖例單位、古蹟的級別）與 `attach.detail`（世界主要山脈的最高峰）。
+
+⚠️ 反過來（有內容目錄、沒有圖層宣告）**不補也不刪**：`world-superlatives` 就是那樣
+（兩層下架待重新設計，內容檔刻意留著），照樣產生分片，只是沒人會抓。
+
+#### 三個實作細節不要拿掉
+
+- **勾選圖層時就 prefetch**（`ThemeMapPage` 的 `prefetchGeoCollection`）。最自然的抓取
+  時機是「點開卡片那一刻」，但那會讓每個 collection 的第一張卡先閃一段「說明載入中…」。
+  勾圖層的當下本來就在抓那一層的 geojson（幾十到幾百 KB），順手多抓幾十 KB 感覺不到，
+  而**沒有勾那一層的人一個 byte 都不會付**——分片要省的正是那個。實測 localhost 上
+  「說明載入中…」根本看不到，要人工把 fetch 延遲幾秒才逼得出來。
+- **載入中的卡片只畫 geojson 那邊就有的東西**（名稱、原名、`meta`）加一行
+  「說明載入中…」，**不畫圖層說明、不畫來源、不畫示意警語**。⚠️ 三個都不是小事：
+  圖層說明會先鋪一整段再整個換掉；`sources` 在內容檔與圖層上是兩組不同的字；而示意
+  警語遇到 `attach.schematic: false`（世界主要山脈的最高峰）會「先出現再消失」，那等於
+  對讀者說了一句幾百毫秒的假話。
+- **`useDetailTitle` 是 hook 不是純函式**。面板標題原本同步查得到；現在分片還沒到就是
+  undefined，而純函式版本**不會在分片落地後重算**，標題會一直空著（實測過）。所以它
+  等 Promise 落地再逼一次重繪，並且必須在 `ThemeMapPage` 的**本體**呼叫——寫進
+  `{detailOpen && …}` 那段 JSX 裡是條件式呼叫 hook，會壞。
+
+#### ⚠️ 忘了重新產生分片是完全靜默的
+
+詳情卡讀的是分片、不是 `src/content/geo/`，所以「改了內容卻沒跑
+`npm run build:geo-content`」的症狀是**卡片顯示上一版的文字**——沒有錯誤訊息、
+`npm run build` 也照樣成功。`validate-content.mjs` 因此**逐 byte 比對**兩邊（產生器與
+驗證器共用 `lib/geo-content.mjs` 的同一支函式，所以不會出現「格式不同但內容相同」的
+假警報），不同步就讓建置失敗。**那條檢查不要拿掉。**
+
 ## 硬性禁止事項
 
 1. **不得引入任何需要 API key、token 或付費金鑰的服務。** MapTiler、Mapbox、Google Maps 一律不用。純靜態站沒有地方藏金鑰。
@@ -1235,7 +1300,8 @@ stops 物件），JSON 化之後一樣比對得到 `name`。實測它的 28 個 
 11. **不得在執行期呼叫水利署的 API。** 那個端點沒有 CORS 標頭，瀏覽器一定抓不到；水庫資料一律走 build-time 產製。
 12. **不得手動編輯 `public/data/reservoirs-live.json` 與 `public/data/geo/tw-reservoirs.geojson`。** 由 `npm run build:reservoirs` 與 `npm run build:geodata` 產生。
 13. **不得手動編輯 `public/data/monuments/*.json`。** 古蹟的歷史沿革分片，由 `npm run build:geodata` 產生（跟著三個 `tw-monuments-*` 資料集一起寫出）。
-14. **不得憑感覺挑主題圖層的顏色。** 改動或新增 `src/map/thematicColors.ts` 的顏色前，必須重新用 dataviz skill 的 `scripts/validate_palette.js`（`--pairs all`，因為主題圖層是可任意複選的核取方塊，不能只驗證清單裡「相鄰」的顏色）驗證明暗兩模式，理由與已驗證過的組合見該檔案的註解。序位型的色階（水庫蓄水率、古蹟級別）改用 `--ordinal`。
+14. **不得手動編輯 `public/data/geo-content/*.json`。** 地理要素說明的分片，由 `npm run build:geo-content` 從 `src/content/geo/` 產生。**內容要改 `src/content/geo/` 底下那一份**；`npm run validate` 會逐 byte 比對，不同步就讓建置失敗。
+15. **不得憑感覺挑主題圖層的顏色。** 改動或新增 `src/map/thematicColors.ts` 的顏色前，必須重新用 dataviz skill 的 `scripts/validate_palette.js`（`--pairs all`，因為主題圖層是可任意複選的核取方塊，不能只驗證清單裡「相鄰」的顏色）驗證明暗兩模式，理由與已驗證過的組合見該檔案的註解。序位型的色階（水庫蓄水率、古蹟級別）改用 `--ordinal`。
 
 ---
 
@@ -2298,6 +2364,9 @@ npm run build:climate -- --force   # 全部重抓
 npm run build:species   # 產生特有種觀測點 geojson（已存在會跳過）
 npm run build:species -- --force   # 全部重抓
 npm run build:reservoirs # 產生水庫即時水情（每次都重抓，CI 也會跑，見「部署」）
+npm run build:geo-content # 把 src/content/geo/ 打包成 public/data/geo-content/ 的分片
+                        #   ⚠️ 純本地轉換、不打任何 API，改了內容檔就重跑一次（成本是零）。
+                        #   忘了跑的話 `npm run validate` 會擋下來
 npm run build:geodata   # 產生行政區/河流/地震/水庫 geojson（已存在會跳過）
 npm run build:geodata -- --force --only=quakes   # 只重抓一個資料集
 npm run build:geodata -- --force --only=tw-protected-areas   # 國家公園與保護區（約 2 分鐘）
@@ -2580,9 +2649,10 @@ m.isSourceLoaded('contour-source')
 
     ⚠️ **`src/content/places/` 新增一筆地點，就會同時改動三個地方**：地形景點圖層、`/compare` 的兩個下拉選單、主題頁搜尋索引。所以新增後 `npm run build:climate` 是必須的——`/compare` 選到一個沒有氣候 JSON 的地點會得到空圖表，而 `npm run validate` **不會**擋（climate 驗證只檢查「有 JSON 的必須對得到地點」，反向不檢查）。
 
-> **第 15–27 項與第 41 項是臺灣主題各圖層的驗證，搬到 `CLAUDE_TW.md` 了**（水庫、
+> **第 15–27 項與第 41–42 項是臺灣主題各圖層的驗證，搬到 `CLAUDE_TW.md` 了**（水庫、
 > 保護區、交通軸線、河川、流域、古蹟、鄉鎮界、作物、人口、三層共用卡、植被帶、
-> 斷層與地震、颱風、岩石分布）。編號沒有重排，所以下面直接從第 28 項接下去。
+> 斷層與地震、颱風、岩石分布、板塊）。編號沒有重排，所以下面直接從第 28 項接下去
+> （第 43 項在最後面）。
 
 28. **世界底圖的地名語系**（`/theme/world`，底圖維持「世界地圖」，見上）：
     ```js
@@ -3106,6 +3176,41 @@ m.isSourceLoaded('contour-source')
     - `maxzoom: 8`：zoom 8.2 整層應該消失
     - 切底圖之後重驗存在、虛線與排序
 
+43. **地理要素說明的延遲載入**（跨主題，見上面「地理要素說明為什麼要延遲載入」）。
+    ⚠️ **這一項在 localhost 上「看起來永遠是好的」**：分片幾毫秒就到，載入中的狀態根本
+    不會出現。要驗那條路徑必須人工把它變慢——在 `content/index.ts` 的
+    `loadGeoCollection()` 前面暫時包一個 `setTimeout`（驗完記得拿掉）：
+    ```js
+    // 勾一個還沒抓過說明的圖層，等清單出來就立刻點第一筆
+    const p = document.querySelector('.map-detail-panel');
+    p.querySelector('.feature-loading') ? 'LOADING' : (p.querySelector('.detail-facts') ? 'FACTS' : 'FALLBACK')
+    ```
+    - **載入中**：卡片只有名稱、原名、`meta` 與「說明載入中…」。⚠️ **不可以有**
+      `.detail-sources`、`.feature-schematic` 或 `.feature-fallback`（那三段之後會被
+      換掉或撤回，見上）
+    - **載入完**：換成 `.detail-facts`，而且**面板標題列要跟著補上名字**
+      （`.map-detail-head-title`）——空白代表 `useDetailTitle` 又退回成純函式了
+    - **沒有內容檔的圖徵不能卡在載入中**：勾「流域分區」點一個沒有內容檔的流域
+      （例如石門溪）、或勾「世界主要河流」點尼羅河，都要**直接**是 fallback
+      （名稱＋`meta`＋圖層說明＋來源）
+    - **不可以有 404**：`volcanoes`／`world-rivers`／`koppen-zones`／`tw-geology`／
+      `world-mountain-peaks` 五個 collection 一份內容檔都沒有，但分片必須存在：
+      ```js
+      performance.getEntriesByType('resource').filter(r => /geo-content/.test(r.name))
+        .map(r => [r.name.split('/').pop(), r.responseStatus])   // 全部要是 200
+      ```
+    - **只抓用得到的那幾份**：進站時只有 `defaultOn` 圖層那幾份（臺灣主題是
+      `tw-territory` 與 `tw-ranges`），勾一個圖層才多一份。⚠️ 用
+      `performance.getEntriesByType('resource')` 數之前先確認**總筆數還沒到 250**
+      （瀏覽器的預設緩衝上限，聚焦過搜尋框就會塞滿，後面的請求全部不會被記錄——
+      踩過，症狀是「明明抓了卻查不到」）
+    - **切圖徵不會看到新標題配舊內容**：同一層連點三筆、再跨到另一個 collection，
+      標題與卡片內容每一次都要一致
+    - **主 chunk 真的變小了**（回歸判準，只有 production build 量得到）：
+      ```bash
+      npm run build | grep 'assets/index-.*\.js'   # gzip 應該在 165 KB 上下，不是 375 KB
+      ```
+
 ### ⚠️ 用瀏覽器自動化點 UI 的三個陷阱
 
 - **主題頁的底圖選單藏在左下角「圖層」彈出層裡**，必須先 `document.querySelector('.map-tile').click()` 才找得到 `<select>`；`/compare` 的仍然直接在頁首。
@@ -3163,11 +3268,14 @@ src/
 ├─ lib/schema.ts          # zod schema（建置期驗證用）
 ├─ search/searchIndex.ts  # 主題頁搜尋索引（跨兩個主題，lazy 建立）
 ├─ content/
-│  ├─ index.ts            # import.meta.glob 載入地點/原住民族/物種；氣候與物種觀測點 JSON 用 fetch
+│  ├─ index.ts            # import.meta.glob 載入地點/原住民族/物種（eager，搜尋索引要同步讀）；
+│  │                      #   ⚠️ 地理要素相反，是 public/data/geo-content/ 的延遲載入分片
+│  ├─ useGeoContent.ts    # useGeoFeature()：詳情卡取地理要素說明的 hook
 │  ├─ places/*.json
 │  ├─ indigenous/*.json   # 16 族代表點
 │  └─ species/*.json      # 物種介紹文字（不含座標）
 │  └─ geo/<collection>/*.json  # 地理要素說明（選填，沒有就走 FeatureCard fallback；
+│                              #   ⚠️ 這裡是單一事實來源，執行期讀的是它的分片產物；
 │                              #   ⚠️ tw-vegetation-belts 例外，六帶都必填——那一層
 │                              #   沒有 geojson，fallback 等於沒有退路）
 ├─ map/
@@ -3205,13 +3313,17 @@ public/data/
 ├─ climate/*.json         # build:climate 產生
 ├─ species/*.geojson      # build:species 產生
 ├─ geo/*.geojson          # build:geodata 產生（禁止手改）
+├─ geo-content/*.json     # 地理要素說明的分片，34 份（build:geo-content 產生，禁止手改）
+│                         #   ⚠️ 這是 src/content/geo/ 的產物，詳情卡在執行期抓的就是它
 ├─ monuments/*.json       # 古蹟歷史沿革的縣市分片，21 份（build:geodata 產生，禁止手改）
 └─ geo-manual/*.geojson   # 手繪教學示意幾何（可以手改）
 scripts/
 ├─ build-climate.mjs      # Open-Meteo → public/data/climate
 ├─ build-species.mjs      # GBIF → public/data/species
 ├─ build-geodata.mjs      # NLSC / Natural Earth / USGS / 水利署 / OSM / 文資局 → public/data/geo
+├─ build-geo-content.mjs  # src/content/geo → public/data/geo-content（純本地轉換，不打 API）
 ├─ build-reservoirs.mjs   # 水利署水庫水情 → public/data/reservoirs-live.json
+├─ lib/geo-content.mjs    # 分片的產生邏輯（產生器與驗證器共用同一份，才比對得起來）
 ├─ lib/simplify.mjs       # 自帶的 Douglas–Peucker（刻意不加依賴）
 ├─ lib/unzip.mjs          # 自帶的 ZIP 讀取器（zlib.inflateRaw；檔名會判 Big5，見上）
 ├─ lib/gml.mjs            # NLSC 行政區界線 GML + TGOS SimpleWFS 兩種 GML 2 形狀

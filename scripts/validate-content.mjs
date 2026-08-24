@@ -26,6 +26,12 @@ import { DERIVED_FILES, THEMES, allLayers } from "../src/map/registry/index.ts";
  * 說明，console 什麼都不會說。generators.ts 只 `import type`，Node 讀得動。
  */
 import { generateLayer } from "../src/map/registry/generators.ts";
+/**
+ * 地理要素說明的分片產生器。這裡拿它來**逐 byte 比對** `public/data/geo-content/`
+ * 有沒有跟 `src/content/geo/` 同步——那份產物是詳情卡唯一會讀到的東西，忘了重跑
+ * `npm run build:geo-content` 的話，畫面上顯示的是上一版的文字而且完全靜默。
+ */
+import { GEO_CONTENT_OUT, buildGeoContentShards } from "./lib/geo-content.mjs";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 const PLACES_DIR = join(ROOT, "src/content/places");
@@ -139,6 +145,47 @@ try {
   console.log(`geo-features: ${geoFeatures.length} 筆通過驗證`);
 } catch {
   console.log("（略過 geo-features：目錄不存在）");
+}
+
+// ── 分片是否與內容檔同步（public/data/geo-content/<collection>.json）─────
+//
+// ⚠️ 這是「編輯了內容卻忘了重新產生」唯一擋得住的地方。詳情卡讀的是分片，不是
+// src 底下那份，所以不同步的症狀是**卡片顯示上一版的文字**——沒有錯誤訊息、
+// build 也照樣成功。比對的是最終要寫進檔案的那個字串本身（見 lib/geo-content.mjs）。
+{
+  const shards = await buildGeoContentShards(ROOT);
+  const outDir = join(ROOT, GEO_CONTENT_OUT);
+  let existing = [];
+  try {
+    existing = (await readdir(outDir)).filter((f) => f.endsWith(".json"));
+  } catch {
+    if (shards.size > 0) {
+      errors.push(`${GEO_CONTENT_OUT}/ 不存在 → 跑 npm run build:geo-content`);
+    }
+  }
+  for (const [collection, { json }] of shards) {
+    const path = join(outDir, `${collection}.json`);
+    const actual = await readFile(path, "utf8").catch(() => null);
+    if (actual === null) {
+      errors.push(
+        `${GEO_CONTENT_OUT}/${collection}.json → 缺這一份分片，跑 npm run build:geo-content`,
+      );
+    } else if (actual !== json) {
+      errors.push(
+        `${GEO_CONTENT_OUT}/${collection}.json → 與 src/content/geo/${collection}/ 不同步，` +
+          `跑 npm run build:geo-content`,
+      );
+    }
+  }
+  for (const file of existing) {
+    if (!shards.has(file.slice(0, -".json".length))) {
+      errors.push(
+        `${GEO_CONTENT_OUT}/${file} → src/content/geo/ 底下沒有這個 collection，` +
+          `跑 npm run build:geo-content 清掉`,
+      );
+    }
+  }
+  if (shards.size > 0) console.log(`geo-content: ${shards.size} 個分片與內容檔同步`);
 }
 
 /**

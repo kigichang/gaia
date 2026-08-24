@@ -10,7 +10,7 @@ import { LayerDrawer } from "../components/LayerDrawer";
 import { MapSearchBox } from "../components/MapSearchBox";
 import { DonateButton } from "../components/DonateButton";
 import { MapDetailPanel } from "../components/MapDetailPanel";
-import { DetailCard, detailTitle, type Selection } from "../components/DetailCard";
+import { DetailCard, useDetailTitle, type Selection } from "../components/DetailCard";
 import { browseLayerExtra } from "../components/ThemeBrowse";
 import { DEFAULT_THEME_ID, getTheme, layerInstanceId } from "../map/registry/index";
 import {
@@ -28,6 +28,7 @@ import {
   type ThemeDefinition,
 } from "../map/registry/types";
 import { useGeoLayers } from "../map/useGeoLayers";
+import { prefetchGeoCollection } from "../content";
 import { useDrawerOpen } from "../useDrawerOpen";
 import { usePopover } from "../usePopover";
 import { hitInstanceId, type SearchHit } from "../search/searchIndex";
@@ -104,6 +105,10 @@ function ThemeMapView({ theme, chrome }: { theme: ThemeDefinition; chrome: Chrom
     [theme, active, data],
   );
 
+  // ⚠️ hook，所以只能在這裡呼叫，不能寫進下面 `{detailOpen && …}` 那段 JSX 裡。
+  // 理由（說明是延遲載入的，標題要等分片到了才算得出來）見 DetailCard。
+  const detailPanelTitle = useDetailTitle(selected);
+
   // 缺哪些資料就去解析。key 已經寫進 data（即使結果是 null）之後就不會再要求，
   // 所以這裡不會無限循環。
   const pendingKey = pending.map((p) => p.key).join("|");
@@ -116,6 +121,30 @@ function ThemeMapView({ theme, chrome }: { theme: ThemeDefinition; chrome: Chrom
     // pending 每次算繪都是新陣列，只在「缺的東西變了」時才重跑
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pendingKey]);
+
+  /**
+   * 圖層一被勾選，就順手把它那一份說明分片抓起來放著。
+   *
+   * 說明改成延遲載入之後（見 `content/index.ts`），最自然的抓取時機其實是「點開
+   * 卡片的那一刻」——但那會讓每個 collection 的第一張卡先閃一段「說明載入中…」。
+   * 勾選圖層的當下本來就在抓那一層的 geojson（上面那個 effect），順手多抓幾十 KB
+   * 幾乎感覺不到，而且**沒有勾那一層的人一個 byte 都不會付**，分片要省的正是那個。
+   *
+   * ⚠️ 不必自己記帳去重：`loadGeoCollection()` 以 collection 為 key 快取 Promise，
+   * 重複呼叫只會拿到同一個。
+   */
+  const geoCollectionsKey = [
+    ...new Set(
+      instances.flatMap((i) => (i.detail.type === "geo" ? [i.detail.collection] : [])),
+    ),
+  ]
+    .sort()
+    .join("|");
+  useEffect(() => {
+    for (const collection of geoCollectionsKey ? geoCollectionsKey.split("|") : []) {
+      prefetchGeoCollection(collection);
+    }
+  }, [geoCollectionsKey]);
 
   // 詳情面板疊在抽屜之上（--z-panel > --z-drawer），所以選了圖徵不必動抽屜：
   // 詳情整片蓋住它，關掉就回到剛才那份可點清單，不用重開抽屜、重新展開圖層。
@@ -793,7 +822,7 @@ function ThemeMapView({ theme, chrome }: { theme: ThemeDefinition; chrome: Chrom
       </div>
 
       {detailOpen && (
-        <MapDetailPanel onClose={() => setSelected(null)} title={detailTitle(selected)}>
+        <MapDetailPanel onClose={() => setSelected(null)} title={detailPanelTitle}>
           <DetailCard
             selection={selected}
             itemCounts={itemCounts}
