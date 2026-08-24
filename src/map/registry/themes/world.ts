@@ -330,7 +330,15 @@ export const worldTheme: ThemeDefinition = {
         label: { property: "name", size: 12, minzoom: 2 },
       },
       colorRole: "plate",
-      detail: { type: "geo", collection: "plates" },
+      /**
+       * 52 塊板塊各有一份內容檔（`src/content/geo/plates/`，2026-08 補齊）。
+       *
+       * ⚠️ `hideLayerDescription` 因此**今天是 no-op**（有內容檔的圖徵不走 fallback），
+       * 比照 `world-mountains` 與 `tw-rivers`：留著是為了規則一致——上游哪天多出一塊
+       * 板塊而內容檔還沒寫時，卡片會是「名稱＋分類＋面積＋來源」，而不是把這段
+       * 52 張卡逐字相同的圖層說明整片印上去。
+       */
+      detail: { type: "geo", collection: "plates", hideLayerDescription: true },
       // 清單依分類分三組（主要 8／次要 14／微板塊 30），組內依面積由大到小
       browse: { groupBy: "category" },
       maxzoom: 8,
