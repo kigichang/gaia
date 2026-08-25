@@ -43,6 +43,24 @@ const num = (v: unknown): number | undefined => (typeof v === "number" ? v : und
 const str = (v: unknown): string | undefined =>
   typeof v === "string" && v.trim() !== "" ? v : undefined;
 
+/**
+ * 這一次地震的標題。
+ *
+ * 有地名就用地名（「高雄美濃」比「規模 6.4 地震」好認得多）；沒有地名的（臺灣地震
+ * 那一層的 612 筆震央）退回規模。
+ * ⚠️ 少數幾筆的地名本身就帶了事件名（維基原文寫「南投（集集大地震）」），再接一個
+ * 「地震」會變成「…大地震）地震」，所以已含「地震」的就原樣用。
+ *
+ * ⚠️ **抽出來是因為詳情面板的標題列也要用它**（`useDetailTitle()`）。兩邊各寫一份
+ * 的話，面板頭與卡片標題會在「已含地震」「沒有地名」這兩種邊角上悄悄分歧。
+ */
+export function quakeTitle(p: GeoJSON.GeoJsonProperties): string {
+  const place = str(p?.name);
+  const mag = num(p?.mag);
+  if (place) return place.includes("地震") ? place : `${place}地震`;
+  return mag != null ? `規模 ${mag.toFixed(1)} 地震` : "地震";
+}
+
 /** 座標字串。⚠️ 位數要跟 geojson 的 `digits: 2` 一致，否則會暗示一個不存在的精度。 */
 function formatCoord(lat: number, lng: number): string {
   const ns = `${Math.abs(lat).toFixed(2)}°${lat >= 0 ? "N" : "S"}`;
@@ -63,7 +81,7 @@ export function QuakeCard({
   const date = str(p.date);
   // 以下只有「重大地震」那一層有（中央氣象署〈災害地震〉表）。
   // ⚠️ 欄位叫 `name` 不是 `place`——searchIndex 只認 `name`，見 build-geodata.mjs
-  const place = str(p.name);
+  //    地名本身只有標題用得到，而標題已經抽成 quakeTitle()（面板頭共用同一份）。
   const harm = str(p.harm);
   /** 地震矩規模 Mw。只有跟 ML 差 0.3 以上時才會出現在資料裡。 */
   const magMoment = num(p.magMoment);
@@ -81,20 +99,7 @@ export function QuakeCard({
 
   return (
     <div className="place-card">
-      {/*
-        有地名就用地名當標題（「高雄美濃」比「規模 6.4 地震」好認得多）。
-        ⚠️ 少數幾筆的地名本身就帶了事件名（維基原文寫「南投（集集大地震）」），
-        再接一個「地震」會變成「…大地震）地震」，所以已含「地震」的就原樣用。
-      */}
-      <h4 className="feature-title">
-        {place
-          ? place.includes("地震")
-            ? place
-            : `${place}地震`
-          : mag != null
-            ? `規模 ${mag.toFixed(1)} 地震`
-            : "地震"}
-      </h4>
+      <h4 className="feature-title">{quakeTitle(p)}</h4>
       <p className="feature-subtitle">{[date, depthClass].filter(Boolean).join("・")}</p>
 
       <div className="detail-stats">

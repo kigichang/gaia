@@ -5,7 +5,7 @@ import { FeatureCard } from "./FeatureCard";
 import { ReservoirCard } from "./ReservoirCard";
 import { MonumentCard } from "./MonumentCard";
 import { TownshipCard } from "./TownshipCard";
-import { QuakeCard } from "./QuakeCard";
+import { QuakeCard, quakeTitle } from "./QuakeCard";
 import { useEffect, useState } from "react";
 import {
   getIndigenousGroup,
@@ -302,6 +302,31 @@ function GeoDetailCard({
 }
 
 /**
+ * 從已載入的圖層裡撈出「這個 `detail.type` 底下、id 相符」的那些 feature。
+ *
+ * 古蹟、水庫、地震、鄉鎮這四種卡片沒有內容檔，資料就在圖層的 geojson 裡，所以
+ * 標題也只能從那裡拿。⚠️ 用 `detail.type` 而不是圖層 id 是必要的：古蹟是三個
+ * instance（國定／直轄市定／縣市定）、地震是兩個（臺灣地震／重大地震）、鄉鎮是
+ * 五個（鄉鎮界／人口／三種作物），拿單一 owner.id 去找一定會漏。
+ */
+function featuresIn(
+  instances: GeoLayerInstance[],
+  type: DetailSpec["type"],
+  featureId: string,
+): GeoJSON.Feature[] {
+  return instances
+    .filter((i) => i.detail.type === type)
+    .flatMap((i) => i.data?.features ?? [])
+    .filter((f) => f.properties?.id === featureId);
+}
+
+/** geojson 的 `name`，空字串當成沒有。 */
+function featureName(f: GeoJSON.Feature | undefined): string | undefined {
+  const v = f?.properties?.name;
+  return typeof v === "string" && v.trim() ? v.trim() : undefined;
+}
+
+/**
  * 詳情卡的標題（面板 head 用）。沒有對應內容時回 undefined。
  *
  * ⚠️ **它是 hook 不是純函式**，而且必須在 `ThemeMapPage` 的**本體**呼叫、不能寫進
@@ -310,8 +335,16 @@ function GeoDetailCard({
  * 之所以要是 hook：地理要素的說明改成延遲載入之後（見 `content/index.ts`），第一次
  * 開某個 collection 的卡片時分片可能還沒到，同步查一定是 undefined——而純函式版本
  * **不會在分片到了之後重新算**，標題就會一直空著。這裡等分片落地再逼一次重繪。
+ *
+ * ⚠️ **`instances` 是必要的參數，不是可有可無的優化。** 古蹟、水庫、地震、鄉鎮四種
+ * 卡片沒有內容檔，名字只存在於圖層的 geojson 裡；在補進來之前，這支對它們一律回
+ * `undefined`，面板最上面那條標題列因此**一直是空白的**（卡片本體正常，所以很容易
+ * 一直沒被發現）。
  */
-export function useDetailTitle(selection: Selection): string | undefined {
+export function useDetailTitle(
+  selection: Selection,
+  instances: GeoLayerInstance[],
+): string | undefined {
   const collection = selection?.detail.type === "geo" ? selection.detail.collection : null;
   const [, bump] = useState(0);
 
@@ -332,5 +365,30 @@ export function useDetailTitle(selection: Selection): string | undefined {
   if (detail.type === "indigenous") return getIndigenousGroup(featureId)?.name.zh;
   if (detail.type === "species") return getSpecies(featureId)?.name.zh;
   if (detail.type === "geo") return getLoadedGeoFeature(detail.collection, featureId)?.name.zh;
+
+  /**
+   * 以下四種沒有內容檔，名字在 geojson 裡（見 `featuresIn`）。
+   *
+   * ⚠️ **它們不需要 hook 那一段的重繪**：這些卡片讀的就是 `instances`，而 `instances`
+   * 本身是 state——資料到了 React 自然會重算，標題跟著出現。要靠 `bump()` 的只有
+   * 走延遲載入分片的 `geo`。
+   *
+   * ⚠️ 撈不到就回 `undefined`（面板頭留白），不要塞「鄉鎮市區」這種佔位字：那會在
+   * 資料還沒到的一瞬間先印一個錯的名字，比留白更糟。
+   */
+  if (detail.type === "township" || detail.type === "reservoir" || detail.type === "monument") {
+    return featureName(featuresIn(instances, detail.type, featureId)[0]);
+  }
+  if (detail.type === "quake") {
+    /**
+     * ⚠️ 兩個地震圖層**共用同一組 featureId**（連動強調要的），而母圖層那 612 筆
+     * 沒有地名。規則跟 `DetailCard` 的 quake 分支一樣：**有 `name` 的那一筆優先**，
+     * 否則退回規模——標題本身直接用 `QuakeCard` 匯出的同一支 `quakeTitle()`，
+     * 免得面板頭與卡片標題分歧。
+     */
+    const hits = featuresIn(instances, "quake", featureId);
+    const best = hits.find((f) => featureName(f)) ?? hits[0];
+    return best ? quakeTitle(best.properties) : undefined;
+  }
   return undefined;
 }

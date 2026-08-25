@@ -107,7 +107,9 @@ function ThemeMapView({ theme, chrome }: { theme: ThemeDefinition; chrome: Chrom
 
   // ⚠️ hook，所以只能在這裡呼叫，不能寫進下面 `{detailOpen && …}` 那段 JSX 裡。
   // 理由（說明是延遲載入的，標題要等分片到了才算得出來）見 DetailCard。
-  const detailPanelTitle = useDetailTitle(selected);
+  // ⚠️ 要傳 `instances`：古蹟、水庫、地震、鄉鎮四種卡片沒有內容檔，名字只在圖層的
+  //    geojson 裡，那份就掛在 instances 上（同上，見 DetailCard）。
+  const detailPanelTitle = useDetailTitle(selected, instances);
 
   // 缺哪些資料就去解析。key 已經寫進 data（即使結果是 null）之後就不會再要求，
   // 所以這裡不會無限循環。

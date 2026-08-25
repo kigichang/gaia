@@ -196,6 +196,19 @@ collection 打包成一份 `public/data/geo-content/<collection>.json`（key 是
   undefined，而純函式版本**不會在分片落地後重算**，標題會一直空著（實測過）。所以它
   等 Promise 落地再逼一次重繪，並且必須在 `ThemeMapPage` 的**本體**呼叫——寫進
   `{detailOpen && …}` 那段 JSX 裡是條件式呼叫 hook，會壞。
+- ⚠️ **它還要收 `instances`，那不是可有可無的參數。** `DetailSpec` 有九種，其中
+  **古蹟、水庫、地震、鄉鎮**四種沒有內容檔，名字只存在於圖層的 geojson 裡（那份掛在
+  `instances` 上）。補進來之前這支對那四種一律回 `undefined`，面板最上面那條標題列
+  **一直是空白的**——而卡片本體完全正常，所以這個洞躺了很久沒被發現。
+  ⚠️ 查詢一律用 `detail.type` 而不是圖層 id（`featuresIn()`）：古蹟是三個 instance、
+  地震是兩個、鄉鎮是五個，拿單一 `owner.id` 去找一定會漏。
+  ⚠️ 地震那一支要沿用「**有 `name` 的那一筆優先**」的既有規則（兩層共用同一組
+  featureId，母圖層那 612 筆沒有地名），標題直接用 `QuakeCard` 匯出的 `quakeTitle()`
+  ——**不要在面板這邊自己寫一份**，否則「已含『地震』兩個字的地名」與「沒有地名就退回
+  規模」這兩個邊角會悄悄分歧。
+  ⚠️ 那四種**不需要 `bump()` 重繪**：它們讀的 `instances` 本身就是 state。撈不到時
+  回 `undefined` 讓標題留白，**不要塞「鄉鎮市區」這種佔位字**——那會在資料到之前先
+  印一個錯的名字，比留白更糟。
 
 #### ⚠️ 忘了重新產生分片是完全靜默的
 
@@ -1559,6 +1572,19 @@ m.isSourceLoaded('contour-source')
       換掉或撤回，見上）
     - **載入完**：換成 `.detail-facts`，而且**面板標題列要跟著補上名字**
       （`.map-detail-head-title`）——空白代表 `useDetailTitle` 又退回成純函式了
+    - ⚠️ **九種 `DetailSpec` 要逐一驗面板標題列**（`none` 不開卡片，所以是八種）。
+      每一種的 `.map-detail-head-title` 都不可以是空字串，而且要跟卡片自己的
+      `.feature-title` 一致：
+      ```js
+      const head = () => document.querySelector('.map-detail-head-title')?.textContent;
+      const card = () => document.querySelector('.map-detail-panel .feature-title')?.textContent;
+      // place 雅庫茨克／indigenous 阿美族／species 櫻花鉤吻鮭／geo 蘇伊士運河
+      // reservoir 曾文水庫／monument 台南法華寺／township 鹿谷鄉
+      // quake 有地名 → 「集集地震」；quake 沒地名 → 「規模 8.2 地震」
+      ```
+      ⚠️ **沒有地名的地震只能用點的**（臺灣地震那一層沒有 `browse`、不進搜尋索引）：
+      勾起來、`queryRenderedFeatures` 找一顆 `!properties.name` 的震央、`m.project()`
+      算出螢幕座標再點下去
     - **沒有內容檔的圖徵不能卡在載入中**：勾「流域分區」點一個沒有內容檔的流域
       （例如石門溪）、或勾「世界主要河流」點尼羅河，都要**直接**是 fallback
       （名稱＋`meta`＋圖層說明＋來源）
