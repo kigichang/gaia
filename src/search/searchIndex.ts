@@ -55,7 +55,7 @@ export interface SearchHit {
    * 有它就代表這一筆的資料與詳情卡都在 `layer.attach` 上，不在圖層本身。
    */
   attachedId?: string;
-  /** 已轉小寫的比對字串 */
+  /** 已正規化（轉小寫＋「台」摺成「臺」）的比對字串，見 `normalizeForMatch()` */
   haystack: string;
 }
 
@@ -67,8 +67,43 @@ function indexesFeatures(layer: LayerDefinition): boolean {
   return layer.source?.type === "generated";
 }
 
+/**
+ * 比對用的正規化：轉小寫，並把「台」摺成「臺」。
+ *
+ * ⚠️ **它只影響比對，不影響顯示。** `SearchHit.title`、可點清單、詳情卡上的字
+ * 一律維持原樣——摺疊只發生在 `haystack` 與 `searchHits()` 裡那兩份暫時的副本上。
+ *
+ * ## 為什麼需要
+ *
+ * 臺灣使用者最常打的是「台」（台灣海峽、台北、台南），而本站的內容一律寫「臺」。
+ * 加這一段之前，實測搜「台灣海峽」**一筆結果都沒有**，搜「臺灣海峽」有五筆——
+ * 那是一個畫面上完全看不出原因的空結果。
+ *
+ * ⚠️ **而且兩個方向都會漏，因為上游圖資自己就混用。** 實測 `public/data/geo/`
+ * 的圖徵名稱裡有 **49 個寫「台」、179 個寫「臺」**，而且**同一份檔案裡兩種都有**
+ * （`tw-monuments-municipal.geojson` 是 30 對 91：「台南法華寺」與「臺南水仙宮」
+ * 並存，那是文資局公告的正式名稱，不能改資料去遷就搜尋）。所以打哪一種寫法都
+ * 只搜得到一半。
+ *
+ * `scripts/lib/crops.mjs` 早就為了 join 做同一件事（上游把「臺」寫成「台」，
+ * 不正規化就會靜默少掉幾個縣市），這裡是同一條規則搬到搜尋上。
+ *
+ * ⚠️ **只摺這一對，不要順手加別的。** 「裏／裡」（裏海）、「渕／淵」（土渕海峽）、
+ * 「麻／馬」（麻六甲）是**不同的譯名或異體地名**，本站的處理方式是寫進那一筆圖徵的
+ * `meta`——因為讀者確實需要知道有兩種寫法，而 `meta` 會顯示在可點清單的副標上。
+ * 台／臺 不一樣：它是**同一個字**的兩種寫法，寫進 `meta` 只會變成畫面上的雜訊
+ * （臺灣海峽那一筆原本就是這樣暫時繞過去的，這支正規化上線後已經拿掉）。
+ */
+const CHAR_FOLD: readonly (readonly [RegExp, string])[] = [[/台/g, "臺"]];
+
+function normalizeForMatch(text: string): string {
+  let out = text.toLowerCase();
+  for (const [pattern, to] of CHAR_FOLD) out = out.replace(pattern, to);
+  return out;
+}
+
 function push(parts: (string | undefined)[]): string {
-  return parts.filter(Boolean).join(" ").toLowerCase();
+  return normalizeForMatch(parts.filter(Boolean).join(" "));
 }
 
 /** 內容檔裡的別名（英文名、學名、分布地…），讓搜尋不只比對得到中文主名。 */
@@ -366,12 +401,13 @@ export function searchHits(
   query: string,
   currentThemeId: string,
 ): SearchHit[] {
-  const q = query.trim().toLowerCase();
+  const q = normalizeForMatch(query.trim());
   if (!q) return [];
 
   const scored: { hit: SearchHit; score: number }[] = [];
   for (const hit of index) {
-    const title = hit.title.toLowerCase();
+    // ⚠️ 比對用的是正規化過的副本，`hit.title` 本身（畫面上那一行）不動
+    const title = normalizeForMatch(hit.title);
     let score: number;
     if (title === q) score = 0;
     else if (title.startsWith(q)) score = 1;
