@@ -765,6 +765,24 @@ export const SOURCE_LINKS: Record<string, string> = {
   "維基百科 黑水溝": "https://zh.wikipedia.org/zh-tw/%E9%BB%91%E6%B0%B4%E6%BA%9D",
   "維基百科 澎湖1號": "https://zh.wikipedia.org/zh-tw/%E6%BE%8E%E6%B9%961%E8%99%9F",
   /**
+   * 兩條運河（2026-08 加入「作者精選」的「運河」那一組）。
+   * ⚠️ 通行艘次沿用上面那筆 PortWatch，不另外登記。
+   * ⚠️ 加通湖另外登記條目：那是巴拿馬運河「為什麼非有船閘不可」與「每次通行要用掉
+   * 2 億公升淡水」兩段的主角，主條目只帶過一句。
+   * ⚠️ 長賜輪（2021 年擱淺六天那一艘）與《君士坦丁堡公約》（1888 年、規定運河
+   * 戰時也應開放）各自登記——那是蘇伊士那張卡「省下 7,000 公里，但隨時可能停掉」
+   * 那一段的兩個具體依據。
+   * ⚠️ 「雷賽布遷徙」在中文維基百科沒有條目（`雷塞布遷徙`／`勒塞普遷徙` 兩個標題
+   * 實測都不存在），所以連英文。
+   */
+  "維基百科 巴拿馬運河": "https://zh.wikipedia.org/zh-tw/%E5%B7%B4%E6%8B%BF%E9%A9%AC%E8%BF%90%E6%B2%B3",
+  "維基百科 加通湖": "https://zh.wikipedia.org/zh-tw/%E5%8A%A0%E9%80%9A%E6%B9%96",
+  "維基百科 蘇伊士運河": "https://zh.wikipedia.org/zh-tw/%E8%8B%8F%E4%BC%8A%E5%A3%AB%E8%BF%90%E6%B2%B3",
+  "維基百科 長賜輪": "https://zh.wikipedia.org/zh-tw/%E9%95%B7%E8%B3%9C%E8%BC%AA",
+  "維基百科 君士坦丁堡公約":
+    "https://zh.wikipedia.org/zh-tw/%E5%90%9B%E5%A3%AB%E5%9D%A6%E4%B8%81%E5%A0%A1%E5%85%AC%E7%B4%84",
+  "維基百科（英文） 雷賽布遷徙": "https://en.wikipedia.org/wiki/Lessepsian_migration",
+  /**
    * 三個湖（死海、裏海、貝加爾湖）。
    * ⚠️ 死海那一筆連的是 USGS 的 Earthshots——它把 1973 至 2024 年的衛星影像排在一起，
    * 「湖在縮」這件事看得見，比任何一個數字都有說服力；卡片上的水位數字會過期，
