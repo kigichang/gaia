@@ -988,7 +988,7 @@ maplibre 的四個角落容器是 map container 內的 `position: absolute; z-in
 | `tw-typhoons.geojson` | 14 KB |
 | `world-mountain-peaks.geojson` | 10 KB |
 | `world-picks-areas.geojson`（geo-manual） | 3 KB |
-| `world-picks.geojson`（geo-manual） | 5 KB |
+| `world-picks.geojson`（geo-manual） | 6 KB |
 | `tw-county-halls.geojson` | 8 KB |
 | `tw-strait-median-line.geojson` | <1 KB |
 
