@@ -719,6 +719,39 @@ export const SOURCE_LINKS: Record<string, string> = {
   "美國能源資訊署 麻六甲海峽石油流量": "https://www.eia.gov/todayinenergy/detail.php?id=32452",
   "維基百科（英文） 麻六甲困境": "https://en.wikipedia.org/wiki/Malacca_Dilemma",
   /**
+   * 直布羅陀海峽、博斯普魯斯海峽、曼德海峽（2026-08 一次加進來的三條海峽）。
+   * ⚠️ 沿用本檔案的規則：**泛稱的「維基百科」不登記**，逐條目寫出名字；石油流量
+   * 一律以 EIA 那一頁為準。
+   * ⚠️ 曼德海峽的 EIA 連的是專講它的那一篇（2019-08-27，資料年是 2018 年的每日
+   * 620 萬桶），跟荷姆茲、麻六甲各自連的是三個不同的頁面。
+   * ⚠️ 「蒙特勒公約」與「土耳其海峽」在中文維基百科都沒有條目（實測），所以連英文。
+   * 「贊克萊洪水」同理沒有中文條目，那一段併在「墨西拿鹽度危機」裡講，不另外登記。
+   */
+  "維基百科 直布羅陀海峽":
+    "https://zh.wikipedia.org/zh-tw/%E7%9B%B4%E5%B8%83%E7%BE%85%E9%99%80%E6%B5%B7%E5%B3%BD",
+  "維基百科 海格力斯之柱":
+    "https://zh.wikipedia.org/zh-tw/%E6%B5%B7%E6%A0%BC%E5%8A%9B%E6%96%AF%E4%B9%8B%E6%9F%B1",
+  "維基百科 墨西拿鹽度危機":
+    "https://zh.wikipedia.org/zh-tw/%E5%A2%A8%E8%A5%BF%E6%8B%BF%E9%B9%BD%E5%BA%A6%E5%8D%B1%E6%A9%9F",
+  "維基百科 博斯普魯斯海峽":
+    "https://zh.wikipedia.org/zh-tw/%E5%8D%9A%E6%96%AF%E6%99%AE%E9%B2%81%E6%96%AF%E6%B5%B7%E5%B3%A1",
+  "維基百科（英文） 蒙特勒公約":
+    "https://en.wikipedia.org/wiki/Montreux_Convention_Regarding_the_Regime_of_the_Straits",
+  "維基百科（英文） 土耳其海峽": "https://en.wikipedia.org/wiki/Turkish_Straits",
+  "維基百科 曼德海峽": "https://zh.wikipedia.org/zh-tw/%E6%9B%BC%E5%BE%B7%E6%B5%B7%E5%B3%A1",
+  "美國能源資訊署 曼德海峽石油與天然氣流量":
+    "https://www.eia.gov/todayinenergy/detail.php?id=41073",
+  /**
+   * ⚠️ 這是本站第一個引用 IMF PortWatch 的地方。連的是**那份資料集本身**
+   * （`Daily_Chokepoints_Data`：全球 28 個咽喉點的每日通行艘次與估計貨運量），
+   * 不是 PortWatch 首頁——曼德海峽那張卡上的 74.6／32.5／28.2 就是從它算出來的
+   * （用它的 ArcGIS FeatureServer 對 `n_total` 取期間平均）。
+   * ⚠️ 這份資料**每天都在更新**，卡片上的數字因此寫死了統計截止日；要重算就照
+   * 卡片上的期間重跑一次，不要只改數字不改日期。
+   */
+  "國際貨幣基金組織 PortWatch 每日咽喉點通行量":
+    "https://portwatch.imf.org/datasets/3da2b9ca97684916b75c4013f95d18ab/about",
+  /**
    * 三個湖（死海、裏海、貝加爾湖）。
    * ⚠️ 死海那一筆連的是 USGS 的 Earthshots——它把 1973 至 2024 年的衛星影像排在一起，
    * 「湖在縮」這件事看得見，比任何一個數字都有說服力；卡片上的水位數字會過期，
