@@ -70,7 +70,15 @@ export type ColorRole =
    * 它跟臺灣五大山脈的 `relief` **刻意不是同一個顏色**，理由與量測值見
    * thematicColors.ts 的 `MOUNTAIN_COLOR`。
    */
-  | "mountain";
+  | "mountain"
+  /**
+   * ⚠️ `worldPopulation` 是**有驗過**的：世界人口分布的橄欖金要跟世界主題同框的
+   * 另外兩個圓點角色（`place` 藍、`volcano` 洋紅；`hazard` 中性色不參與）分得開。
+   * 它跟臺灣人口與都市體系的 `population` **刻意不是同一個顏色**——那個紫對火山
+   * 洋紅是 hard FAIL（CVD ΔE 2.8、一般視覺 12.0），理由與量測值見
+   * thematicColors.ts 的 `WORLD_POPULATION_COLOR`。
+   */
+  | "worldPopulation";
 
 /** `src/content` 底下用 import.meta.glob 載入、已經打包進 bundle 的內容集合。 */
 export type BundledContentId =

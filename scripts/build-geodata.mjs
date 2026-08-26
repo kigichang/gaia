@@ -181,6 +181,17 @@ import {
   splitPolygon,
 } from "./lib/continents.mjs";
 import {
+  EXPECTED_MAX_CITIES,
+  EXPECTED_MIN_CITIES,
+  LICENSE as CITY_LICENSE,
+  MIN_POPULATION,
+  POPULATED_PLACES_URL,
+  SOURCE_LABEL as CITY_SOURCE_LABEL,
+  buildCityFeatures,
+  buildCountryNames,
+  formatPopulation as formatCityPopulation,
+} from "./lib/world-population.mjs";
+import {
   CONTINENT_ORDER as MOUNTAIN_CONTINENT_ORDER,
   LICENSE as MOUNTAIN_LICENSE,
   PEAKS_URL as MOUNTAIN_PEAKS_URL,
@@ -1017,6 +1028,57 @@ const SOURCES = [
        * 歐、大洋），而 feature 順序就是圖層抽屜裡可點清單的顯示順序。
        */
       return rows.sort((a, b) => b._area - a._area).map(({ _area, ...feature }) => feature);
+    },
+  },
+  /**
+   * 世界人口分布：都會區人口 100 萬以上的城市。
+   *
+   * ⚠️ **兩份 Natural Earth 檔案一起抓**：城市點（10m，19 MB）與國界（50m）——後者
+   * 只用來把 `ADM0_A3` 換成中文國名，而且跟「大洲分區」共用同一次下載（`fetchJson`
+   * 的快取在同一個 process 裡有效）。理由與 join 的坑見 lib/world-population.mjs。
+   */
+  {
+    id: "world-population",
+    label: "世界人口分布",
+    load: async (fetch) => {
+      const [cities, countries] = await Promise.all([
+        (await fetch(POPULATED_PLACES_URL)).json(),
+        (await fetch(CONTINENT_COUNTRIES_URL)).json(),
+      ]);
+      return { cities, countries };
+    },
+    sourceUrl: [POPULATED_PLACES_URL, CONTINENT_COUNTRIES_URL],
+    license: CITY_LICENSE,
+    sourceLabel: CITY_SOURCE_LABEL,
+    /** 點位不需要簡化；3 位小數 ≈ 110 公尺，比照火山帶（那也是一層密度場）。 */
+    tolerance: 0,
+    digits: 3,
+    transform: ({ cities, countries }) => {
+      const countryNames = buildCountryNames(countries);
+      const { features, count } = buildCityFeatures(cities, countryNames);
+
+      /**
+       * 自我檢查：上游改欄位名或篩選寫壞時，這一層會**靜默**變成空圖層或整份收進來。
+       * 實測 `POP_MAX >= 100 萬` 是 505 筆，門檻設在 400–700 之間。
+       */
+      if (count < EXPECTED_MIN_CITIES || count > EXPECTED_MAX_CITIES) {
+        throw new Error(
+          `人口 ${formatCityPopulation(MIN_POPULATION)}以上的城市有 ${count} 筆，` +
+            `不在預期的 ${EXPECTED_MIN_CITIES}–${EXPECTED_MAX_CITIES} 之間`,
+        );
+      }
+
+      const missingZh = features.filter((f) => /^[\x00-\x7F]+$/.test(f.properties.name));
+      const top = features
+        .slice(0, 5)
+        .map((f) => `${f.properties.name} ${formatCityPopulation(f.properties.population)}`)
+        .join("／");
+      console.log(
+        `\n  · ${count} 個百萬人以上的都會區（最大的五個：${top}）` +
+          (missingZh.length ? `；${missingZh.length} 筆沒有中文名` : ""),
+      );
+
+      return features;
     },
   },
   {
