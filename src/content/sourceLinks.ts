@@ -783,6 +783,31 @@ export const SOURCE_LINKS: Record<string, string> = {
     "https://zh.wikipedia.org/zh-tw/%E5%90%9B%E5%A3%AB%E5%9D%A6%E4%B8%81%E5%A0%A1%E5%85%AC%E7%B4%84",
   "維基百科（英文） 雷賽布遷徙": "https://en.wikipedia.org/wiki/Lessepsian_migration",
   /**
+   * 兩個海角（2026-08 加入「作者精選」的「海角」那一組，排在「運河」後面）。
+   * ⚠️ 通行艘次沿用上面那筆 PortWatch，不另外登記——合恩角那張卡引的是麥哲倫海峽、
+   * 好望角那張卡引的是好望角本身，兩筆都出自同一個 `Daily_Chokepoints_Data` 資料集。
+   * ⚠️ 「海洋的界線」連英文條目，因為兩張卡共同的重點——大西洋／太平洋的界線是
+   * 合恩角的經線（西經 67°16′）、大西洋／印度洋的界線是厄加勒斯角的東經 20 度——
+   * 出自國際海道測量組織的《海洋與海域的界限》(S-23)，而中文維基百科沒有對應條目
+   * （`海洋和海的界限`／`海與洋的界限` 實測都不存在）；IHO 官方那份 PDF 的公開鏡像
+   * 擋自動連線，所以連的是把 S-23 逐條列出來的那個英文條目。
+   * ⚠️ 弗羅厄德角、厄加勒斯角、開普角三筆各自登記：它們分別撐著「合恩角不是南美洲
+   * 大陸最南端」「好望角不是非洲最南端」「站在開普角不等於站在好望角」三段，主條目
+   * 都只帶過一句。
+   */
+  "維基百科 合恩角": "https://zh.wikipedia.org/zh-tw/%E5%90%88%E6%81%A9%E8%A7%92",
+  "維基百科 德雷克海峽":
+    "https://zh.wikipedia.org/zh-tw/%E5%BE%B7%E9%9B%B7%E5%85%8B%E6%B5%B7%E5%B3%A1",
+  "維基百科 弗羅厄德角":
+    "https://zh.wikipedia.org/zh-tw/%E5%BC%97%E7%BE%85%E5%8E%84%E5%BE%B7%E8%A7%92",
+  "維基百科 好望角": "https://zh.wikipedia.org/zh-tw/%E5%A5%BD%E6%9C%9B%E8%A7%92",
+  "維基百科 厄加勒斯角":
+    "https://zh.wikipedia.org/zh-tw/%E5%8E%84%E5%8A%A0%E5%8B%92%E6%96%AF%E8%A7%92",
+  "維基百科 開普角": "https://zh.wikipedia.org/zh-tw/%E9%96%8B%E6%99%AE%E8%A7%92",
+  "維基百科 巴爾托洛梅烏·迪亞士":
+    "https://zh.wikipedia.org/zh-tw/%E5%B7%B4%E7%88%BE%E6%89%98%E6%B4%9B%E6%A2%85%E7%83%8F%C2%B7%E8%BF%AA%E4%BA%9E%E5%A3%AB",
+  "維基百科（英文） 海洋的界線": "https://en.wikipedia.org/wiki/Borders_of_the_oceans",
+  /**
    * 三個湖（死海、裏海、貝加爾湖）。
    * ⚠️ 死海那一筆連的是 USGS 的 Earthshots——它把 1973 至 2024 年的衛星影像排在一起，
    * 「湖在縮」這件事看得見，比任何一個數字都有說服力；卡片上的水位數字會過期，
