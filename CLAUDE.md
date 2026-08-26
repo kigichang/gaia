@@ -124,9 +124,18 @@ NLSC WMTS 是 `{z}/{y}/{x}`——**y 在 x 前面**，跟絕大多數 XYZ 服務
 ⚠️ **世界地點不是只能為了配對而收**：`world-places` 原本四筆都是為了 `/compare`
 挑的緯度配對（開羅、塔曼拉塞特、馬薩特蘭、希洛），2026-08 加的**雅庫茨克**是第一個
 為了它自己而收的——「世界最冷的大城市」。實測它的月均溫落差 **55.9 °C** 是全站
-29 個地點裡最大的（第二名塔曼拉塞特只有 17.4），所以那張圖本身就是一堂大陸性氣候。
-⚠️ 它**沒有**對應的 `presets.ts` 配對：62°N 在本站找不到同緯度的另一個地點，硬湊
-一個等於違反 `/compare` 的前提（同緯度、同 zoom 才可比）。
+地點裡最大的（第二名塔曼拉塞特只有 17.4），所以那張圖本身就是一堂大陸性氣候。
+
+⚠️ **2026-08 又補了 26 個世界城市，`world-places` 因此從 5 筆變成 31 筆**（挑選判準、
+氣候型覆蓋、跟 ERA5 對不起來的三筆，以及新增的五組 `/compare` 配對全部寫在
+**`CLAUDE_WORLD.md` 的「世界重要城市」**）。雅庫茨克**現在有配對了**（雷克雅維克，
+64°N vs 62°N），舊版這裡寫的「它沒有對應的 presets 配對」已經不成立——那條限制的
+理由（同緯度、同 zoom 才可比）仍然有效，只是本站終於收得到同緯度的另一個地點。
+
+⚠️ **這批地點讓主 chunk 多了 gzip 18.5 KB**（170.4 → 188.9 KB，實測見下面
+「為什麼不能繼續用 `import.meta.glob({ eager: true })`」）。那是刻意接受的：
+`places` 必須 eager（`searchIndex.ts` 要同步讀別名），而這一份資料同時餵
+`world-places` 圖層、`/compare` 與搜尋索引，是進站就會用到的東西。
 
 ### 臺灣各圖層的資料來源與坑 → 見 `CLAUDE_TW.md`
 
@@ -157,9 +166,16 @@ collection 打包成一份 `public/data/geo-content/<collection>.json`（key 是
 30 個學生同時開站時，這正是本站一路在避免的成本（比照搜尋索引的 lazy 化與古蹟歷史
 沿革的縣市分片）。
 
-⚠️ **地點／原住民族／物種那三組刻意維持 eager，不要順手一起改**：它們合計只有 51 份，
-而且 `searchIndex.ts` 要**同步**讀得到別名。地理要素相反——`searchIndex.ts` 一個字
-都沒用到（它只 import 那三支），所以改成非同步不影響搜尋。
+⚠️ **地點／原住民族／物種那三組刻意維持 eager，不要順手一起改**：`searchIndex.ts`
+要**同步**讀得到別名。地理要素相反——`searchIndex.ts` 一個字都沒用到（它只 import
+那三支），所以改成非同步不影響搜尋。
+
+⚠️ **那三組合計已經不是「只有 51 份」了**：2026-08 補了 26 個世界城市之後是 77 份，
+實測主 chunk 因此從 gzip **170.4 KB 變成 188.9 KB**（把那 26 份暫時移走再 build 量的）。
+這條路只剩兩個選項，都不要順手做：**要嘛接受**（現況——那份資料進站就會用到），
+**要嘛把地點拆成「索引（id／名稱／座標／地形）＋詳情（facts）」兩份**，讓搜尋索引
+只吃索引那半。後者會動到 schema、`PlaceCard`、`resolve.ts` 與 `/compare` 四個地方，
+不是加內容時順手能做的事。
 
 #### 分片單位是 collection，不是逐筆
 
@@ -169,9 +185,12 @@ collection 打包成一份 `public/data/geo-content/<collection>.json`（key 是
 
 #### ⚠️ 沒有任何內容檔的 collection 也要寫一份空分片
 
-有五個 collection 是**宣告了但刻意一份內容檔都沒有**的（`volcanoes` 1,214 座、
-`world-rivers` 118 條、`koppen-zones` 30 個亞型、`tw-geology` 45 個圖例單位、
-`world-mountain-peaks` 39 座），一律走 `FeatureCard` 的 fallback。改成延遲載入之後，
+有 collection 是**宣告了但一份內容檔都沒有**的，一律走 `FeatureCard` 的 fallback。
+⚠️ **這份名單 2026-08 縮短了**：`koppen-zones`（30 個亞型全部補齊）、`world-rivers`
+（118 條裡的 33 條）、`volcanoes`（1,214 座裡的 9 座）、`world-mountain-peaks`
+（39 座裡的 10 座）都寫了說明卡（見 `CLAUDE_WORLD.md`），現在真正全空的只剩
+`tw-geology`（45 個圖例單位）。**但下面這條規則不能拿掉**——只要還有一個空的
+collection，或之後又宣告了新的，它就必須成立。改成延遲載入之後，
 那些卡片每開一次就會去抓一份不存在的分片 → **console 一行 404**，而且會先閃一下
 「說明載入中…」才退回 fallback。所以 `lib/geo-content.mjs` 會**讀註冊表**補上 `{}`：
 兩個 byte 換掉一個 404 與一次閃動。三個位置都要看——`layer.detail`、`items.detail`
@@ -192,6 +211,12 @@ collection 打包成一份 `public/data/geo-content/<collection>.json`（key 是
   圖層說明會先鋪一整段再整個換掉；`sources` 在內容檔與圖層上是兩組不同的字；而示意
   警語遇到 `attach.schematic: false`（世界主要山脈的最高峰）會「先出現再消失」，那等於
   對讀者說了一句幾百毫秒的假話。
+- **`useDetailTitle` 對 `geo` 要在「查不到內容檔」時退回 geojson 的 `name`。**
+  ⚠️ 這一條只有在「同一個圖層裡**有些**圖徵寫了內容檔、有些沒有」時才看得出來：
+  世界主要河流 118 筆有 33 筆有卡片，退回之前點尼羅河有標題、點旁邊的
+  「尼羅河（艾伯特段）」標題列就是**空白**的——而卡片本體照樣把名稱、圖層說明與來源
+  畫得好好的（`FeatureCard` 的標題本來就是 `feature?.name.zh ?? fallback.name`），
+  所以畫面上只像「這一列忘了畫」。1,214 座火山、39 座主峰同理。
 - **`useDetailTitle` 是 hook 不是純函式**。面板標題原本同步查得到；現在分片還沒到就是
   undefined，而純函式版本**不會在分片落地後重算**，標題會一直空著（實測過）。所以它
   等 Promise 落地再逼一次重繪，並且必須在 `ThemeMapPage` 的**本體**呼叫——寫進
@@ -272,6 +297,7 @@ ID 常數定義在 `src/map/layers/*.ts`，**一律 import 常數，不要寫死
 | `world-picks-points` | circle（世界櫥窗；**編者選集**，跟「世界之最」是兩種東西，同樣沿用 `place` 藍，見下） |
 | `world-picks-areas-line` / `-label` | line + symbol（世界櫥窗；編者選集裡**有範圍**的項目，`reference` 中性灰虛線——那條虛線的語意是「這是示意的線」，⚠️ 但兩筆的理由不同，見下） |
 | `world-places-points` | circle |
+| `world-population-points` | circle（505 個百萬人以上的都會區；半徑＝都會區人口，顏色是單一身分色。⚠️ 顏色**不是**臺灣人口那個紫——紫對火山洋紅是 hard FAIL，見 `CLAUDE_WORLD.md`） |
 | `world-continents-fill` / `-outline` | fill + line（七大洲；`fillOpacity: 0`，畫出來的是外框與名字）。⚠️ 洲名**不是**面的標註，見下 |
 | `world-continent-labels-points` / `-label` | circle + symbol（附屬圖層；`radius: 0`，整層只是七個洲名的錨點） |
 | `latitude-lines-line` / `latitude-lines-label` | line + symbol |
@@ -335,7 +361,7 @@ maplibre-contour 把 worker 以 Blob URL 內嵌，**不需要額外部署 worker
 | 主題 | 路由 | 內容 |
 |---|---|---|
 | 臺灣地理 | `/theme/taiwan` | 臺灣123（土地與島群、專屬經濟海域、海峽中線、北回歸線）、行政區（縣市、鄉鎮市區）、**地體構造（板塊、板塊邊界）**、地形（地形景點、五大山脈、岩石分布）、天然災害（活動斷層、地震、颱風路徑與災損）、水系（118 個列管水系、水庫即時水情、河川流域分區）、人文（原住民族、交通軸線、古蹟、人口與都市體系）、植被生態（特有種、國家公園與保護區、垂直植被帶）、農業物產（主要作物分布） |
-| 世界地理 | `/theme/world` | **全球尺度（骨架，排在前面）**：參考線（緯度參考線、國際換日線）、**世界櫥窗**（作者精選、作者精選・範圍；⚠️「世界之最」兩層已下架待重新設計，見上）、氣候與生物群系（森林與沙漠帶、柯本氣候分區、行星風系）、海洋（洋流：18 條暖流／寒流）、地體構造（板塊、板塊邊界、地震帶、火山帶）。**世界地理原有**：城市、國界與大洲（大洲分區）、地形水系（世界主要河流、世界主要山脈）、人文專題 |
+| 世界地理 | `/theme/world` | **全球尺度（骨架，排在前面）**：參考線（緯度參考線、國際換日線）、**世界櫥窗**（作者精選、作者精選・範圍；⚠️「世界之最」兩層已下架待重新設計，見上）、氣候與生物群系（森林與沙漠帶、柯本氣候分區、行星風系）、海洋（洋流：18 條暖流／寒流）、地體構造（板塊、板塊邊界、地震帶、火山帶）。**世界地理原有**：城市（世界重要城市 31 個、世界人口分布 505 個都會區）、大洲（大洲分區；⚠️「國界」那個 planned 圖層 2026-08 拿掉了，兩種建議底圖本身就畫著國界，見 `CLAUDE_WORLD.md`）、地形水系（世界主要河流、世界主要山脈）、人文專題 |
 
 兩個主題頁都是**滿版地圖 + 浮動控制**（仿 Google Map），沒有頁首也沒有側欄——版面機制見下面的「全螢幕地圖外框與浮動控制」。
 
@@ -1218,6 +1244,21 @@ Node 24 原生支援 TypeScript type stripping，所以 `.mjs` 腳本可以直�
 
 `src/compare/presets.ts`。每一組都要挑「緯度接近、地理條件差很多」的配對，並在 `hint` 寫清楚教學意圖。例如臺北與塔曼拉塞特年均溫都是 22.3 °C，年雨量卻是 2078 mm 對 24 mm。
 
+⚠️ **好的配對是「只有一個變因不同」**，`hint` 要把那個變因指名道姓。2026-08 補了 26 個
+世界城市之後新增五組（東京↔洛杉磯＝大陸東西岸、新加坡↔奈洛比＝海拔、聖保羅↔愛麗絲泉＝
+南回歸線上的海陸位置、開普敦↔雪梨＝南半球東西岸、雷克雅維克↔努克＝洋流），挑法與
+每一組的實測數字見 `CLAUDE_WORLD.md` 的「世界重要城市」。
+
+⚠️ **`lat` 是兩張地圖共用的**（緯度鎖定是 `/compare` 成立的前提），所以配對的兩地
+緯度差幾度沒關係、取一個中間值即可（臺北 25.0 ↔ 開羅 30.0 用的就是 27）。**但不要
+拿緯度差超過五、六度的兩地硬湊**——那時 `lat` 落在誰身上都不對，兩張地圖會各自
+偏離主角。
+
+⚠️ **下拉選單依 `region` 分成「臺灣／世界」兩個 `<optgroup>`**（`ComparePage` 的
+`PLACE_GROUPS`）。地點從 30 筆長到 56 筆之後，平鋪的清單會讓臺灣的地點散在世界城市
+中間（順序是檔名字母序）。組內順序刻意維持 `places` 原本的順序，比照主題頁可點清單
+「排序規則跟著資料集走」的既有規則。
+
 ---
 
 ## 圖表規範
@@ -1278,6 +1319,7 @@ npm run build:geodata -- --force --only=tw-plates            # 臺灣周邊 6 �
 npm run build:geodata -- --force --only=tw-plate-boundaries # 臺灣周邊三種邊界（跟 plate-boundaries 共用那份 step 檔）
 npm run build:geodata -- --force --only=volcanoes            # 1,214 座全新世活火山（GVP）
 npm run build:geodata -- --force --only=world-continents     # 七大洲（Natural Earth 國界 → 依洲別聯集）
+npm run build:geodata -- --force --only=world-population     # 505 個百萬人以上的都會區（下載 19 MB，跟大洲共用國界那份）
 npm run build:geodata -- --force --only=world-mountains      # 39 條山脈（範圍面 → 中軸線）
 npm run build:geodata -- --force --only=world-mountain-peaks # 同一份下載的 39 座最高峰
 npm run build:geodata -- --force --only=world-superlatives-ranges
@@ -1555,8 +1597,9 @@ m.isSourceLoaded('contour-source')
 > 保護區、交通軸線、河川、流域、古蹟、鄉鎮界、作物、人口、三層共用卡、植被帶、
 > 斷層與地震、颱風、岩石分布、板塊）；**第 28–40 項是世界主題的，搬到
 > `CLAUDE_WORLD.md` 了**（世界底圖地名、國際換日線、板塊與板塊邊界、火山帶、
-> 森林與沙漠帶、柯本氣候分區、行星風系、洋流、大洲分區、世界主要山脈、世界櫥窗）。
-> 編號沒有重排，所以下面直接從第 43 項接下去。
+> 森林與沙漠帶、柯本氣候分區、行星風系、洋流、大洲分區、世界主要山脈、世界櫥窗），
+> **第 44–46 項也在那裡**（世界重要城市與新的 `/compare` 配對、柯本／河流／火山／
+> 主峰那幾批說明卡、世界人口分布）。編號沒有重排，所以下面只有跨主題的第 43 項。
 
 43. **地理要素說明的延遲載入**（跨主題，見上面「地理要素說明為什麼要延遲載入」）。
     ⚠️ **這一項在 localhost 上「看起來永遠是好的」**：分片幾毫秒就到，載入中的狀態根本
@@ -1588,8 +1631,8 @@ m.isSourceLoaded('contour-source')
     - **沒有內容檔的圖徵不能卡在載入中**：勾「流域分區」點一個沒有內容檔的流域
       （例如石門溪）、或勾「世界主要河流」點尼羅河，都要**直接**是 fallback
       （名稱＋`meta`＋圖層說明＋來源）
-    - **不可以有 404**：`volcanoes`／`world-rivers`／`koppen-zones`／`tw-geology`／
-      `world-mountain-peaks` 五個 collection 一份內容檔都沒有，但分片必須存在：
+    - **不可以有 404**：`tw-geology` 一份內容檔都沒有（`volcanoes`／`world-rivers`／
+      `world-mountain-peaks` 則是**只有一部分**圖徵有卡片），但分片一律必須存在：
       ```js
       performance.getEntriesByType('resource').filter(r => /geo-content/.test(r.name))
         .map(r => [r.name.split('/').pop(), r.responseStatus])   // 全部要是 200
