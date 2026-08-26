@@ -364,7 +364,23 @@ export function useDetailTitle(
   if (detail.type === "place") return getPlace(featureId)?.name.zh;
   if (detail.type === "indigenous") return getIndigenousGroup(featureId)?.name.zh;
   if (detail.type === "species") return getSpecies(featureId)?.name.zh;
-  if (detail.type === "geo") return getLoadedGeoFeature(detail.collection, featureId)?.name.zh;
+  if (detail.type === "geo") {
+    /**
+     * ⚠️ **內容檔不存在時要退回 geojson 的 `name`**，不能直接回 undefined。
+     *
+     * 這一條在「只有部分圖徵寫了內容檔」的圖層上才看得出來：世界主要河流有 118 筆、
+     * 目前 33 筆有說明卡，退回之前點尼羅河有標題、點隔壁的「尼羅河（艾伯特段）」
+     * 標題列就是**空白**的——而卡片本體照樣走 `FeatureCard` 的 fallback 顯示得好好的
+     * （名稱、圖層說明、來源都在），所以畫面上看起來只像「這一列的標題忘了畫」。
+     *
+     * `FeatureCard` 的標題本來就是 `feature?.name.zh ?? fallback.name`，這裡補的是
+     * 同一條規則的另一半，讓面板頭與卡片標題永遠一致。
+     */
+    return (
+      getLoadedGeoFeature(detail.collection, featureId)?.name.zh ??
+      featureName(featuresIn(instances, "geo", featureId)[0])
+    );
+  }
 
   /**
    * 以下四種沒有內容檔，名字在 geojson 裡（見 `featuresIn`）。

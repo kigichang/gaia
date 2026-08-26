@@ -200,6 +200,21 @@ interface MapPanelProps {
   onReady: (map: MapLibreMap) => void;
 }
 
+/**
+ * 下拉選單依 `region` 分成兩組。
+ *
+ * ⚠️ 這不是排版潔癖：2026-08 把世界城市從 5 個補到 31 個之後，這份清單變成 56 筆，
+ * 平鋪時臺灣的地點會散在世界城市中間（順序是檔名的字母序），要選臺北得先捲過一半
+ * 的外國城市。`<optgroup>` 是原生元素，不需要任何額外的樣式或狀態。
+ *
+ * ⚠️ 組內順序**刻意維持 `places` 原本的順序**（檔名字母序），跟主題頁的可點清單
+ * 是同一條規則：排序規則跟著資料集走，共用元件不自己排。
+ */
+const PLACE_GROUPS = [
+  { label: "臺灣", list: places.filter((p) => p.region === "taiwan") },
+  { label: "世界", list: places.filter((p) => p.region === "world") },
+] as const;
+
 function MapPanel({
   side,
   place,
@@ -216,10 +231,14 @@ function MapPanel({
         <label>
           <span className="visually-hidden">選擇{side === "a" ? "左" : "右"}側地點</span>
           <select value={place.id} onChange={(e) => onSelect(side, e.target.value)}>
-            {places.map((p) => (
-              <option key={p.id} value={p.id}>
-                {p.name.zh}（{formatLatitude(p.coord.lat)}）
-              </option>
+            {PLACE_GROUPS.map(({ label, list }) => (
+              <optgroup key={label} label={label}>
+                {list.map((p) => (
+                  <option key={p.id} value={p.id}>
+                    {p.name.zh}（{formatLatitude(p.coord.lat)}）
+                  </option>
+                ))}
+              </optgroup>
             ))}
           </select>
         </label>

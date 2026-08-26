@@ -391,6 +391,53 @@ export const SOURCE_LINKS: Record<string, string> = {
   // ne_50m_rivers_lake_centerlines（世界主要河流）
   "Natural Earth 1:50m 河流與湖泊中心線":
     "https://www.naturalearthdata.com/downloads/50m-physical-vectors/50m-rivers-lake-centerlines/",
+  /**
+   * 世界主要河流的條目——`src/content/geo/world-rivers/` 底下 33 份說明卡各引一條
+   * （另一條是 Natural Earth 那份幾何）。
+   *
+   * ⚠️ 標籤裡的條目名要跟維基百科上**實際的**標題一致，而**不一定等於卡片上的
+   * 河名**：黑龍江的條目是「黑龍江 (河流)」（少了括號會連到黑龍江省）、勒拿河是
+   * 「勒那河」、伏爾加河是「窩瓦河」、奧里諾科河是「奧利諾科河」。全部實測過
+   * HTTP 200。
+   *
+   * ⚠️ 「內格羅河」**故意沒有收**：那是一個消歧義頁（多條同名的河），而這一層
+   * 的內格羅河有兩筆（亞馬遜支流與巴塔哥尼亞），所以那兩筆維持 FeatureCard 的
+   * fallback，不要為了補齊而連到消歧義頁。
+   */
+  "維基百科 亞馬遜河": "https://zh.wikipedia.org/zh-tw/%E4%BA%9E%E9%A6%AC%E9%81%9C%E6%B2%B3",
+  "維基百科 伊洛瓦底江": "https://zh.wikipedia.org/zh-tw/%E4%BC%8A%E6%B4%9B%E7%93%A6%E5%BA%95%E6%B1%9F",
+  "維基百科 剛果河": "https://zh.wikipedia.org/zh-tw/%E5%89%9B%E6%9E%9C%E6%B2%B3",
+  "維基百科 勒那河": "https://zh.wikipedia.org/zh-tw/%E5%8B%92%E9%82%A3%E6%B2%B3",
+  "維基百科 印度河": "https://zh.wikipedia.org/zh-tw/%E5%8D%B0%E5%BA%A6%E6%B2%B3",
+  "維基百科 墨累河": "https://zh.wikipedia.org/zh-tw/%E5%A2%A8%E7%B4%AF%E6%B2%B3",
+  "維基百科 多瑙河": "https://zh.wikipedia.org/zh-tw/%E5%A4%9A%E7%91%99%E6%B2%B3",
+  "維基百科 奧利諾科河": "https://zh.wikipedia.org/zh-tw/%E5%A5%A7%E5%88%A9%E8%AB%BE%E7%A7%91%E6%B2%B3",
+  "維基百科 密蘇里河": "https://zh.wikipedia.org/zh-tw/%E5%AF%86%E8%98%87%E9%87%8C%E6%B2%B3",
+  "維基百科 密西西比河": "https://zh.wikipedia.org/zh-tw/%E5%AF%86%E8%A5%BF%E8%A5%BF%E6%AF%94%E6%B2%B3",
+  "維基百科 尚比西河": "https://zh.wikipedia.org/zh-tw/%E5%B0%9A%E6%AF%94%E8%A5%BF%E6%B2%B3",
+  "維基百科 尼日河": "https://zh.wikipedia.org/zh-tw/%E5%B0%BC%E6%97%A5%E6%B2%B3",
+  "維基百科 尼羅河": "https://zh.wikipedia.org/zh-tw/%E5%B0%BC%E7%BE%85%E6%B2%B3",
+  "維基百科 巴拉那河": "https://zh.wikipedia.org/zh-tw/%E5%B7%B4%E6%8B%89%E9%82%A3%E6%B2%B3",
+  "維基百科 布拉馬普特拉河":
+    "https://zh.wikipedia.org/zh-tw/%E5%B8%83%E6%8B%89%E9%A6%AC%E6%99%AE%E7%89%B9%E6%8B%89%E6%B2%B3",
+  "維基百科 幼發拉底河": "https://zh.wikipedia.org/zh-tw/%E5%B9%BC%E7%99%BC%E6%8B%89%E5%BA%95%E6%B2%B3",
+  "維基百科 恆河": "https://zh.wikipedia.org/zh-tw/%E6%81%86%E6%B2%B3",
+  "維基百科 湄公河": "https://zh.wikipedia.org/zh-tw/%E6%B9%84%E5%85%AC%E6%B2%B3",
+  "維基百科 瀾滄江": "https://zh.wikipedia.org/zh-tw/%E7%80%BE%E6%BB%84%E6%B1%9F",
+  "維基百科 白尼羅河": "https://zh.wikipedia.org/zh-tw/%E7%99%BD%E5%B0%BC%E7%BE%85%E6%B2%B3",
+  "維基百科 窩瓦河": "https://zh.wikipedia.org/zh-tw/%E7%AA%A9%E7%93%A6%E6%B2%B3",
+  "維基百科 聖羅倫斯河": "https://zh.wikipedia.org/zh-tw/%E8%81%96%E7%BE%85%E5%80%AB%E6%96%AF%E6%B2%B3",
+  "維基百科 育空河": "https://zh.wikipedia.org/zh-tw/%E8%82%B2%E7%A9%BA%E6%B2%B3",
+  "維基百科 達令河": "https://zh.wikipedia.org/zh-tw/%E9%81%94%E4%BB%A4%E6%B2%B3",
+  "維基百科 鄂畢河": "https://zh.wikipedia.org/zh-tw/%E9%84%82%E7%95%A2%E6%B2%B3",
+  "維基百科 金沙江": "https://zh.wikipedia.org/zh-tw/%E9%87%91%E6%B2%99%E6%B1%9F",
+  "維基百科 長江": "https://zh.wikipedia.org/zh-tw/%E9%95%B7%E6%B1%9F",
+  "維基百科 雅魯藏布江": "https://zh.wikipedia.org/zh-tw/%E9%9B%85%E9%AD%AF%E8%97%8F%E5%B8%83%E6%B1%9F",
+  "維基百科 青尼羅河": "https://zh.wikipedia.org/zh-tw/%E9%9D%92%E5%B0%BC%E7%BE%85%E6%B2%B3",
+  "維基百科 馬更些河": "https://zh.wikipedia.org/zh-tw/%E9%A6%AC%E6%9B%B4%E4%BA%9B%E6%B2%B3",
+  "維基百科 黃河": "https://zh.wikipedia.org/zh-tw/%E9%BB%83%E6%B2%B3",
+  "維基百科 黑龍江 (河流)":
+    "https://zh.wikipedia.org/zh-tw/%E9%BB%91%E9%BE%8D%E6%B1%9F%20%28%E6%B2%B3%E6%B5%81%29",
   // ne_50m_admin_0_countries（大洲分區＝依 CONTINENT 欄位併起來的；國界那一層也用它）
   "Natural Earth 1:50m 國界":
     "https://www.naturalearthdata.com/downloads/50m-cultural-vectors/50m-admin-0-countries/",
@@ -860,6 +907,40 @@ export const SOURCE_LINKS: Record<string, string> = {
   // ⚠️ 連 VOTW 資料庫的說明頁，不是 GVP 首頁：本站抓的就是這個資料庫（全新世火山），
   // 而它的引用格式、目前版本與 DOI 都印在這一頁上（實測 2026-08 是 v. 5.4.0）。
   "史密森尼學會 全球火山計畫（GVP）": "https://volcano.si.edu/gvp_votw.cfm",
+  /**
+   * 十座著名高峰與九座著名火山的條目——`src/content/geo/world-mountain-peaks/` 與
+   * `src/content/geo/volcanoes/` 底下那幾份說明卡各引一條。這兩個 collection 的
+   * 圖徵很多（39 座主峰、1,214 座活火山），**只有課本會點名的那幾座寫了卡片**，
+   * 其餘維持 FeatureCard 的 fallback（名稱、類型、海拔、最後噴發都在 geojson 裡）。
+   *
+   * ⚠️ 條目名照臺灣的譯名寫（白朗峰、庫克山、基拉韋亞火山），維基百科上那幾條
+   * 是簡體標題的 zh-tw 轉換或重新導向——`/zh-tw/` 的網址一樣打得開，全部實測過
+   * HTTP 200。其餘幾條要照條目自己的標題：德納利峰（不是迪納利山）、聖海倫斯火山、
+   * 聖托里尼（不加「島」）、喬戈里峰（不是 K2）。
+   */
+  "維基百科 厄爾布魯士山":
+    "https://zh.wikipedia.org/zh-tw/%E5%8E%84%E7%88%BE%E5%B8%83%E9%AD%AF%E5%A3%AB%E5%B1%B1",
+  "維基百科 喀拉喀托": "https://zh.wikipedia.org/zh-tw/%E5%96%80%E6%8B%89%E5%96%80%E6%89%98",
+  "維基百科 喬戈里峰": "https://zh.wikipedia.org/zh-tw/%E5%96%AC%E6%88%88%E9%87%8C%E5%B3%B0",
+  "維基百科 坦博拉火山": "https://zh.wikipedia.org/zh-tw/%E5%9D%A6%E5%8D%9A%E6%8B%89%E7%81%AB%E5%B1%B1",
+  "維基百科 埃特納火山": "https://zh.wikipedia.org/zh-tw/%E5%9F%83%E7%89%B9%E7%B4%8D%E7%81%AB%E5%B1%B1",
+  "維基百科 基拉韋亞火山":
+    "https://zh.wikipedia.org/zh-tw/%E5%9F%BA%E6%8B%89%E9%9F%8B%E4%BA%9E%E7%81%AB%E5%B1%B1",
+  "維基百科 富士山": "https://zh.wikipedia.org/zh-tw/%E5%AF%8C%E5%A3%AB%E5%B1%B1",
+  "維基百科 庫克山": "https://zh.wikipedia.org/zh-tw/%E5%BA%AB%E5%85%8B%E5%B1%B1",
+  "維基百科 德納利峰": "https://zh.wikipedia.org/zh-tw/%E5%BE%B7%E7%B4%8D%E5%88%A9%E5%B3%B0",
+  "維基百科 查亞峰": "https://zh.wikipedia.org/zh-tw/%E6%9F%A5%E4%BA%9E%E5%B3%B0",
+  "維基百科 波波卡特佩特火山":
+    "https://zh.wikipedia.org/zh-tw/%E6%B3%A2%E6%B3%A2%E5%8D%A1%E7%89%B9%E4%BD%A9%E7%89%B9%E7%81%AB%E5%B1%B1",
+  "維基百科 白朗峰": "https://zh.wikipedia.org/zh-tw/%E7%99%BD%E6%9C%97%E5%B3%B0",
+  "維基百科 皮納圖博火山":
+    "https://zh.wikipedia.org/zh-tw/%E7%9A%AE%E7%B4%8D%E5%9C%96%E5%8D%9A%E7%81%AB%E5%B1%B1",
+  "維基百科 科修斯科山": "https://zh.wikipedia.org/zh-tw/%E7%A7%91%E4%BF%AE%E6%96%AF%E7%A7%91%E5%B1%B1",
+  "維基百科 聖托里尼": "https://zh.wikipedia.org/zh-tw/%E8%81%96%E6%89%98%E9%87%8C%E5%B0%BC",
+  "維基百科 聖海倫斯火山":
+    "https://zh.wikipedia.org/zh-tw/%E8%81%96%E6%B5%B7%E5%80%AB%E6%96%AF%E7%81%AB%E5%B1%B1",
+  "維基百科 阿空加瓜山": "https://zh.wikipedia.org/zh-tw/%E9%98%BF%E7%A9%BA%E5%8A%A0%E7%93%9C%E5%B1%B1",
+  "維基百科 雷尼爾山": "https://zh.wikipedia.org/zh-tw/%E9%9B%B7%E5%B0%BC%E7%88%BE%E5%B1%B1",
   // 40 幾座知名火山的中文名（次級來源，逐條登記條目，不寫泛稱的「維基百科」）
   "維基百科 火山列表": "https://zh.wikipedia.org/zh-tw/%E7%81%AB%E5%B1%B1%E5%88%97%E8%A1%A8",
   /**
@@ -873,6 +954,13 @@ export const SOURCE_LINKS: Record<string, string> = {
    * 所以來源標籤帶著論文出處，不要簡寫成「柯本分類」。
    */
   "柯本－蓋格氣候分類圖（Kottek et al. 2006）": "https://koeppen-geiger.vu-wien.ac.at/present.htm",
+  /**
+   * 30 個亞型的說明卡（`src/content/geo/koppen-zones/`）除了 Kottek 那份分區圖之外
+   * 都引它——判準的字母組合規則（第一碼氣候帶、第二碼雨型、第三碼溫度）在那份
+   * 分區圖的網頁上只有表格，條目才講得完整。⚠️ 條目名是「柯本氣候分類法」，
+   * 標籤也要連「法」一起寫（本站的規則是標籤＝實際標題）。
+   */
+  "維基百科 柯本氣候分類法": "https://zh.wikipedia.org/zh-tw/%E6%9F%AF%E6%9C%AC%E6%B0%A3%E5%80%99%E5%88%86%E9%A1%9E%E6%B3%95",
   "Esri Living Atlas":
     "https://www.arcgis.com/home/item.html?id=37ea320eebb647c6838c23f72abae5ef",
   /**
@@ -901,6 +989,42 @@ export const SOURCE_LINKS: Record<string, string> = {
   臺灣鐵路公司: "https://www.railway.gov.tw/tra-tip-web/adr/about-vision",
   台灣高鐵: "https://www.thsrc.com.tw/event/Governance/THSRC_Introduction.pdf",
   "Open-Meteo ERA5 再分析資料": "https://open-meteo.com/en/docs/historical-weather-api",
+  /**
+   * 世界重要城市的條目——`src/content/places/` 底下 region 為 world 的那 31 筆
+   * 幾乎每一份都引它（次級來源，見 CLAUDE.md「內容撰寫規範」：氣候正常值一律
+   * 以 Open-Meteo ERA5 那一筆為準，維基百科只用來查地形、聚落與人地關係）。
+   *
+   * ⚠️ 標籤裡的條目名要跟維基百科上**實際的**標題一致（連結是由它組出來的），
+   * 而且**不一定等於卡片上的地名**：紐約市的條目叫「紐約」、馬瑙斯叫「瑪瑙斯」、
+   * 聖保羅叫「聖保羅市」（少了「市」會連到使徒保羅）。全部實測過 HTTP 200。
+   */
+  "維基百科 東京": "https://zh.wikipedia.org/zh-tw/%E6%9D%B1%E4%BA%AC",
+  "維基百科 新加坡": "https://zh.wikipedia.org/zh-tw/%E6%96%B0%E5%8A%A0%E5%9D%A1",
+  "維基百科 曼谷": "https://zh.wikipedia.org/zh-tw/%E6%9B%BC%E8%B0%B7",
+  "維基百科 孟買": "https://zh.wikipedia.org/zh-tw/%E5%AD%9F%E8%B2%B7",
+  "維基百科 德里": "https://zh.wikipedia.org/zh-tw/%E5%BE%B7%E9%87%8C",
+  "維基百科 北京市": "https://zh.wikipedia.org/zh-tw/%E5%8C%97%E4%BA%AC%E5%B8%82",
+  "維基百科 杜拜": "https://zh.wikipedia.org/zh-tw/%E6%9D%9C%E6%8B%9C",
+  "維基百科 雅加達": "https://zh.wikipedia.org/zh-tw/%E9%9B%85%E5%8A%A0%E9%81%94",
+  "維基百科 伊斯坦堡": "https://zh.wikipedia.org/zh-tw/%E4%BC%8A%E6%96%AF%E5%9D%A6%E5%A0%A1",
+  "維基百科 倫敦": "https://zh.wikipedia.org/zh-tw/%E5%80%AB%E6%95%A6",
+  "維基百科 羅馬": "https://zh.wikipedia.org/zh-tw/%E7%BE%85%E9%A6%AC",
+  "維基百科 莫斯科": "https://zh.wikipedia.org/zh-tw/%E8%8E%AB%E6%96%AF%E7%A7%91",
+  "維基百科 雷克雅維克": "https://zh.wikipedia.org/zh-tw/%E9%9B%B7%E5%85%8B%E9%9B%85%E7%B6%AD%E5%85%8B",
+  "維基百科 奈洛比": "https://zh.wikipedia.org/zh-tw/%E5%A5%88%E6%B4%9B%E6%AF%94",
+  "維基百科 開普敦": "https://zh.wikipedia.org/zh-tw/%E9%96%8B%E6%99%AE%E6%95%A6",
+  "維基百科 拉哥斯": "https://zh.wikipedia.org/zh-tw/%E6%8B%89%E5%93%A5%E6%96%AF",
+  "維基百科 紐約": "https://zh.wikipedia.org/zh-tw/%E7%B4%90%E7%B4%84",
+  "維基百科 洛杉磯": "https://zh.wikipedia.org/zh-tw/%E6%B4%9B%E6%9D%89%E7%A3%AF",
+  "維基百科 墨西哥城": "https://zh.wikipedia.org/zh-tw/%E5%A2%A8%E8%A5%BF%E5%93%A5%E5%9F%8E",
+  "維基百科 努克": "https://zh.wikipedia.org/zh-tw/%E5%8A%AA%E5%85%8B",
+  "維基百科 瑪瑙斯": "https://zh.wikipedia.org/zh-tw/%E7%91%AA%E7%91%99%E6%96%AF",
+  "維基百科 利馬": "https://zh.wikipedia.org/zh-tw/%E5%88%A9%E9%A6%AC",
+  "維基百科 聖保羅市": "https://zh.wikipedia.org/zh-tw/%E8%81%96%E4%BF%9D%E7%BE%85%E5%B8%82",
+  "維基百科 布宜諾斯艾利斯":
+    "https://zh.wikipedia.org/zh-tw/%E5%B8%83%E5%AE%9C%E8%AB%BE%E6%96%AF%E8%89%BE%E5%88%A9%E6%96%AF",
+  "維基百科 雪梨": "https://zh.wikipedia.org/zh-tw/%E9%9B%AA%E6%A2%A8",
+  "維基百科 愛麗斯泉": "https://zh.wikipedia.org/zh-tw/%E6%84%9B%E9%BA%97%E6%96%AF%E6%B3%89",
   // ⚠️ 泛稱的「USGS」拆成兩個標籤：三個地震圖層抓的是地震目錄（ANSS ComCat，
   // 端點是 fdsnws/event/1/query，這裡連它的查詢介面），而希洛那張地點卡引用的是
   // 夏威夷火山觀測站的火山資料——同一個機關、兩份完全不同的東西。
