@@ -732,10 +732,27 @@ export const worldTheme: ThemeDefinition = {
         palette: Object.values(KOPPEN_COLORS),
         // 勾圖層就五類全開：這一層看的是「全球分成哪幾種氣候」，只顯示一類看不出分區
         defaultAll: true,
+        /**
+         * ⚠️ **點抽屜裡「A 熱帶氣候」那五個字要開的是「大類的定義」，不是某一塊
+         * 圖徵**——判準跟古蹟三級、主要作物三類一樣：子項目名稱回答的問題
+         * （「A 類是什麼」）跟圖徵回答的問題（「我腳下這一格是 Af 還是 Aw」）不同。
+         *
+         * ⚠️ 不宣告的後果是**一張幾乎空白的卡**，而且完全靜默：item id（`a`）拿去
+         * 母圖層那一支查，`koppen-zones` 裡只有 `af`／`am`／…，永遠查不到。實測
+         * 在補這一段之前，點「A 熱帶氣候」開出來的整張卡只有「柯本氣候分區」五個字
+         * 加一行資料來源（`hideLayerDescription` 又把圖層說明擋掉了，所以比一般的
+         * fallback 更空）。
+         *
+         * 內容在 `src/content/geo/koppen-groups/{a,b,c,d,e}.json`，`validate-content.mjs`
+         * 兩個方向都會擋：少一份內容檔會失敗，多一份對不到 item 的也會失敗。
+         */
+        detail: { type: "geo", collection: "koppen-groups" },
       },
       /**
-       * 30 個亞型各是一筆圖徵，卡片走 `FeatureCard` 的 fallback（沒有內容檔，
-       * 名稱／判準／代表地點都在建置期寫進 geojson，見 lib/koppen.mjs 的 `SUBTYPES`）。
+       * 30 個亞型各是一筆圖徵，每一個都有自己的說明卡
+       * （`src/content/geo/koppen-zones/<代碼>.json`，⚠️ `stats` 第四格必須是
+       * 「代表地點」——有內容檔之後 `FeatureCard` 就不再畫 geojson 的 `meta` 與
+       * `detail` 了，而那兩行原本就是判準與代表地點）。
        * `hideLayerDescription`：30 張卡上那段圖層說明逐字相同，而且就是抽屜那一列。
        */
       detail: { type: "geo", collection: "koppen-zones", hideLayerDescription: true },
