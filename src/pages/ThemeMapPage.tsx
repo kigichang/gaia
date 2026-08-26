@@ -8,7 +8,7 @@ import { AppMenu } from "../components/AppMenu";
 import { MapLayersPopover } from "../components/MapLayersPopover";
 import { LayerDrawer } from "../components/LayerDrawer";
 import { MapSearchBox } from "../components/MapSearchBox";
-import { DonateButton } from "../components/DonateButton";
+import { FeedbackButton } from "../components/FeedbackButton";
 import { MapDetailPanel } from "../components/MapDetailPanel";
 import { DetailCard, useDetailTitle, type Selection } from "../components/DetailCard";
 import { browseLayerExtra } from "../components/ThemeBrowse";
@@ -777,7 +777,7 @@ function ThemeMapView({ theme, chrome }: { theme: ThemeDefinition; chrome: Chrom
       />
 
       {/* 搜尋框是左上角那一欄的頂端，詳情面板接在它下面（--search-h）。
-          贊助按鈕排在搜尋框右邊，同一列。 */}
+          問題回報按鈕排在搜尋框右邊，同一列。 */}
       <div className="map-top-left">
         <MapSearchBox
           themeLabel={theme.label}
@@ -786,7 +786,7 @@ function ThemeMapView({ theme, chrome }: { theme: ThemeDefinition; chrome: Chrom
           menuLabel={`圖層選單：${theme.label}`}
           onSelectHit={handleSelectHit}
         />
-        <DonateButton />
+        <FeedbackButton />
       </div>
 
       <div className="map-top-right">

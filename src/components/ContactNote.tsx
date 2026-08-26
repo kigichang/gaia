@@ -1,5 +1,4 @@
 const GITHUB_URL = "https://github.com/kigichang/gaia";
-const DONATE_URL = "https://official.junyiacademy.org/donate/";
 const CONTACT_EMAIL = "me@kigi.tw";
 
 /**
@@ -10,23 +9,22 @@ const MAIL_SUBJECT = "[GAIA] 問題或建議標題";
 const MAILTO_URL = `mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent(MAIL_SUBJECT)}`;
 
 /** 兩個入口共用的標題，兩邊不會漂開 */
-export const CONTACT_TITLE = "問題、建議與贊助";
+export const CONTACT_TITLE = "問題回報";
 
 /**
- * 「問題、建議與贊助」的內文：GitHub Issue、Email、贊助頁三個連結。
+ * 「問題回報」的內文：GitHub Issue 與 Email 兩個連結。
  *
  * ## 為什麼是共用元件而不是各寫一份
  *
  * 它同時出現在**兩個**地方，而兩者在畫面上**永遠只會有一個**（見 styles.css 的
  * `.map-menu-contact`）：
  *
- * - 寬螢幕：搜尋框右邊的心型（`DonateButton`）。
- * - 窄螢幕（≤860px）：右上角 ⋮⋮⋮ 選單裡的一段——那個寬度心型整顆是 `display: none`
+ * - 寬螢幕：搜尋框右邊的按鈕（`FeedbackButton`）。
+ * - 窄螢幕（≤860px）：右上角 ⋮⋮⋮ 選單裡的一段——那個寬度按鈕整顆是 `display: none`
  *   的（要讓出 ⋮⋮⋮ 的位置與打字空間，見 CLAUDE.md），少了這一段，**手機上就完全
  *   沒有回報問題的入口**。
  *
- * 網址原樣印出來、不寫成「這裡」：使用者要看得到自己會被帶去哪裡（那正是心型從
- * 直接外跳改成先開一張卡的理由）。
+ * 網址原樣印出來、不寫成「這裡」：使用者要看得到自己會被帶去哪裡。
  */
 export function ContactNote() {
   return (
@@ -39,13 +37,6 @@ export function ContactNote() {
         發 Issue 或 Email 給{" "}
         {/* mailto 交給瀏覽器叫起預設的信件軟體，主旨由 MAIL_SUBJECT 帶入 */}
         <a href={MAILTO_URL}>{CONTACT_EMAIL}</a>
-      </p>
-
-      <p>
-        如果你喜歡我的創作或者有幫助到你的學習，請贊助支持均一：{" "}
-        <a href={DONATE_URL} target="_blank" rel="noopener noreferrer">
-          {DONATE_URL}
-        </a>
       </p>
     </div>
   );

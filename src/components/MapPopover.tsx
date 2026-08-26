@@ -10,7 +10,7 @@ interface MapPopoverProps {
   triggerClassName: string;
   /**
    * 加在根節點上的 class。⚠️ 版面上的必要條件，不是裝飾：根節點才是 flex 子元素，
-   * 所以「不要被壓縮」與「窄螢幕整個收起來」這種規則只能掛在它身上（贊助按鈕）。
+   * 所以「不要被壓縮」與「窄螢幕整個收起來」這種規則只能掛在它身上（問題回報按鈕）。
    */
   rootClassName?: string;
   triggerContent: ReactNode;

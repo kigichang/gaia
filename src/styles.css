@@ -869,40 +869,42 @@ input {
 
 .map-search-root {
   position: relative;
-  /* .map-top-left 現在是搜尋欄 + 贊助按鈕的一列，這裡要能縮才不會把按鈕擠出去 */
+  /* .map-top-left 現在是搜尋欄 + 問題回報按鈕的一列，這裡要能縮才不會把按鈕擠出去 */
   flex: 1;
   min-width: 0;
 }
 
-/* 搜尋框右邊的心型按鈕：點下去開一張「問題、建議與贊助」的小卡（見 DonateButton.tsx）。
-   心型固定用暖紅色，跟其他 .map-fab 的中性灰圖示區隔——這是唯一一個要引導
-   點擊而不是單純導覽的按鈕。.map-fab:hover 本身的 background 換色已經夠，
-   不需要額外的 hover 規則。 */
-.map-donate {
-  color: #e5484d;
+/* 搜尋框右邊的「問題回報」按鈕：點下去開一張小卡（見 FeedbackButton.tsx）。
+   用 --accent，跟其他 .map-fab 的中性灰圖示區隔——這是唯一一個要引導點擊
+   而不是單純導覽的按鈕。⚠️ 用**既有的 token**而不是寫死一個色碼：那顆按鈕
+   早期是暖紅的心型（贊助），紅色在這個站上讀起來像警示，對「回報問題」是誤導；
+   而 --accent 明暗兩模式各有定義（#2a78d6／#3987e5），寫死的色碼只有一個值。
+   .map-fab:hover 本身的 background 換色已經夠，不需要額外的 hover 規則。 */
+.map-feedback {
+  color: var(--accent);
 }
 
-/* ⚠️ flex: none 要掛在**根節點**上，不是心型按鈕上：搜尋欄那一列的 flex 子元素
-   是 MapPopover 的根節點（心型只是它的孫節點），掛錯地方時搜尋框一長按鈕就被壓扁。 */
-.map-donate-root {
+/* ⚠️ flex: none 要掛在**根節點**上，不是按鈕上：搜尋欄那一列的 flex 子元素
+   是 MapPopover 的根節點（按鈕只是它的孫節點），掛錯地方時搜尋框一長按鈕就被壓扁。 */
+.map-feedback-root {
   flex: none;
 }
 
-/* 小卡本身。比 .map-popover-panel 的 min-width(220px) 寬一些——裡面有兩個完整的
-   網址，太窄會斷成一堆兩三個字的行；同時不能超出視窗（窄螢幕整顆心型收起來，見下）。 */
-.map-donate-panel {
+/* 小卡本身。比 .map-popover-panel 的 min-width(220px) 寬一些——裡面有一個完整的
+   網址，太窄會斷成一堆兩三個字的行；同時不能超出視窗（窄螢幕整顆按鈕收起來，見下）。 */
+.map-feedback-panel {
   width: 300px;
   max-width: calc(100vw - var(--fab-gap) * 2);
 }
 
-.map-donate-head {
+.map-feedback-head {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 8px;
 }
 
-/* ---------- 「問題、建議與贊助」的內文（心型小卡與 ⋮⋮⋮ 選單共用，見 ContactNote.tsx） ---------- */
+/* ---------- 「問題回報」的內文（小卡與 ⋮⋮⋮ 選單共用，見 ContactNote.tsx） ---------- */
 
 .contact-note-title {
   margin: 0;
@@ -927,9 +929,9 @@ input {
   overflow-wrap: anywhere;
 }
 
-/* ⚠️ ⋮⋮⋮ 選單裡那一段**預設不顯示**：寬螢幕的入口是搜尋框右邊的心型，兩個都出現
-   等於同一段內容講兩次。它只在窄螢幕接手（見下面的媒體查詢），因為那個寬度心型
-   整顆是 display: none 的。**兩條規則是一組的，改一條就要改另一條。** */
+/* ⚠️ ⋮⋮⋮ 選單裡那一段**預設不顯示**：寬螢幕的入口是搜尋框右邊的問題回報按鈕，
+   兩個都出現等於同一段內容講兩次。它只在窄螢幕接手（見下面的媒體查詢），因為
+   那個寬度按鈕整顆是 display: none 的。**兩條規則是一組的，改一條就要改另一條。** */
 .map-menu-contact {
   display: none;
 }
@@ -1836,21 +1838,21 @@ input {
     padding-right: calc(var(--top-right-fab-w) + var(--fab-gap) + 8px);
   }
 
-  /* ⚠️ 而且贊助按鈕整個收起來：讓出上面那段留白之後，搜尋框在 412px 的手機上
-     只剩三百出頭，再擺一顆 46px 的心型就不夠打字了。贊助入口不是這一頁的主要
-     任務（桌機仍然看得到），主要入口是搜尋框與 ☰。 */
-  .map-donate-root {
+  /* ⚠️ 而且問題回報按鈕整個收起來：讓出上面那段留白之後，搜尋框在 412px 的手機上
+     只剩三百出頭，再擺一顆 46px 的按鈕就不夠打字了。回報不是這一頁的主要任務，
+     主要入口是搜尋框與 ☰。 */
+  .map-feedback-root {
     display: none;
   }
 
-  /* ⚠️ 而且 ⋮⋮⋮ 選單要把同一段內容接回來——不然這個寬度**完全沒有**回報問題的
-     入口（贊助還有別的管道，回報沒有）。這一條與上面那條是一組的。 */
+  /* ⚠️ 但 ⋮⋮⋮ 選單一定要把同一段內容接回來——不然這個寬度**完全沒有**回報問題的
+     入口。這一條與上面那條是一組的。 */
   .map-menu-contact {
     display: block;
   }
 
   /* ⋮⋮⋮ 面板本來只靠 min-width(220px) 撐著，兩個完整網址在那個寬度下會斷得很碎。
-     加寬到跟心型那張小卡一樣，右緣仍然對齊 ⋮⋮⋮、左緣不會超出視窗。 */
+     加寬到跟問題回報那張小卡一樣，右緣仍然對齊 ⋮⋮⋮、左緣不會超出視窗。 */
   .map-menu {
     width: 300px;
     max-width: calc(100vw - var(--fab-gap) * 2);
