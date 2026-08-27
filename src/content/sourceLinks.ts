@@ -1587,6 +1587,39 @@ export const SOURCE_LINKS: Record<string, string> = {
   "維基百科 翠峰湖":
     "https://zh.wikipedia.org/zh-tw/%E7%BF%A0%E5%B3%B0%E6%B9%96",
   "大鵬灣國家風景區管理處 潟湖": "https://www.dbnsa.gov.tw/attraction/AttractionPage?a=215",
+
+  /**
+   * 「火山與火山島」那一層的來源。
+   *
+   * ⚠️ 臺灣**沒有**一份帶座標的官方火山名錄，所以 13 個火山體的清單是編者依課綱挑的，
+   * 而維基百科那一篇〈台灣火山列表〉是唯一把北部／東部／西部三個火山區整理在一起的
+   * 公開清單（比照五大山脈與 97 條河川的既有做法：來源名稱帶條目名，不是泛稱的
+   * 「維基百科」）。座標與年代的逐筆出處寫在各火山的內容檔裡。
+   */
+  "維基百科 台灣火山列表":
+    "https://zh.wikipedia.org/zh-tw/%E5%8F%B0%E7%81%A3%E7%81%AB%E5%B1%B1%E5%88%97%E8%A1%A8",
+  "維基百科 觀音山 (新北市)":
+    "https://zh.wikipedia.org/zh-tw/%E8%A7%80%E9%9F%B3%E5%B1%B1_%28%E6%96%B0%E5%8C%97%E5%B8%82%29",
+  "維基百科 基隆火山群":
+    "https://zh.wikipedia.org/zh-tw/%E5%9F%BA%E9%9A%86%E7%81%AB%E5%B1%B1%E7%BE%A4",
+  "維基百科 基隆嶼":
+    "https://zh.wikipedia.org/zh-tw/%E5%9F%BA%E9%9A%86%E5%B6%BC",
+  "維基百科 花瓶嶼":
+    "https://zh.wikipedia.org/zh-tw/%E8%8A%B1%E7%93%B6%E5%B6%BC",
+  "維基百科 棉花嶼":
+    "https://zh.wikipedia.org/zh-tw/%E6%A3%89%E8%8A%B1%E5%B6%BC",
+  "維基百科 彭佳嶼":
+    "https://zh.wikipedia.org/zh-tw/%E5%BD%AD%E4%BD%B3%E5%B6%BC",
+  "維基百科 澎湖群島":
+    "https://zh.wikipedia.org/zh-tw/%E6%BE%8E%E6%B9%96%E7%BE%A4%E5%B3%B6",
+  "維基百科 都蘭山":
+    "https://zh.wikipedia.org/zh-tw/%E9%83%BD%E8%98%AD%E5%B1%B1",
+  "維基百科 綠島鄉":
+    "https://zh.wikipedia.org/zh-tw/%E7%B6%A0%E5%B3%B6%E9%84%89",
+  "維基百科 紅頭山":
+    "https://zh.wikipedia.org/zh-tw/%E7%B4%85%E9%A0%AD%E5%B1%B1",
+  "維基百科 小蘭嶼":
+    "https://zh.wikipedia.org/zh-tw/%E5%B0%8F%E8%98%AD%E5%B6%BC",
   "維基百科 大鵬灣":
     "https://zh.wikipedia.org/zh-tw/%E5%A4%A7%E9%B5%AC%E7%81%A3_%28%E5%8F%B0%E7%81%A3%29",
 };

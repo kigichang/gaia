@@ -19,7 +19,7 @@
 > 要動 `/theme/taiwan` 的任何圖層——`src/map/registry/themes/taiwan.ts`、
 > `scripts/lib/` 底下對應的存取層、`public/data/geo/tw-*`、`src/content/geo/tw-*`
 > ——**請先把 `CLAUDE_TW.md` 讀完再開始**。那裡有各圖層的資料來源、取得邏輯、
-> 踩過的坑與第 15–27、41–42、48–49 項驗證清單。本檔案只留跨主題的部分。
+> 踩過的坑與第 15–27、41–42、48–50 項驗證清單。本檔案只留跨主題的部分。
 >
 > ⚠️ **世界地理主題的圖層文件在 `CLAUDE_WORLD.md`，那份也不會自動載入。**
 > 要動 `/theme/world` 的任何圖層——`src/map/registry/themes/world.ts`、
@@ -323,6 +323,7 @@ ID 常數定義在 `src/map/layers/*.ts`，**一律 import 常數，不要寫死
 | `tw-plates-fill` / `-outline` | fill + line（臺灣周邊 6 塊板塊；`fillOpacity: 0`，畫出來的是外框與名字。⚠️ **板塊名不是面的標註**，見下） |
 | `tw-plate-labels-points` / `-label` | circle + symbol（附屬圖層；`radius: 0`，整層只是六個板塊名的錨點——比照世界主題的洲名，理由見 `CLAUDE_TW.md`） |
 | `tw-plate-boundaries-<type>-line` / `-label` | line + symbol，**三種邊界各自一組**（`divergent`／`convergent`／`transform`）。顏色與虛線沿用世界主題那一組；⚠️ **沿線標註在這一層是必要條件**（聚合藍對水系藍 ΔE 2.1），見 `CLAUDE_TW.md` |
+| `tw-volcanoes-points` | circle（13 個火山體與火山島；**沿用世界主題火山帶的 `volcano` 洋紅**，⚠️ 因此跟五大山脈的 `relief` 幾乎同色，豁免理由是量出來的地理分隔，見 `CLAUDE_TW.md`） |
 | `tw-faults-line` / `tw-faults-label` | line + symbol（線寬依 `classRank` 分第一類／第二類；標註**依 zoom 換長短名**） |
 | `tw-quakes-points` | circle（半徑依規模，`strokeWidth: 0`） |
 | `tw-quakes-major-points` | circle（同一個 hazard 色但更深、更大、有白框） |
@@ -364,7 +365,7 @@ maplibre-contour 把 worker 以 Blob URL 內嵌，**不需要額外部署 worker
 
 | 主題 | 路由 | 內容 |
 |---|---|---|
-| 臺灣地理 | `/theme/taiwan` | 臺灣123（土地與島群、專屬經濟海域、海峽中線、北回歸線）、行政區（縣市、鄉鎮市區）、**地體構造（板塊、板塊邊界）**、地形（地形景點、五大山脈、岩石分布）、天然災害（活動斷層、地震、颱風路徑與災損）、水系（118 個列管水系、水庫即時水情、河川流域分區、**重要濕地**）、人文（原住民族、交通軸線、古蹟、人口與都市體系）、植被生態（特有種、國家公園與保護區、垂直植被帶）、農業物產（主要作物分布） |
+| 臺灣地理 | `/theme/taiwan` | 臺灣123（土地與島群、專屬經濟海域、海峽中線、北回歸線）、行政區（縣市、鄉鎮市區）、**地體構造（板塊、板塊邊界、火山與火山島）**、地形（地形景點、五大山脈、岩石分布）、天然災害（活動斷層、地震、颱風路徑與災損）、水系（118 個列管水系、水庫即時水情、河川流域分區、**重要濕地**）、人文（原住民族、交通軸線、古蹟、人口與都市體系）、植被生態（特有種、國家公園與保護區、垂直植被帶）、農業物產（主要作物分布） |
 | 世界地理 | `/theme/world` | **全球尺度（骨架，排在前面）**：參考線（緯度參考線、國際換日線）、**世界櫥窗**（作者精選、作者精選・範圍；⚠️「世界之最」兩層已下架待重新設計，見上）、氣候與生物群系（森林與沙漠帶、柯本氣候分區、行星風系）、海洋（洋流：18 條暖流／寒流）、地體構造（板塊、板塊邊界、地震帶、火山帶）。**世界地理原有**：城市（世界重要城市 31 個、世界人口分布 505 個都會區）、大洲（大洲分區；⚠️「國界」那個 planned 圖層 2026-08 拿掉了，兩種建議底圖本身就畫著國界，見 `CLAUDE_WORLD.md`）、地形水系（世界主要河流、世界主要山脈）、人文專題（古文明發源地） |
 
 兩個主題頁都是**滿版地圖 + 浮動控制**（仿 Google Map），沒有頁首也沒有側欄——版面機制見下面的「全螢幕地圖外框與浮動控制」。
@@ -1047,6 +1048,7 @@ maplibre 的四個角落容器是 map container 內的 `position: absolute; z-in
 | `world-picks.geojson`（geo-manual） | 11 KB |
 | `world-civilizations.geojson`（geo-manual） | 4 KB |
 | `tw-county-halls.geojson` | 8 KB |
+| `tw-volcanoes.geojson`（geo-manual） | 5 KB |
 | `tw-strait-median-line.geojson` | <1 KB |
 
 ⚠️ **`tw-transport.geojson` 不在這張表上，那不是漏掉——它從來就不該在。** 交通軸線是
@@ -1600,9 +1602,9 @@ m.isSourceLoaded('contour-source')
 
     ⚠️ **`src/content/places/` 新增一筆地點，就會同時改動三個地方**：地形景點圖層、`/compare` 的兩個下拉選單、主題頁搜尋索引。所以新增後 `npm run build:climate` 是必須的——`/compare` 選到一個沒有氣候 JSON 的地點會得到空圖表，而 `npm run validate` **不會**擋（climate 驗證只檢查「有 JSON 的必須對得到地點」，反向不檢查）。
 
-> **第 15–27 項、第 41–42 項與第 48–49 項是臺灣主題各圖層的驗證，搬到 `CLAUDE_TW.md` 了**
+> **第 15–27 項、第 41–42 項與第 48–50 項是臺灣主題各圖層的驗證，搬到 `CLAUDE_TW.md` 了**
 > （水庫、保護區、交通軸線、河川、流域、古蹟、鄉鎮界、作物、人口、三層共用卡、植被帶、
-> 斷層與地震、颱風、岩石分布、板塊、**重要濕地、翠峰湖與大鵬灣**）；**第 28–40 項是世界主題的，搬到
+> 斷層與地震、颱風、岩石分布、板塊、**重要濕地、翠峰湖與大鵬灣、火山與火山島**）；**第 28–40 項是世界主題的，搬到
 > `CLAUDE_WORLD.md` 了**（世界底圖地名、國際換日線、板塊與板塊邊界、火山帶、
 > 森林與沙漠帶、柯本氣候分區、行星風系、洋流、大洲分區、世界主要山脈、世界櫥窗），
 > **第 44–47 項也在那裡**（世界重要城市與新的 `/compare` 配對、柯本／河流／火山／
@@ -1760,7 +1762,7 @@ public/data/
 ├─ climate/*.json         # build:climate 產生
 ├─ species/*.geojson      # build:species 產生
 ├─ geo/*.geojson          # build:geodata 產生（禁止手改）
-├─ geo-content/*.json     # 地理要素說明的分片，38 份（build:geo-content 產生，禁止手改）
+├─ geo-content/*.json     # 地理要素說明的分片，39 份（build:geo-content 產生，禁止手改）
 │                         #   ⚠️ 這是 src/content/geo/ 的產物，詳情卡在執行期抓的就是它
 ├─ monuments/*.json       # 古蹟歷史沿革的縣市分片，21 份（build:geodata 產生，禁止手改）
 └─ geo-manual/*.geojson   # 手繪教學示意幾何（可以手改）

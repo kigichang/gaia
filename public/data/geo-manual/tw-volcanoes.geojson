@@ -1,0 +1,250 @@
+{
+ "type": "FeatureCollection",
+ "metadata": {
+  "collection": "tw-volcanoes",
+  "source": [
+   "https://volcano.si.edu/volcanolist_countries.cfm?country=Taiwan",
+   "https://www.geologycloud.tw/map/Stratum/zh-tw",
+   "https://zh.wikipedia.org/wiki/%E5%8F%B0%E7%81%A3%E7%81%AB%E5%B1%B1"
+  ],
+  "license": "手繪教學示意幾何（座標逐筆轉錄自來源，見 src/content/geo/tw-volcanoes/）",
+  "generatedAt": "2026-08-27T00:00:00.000Z",
+  "featureCount": 13
+ },
+ "features": [
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     121.553,
+     25.178
+    ]
+   },
+   "properties": {
+    "id": "tw-volcano-datun",
+    "name": "大屯火山群",
+    "en": "Tatun Volcanic Group",
+    "meta": "臺北市、新北市・安山岩・活火山",
+    "category": "北部火山區",
+    "zoom": 11
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     121.4267,
+     25.1358
+    ]
+   },
+   "properties": {
+    "id": "tw-volcano-guanyinshan",
+    "name": "觀音山",
+    "en": "Mount Guanyin",
+    "meta": "新北市五股區、八里區・安山岩・更新世",
+    "category": "北部火山區",
+    "zoom": 12
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     121.8489,
+     25.1186
+    ]
+   },
+   "properties": {
+    "id": "tw-volcano-keelung-group",
+    "name": "基隆火山群",
+    "en": "Keelung Volcano Group",
+    "meta": "新北市瑞芳區・安山岩・更新世",
+    "category": "北部火山區",
+    "zoom": 12
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     121.78556,
+     25.19222
+    ]
+   },
+   "properties": {
+    "id": "tw-volcano-keelung-islet",
+    "name": "基隆嶼",
+    "en": "Keelung Islet",
+    "meta": "基隆市中正區・石英安山岩・更新世",
+    "category": "北部火山區",
+    "zoom": 14
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     121.94639,
+     25.42417
+    ]
+   },
+   "properties": {
+    "id": "tw-volcano-huaping",
+    "name": "花瓶嶼",
+    "en": "Huaping Islet",
+    "meta": "基隆市中正區・北方三島・安山岩",
+    "category": "北部火山區",
+    "zoom": 14
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     122.10639,
+     25.485
+    ]
+   },
+   "properties": {
+    "id": "tw-volcano-mianhua",
+    "name": "棉花嶼",
+    "en": "Mianhua Islet",
+    "meta": "基隆市中正區・北方三島・安山岩",
+    "category": "北部火山區",
+    "zoom": 14
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     122.07139,
+     25.62944
+    ]
+   },
+   "properties": {
+    "id": "tw-volcano-pengjia",
+    "name": "彭佳嶼",
+    "en": "Pengjia Islet",
+    "meta": "基隆市中正區・北方三島・安山岩",
+    "category": "北部火山區",
+    "zoom": 14
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     121.953,
+     24.841
+    ]
+   },
+   "properties": {
+    "id": "tw-volcano-guishan",
+    "name": "龜山島",
+    "en": "Kueishantao",
+    "meta": "宜蘭縣頭城鎮・安山岩・活火山",
+    "category": "北部火山區",
+    "zoom": 13
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     119.5008,
+     23.3595
+    ]
+   },
+   "properties": {
+    "id": "tw-volcano-penghu",
+    "name": "澎湖群島",
+    "en": "Penghu Islands",
+    "meta": "澎湖縣・玄武岩熔岩台地・中新世",
+    "category": "澎湖玄武岩",
+    "zoom": 10
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     121.18806,
+     22.895
+    ]
+   },
+   "properties": {
+    "id": "tw-volcano-dulan",
+    "name": "都蘭山",
+    "en": "Mount Dulan",
+    "meta": "臺東縣・海岸山脈・都巒山層集塊岩・中新世",
+    "category": "東部火山島弧",
+    "zoom": 12
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     121.48361,
+     22.65222
+    ]
+   },
+   "properties": {
+    "id": "tw-volcano-lyudao",
+    "name": "綠島",
+    "en": "Lyudao",
+    "meta": "臺東縣綠島鄉・安山岩・更新世",
+    "category": "東部火山島弧",
+    "zoom": 13
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     121.53444,
+     22.0525
+    ]
+   },
+   "properties": {
+    "id": "tw-volcano-lanyu",
+    "name": "蘭嶼",
+    "en": "Lanyu",
+    "meta": "臺東縣蘭嶼鄉・安山岩・更新世",
+    "category": "東部火山島弧",
+    "zoom": 12
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     121.61016,
+     21.94997
+    ]
+   },
+   "properties": {
+    "id": "tw-volcano-xiaolanyu",
+    "name": "小蘭嶼",
+    "en": "Lesser Orchid Island",
+    "meta": "臺東縣蘭嶼鄉・安山岩・更新世",
+    "category": "東部火山島弧",
+    "zoom": 14
+   }
+  }
+ ]
+}
