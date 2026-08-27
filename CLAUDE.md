@@ -19,7 +19,7 @@
 > 要動 `/theme/taiwan` 的任何圖層——`src/map/registry/themes/taiwan.ts`、
 > `scripts/lib/` 底下對應的存取層、`public/data/geo/tw-*`、`src/content/geo/tw-*`
 > ——**請先把 `CLAUDE_TW.md` 讀完再開始**。那裡有各圖層的資料來源、取得邏輯、
-> 踩過的坑與第 15–27 項驗證清單。本檔案只留跨主題的部分。
+> 踩過的坑與第 15–27、41–42、48–49 項驗證清單。本檔案只留跨主題的部分。
 >
 > ⚠️ **世界地理主題的圖層文件在 `CLAUDE_WORLD.md`，那份也不會自動載入。**
 > 要動 `/theme/world` 的任何圖層——`src/map/registry/themes/world.ts`、
@@ -94,6 +94,7 @@ Node ≥ 22.12（vite 8 要求）。開發機與 CI 都用 Node 24。
 | 國家公園範圍 | `data.gov.tw/api/v2/rest/dataset/174421` →（索引 CSV）→ `tgos.tw` 各處的 SHP／KML；陽明山另走 `ogcmap.tgos.tw/…/Ymsnp3PlanBorder/SimpleWFS.aspx` | **只在建置期呼叫**，內政部國家公園署。座標是 **TWD97 TM2 公尺**，見下 |
 | 台江國家公園範圍 | `data.depositar.io`（中研院研究資料寄存所） | **只在建置期呼叫**。官方那兩份包在 7z 裡，見下；**這台主機只講 HTTP/2** |
 | 自然保留區／野生動物保護區／自然保護區 | `data.moa.gov.tw/api/FileToJson.ashx?DataId=157｜162｜350` → SHP zip | **只在建置期呼叫**，農業部林業及自然保育署 |
+| 國家重要濕地範圍 | `data.gov.tw/api/v2/rest/dataset/**25659**` →（索引 CSV）→ `tgos.tw` 的 SHP zip | **只在建置期呼叫**，內政部國家公園署。座標是 **TWD97 TM2 公尺**；⚠️ 官方編號**不唯一**、兩個名稱用括號拆字寫，見 `CLAUDE_TW.md` |
 | 古蹟（國定／直轄市定／縣市定） | `data.gov.tw` 資料集 **6246** → `data.boch.gov.tw/opendata/v2/assetsCase/1.1.json` | **只在建置期呼叫**（8.1 MB、**沒有 CORS 標頭**），文化部文化資產局。⚠️ 座標有 5 筆經緯度顛倒，見下 |
 | 颱風最佳路徑／災情 | `rdc28.cwa.gov.tw/TDB/`（交通部中央氣象署颱風資料庫） | **只在建置期呼叫**。免金鑰、免登入，但是**沒有文件的內部端點**；災情欄轉載自內政部消防署與農業部，見下 |
 | 災害地震（官方清單） | `scweb.cwa.gov.tw/zh-tw/page/disaster/5`（交通部中央氣象署地震測報中心） | **只在建置期呼叫**。⚠️ 沒有開放資料 API（那邊要金鑰），只能剖析 HTML 表格；⚠️ **只收到 2022-09-18**，見下 |
@@ -171,7 +172,8 @@ collection 打包成一份 `public/data/geo-content/<collection>.json`（key 是
 那三支），所以改成非同步不影響搜尋。
 
 ⚠️ **那三組合計已經不是「只有 51 份」了**：2026-08 補了 26 個世界城市之後是 77 份，
-實測主 chunk 因此從 gzip **170.4 KB 變成 188.9 KB**（把那 26 份暫時移走再 build 量的）。
+實測主 chunk 因此從 gzip **170.4 KB 變成 188.9 KB**（把那 26 份暫時移走再 build 量的）；
+同月再補上翠峰湖與大鵬灣兩個臺灣地點（＋ `sourceLinks.ts` 的新條目）之後是 **79 份、193.8 KB**。
 這條路只剩兩個選項，都不要順手做：**要嘛接受**（現況——那份資料進站就會用到），
 **要嘛把地點拆成「索引（id／名稱／座標／地形）＋詳情（facts）」兩份**，讓搜尋索引
 只吃索引那半。後者會動到 schema、`PlaceCard`、`resolve.ts` 與 `/compare` 四個地方，
@@ -312,6 +314,7 @@ ID 常數定義在 `src/map/layers/*.ts`，**一律 import 常數，不要寫死
 | `tw-transport-<axis>-casing` / `-line` / `-label` | line + line + symbol，**十條軸線各自一組**（`thsr`／`freeway-1`／`freeway-3`／`freeway-5`／`provincial-7`／`provincial-8`／`provincial-20`／`tra-west`／`tra-east`／`tra-south-link`）。`-casing` 是墊在線底下的白框，全站只有這一層用；標註用 `shortName`，不是 `name` |
 | `tw-rivers-line` / `tw-rivers-label` | line + symbol |
 | `tw-basins-fill` / `tw-basins-outline` | fill + line |
+| `tw-wetlands-fill` / `tw-wetlands-outline` | fill + line（88 個重要濕地分區；**沿用水系藍**，跟河川線與流域面同色，見 `CLAUDE_TW.md`） |
 | `tw-monuments-<level>-points` | circle，三個級別各自一組（`national`／`municipal`／`county`） |
 | `tw-crops-<crop>-points` | circle，三種作物各自一組（`fruit`／`vegetable`／`tea`） |
 | `tw-population-points` | circle（半徑＝人口、顏色＝依人口密度分級的 ramp） |
@@ -361,7 +364,7 @@ maplibre-contour 把 worker 以 Blob URL 內嵌，**不需要額外部署 worker
 
 | 主題 | 路由 | 內容 |
 |---|---|---|
-| 臺灣地理 | `/theme/taiwan` | 臺灣123（土地與島群、專屬經濟海域、海峽中線、北回歸線）、行政區（縣市、鄉鎮市區）、**地體構造（板塊、板塊邊界）**、地形（地形景點、五大山脈、岩石分布）、天然災害（活動斷層、地震、颱風路徑與災損）、水系（118 個列管水系、水庫即時水情、河川流域分區）、人文（原住民族、交通軸線、古蹟、人口與都市體系）、植被生態（特有種、國家公園與保護區、垂直植被帶）、農業物產（主要作物分布） |
+| 臺灣地理 | `/theme/taiwan` | 臺灣123（土地與島群、專屬經濟海域、海峽中線、北回歸線）、行政區（縣市、鄉鎮市區）、**地體構造（板塊、板塊邊界）**、地形（地形景點、五大山脈、岩石分布）、天然災害（活動斷層、地震、颱風路徑與災損）、水系（118 個列管水系、水庫即時水情、河川流域分區、**重要濕地**）、人文（原住民族、交通軸線、古蹟、人口與都市體系）、植被生態（特有種、國家公園與保護區、垂直植被帶）、農業物產（主要作物分布） |
 | 世界地理 | `/theme/world` | **全球尺度（骨架，排在前面）**：參考線（緯度參考線、國際換日線）、**世界櫥窗**（作者精選、作者精選・範圍；⚠️「世界之最」兩層已下架待重新設計，見上）、氣候與生物群系（森林與沙漠帶、柯本氣候分區、行星風系）、海洋（洋流：18 條暖流／寒流）、地體構造（板塊、板塊邊界、地震帶、火山帶）。**世界地理原有**：城市（世界重要城市 31 個、世界人口分布 505 個都會區）、大洲（大洲分區；⚠️「國界」那個 planned 圖層 2026-08 拿掉了，兩種建議底圖本身就畫著國界，見 `CLAUDE_WORLD.md`）、地形水系（世界主要河流、世界主要山脈）、人文專題（古文明發源地） |
 
 兩個主題頁都是**滿版地圖 + 浮動控制**（仿 Google Map），沒有頁首也沒有側欄——版面機制見下面的「全螢幕地圖外框與浮動控制」。
@@ -1013,7 +1016,7 @@ maplibre 的四個角落容器是 map container 內的 `position: absolute; z-in
 
 **而且撞名時要把 `meta` 補進副標**，否則畫面上是兩列一模一樣的字。這件事**只對真的撞名的標題做**：水庫的 `meta` 是「蓄水 62%・有效容量 …」這種長字串，沒撞名還硬加只會把副標塞爆。實測搜「東區」會得到四列，各自標著新竹市／臺中市／嘉義市／臺南市。
 
-索引是 **lazy 的**：搜尋框第一次獲得焦點才 `buildSearchIndex()`。**實測（2026-08，production build 讀 `performance.getEntriesByType('resource')`）它會多抓 28 份、合計約 3.05 MB**（⚠️ 那次實測含「世界之最」兩層的 33 KB，該組下架後是 26 份、約 3.02 MB）：
+索引是 **lazy 的**：搜尋框第一次獲得焦點才 `buildSearchIndex()`。**實測（2026-08，production build 讀 `performance.getEntriesByType('resource')`）它會多抓 28 份、合計約 3.05 MB**（⚠️ 那次實測含「世界之最」兩層的 33 KB，該組下架後是 26 份、約 3.02 MB；**再加上 2026-08 新增的「重要濕地」197 KB 是 27 份、約 3.22 MB**）：
 
 | 檔案 | 大小 |
 |---|---|
@@ -1022,6 +1025,7 @@ maplibre 的四個角落容器是 map container 內的 `position: absolute; z-in
 | `world-continents.geojson` | 326 KB |
 | `tw-monuments-municipal.geojson` | 240 KB |
 | `tw-rivers.geojson` | 230 KB |
+| `tw-wetlands.geojson` | 197 KB |
 | `tw-monuments-county.geojson` | 193 KB |
 | `tw-counties.geojson` | 192 KB |
 | `tw-protected-areas.geojson` | 183 KB |
@@ -1300,6 +1304,7 @@ npm run build:geo-content # 把 src/content/geo/ 打包成 public/data/geo-conte
 npm run build:geodata   # 產生行政區/河流/地震/水庫 geojson（已存在會跳過）
 npm run build:geodata -- --force --only=quakes   # 只重抓一個資料集
 npm run build:geodata -- --force --only=tw-protected-areas   # 國家公園與保護區（約 2 分鐘）
+npm run build:geodata -- --force --only=tw-wetlands            # 61 處國家重要濕地／88 個分區
 npm run build:geodata -- --force --only=tw-townships          # 368 個鄉鎮市區（下載 12.8 MB）
 npm run build:geodata -- --force --only=tw-rivers             # 118 個列管水系，⚠️ 約 40 分鐘
                                        # （每條河一次 Overpass 查詢，且會撞到限流而退避重試，
@@ -1595,9 +1600,9 @@ m.isSourceLoaded('contour-source')
 
     ⚠️ **`src/content/places/` 新增一筆地點，就會同時改動三個地方**：地形景點圖層、`/compare` 的兩個下拉選單、主題頁搜尋索引。所以新增後 `npm run build:climate` 是必須的——`/compare` 選到一個沒有氣候 JSON 的地點會得到空圖表，而 `npm run validate` **不會**擋（climate 驗證只檢查「有 JSON 的必須對得到地點」，反向不檢查）。
 
-> **第 15–27 項與第 41–42 項是臺灣主題各圖層的驗證，搬到 `CLAUDE_TW.md` 了**（水庫、
-> 保護區、交通軸線、河川、流域、古蹟、鄉鎮界、作物、人口、三層共用卡、植被帶、
-> 斷層與地震、颱風、岩石分布、板塊）；**第 28–40 項是世界主題的，搬到
+> **第 15–27 項、第 41–42 項與第 48–49 項是臺灣主題各圖層的驗證，搬到 `CLAUDE_TW.md` 了**
+> （水庫、保護區、交通軸線、河川、流域、古蹟、鄉鎮界、作物、人口、三層共用卡、植被帶、
+> 斷層與地震、颱風、岩石分布、板塊、**重要濕地、翠峰湖與大鵬灣**）；**第 28–40 項是世界主題的，搬到
 > `CLAUDE_WORLD.md` 了**（世界底圖地名、國際換日線、板塊與板塊邊界、火山帶、
 > 森林與沙漠帶、柯本氣候分區、行星風系、洋流、大洲分區、世界主要山脈、世界櫥窗），
 > **第 44–47 項也在那裡**（世界重要城市與新的 `/compare` 配對、柯本／河流／火山／
@@ -1648,7 +1653,9 @@ m.isSourceLoaded('contour-source')
       標題與卡片內容每一次都要一致
     - **主 chunk 真的變小了**（回歸判準，只有 production build 量得到）：
       ```bash
-      npm run build | grep 'assets/index-.*\.js'   # gzip 應該在 165 KB 上下，不是 375 KB
+      npm run build | grep 'assets/index-.*\.js'   # gzip 應該在 190 KB 上下，不是 375 KB
+      # ⚠️ 這個數字會隨 src/content/places 與 sourceLinks.ts 一起長（那兩份是 eager 的）：
+      #    2026-08 分片化當下是 165.2 KB，補了 26 個世界城市之後 188.9，再加兩個臺灣地點是 193.8
       ```
 
 ### ⚠️ 用瀏覽器自動化點 UI 的三個陷阱
@@ -1753,7 +1760,7 @@ public/data/
 ├─ climate/*.json         # build:climate 產生
 ├─ species/*.geojson      # build:species 產生
 ├─ geo/*.geojson          # build:geodata 產生（禁止手改）
-├─ geo-content/*.json     # 地理要素說明的分片，34 份（build:geo-content 產生，禁止手改）
+├─ geo-content/*.json     # 地理要素說明的分片，38 份（build:geo-content 產生，禁止手改）
 │                         #   ⚠️ 這是 src/content/geo/ 的產物，詳情卡在執行期抓的就是它
 ├─ monuments/*.json       # 古蹟歷史沿革的縣市分片，21 份（build:geodata 產生，禁止手改）
 └─ geo-manual/*.geojson   # 手繪教學示意幾何（可以手改）
@@ -1778,6 +1785,7 @@ scripts/
 ├─ lib/dissolve.mjs       # 有向邊相消的多邊形聯集（分區圖 → 園區範圍）
 ├─ lib/csv.mjs            # CSV 剖析器（水庫與國家公園索引共用）
 ├─ lib/protected-areas.mjs # 國家公園與保護區四個資料集的存取層
+├─ lib/wetlands.mjs        # 國家重要濕地的存取層（索引 CSV → TGOS 的 SHP、編號分組、罕用字、公告面積交叉比對）
 ├─ lib/reservoirs.mjs     # 水利署開放資料的共用存取層（CSV 剖析、bot 防護、id 對照表）
 ├─ lib/monuments.mjs      # 文資局古蹟的存取層（經緯度顛倒修正、名稱前綴剝除、縣市分片）
 ├─ lib/quakes-major.mjs   # 氣象署〈災害地震〉表的剖析（＋2023 年後補錄的人工抄錄表）

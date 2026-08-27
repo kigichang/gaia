@@ -1551,4 +1551,42 @@ export const SOURCE_LINKS: Record<string, string> = {
   "維基百科 信風":
     "https://zh.wikipedia.org/zh-tw/%E4%BF%A1%E9%A2%A8",
 
+  /**
+   * 重要濕地那一層的來源。
+   *
+   * ⚠️ 泛稱的「內政部國家公園署」已經指向國家公園那份圖層彙整（資料集 174421），
+   * 重要濕地是**另一份資料集**（25659），所以另立一個帶名稱的 key
+   * ——比照「交通部中央氣象署」拆成颱風資料庫與災害地震的既有做法。
+   *
+   * ⚠️ 濕地保育資訊網（`wetland-tw.nps.gov.tw`）過去有逐一處的官方介紹頁，
+   * 2026-08 實測那個網域已經**不再解析**，所以個別濕地只能連維基百科的條目
+   * （比照 97 條河川的既有做法：來源名稱帶條目名，不是泛稱的「維基百科」），
+   * 有既存官方頁面的（四草、高美、曾文溪口北岸、龍鑾潭）則優先連主管機關。
+   */
+  "內政部國家公園署 國家重要濕地": "https://data.gov.tw/dataset/25659",
+  "維基百科 七股黑面琵鷺保護區":
+    "https://zh.wikipedia.org/zh-tw/%E4%B8%83%E8%82%A1%E9%BB%91%E9%9D%A2%E7%90%B5%E9%B7%BA%E4%BF%9D%E8%AD%B7%E5%8D%80",
+  "維基百科 四草野生動物保護區":
+    "https://zh.wikipedia.org/zh-tw/%E5%9B%9B%E8%8D%89%E9%87%8E%E7%94%9F%E5%8B%95%E7%89%A9%E4%BF%9D%E8%AD%B7%E5%8D%80",
+  "維基百科 關渡自然公園":
+    "https://zh.wikipedia.org/zh-tw/%E9%97%9C%E6%B8%A1%E8%87%AA%E7%84%B6%E5%85%AC%E5%9C%92",
+  "維基百科 高美濕地":
+    "https://zh.wikipedia.org/zh-tw/%E9%AB%98%E7%BE%8E%E6%BF%95%E5%9C%B0",
+  "維基百科 七股鹽場":
+    "https://zh.wikipedia.org/zh-tw/%E4%B8%83%E8%82%A1%E9%B9%BD%E5%A0%B4",
+  "維基百科 龍鑾潭":
+    "https://zh.wikipedia.org/zh-tw/%E9%BE%8D%E9%91%BE%E6%BD%AD",
+
+  /**
+   * 湖泊與潟湖那兩個新地點的來源。兩筆都連到**那一頁**而不是機關首頁：
+   * 翠峰湖的海拔、面積與步道資料只在太平山國家森林遊樂區的步道頁上，
+   * 大鵬灣的 532 公頃與「單口囊狀潟湖」也只在大鵬灣國家風景區的景點頁上。
+   */
+  "太平山國家森林遊樂區 翠峰湖環山步道":
+    "https://tps.forest.gov.tw/TPSWeb/wSite/ct?xItem=2972&ctNode=288&mp=1",
+  "維基百科 翠峰湖":
+    "https://zh.wikipedia.org/zh-tw/%E7%BF%A0%E5%B3%B0%E6%B9%96",
+  "大鵬灣國家風景區管理處 潟湖": "https://www.dbnsa.gov.tw/attraction/AttractionPage?a=215",
+  "維基百科 大鵬灣":
+    "https://zh.wikipedia.org/zh-tw/%E5%A4%A7%E9%B5%AC%E7%81%A3_%28%E5%8F%B0%E7%81%A3%29",
 };

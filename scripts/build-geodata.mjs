@@ -44,6 +44,12 @@ import {
   fetchProtectedAreas,
 } from "./lib/protected-areas.mjs";
 import {
+  LICENSE as WETLAND_LICENSE,
+  SOURCE_LABEL as WETLAND_SOURCE_LABEL,
+  SOURCE_PAGE as WETLAND_SOURCE_PAGE,
+  fetchWetlands,
+} from "./lib/wetlands.mjs";
+import {
   CROP_ITEMS,
   DATASET_ID as CROP_DATASET_ID,
   LICENSE as CROP_LICENSE,
@@ -1848,6 +1854,28 @@ const SOURCES = [
       // 依有效容量由大到小，清單開頭就是曾文、翡翠、石門這些課本會點名的水庫。
       return features.sort((a, b) => b.properties.capacity - a.properties.capacity);
     },
+  },
+  {
+    id: "tw-wetlands",
+    label: "臺灣國家重要濕地",
+    /**
+     * 《濕地保育法》公告的重要濕地範圍圖。取得邏輯（索引 CSV → TGOS 的 SHP、
+     * 編號不唯一、罕用字拆字寫、公告面積交叉比對）全部關在 lib/wetlands.mjs，
+     * 所以這一筆用 `load` 自己抓，不走 `url` + `parse` 那條單一來源的路。
+     */
+    load: (fetchWithRetry) => fetchWetlands(fetchWithRetry),
+    sourceUrl: WETLAND_SOURCE_PAGE,
+    license: WETLAND_LICENSE,
+    sourceLabel: WETLAND_SOURCE_LABEL,
+    /**
+     * 0.0001° ≈ 11 公尺。比保護區那個 0.0003 還細，理由是**量體相反**：這一層
+     * 最小的內寮重要濕地只有 0.16 公頃（約 40 公尺見方），用 33 公尺的容差會把
+     * 它整個抹平成一個三角形。88 個分區在 0.0001 下是 184 KB，離大小預算還很遠，
+     * 沒有必要為了省幾十 KB 去弄壞小濕地的形狀。
+     */
+    tolerance: 0.0001,
+    digits: 5,
+    transform: (raw) => raw.features,
   },
   {
     id: "tw-protected-areas",
