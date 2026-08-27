@@ -888,6 +888,43 @@ export const SOURCE_LINKS: Record<string, string> = {
   "美國國家海洋暨大氣總署 百慕達三角": "https://oceanservice.noaa.gov/facts/bermudatri.html",
   "維基百科 百慕達三角": "https://zh.wikipedia.org/zh-tw/%E7%99%BE%E6%85%95%E5%A4%A7%E4%B8%89%E8%A7%92",
   /**
+   * 六個古文明發源地（2026-08 新增的「古文明發源地」圖層，在「人文專題」那一組；
+   * ⚠️ 它一度掛在「作者精選」底下當一個 `category`，同一天就搬出來自成一層了——
+   * 內容 collection 也跟著從 `world-picks` 換成 `world-civilizations`）。
+   * 每一筆都拆成「那個遺址」＋「那個文明或那件事」兩到三條，泛稱的「維基百科」
+   * 不在這份表裡，會渲染成沒有連結的純文字（比照板塊那 52 張卡的既有規則）。
+   *
+   * ⚠️ 〈文明的搖籃〉那一條是六張卡共用的骨幹：「四大文明古國」是梁啟超等人
+   * 提出、盛行於東亞而未被學術界採納的說法，中部美洲與祕魯中北部的獨立起源
+   * 出自同一頁——那正是這一組收六個而不是四個的依據。
+   * ⚠️ 聖羅倫索在中文維基百科**沒有條目**（`聖洛倫索·特諾奇提特蘭` 實測不存在），
+   * 所以那一筆連英文條目，比照海洋界線與馬六甲困境的既有做法。
+   * ⚠️ 孟菲斯的條目名帶消歧義括號（`孟菲斯_(埃及)`）——不加括號的〈孟菲斯〉是
+   * 美國那一座，而本站「世界人口分布」那一層上的「曼非斯」就是它。
+   * ⚠️ 四筆 UNESCO 名錄編號是從 Wikidata 的「世界遺產編號」欄位查出來的，不是
+   * 猜的：孟菲斯 86、摩亨佐-達羅 138、殷墟 1114、卡拉爾 1269。⚠️ whc.unesco.org
+   * 擋自動連線（curl 一律回 403，瀏覽器正常），驗證時不要靠 `curl -I` 判生死。
+   */
+  "維基百科 文明的搖籃": "https://zh.wikipedia.org/zh-tw/%E6%96%87%E6%98%8E%E7%9A%84%E6%90%96%E7%B1%83",
+  "維基百科 烏魯克": "https://zh.wikipedia.org/zh-tw/%E7%83%8F%E9%AD%AF%E5%85%8B",
+  "維基百科 楔形文字": "https://zh.wikipedia.org/zh-tw/%E6%A5%94%E5%BD%A2%E6%96%87%E5%AD%97",
+  "維基百科 孟菲斯（埃及）":
+    "https://zh.wikipedia.org/zh-tw/%E5%AD%9F%E8%8F%B2%E6%96%AF_%28%E5%9F%83%E5%8F%8A%29",
+  "UNESCO 世界遺產 孟菲斯及其墓地": "https://whc.unesco.org/en/list/86/",
+  "維基百科 摩亨佐-達羅":
+    "https://zh.wikipedia.org/zh-tw/%E6%91%A9%E4%BA%A8%E4%BD%90-%E9%81%94%E7%BE%85",
+  "維基百科 印度河流域文明":
+    "https://zh.wikipedia.org/zh-tw/%E5%8D%B0%E5%BA%A6%E6%B2%B3%E6%B5%81%E5%9F%9F%E6%96%87%E6%98%8E",
+  "UNESCO 世界遺產 摩亨佐-達羅考古遺址": "https://whc.unesco.org/en/list/138/",
+  "維基百科 二里頭遺址": "https://zh.wikipedia.org/zh-tw/%E4%BA%8C%E9%87%8C%E9%A0%AD%E9%81%BA%E5%9D%80",
+  "維基百科 殷墟": "https://zh.wikipedia.org/zh-tw/%E6%AE%B7%E5%A2%9F",
+  "維基百科 奧爾梅克文明": "https://zh.wikipedia.org/zh-tw/%E5%A5%A7%E7%88%BE%E6%A2%85%E5%85%8B%E6%96%87%E6%98%8E",
+  "維基百科（英文） 聖羅倫索·特諾奇提特蘭":
+    "https://en.wikipedia.org/wiki/San_Lorenzo_Tenochtitl%C3%A1n",
+  "維基百科 卡拉爾": "https://zh.wikipedia.org/zh-tw/%E5%8D%A1%E6%8B%89%E7%88%BE",
+  "維基百科 小北文明": "https://zh.wikipedia.org/zh-tw/%E5%B0%8F%E5%8C%97%E6%96%87%E6%98%8E",
+  "UNESCO 世界遺產 卡拉爾-蘇沛聖城": "https://whc.unesco.org/en/list/1269/",
+  /**
    * 東非大裂谷那一筆（作者精選・範圍）。⚠️ 泛稱的「USGS」在本檔案一律拆開登記，
    * 這一個連的是 This Dynamic Earth 的〈認識板塊運動〉那一章——「非洲底下可能正在
    * 發育一個新的擴張中心」這句話出自那一頁，它也是這張卡的骨幹。

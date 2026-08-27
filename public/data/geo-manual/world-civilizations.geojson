@@ -1,0 +1,120 @@
+{
+  "type": "FeatureCollection",
+  "metadata": {
+    "collection": "world-civilizations",
+    "source": "編者挑選的六個古文明發源地，逐筆人工轉錄座標，不是描繪的。每一筆取的是該文明最早的、位置指得出來的核心遺址，座標取自維基百科條目所載的度分秒（中文條目沒有的那一筆取英文條目）：孟菲斯 29°50′41″N 31°15′03″E、烏魯克 31°19′27″N 45°38′14″E、摩亨佐-達羅 27°19′45″N 68°08′20″E、二里頭遺址 34°41′53″N 112°41′25″E、聖羅倫索 17°45′13″N 94°45′36″W（英文條目；中文維基沒有這個條目）、卡拉爾 10°53′37″S 77°31′13″W。⚠️ 這六個點是遺址，不是那個文明的範圍——文明本身是一整條河谷或一整片低地（印度河流域文明已知的聚落就有一千多處），本站沒有那種面圖層。⚠️ 收六個而不是課本常講的「四大文明古國」，理由見註冊表的 notes。⚠️ 孟菲斯的圖徵 id 是 memphis-egypt 而不是 memphis：後者已經被「世界人口分布」那一層的美國曼非斯用掉了，撞 id 會讓兩層互相連動強調。⚠️ category 是「舊大陸」／「新大陸」而不是經度分組，那是這一層的教學重點（課本的四大剛好就是舊大陸那一半），所以檔案順序是舊大陸四筆在前、各組內由西往東。",
+    "license": "座標為公開發布之事實資料；選錄與說明文字為本站編寫",
+    "generatedAt": "2026-08-26",
+    "featureCount": 6
+  },
+  "features": [
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          31.25083333,
+          29.84472222
+        ]
+      },
+      "properties": {
+        "id": "memphis-egypt",
+        "name": "孟菲斯",
+        "en": "Memphis",
+        "category": "舊大陸",
+        "meta": "埃及 尼羅河三角洲頂點・尼羅河古文明的首都，上下埃及的接縫",
+        "zoom": 7.4
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          45.63722222,
+          31.32416667
+        ]
+      },
+      "properties": {
+        "id": "uruk",
+        "name": "烏魯克",
+        "en": "Uruk",
+        "category": "舊大陸",
+        "meta": "伊拉克 兩河流域（美索不達米亞）・世界最早的城市之一，兩河古文明的起點",
+        "zoom": 6.6
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          68.13888889,
+          27.32916667
+        ]
+      },
+      "properties": {
+        "id": "mohenjo-daro",
+        "name": "摩亨佐-達羅",
+        "en": "Mohenjo-daro",
+        "category": "舊大陸",
+        "meta": "巴基斯坦 印度河流域（也譯摩亨約達羅）・印度河古文明，格狀街道與下水道",
+        "zoom": 7.2
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          112.69027778,
+          34.69805556
+        ]
+      },
+      "properties": {
+        "id": "erlitou",
+        "name": "二里頭遺址",
+        "en": "Erlitou",
+        "category": "舊大陸",
+        "meta": "中國 河南洛陽盆地・黃河流域古文明，最早的宮殿與青銅作坊",
+        "zoom": 8.6
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -94.76,
+          17.75361111
+        ]
+      },
+      "properties": {
+        "id": "san-lorenzo",
+        "name": "聖羅倫索",
+        "en": "San Lorenzo Tenochtitlán",
+        "category": "新大陸",
+        "meta": "墨西哥 韋拉克魯茲州・中美洲最早的古文明，奧爾梅克（歐美克）的巨石人頭像",
+        "zoom": 8.0
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -77.52027778,
+          -10.89361111
+        ]
+      },
+      "properties": {
+        "id": "caral",
+        "name": "卡拉爾",
+        "en": "Caral",
+        "category": "新大陸",
+        "meta": "祕魯 蘇沛河谷・美洲最古老的城市，小北（卡拉爾）古文明",
+        "zoom": 5.9
+      }
+    }
+  ]
+}
