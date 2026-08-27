@@ -1598,6 +1598,14 @@ export const SOURCE_LINKS: Record<string, string> = {
    */
   "維基百科 台灣火山列表":
     "https://zh.wikipedia.org/zh-tw/%E5%8F%B0%E7%81%A3%E7%81%AB%E5%B1%B1%E5%88%97%E8%A1%A8",
+  /**
+   * 「海岸地形」那一層的分類與四個分界點（北部岬灣／西部砂泥／恆春半島珊瑚礁／
+   * 東部斷層）就是這一篇整理的。⚠️ 那不是主管機關公告的界線——官方沒有把海岸
+   * 分段公告成一份資料，圖層的 `notes` 有交代。線本身是內政部國土測繪中心的
+   * 縣市界圖資算出來的，所以第二個來源是 NLSC。
+   */
+  "維基百科 台灣海岸":
+    "https://zh.wikipedia.org/zh-tw/%E5%8F%B0%E7%81%A3%E6%B5%B7%E5%B2%B8",
   "維基百科 觀音山 (新北市)":
     "https://zh.wikipedia.org/zh-tw/%E8%A7%80%E9%9F%B3%E5%B1%B1_%28%E6%96%B0%E5%8C%97%E5%B8%82%29",
   "維基百科 基隆火山群":

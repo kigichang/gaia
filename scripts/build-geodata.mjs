@@ -44,6 +44,12 @@ import {
   fetchProtectedAreas,
 } from "./lib/protected-areas.mjs";
 import {
+  LICENSE as COAST_LICENSE,
+  SOURCE_LABEL as COAST_SOURCE_LABEL,
+  DATASET_ID as COAST_DATASET_ID,
+  fetchCoasts,
+} from "./lib/coasts.mjs";
+import {
   LICENSE as WETLAND_LICENSE,
   SOURCE_LABEL as WETLAND_SOURCE_LABEL,
   SOURCE_PAGE as WETLAND_SOURCE_PAGE,
@@ -1854,6 +1860,28 @@ const SOURCES = [
       // 依有效容量由大到小，清單開頭就是曾文、翡翠、石門這些課本會點名的水庫。
       return features.sort((a, b) => b.properties.capacity - a.properties.capacity);
     },
+  },
+  {
+    id: "tw-coasts",
+    label: "臺灣海岸地形",
+    /**
+     * 本島海岸線切成四段。幾何是從**縣市界 GML**（跟 tw-counties 同一份資料集）
+     * 有向邊相消出來的，不是手繪的；分界點讀站上既有的河口與極東點座標。
+     * 取得與切段邏輯全部關在 lib/coasts.mjs。
+     */
+    load: (fetchWithRetry) =>
+      fetchCoasts(fetchWithRetry, () => resolveDataGovTwUrl(COAST_DATASET_ID, /GML/), ROOT),
+    sourceUrl: `https://data.gov.tw/dataset/${COAST_DATASET_ID}`,
+    license: COAST_LICENSE,
+    sourceLabel: COAST_SOURCE_LABEL,
+    /**
+     * 0.0008° ≈ 89 公尺，**刻意跟 `tw-counties` 用同一個容差**：這四條線畫的就是
+     * 縣市界的外緣，容差不同的話兩層一起打開時會沿著海岸露出一條錯開的縫。
+     * 實測 31,695 點簡化後是 28 KB（不簡化 582 KB）。
+     */
+    tolerance: 0.0008,
+    digits: 4,
+    transform: (raw) => raw.features,
   },
   {
     id: "tw-wetlands",
