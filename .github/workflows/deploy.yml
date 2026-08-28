@@ -66,8 +66,14 @@ jobs:
       # Settings → Secrets and variables → Actions 裡設好，
       # 而且 Cloudflare 那邊要先用 direct upload 建好名為 gaia 的 Pages 專案，
       # 否則這一步會直接失敗。見 CLOUDFLARE.md「遷移步驟 → 階段一」。
+      #
+      # ⚠️ --branch=main 不可以省。actions/checkout 在 CI 裡預設 checkout 到
+      # detached HEAD，wrangler 猜不到目前在哪個分支，猜不到就會把這次部署當成
+      # preview（網址是帶 hash 前綴的 <hash>.gaia-1pt.pages.dev），而不是更新
+      # production 網址（gaia-1pt.pages.dev）。實測踩過：production 網址一直
+      # 是空白，內容其實已經上傳到 preview 網址。
       - name: Deploy to Cloudflare Pages
-        run: npx wrangler pages deploy dist --project-name=gaia
+        run: npx wrangler pages deploy dist --project-name=gaia --branch=main
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
