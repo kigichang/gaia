@@ -1,4 +1,4 @@
-name: Deploy to GitHub Pages
+name: Deploy to Cloudflare Pages
 
 on:
   push:
@@ -15,8 +15,6 @@ on:
 
 permissions:
   contents: read
-  pages: write
-  id-token: write
 
 # 同時只跑一個部署；新的 push 進來就取消排隊中的舊工作，
 # 但不中斷正在進行的部署（cancel-in-progress: false）。
@@ -60,18 +58,16 @@ jobs:
       # 以及 postbuild（產生 404.html、確認 CNAME 與 .nojekyll）
       - run: npm run build
 
-      - uses: actions/configure-pages@v6
-
-      - uses: actions/upload-pages-artifact@v5
-        with:
-          path: dist
-
-  deploy:
-    needs: build
-    runs-on: ubuntu-latest
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    steps:
-      - id: deployment
-        uses: actions/deploy-pages@v5
+      # 換成 Cloudflare Pages：wrangler 直接把 dist/ 上傳到 Cloudflare 的
+      # Pages 專案，不再需要 configure-pages / upload-pages-artifact /
+      # deploy-pages 那一組 GitHub 專用 action。
+      #
+      # ⚠️ 這兩把 secret 要先在 GitHub repo 的
+      # Settings → Secrets and variables → Actions 裡設好，
+      # 而且 Cloudflare 那邊要先用 direct upload 建好名為 gaia 的 Pages 專案，
+      # 否則這一步會直接失敗。見 CLOUDFLARE.md「遷移步驟 → 階段一」。
+      - name: Deploy to Cloudflare Pages
+        run: npx wrangler pages deploy dist --project-name=gaia
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
