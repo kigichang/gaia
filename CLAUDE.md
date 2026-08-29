@@ -81,6 +81,7 @@ Node ≥ 22.12（vite 8 要求）。開發機與 CI 都用 Node 24。
 | 臺灣與鄰國專屬經濟海域 | `geo.vliz.be/geoserver/MarineRegions/wfs`（Marine Regions／Flanders Marine Institute，Maritime Boundaries v12） | **只在建置期呼叫**，免金鑰的公開 WFS，CC-BY（**必須標示出處**）。⚠️ 我國從未公告經濟海域外界線，官方那份 12／24 浬向量在 NODASS 要登入，見 `CLAUDE_TW.md` |
 | 地震目錄 | `earthquake.usgs.gov/fdsnws/event/1/query`（USGS） | **只在建置期呼叫**，免金鑰、`ACAO: *`。全球與臺灣兩層共用這一個端點 |
 | 全球活火山 | `webservices.volcano.si.edu/geoserver/GVP-VOTW/ows`（史密森尼學會 全球火山計畫 GVP） | **只在建置期呼叫**，WFS 一次回 2.4 MB 的 GeoJSON。免金鑰、不需要 User-Agent；授權是「引用即可自由使用」，見下 |
+| 全球熱帶氣旋最佳路徑 | `ncei.noaa.gov/data/international-best-track-archive-…/ibtracs.ALL.list.v04r01.csv`（IBTrACS v04r01） | **只在建置期呼叫**，免金鑰、`ACAO: *`、公有領域。⚠️ **331 MB**，必須逐塊串流過濾、不可以 `res.text()`；⚠️ 缺值是**空白填滿的欄位**而 `Number("  ")` 是 0；⚠️ 跨換日線時經度**不 wrap**，見 `CLAUDE_WORLD.md` |
 | 陸域生物群系 | `services.arcgis.com/…/Resolve_Ecoregions/FeatureServer`（RESOLVE Ecoregions 2017，Esri Living Atlas 代管） | **只在建置期呼叫**，用伺服器端的 `maxAllowableOffset` 取已化簡的幾何。⚠️ 授權 CC-BY 4.0（**必須標示出處**）；⚠️ 連發會回一個指著參數的假 400，見下 |
 | 柯本氣候分區 | `koeppen-geiger.vu-wien.ac.at/data/Koeppen-Geiger-ASCII.zip`（Kottek et al. 2006） | **只在建置期呼叫**，zip 裡是一個 `Lat Lon Cls` 三欄的 0.5° 網格文字檔（92,416 格）。⚠️ 期距是 1951–2000；新版與 Esri 那份都只有點陣，見下 |
 | 臺灣活動斷層 | `geologycloud.tw/data/zh-tw/ActiveFault?all=true`（經濟部地質調查及礦業管理中心「地質雲」） | **只在建置期呼叫**。⚠️ data.gov.tw 那份**只有 WMS 影像**，拿不到向量；⚠️ **`?all=true` 不能省**——少了它只回前 100 段（HTTP 200），這一層踩過整整一輪，見 `CLAUDE_TW.md` |
@@ -310,6 +311,8 @@ ID 常數定義在 `src/map/layers/*.ts`，**一律 import 常數，不要寫死
 | `koppen-zones-<group>-fill` / `-outline` | fill + line，**五大類各自一組**（`a`／`b`／`c`／`d`／`e`）。⚠️ 顏色是大類、**圖徵是 30 個亞型**（點下去才知道是 Cfa 還是 Cwa）；外框寬度 0，見下 |
 | `wind-belts-<item>-line` / `-label` | line + symbol，**四個部位各自一組**（`pressure-belts`／`trades`／`westerlies`／`polar-easterlies`）。⚠️ 幾何**完全由程式產生**（generators.ts），四個共用同一個顏色，靠點線／箭頭與標註區辨，見下 |
 | `ocean-currents-<item>-line` / `-label` | line + symbol，**暖流／寒流各一組**（`warm`／`cold`，18 條洋流）。⚠️ 幾何**完全由程式產生**（generators.ts），箭頭與 ±180 切段都由程式保證；⚠️ 這一組色**刻意不參與板塊邊界的 all-pairs**，見下 |
+| `world-cyclones-line` / `world-cyclones-label` | line + symbol（33 個世界紀錄熱帶氣旋的最佳路徑；`hazard` 中性色，全站第一個「非世界櫥窗」的 `exemptFromMaxActive`，見 `CLAUDE_WORLD.md`） |
+| `world-cyclone-centers-points` / `-label` | circle + symbol（附屬圖層；1,729 個中心定位點，**跟母圖層共用 id**，半徑吃 zoom 與風速、顏色是薩菲爾—辛普森的色階；標註只在該氣旋被選取時出現） |
 | `tw-reservoirs-points` | circle（顏色是**依蓄水率分級的表達式**，不是單一色，見下） |
 | `tw-transport-<axis>-casing` / `-line` / `-label` | line + line + symbol，**十條軸線各自一組**（`thsr`／`freeway-1`／`freeway-3`／`freeway-5`／`provincial-7`／`provincial-8`／`provincial-20`／`tra-west`／`tra-east`／`tra-south-link`）。`-casing` 是墊在線底下的白框，全站只有這一層用；標註用 `shortName`，不是 `name` |
 | `tw-coasts-line` / `tw-coasts-label` | line + symbol（本島海岸線切成四段；**沿用水系藍**，⚠️ `relief` 洋紅是先試過才否掉的（東部海岸與海岸山脈稜線中位數只差 6.3 km），見 `CLAUDE_TW.md`） |
@@ -367,7 +370,7 @@ maplibre-contour 把 worker 以 Blob URL 內嵌，**不需要額外部署 worker
 | 主題 | 路由 | 內容 |
 |---|---|---|
 | 臺灣地理 | `/theme/taiwan` | 臺灣123（土地與島群、專屬經濟海域、海峽中線、北回歸線）、行政區（縣市、鄉鎮市區）、**地體構造（板塊、板塊邊界、火山與火山島）**、地形（地形景點、五大山脈、**海岸地形**、岩石分布）、天然災害（活動斷層、地震、颱風路徑與災損）、水系（118 個列管水系、水庫即時水情、河川流域分區、**重要濕地**）、人文（原住民族、交通軸線、古蹟、人口與都市體系）、植被生態（特有種、國家公園與保護區、垂直植被帶）、農業物產（主要作物分布） |
-| 世界地理 | `/theme/world` | **全球尺度（骨架，排在前面）**：參考線（緯度參考線、國際換日線）、**世界櫥窗**（編者選集，2026-08 從「作者精選」一層拆成九層：火山與災害、地形與地質、海洋、海峽、運河、海角、湖泊、板塊與地形、傳說中的地方；⚠️「世界之最」兩層已下架待重新設計，見上）、氣候與生物群系（森林與沙漠帶、柯本氣候分區、行星風系）、海洋（洋流：18 條暖流／寒流）、地體構造（板塊、板塊邊界、地震帶、火山帶）。**世界地理原有**：城市（世界重要城市 31 個、世界人口分布 505 個都會區）、大洲（大洲分區；⚠️「國界」那個 planned 圖層 2026-08 拿掉了，兩種建議底圖本身就畫著國界，見 `CLAUDE_WORLD.md`）、地形水系（世界主要河流、世界主要山脈）、人文專題（古文明發源地） |
+| 世界地理 | `/theme/world` | **全球尺度（骨架，排在前面）**：參考線（緯度參考線、國際換日線）、**世界櫥窗**（編者選集，2026-08 從「作者精選」一層拆成九層：火山與災害、地形與地質、海洋、海峽、運河、海角、湖泊、板塊與地形、傳說中的地方；⚠️「世界之最」兩層已下架待重新設計，見上）、氣候與生物群系（森林與沙漠帶、柯本氣候分區、行星風系）、海洋（洋流：18 條暖流／寒流、**世界紀錄熱帶氣旋路徑**：33 個紀錄保持者）、地體構造（板塊、板塊邊界、地震帶、火山帶）。**世界地理原有**：城市（世界重要城市 31 個、世界人口分布 505 個都會區）、大洲（大洲分區；⚠️「國界」那個 planned 圖層 2026-08 拿掉了，兩種建議底圖本身就畫著國界，見 `CLAUDE_WORLD.md`）、地形水系（世界主要河流、世界主要山脈）、人文專題（古文明發源地） |
 
 兩個主題頁都是**滿版地圖 + 浮動控制**（仿 Google Map），沒有頁首也沒有側欄——版面機制見下面的「全螢幕地圖外框與浮動控制」。
 
@@ -1061,7 +1064,7 @@ maplibre 的四個角落容器是 map container 內的 `position: absolute; z-in
 
 **而且撞名時要把 `meta` 補進副標**，否則畫面上是兩列一模一樣的字。這件事**只對真的撞名的標題做**：水庫的 `meta` 是「蓄水 62%・有效容量 …」這種長字串，沒撞名還硬加只會把副標塞爆。實測搜「東區」會得到四列，各自標著新竹市／臺中市／嘉義市／臺南市。
 
-索引是 **lazy 的**：搜尋框第一次獲得焦點才 `buildSearchIndex()`。**實測（2026-08，production build 讀 `performance.getEntriesByType('resource')`）它會多抓 28 份、合計約 3.05 MB**（⚠️ 那次實測含「世界之最」兩層的 33 KB，該組下架後是 26 份、約 3.02 MB；**再加上 2026-08 新增的「重要濕地」197 KB 是 27 份、約 3.22 MB**）：
+索引是 **lazy 的**：搜尋框第一次獲得焦點才 `buildSearchIndex()`。**實測（2026-08，production build 讀 `performance.getEntriesByType('resource')`）它會多抓 28 份、合計約 3.05 MB**（⚠️ 那次實測含「世界之最」兩層的 33 KB，該組下架後是 26 份、約 3.02 MB；**再加上 2026-08 新增的「重要濕地」197 KB 與「世界紀錄熱帶氣旋路徑」33 KB 是 28 份、約 3.25 MB**）。⚠️ 熱帶氣旋那一層的 **268 KB 中心定位點不在裡面**，那是附屬圖層而它沒有宣告 `browse`（比照颱風的中心定位點，見下）：
 
 | 檔案 | 大小 |
 |---|---|
@@ -1089,6 +1092,7 @@ maplibre 的四個角落容器是 map container 內的 `position: absolute; z-in
 | `tw-reservoirs.geojson` + `reservoirs-live.json` | 20 + 2 KB |
 | `tw-typhoons.geojson` | 14 KB |
 | `world-mountain-peaks.geojson` | 10 KB |
+| `world-cyclones.geojson` | 33 KB |
 | `world-picks-areas.geojson`（geo-manual） | 3 KB |
 | `world-picks.geojson`（geo-manual） | 11 KB |
 
@@ -1380,6 +1384,11 @@ npm run build:geodata -- --force --only=volcanoes            # 1,214 座全新�
 npm run build:geodata -- --force --only=world-continents     # 七大洲（Natural Earth 國界 → 依洲別聯集）
 npm run build:geodata -- --force --only=world-population     # 505 個百萬人以上的都會區（下載 19 MB，跟大洲共用國界那份）
 npm run build:geodata -- --force --only=world-mountains      # 39 條山脈（範圍面 → 中軸線）
+npm run build:geodata -- --force --only=world-cyclones       # 33 個世界紀錄熱帶氣旋的路徑
+                                       # ⚠️ 上游那份 CSV 有 331 MB，會跑好幾分鐘（逐塊串流過濾，不是卡住）
+npm run build:geodata -- --force --only=world-cyclone-centers # 同一份下載的 1,729 個中心定位點
+                                       # ⚠️ 兩個分開跑就會下載兩次；不帶 --only 讓它跑完整個 SOURCES
+                                       #    才會共用同一次下載（見 lib/cyclones.mjs 的 module-level 快取）
 npm run build:geodata -- --force --only=world-mountain-peaks # 同一份下載的 39 座最高峰
 npm run build:geodata -- --force --only=world-superlatives-ranges
                                        # 世界櫥窗：安地斯中軸線＋中洋脊（跟 plate-boundaries 共用那份 10 MB 的 step 檔）
@@ -1812,7 +1821,7 @@ public/data/
 ├─ climate/*.json         # build:climate 產生
 ├─ species/*.geojson      # build:species 產生
 ├─ geo/*.geojson          # build:geodata 產生（禁止手改）
-├─ geo-content/*.json     # 地理要素說明的分片，40 份（build:geo-content 產生，禁止手改）
+├─ geo-content/*.json     # 地理要素說明的分片，41 份（build:geo-content 產生，禁止手改）
 │                         #   ⚠️ 這是 src/content/geo/ 的產物，詳情卡在執行期抓的就是它
 ├─ monuments/*.json       # 古蹟歷史沿革的縣市分片，21 份（build:geodata 產生，禁止手改）
 └─ geo-manual/*.geojson   # 手繪教學示意幾何（可以手改）
@@ -1847,6 +1856,8 @@ scripts/
 ├─ lib/volcanoes.mjs      # GVP 全新世活火山的存取層（19 個火山區與 17 種類型的中文對照、40 幾座知名火山的中文名、筆數檢查）
 ├─ lib/continents.mjs     # 七大洲的存取層（NE 國界的洲別欄位、四條課本洲界的切線、陸地面積交叉檢查）
 ├─ lib/mountains.mjs      # 世界主要山脈的存取層（39 條的中文名／洲別／成因／最高峰對照表、範圍面 → 中軸線）
+├─ lib/cyclones.mjs       # 世界紀錄熱帶氣旋的存取層（33 筆的 IBTrACS 序號對照表、331 MB CSV 的逐行串流過濾、
+│                         #   ±180 切段、與紀錄表的氣壓／風速交叉檢查）
 ├─ lib/biomes.mjs         # RESOLVE 生態區的存取層（14 個生物群系 → 六個教學用大類、小碎塊過濾、跨 ±180 檢查）
 ├─ lib/koppen.mjs         # 柯本氣候分區的存取層（0.5° ASCII 網格、30 個亞型的中文名與判準、五大類分組）
 ├─ lib/population.mjs     # 各鄉鎮市區人口密度的存取層（年份寫死、site_id 切縣市／鄉鎮、行政層級）

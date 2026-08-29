@@ -209,6 +209,64 @@ export const SOURCE_LINKS: Record<string, string> = {
     "https://oceanservice.noaa.gov/education/tutorial_currents/",
   // 洋流圖層本身（18 條的分類與流向）。逐條洋流的條目另外登記在下面那 150 篇裡。
   "維基百科 洋流": "https://zh.wikipedia.org/zh-tw/%E6%B4%8B%E6%B5%81",
+  /**
+   * 世界紀錄熱帶氣旋路徑那一層的兩個來源。
+   *
+   * ⚠️ IBTrACS 連的是 NCEI 的**產品頁**，不是那份 331 MB 的 CSV 直連——那個檔案
+   * 一點就開始下載三百多 MB，對讀者是陷阱；產品頁上有資料說明、授權與各種格式的
+   * 入口（比照「內政部國土測繪中心」連下載頁而不是檔案本身的既有判斷）。
+   * ⚠️ 維基百科那一筆連的是〈熱帶氣旋〉條目本身——這 33 個氣旋的收錄名單逐字
+   * 對應它的「紀錄」那張表，不是編者自己挑的，所以那一頁就是名單的出處。
+   */
+  "IBTrACS 全球熱帶氣旋最佳路徑":
+    "https://www.ncei.noaa.gov/products/international-best-track-archive",
+  "維基百科 熱帶氣旋": "https://zh.wikipedia.org/zh-tw/%E7%86%B1%E5%B8%B6%E6%B0%A3%E6%97%8B",
+  /**
+   * 世界紀錄熱帶氣旋那 33 張說明卡各自的維基百科條目。
+   *
+   * ⚠️ 規則跟站上別處一樣：**連得到那一個氣旋本身，不是泛稱的「維基百科」**
+   * （比照洋流那 18 條各自登記條目的既有做法）。紀錄本身的出處是上面那筆
+   * 〈熱帶氣旋〉的「紀錄」表，個別氣旋的經過與災情才是這些條目。
+   * ⚠️ 有四筆中文維基沒有對應條目（亞森特、馬希納、奧利維亞、佐伊），改連英文版
+   * 並在標籤上寫明「（英文）」，比照「維基百科（英文） 海洋的界線」的既有做法。
+   * ⚠️ 卡門（1960）連的是那一年的颱風季條目——它沒有自己的條目，而風眼直徑
+   * 370 公里那個數字就寫在季條目裡。
+   * ⚠️ 有幾筆的網址是簡體標題（台风泰培、气旋古努…），那是維基百科的正式條目名；
+   * `/zh-tw/` 這條路徑會自動轉成繁體顯示，**不要為了好看改成繁體標題**，那會 404。
+   */
+  "維基百科 1960年太平洋颱風季": "https://zh.wikipedia.org/zh-tw/1960%E5%B9%B4%E5%A4%AA%E5%B9%B3%E6%B4%8B%E9%A2%B1%E9%A2%A8%E5%AD%A3",
+  "維基百科 颱風南施": "https://zh.wikipedia.org/zh-tw/%E9%A2%B1%E9%A2%A8%E5%8D%97%E6%96%BD%20%281961%E5%B9%B4%29",
+  "維基百科 颱風泰培": "https://zh.wikipedia.org/zh-tw/%E5%8F%B0%E9%A3%8E%E6%B3%B0%E5%9F%B9",
+  "維基百科 颱風佛瑞特": "https://zh.wikipedia.org/zh-tw/%E9%A2%B1%E9%A2%A8%E4%BD%9B%E7%91%9E%E7%89%B9%20%281983%E5%B9%B4%29",
+  "維基百科 颱風海燕": "https://zh.wikipedia.org/zh-tw/%E9%A2%B1%E9%A2%A8%E6%B5%B7%E7%87%95",
+  "維基百科 颱風莫蘭蒂": "https://zh.wikipedia.org/zh-tw/%E9%A2%B1%E9%A2%A8%E8%8E%AB%E8%98%AD%E8%92%82",
+  "維基百科 颱風天鵝": "https://zh.wikipedia.org/zh-tw/%E9%A2%B1%E9%A2%A8%E5%A4%A9%E9%B5%9D",
+  "維基百科 颱風舒力基": "https://zh.wikipedia.org/zh-tw/%E9%A2%B1%E9%A2%A8%E8%88%92%E5%8A%9B%E5%9F%BA",
+  "維基百科 颶風約翰": "https://zh.wikipedia.org/zh-tw/%E9%A2%B6%E9%A2%A8%E7%B4%84%E7%BF%B0%20%281994%E5%B9%B4%29",
+  "維基百科 颶風派翠莎": "https://zh.wikipedia.org/zh-tw/%E9%A2%B6%E9%A2%A8%E6%B4%BE%E7%BF%A0%E8%8E%8E",
+  "維基百科 颶風伊歐凱": "https://zh.wikipedia.org/zh-tw/%E9%A2%B6%E9%A2%A8%E4%BC%8A%E6%AD%90%E5%87%B1",
+  "維基百科 颶風艾倫": "https://zh.wikipedia.org/zh-tw/%E9%A2%B6%E9%A2%A8%E8%89%BE%E5%80%AB%20%281980%E5%B9%B4%29",
+  "維基百科 颶風卡特里娜": "https://zh.wikipedia.org/zh-tw/2005%E5%B9%B4%E9%A3%93%E9%A3%8E%E5%8D%A1%E7%89%B9%E9%87%8C%E5%A8%9C",
+  "維基百科 颶風威爾瑪": "https://zh.wikipedia.org/zh-tw/%E9%A3%93%E9%A3%8E%E5%A8%81%E5%B0%94%E7%8E%9B",
+  "維基百科 熱帶風暴馬可": "https://zh.wikipedia.org/zh-tw/2008%E5%B9%B4%E7%86%B1%E5%B8%B6%E9%A2%A8%E6%9A%B4%E9%A6%AC%E5%8F%AF",
+  "維基百科 颶風哈維": "https://zh.wikipedia.org/zh-tw/2017%E5%B9%B4%E9%A2%B6%E9%A2%A8%E5%93%88%E7%B6%AD",
+  "維基百科 颶風梅莉莎": "https://zh.wikipedia.org/zh-tw/%E9%A2%B6%E9%A2%A8%E6%A2%85%E8%8E%89%E8%8E%8E",
+  "維基百科 氣旋加菲洛": "https://zh.wikipedia.org/zh-tw/%E6%B0%A3%E6%97%8B%E5%8A%A0%E8%8F%B2%E6%B4%9B",
+  "維基百科 氣旋凡塔拉": "https://zh.wikipedia.org/zh-tw/%E6%B0%A3%E6%97%8B%E5%87%A1%E5%A1%94%E6%8B%89",
+  "維基百科 波拉氣旋": "https://zh.wikipedia.org/zh-tw/1970%E5%B9%B4%E6%B3%A2%E6%8B%89%E6%B0%94%E6%97%8B",
+  "維基百科 奧里薩氣旋": "https://zh.wikipedia.org/zh-tw/1999%E5%B9%B4%E5%A5%A7%E9%87%8C%E8%96%A9%E6%B0%A3%E6%97%8B",
+  "維基百科 氣旋法尼": "https://zh.wikipedia.org/zh-tw/%E6%B0%A3%E6%97%8B%E6%B3%95%E5%B0%BC",
+  "維基百科 氣旋阿耆尼": "https://zh.wikipedia.org/zh-tw/%E6%B0%A3%E6%97%8B%E9%98%BF%E8%80%86%E5%B0%BC",
+  "維基百科 氣旋古努": "https://zh.wikipedia.org/zh-tw/%E6%B0%94%E6%97%8B%E5%8F%A4%E5%8A%AA",
+  "維基百科 氣旋基亞爾": "https://zh.wikipedia.org/zh-tw/%E6%B0%A3%E6%97%8B%E5%9F%BA%E4%BA%9E%E7%88%BE",
+  "維基百科 氣旋弗雷迪": "https://zh.wikipedia.org/zh-tw/%E6%B0%A3%E6%97%8B%E5%BC%97%E9%9B%B7%E8%BF%AA",
+  "維基百科 氣旋莫妮卡": "https://zh.wikipedia.org/zh-tw/%E6%B0%94%E6%97%8B%E8%8E%AB%E5%A6%AE%E5%8D%A1",
+  "維基百科 氣旋溫斯頓": "https://zh.wikipedia.org/zh-tw/%E6%B0%A3%E6%97%8B%E6%BA%AB%E6%96%AF%E9%A0%93",
+  "維基百科 氣旋卡塔琳娜": "https://zh.wikipedia.org/zh-tw/%E9%A2%B6%E9%A2%A8%E5%8D%A1%E5%A1%94%E7%90%B3%E5%A8%9C",
+  "維基百科（英文） 氣旋亞森特": "https://en.wikipedia.org/wiki/Cyclone_Hyacinthe",
+  "維基百科（英文） 氣旋馬希納": "https://en.wikipedia.org/wiki/Cyclone_Mahina",
+  "維基百科（英文） 氣旋奧利維亞": "https://en.wikipedia.org/wiki/Cyclone_Olivia",
+  "維基百科（英文） 氣旋佐伊": "https://en.wikipedia.org/wiki/Cyclone_Zoe",
   // 緯度參考線的回歸線與極圈用的是轉軸傾角的實際值（約 23.436°），不是課本的 23.5°
   "維基百科 轉軸傾角": "https://zh.wikipedia.org/zh-tw/%E8%BD%89%E8%BB%B8%E5%82%BE%E8%A7%92",
   /**

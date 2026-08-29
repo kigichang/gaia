@@ -215,6 +215,14 @@ import {
   peakOf,
   polygonAxis,
 } from "./lib/mountains.mjs";
+import {
+  BASIN_ORDER as CYCLONE_BASIN_ORDER,
+  LICENSE as CYCLONE_LICENSE,
+  SOURCE_LABEL as CYCLONE_SOURCE_LABEL,
+  SOURCE_PAGE as CYCLONE_SOURCE_PAGE,
+  fetchCyclones,
+  splitAntimeridian as splitCycloneTrack,
+} from "./lib/cyclones.mjs";
 
 /**
  * 「這一組的清單順序與副標由官方數字當主角」——`tw-rivers` 與 `tw-basins` 共用。
@@ -1207,6 +1215,157 @@ const SOURCES = [
             },
           };
         }),
+  },
+  {
+    id: "world-cyclones",
+    label: "世界紀錄熱帶氣旋路徑",
+    /**
+     * 維基百科〈熱帶氣旋〉「紀錄」那張表裡的 33 個氣旋，路徑取自 IBTrACS
+     * （取得邏輯、序號對照與那三個大坑見 lib/cyclones.mjs 的檔頭）。
+     *
+     * ⚠️ **`tolerance: 0`——這一層絕對不能簡化**，理由跟臺灣的颱風路徑逐字相同：
+     * 最佳路徑本來就是每 6 小時一個定位點，Douglas–Peucker 會把「在呂宋島轉向」
+     * 「越過換日線之後折回東邊」那些轉折抹平，而那正是這一層要教的東西。
+     * 33 條合計只有 1,729 個點。
+     */
+    load: (fetch) => fetchCyclones(fetch),
+    sourceUrl: CYCLONE_SOURCE_PAGE,
+    license: CYCLONE_LICENSE,
+    sourceLabel: CYCLONE_SOURCE_LABEL,
+    tolerance: 0,
+    /**
+     * ⚠️ **不要降到 2 位**（≈1.1 km）。世界尺度看起來一樣，但學生會放大去看
+     * 卡崔娜怎麼進紐奧良、海燕怎麼掃過雷伊泰島——zoom 12 時 0.01° 就是一百多
+     * 個像素，路徑會變成一階一階的樓梯，而且定位點會落在轉角上。
+     * 3 位（≈110 m）跟臺灣的颱風路徑一致，兩個圖層合計也只多 10% 的體積。
+     */
+    digits: 3,
+    transform: ({ cyclones }) =>
+      cyclones
+        .map((c) => {
+          /**
+           * ⚠️ **跨 ±180 一定要切段**，而且這一層是全站最會踩到的一個：33 條裡有
+           * **8 條**跨越換日線（南施、狄普、佛瑞特、舒力基、約翰、伊歐佳、佐伊、
+           * 溫斯頓），約翰與伊歐佳還來回跨兩次、各切成 3 段。不切的話 maplibre 會
+           * 畫一條繞過整個地球的橫線，**而且不報錯**（見 lib/cyclones.mjs 檔頭）。
+           */
+          const segments = splitCycloneTrack(c.track).map((seg) =>
+            seg.map((p) => [p.lng, p.lat]),
+          );
+          return {
+            type: "Feature",
+            geometry:
+              segments.length === 1
+                ? { type: "LineString", coordinates: segments[0] }
+                : { type: "MultiLineString", coordinates: segments },
+            properties: {
+              id: c.id,
+              /**
+               * ⚠️ 必須叫 `name`（searchIndex 的 `featureHits()` 只認它），而且
+               * **只放中文名、不含「颱風／颶風／氣旋」**——沿線標註對字串長度極度
+               * 敏感（見 CLAUDE.md「沿線標註很脆弱」與颱風那一層的實測表）。
+               * 稱謂在 `kind`、年份在 `meta`。
+               */
+              name: c.name,
+              /** 上游的英文名，進搜尋 haystack（搜 HAIYAN、Katrina 也要找得到） */
+              en: c.en,
+              year: c.year,
+              /** 「颱風」「颶風」「氣旋」——同一種天氣系統在三個洋盆的三個叫法 */
+              kind: c.kind,
+              /** `browse.groupBy` 的分組值。⚠️ 依序切、不排序，所以下面要 sort */
+              category: c.basin,
+              /** 它保持的那一項紀錄，可點清單的副標與詳情卡都靠它 */
+              record: c.record,
+              /**
+               * ⚠️ 這兩個是 **IBTrACS 自己的極值**，不是紀錄表上的數字。
+               * 兩者會差最多 37 hPa（各洋盆負責機構與美系機構的重新分析不同），
+               * 說明卡引用的是紀錄表、產物寫的是 IBTrACS，兩邊各自標清楚出處。
+               * ⚠️ 缺值一律不寫這個 key，不可以寫 null——`["has", prop]` 會判成
+               * true，把資料缺漏當成 0（水庫蓄水率那次的坑）。1899 年的馬希納與
+               * 1970 年的波拉兩者都沒有。
+               */
+              ...(c.minPressure != null && { minPressure: c.minPressure }),
+              ...(c.peakWind != null && { peakWind: c.peakWind }),
+              /** 行進距離（公里）。約翰的「行進距離最遠」就是靠它交叉檢查的 */
+              lengthKm: Math.round(c.lengthKm),
+              days: Number(c.days.toFixed(1)),
+              meta: `${c.year} 年・${c.record}`,
+            },
+            _basin: CYCLONE_BASIN_ORDER.indexOf(c.basin),
+          };
+        })
+        /**
+         * ⚠️ feature 順序就是 `browse.groupBy: "category"` 的切分依據（依序切、
+         * 不排序），所以同一個洋盆必須連續；洋盆內依年份由早到晚，清單讀起來
+         * 就是那個洋盆的紀錄史。
+         */
+        .sort((a, b) => a._basin - b._basin || a.properties.year - b.properties.year)
+        .map(({ _basin, ...feature }) => feature),
+  },
+  {
+    id: "world-cyclone-centers",
+    label: "世界紀錄熱帶氣旋定位點",
+    /** ⚠️ 1,729 個定位點刻意共用母圖層那 33 條路徑的 id，見下面 properties 的說明 */
+    sharedIds: true,
+    /**
+     * 每 6 小時一筆的氣旋中心定位（33 條路徑共 1,729 點），是 `world-cyclones`
+     * 的**附屬圖層**（`attach`），沒有自己的核取方塊——一串沒有路徑的點，跟一條
+     * 沒有強度變化的線，都只講了一半。
+     *
+     * ⚠️ **`detail` 共用母圖層那張卡，所以 properties 不放任何給人看的長字串**
+     * （沒有 name／meta／record）。那是 QuakeCard 那次 190 KB → 400 KB 的教訓。
+     *
+     * ⚠️ **時間是 UTC（世界時），不換算**。臺灣的颱風那一層換算成臺灣時間是因為
+     * 它只講臺灣；這一層橫跨七個洋盆，換算成哪一個時區都是錯的，而各機構的最佳
+     * 路徑本來就是以 UTC 定位的。
+     */
+    load: (fetch) => fetchCyclones(fetch),
+    sourceUrl: CYCLONE_SOURCE_PAGE,
+    license: CYCLONE_LICENSE,
+    sourceLabel: CYCLONE_SOURCE_LABEL,
+    tolerance: 0,
+    /**
+     * ⚠️ **不要降到 2 位**（≈1.1 km）。世界尺度看起來一樣，但學生會放大去看
+     * 卡崔娜怎麼進紐奧良、海燕怎麼掃過雷伊泰島——zoom 12 時 0.01° 就是一百多
+     * 個像素，路徑會變成一階一階的樓梯，而且定位點會落在轉角上。
+     * 3 位（≈110 m）跟臺灣的颱風路徑一致，兩個圖層合計也只多 10% 的體積。
+     */
+    digits: 3,
+    transform: ({ cyclones }) =>
+      cyclones.flatMap((c) =>
+        c.track.map((p) => {
+          const [date, time] = p.time.split(" ");
+          const [, mm, dd] = date.split("-");
+          const hour = time.slice(0, 2);
+          return {
+            type: "Feature",
+            geometry: { type: "Point", coordinates: [p.lng, p.lat] },
+            properties: {
+              /**
+               * ⚠️ **刻意跟母圖層那條路徑共用同一個 id**（1,729 筆但只有 33 個
+               * 不重複的 id，`sharedIds` 就是為這種圖層開的）。共用之後三件事自動
+               * 成立——點定位點會開出那個氣旋的卡片、選取時整條路徑連同它所有的
+               * 定位點一起加粗、`highlightIds` 只需要一個字串。臺灣的颱風定位點
+               * 已經驗證過這條路，**不要改成唯一 id ＋ `detail: none`**。
+               */
+              id: c.id,
+              /** 「11/8」——月份不補零，路徑點很密，每個字都影響標註放不放得下 */
+              date: `${Number(mm)}/${Number(dd)}`,
+              /** UTC 的時，兩位數 */
+              hour,
+              /** 每天一個的日標（UTC 00:00），低縮放時只標這些 */
+              ...(hour === "00" && { day: true }),
+              /**
+               * ⚠️ 一分鐘平均風速（節），**只取 `USA_WIND`**——見 lib/cyclones.mjs
+               * 檔頭那段「平均時距不同」。缺值不寫這個 key，色階會畫成
+               * `nodata` 的灰（波拉與馬希納整條都是）。
+               */
+              ...(p.wind != null && { wind: p.wind }),
+              ...(p.pressure != null && { pressure: p.pressure }),
+            },
+          };
+        }),
+      ),
   },
   /**
    * 「世界之最・山脈」那一層的兩條線：**最長的陸上山脈**（安地斯）與
