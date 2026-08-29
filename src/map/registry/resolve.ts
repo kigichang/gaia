@@ -357,13 +357,15 @@ export interface PendingSource {
  * 資料到齊時 instances 會自然帶上 data，`useGeoLayers` 就會把圖層加上去。
  */
 /**
- * 從母圖層的資料切出屬於某個子項目的圖徵（交通軸線的七條）。
+ * 從母圖層的資料切出一部分圖徵：子項目用（交通軸線的七條），圖層層級的
+ * `featureIds` 也用（世界櫥窗那九層共用兩份 geojson）。
  *
  * ⚠️ **一定要記憶化。** `expandActive` 每次算繪都會被呼叫，每次都產生新的
  * FeatureCollection 物件的話，`useGeoLayers` 的 Effect 2 會因為 `instances` 變了
  * 而把整組圖層移除再重加——畫面會閃，而且互動監聽的記帳也跟著churn。
  * 母圖層的資料本身是 `resolveLayerData()` 快取來的、物件identity穩定，所以
- * 用「母圖層 cacheKey ＋ 子項目 id」當 key 就足夠；資料重抓時 key 相同但來源
+ * 用「母圖層 cacheKey ＋ 切片 key（子項目 id 或圖層 id，兩者都全站唯一）」當 key
+ * 就足夠；資料重抓時 key 相同但來源
  * 物件會換人，因此另外比對來源物件的 identity 才決定要不要重切。
  */
 const splitCache = new Map<string, { from: GeoJSON.FeatureCollection; fc: GeoJSON.FeatureCollection }>();
@@ -371,14 +373,15 @@ const splitCache = new Map<string, { from: GeoJSON.FeatureCollection; fc: GeoJSO
 function splitByFeatureIds(
   parentKey: string,
   parent: GeoJSON.FeatureCollection | null,
-  item: LayerItem,
+  sliceKey: string,
+  featureIds: readonly string[],
 ): GeoJSON.FeatureCollection | null {
   if (!parent) return null;
-  const key = `${parentKey}#${item.id}`;
+  const key = `${parentKey}#${sliceKey}`;
   const hit = splitCache.get(key);
   if (hit && hit.from === parent) return hit.fc;
 
-  const wanted = new Set(item.featureIds);
+  const wanted = new Set(featureIds);
   const fc: GeoJSON.FeatureCollection = {
     ...parent,
     features: parent.features.filter((f) => wanted.has(String(f.properties?.id))),
@@ -442,7 +445,12 @@ export function expandActive(
         if (item.source) {
           itemData = take(item.source);
         } else if (item.featureIds && layer.source) {
-          itemData = splitByFeatureIds(cacheKey(layer.source), take(layer.source), item);
+          itemData = splitByFeatureIds(
+            cacheKey(layer.source),
+            take(layer.source),
+            item.id,
+            item.featureIds,
+          );
         } else {
           return;
         }
@@ -472,7 +480,18 @@ export function expandActive(
       color: COLORS[layer.colorRole],
       minzoom: layer.minzoom,
       maxzoom: layer.maxzoom,
-      data: take(layer.source),
+      /**
+       * 圖層層級的 `featureIds`（世界櫥窗那九層共用兩份 geojson），走的是子項目
+       * 那條路徑同一支切分函式與同一份快取，所以九層一起打開也只抓一次資料。
+       */
+      data: layer.featureIds
+        ? splitByFeatureIds(
+            cacheKey(layer.source),
+            take(layer.source),
+            layer.id,
+            layer.featureIds,
+          )
+        : take(layer.source),
       detail: layer.detail,
     });
 

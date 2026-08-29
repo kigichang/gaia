@@ -317,6 +317,10 @@ for (const relDir of GEO_DATA_DIRS) {
 // 完全沒有訊息**，只會在上課上到一半才發現。這裡讓它變成建置失敗。
 {
   const seenLayerIds = new Map();
+  /** 被圖層層級 `featureIds` 切分的 geojson → 它的全部圖徵 id（只讀一次） */
+  const sliceableSourceIds = new Map();
+  /** 同一份 geojson → 已經被某一層認領的圖徵 id */
+  const sliceClaims = new Map();
   for (const { theme, layer } of allLayers()) {
     // 圖層 id 是 maplibre source/layer id 的前綴，撞名會靜默互相覆蓋
     if (seenLayerIds.has(layer.id)) {
@@ -457,6 +461,40 @@ for (const relDir of GEO_DATA_DIRS) {
       }
     }
 
+    /**
+     * 同一件事的圖層層級版本：世界櫥窗那九層各自用 `featureIds` 從兩份共用的
+     * geojson 切出自己那幾筆（見 registry/types.ts）。這裡查**兩個方向**——
+     *
+     * 1. 宣告的每個 id 真的存在（打錯字＝那一層變成空圖層，完全靜默）；
+     * 2. 反過來，被這種方式切分的 geojson 裡**每個圖徵都要被某一層認領**。
+     *    少了第二條，之後在 `world-picks.geojson` 加一筆卻忘了寫進任何一層的
+     *    `featureIds`，那個點會從地圖上消失而沒有任何訊息——那正是拆層之後最容易
+     *    犯的錯。第二條在下面所有主題都跑完之後才判得出來，所以先記帳。
+     */
+    if (layer.featureIds && layer.source?.type === "remote") {
+      const path = layer.source.path;
+      let ids = sliceableSourceIds.get(path);
+      if (ids === undefined) {
+        try {
+          const fc = JSON.parse(await readFile(join(ROOT, "public", path), "utf8"));
+          ids = new Set(fc.features.map((f) => String(f.properties?.id)));
+        } catch {
+          ids = new Set(); // 檔案不存在的錯誤上面那段已經報過了
+        }
+        sliceableSourceIds.set(path, ids);
+      }
+      const claimed = sliceClaims.get(path) ?? new Set();
+      for (const fid of layer.featureIds) {
+        claimed.add(fid);
+        if (!ids.has(fid)) {
+          errors.push(
+            `registry/${theme.id} → 圖層「${layer.id}」宣告的 featureId「${fid}」不在 public/${path} 裡（那一層會變成空圖層）`,
+          );
+        }
+      }
+      sliceClaims.set(path, claimed);
+    }
+
     // detail.collection 要有對應的內容目錄或 geojson
     if (layer.detail?.type === "geo") {
       const known =
@@ -480,6 +518,22 @@ for (const relDir of GEO_DATA_DIRS) {
       }
     }
   }
+
+  /**
+   * 上面記帳的第二個方向：被圖層層級 `featureIds` 切分的 geojson，每個圖徵都要有
+   * 主人。⚠️ **刻意只查這一種切分**，不套到 `items.featureIds`——交通軸線那份母圖層
+   * 是否被子項目涵蓋完畢，從來沒有人保證過。
+   */
+  for (const [path, ids] of sliceableSourceIds) {
+    const claimed = sliceClaims.get(path) ?? new Set();
+    const orphans = [...ids].filter((id) => !claimed.has(id));
+    if (orphans.length) {
+      errors.push(
+        `registry → public/${path} 的圖徵「${orphans.join("、")}」沒有被任何圖層的 featureIds 認領（它們不會出現在地圖上，而且完全靜默）`,
+      );
+    }
+  }
+
   console.log(`registry: ${THEMES.length} 個主題／${seenLayerIds.size} 個圖層通過交叉檢查`);
 }
 

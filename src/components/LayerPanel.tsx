@@ -56,7 +56,10 @@ export function LayerPanel({
             {layers.map((layer) => {
               const checked = activeLayerIds.has(layer.id);
               const kind = layer.render.kind;
-              const atCap = !checked && activeCountByKind[kind] >= MAX_ACTIVE_BY_KIND[kind];
+              const atCap =
+                !checked &&
+                !layer.exemptFromMaxActive &&
+                activeCountByKind[kind] >= MAX_ACTIVE_BY_KIND[kind];
               const planned = layer.status === "planned";
 
               return (
@@ -396,6 +399,8 @@ const BASEMAP_HINTS: Record<string, string> = {
 function countActiveByKind(theme: ThemeDefinition, activeLayerIds: Set<string>) {
   const counts: Record<GeometryKind, number> = { circle: 0, line: 0, fill: 0, elevation: 0 };
   for (const layer of theme.layers) {
+    // 用固定角色色的圖層不佔名額，判準見 types.ts 的 exemptFromMaxActive
+    if (layer.exemptFromMaxActive) continue;
     if (activeLayerIds.has(layer.id)) counts[layer.render.kind] += 1;
   }
   return counts;

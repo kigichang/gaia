@@ -148,7 +148,7 @@ NLSC WMTS 是 `{z}/{y}/{x}`——**y 在 x 前面**，跟絕大多數 XYZ 服務
 ### 世界各圖層的資料來源與坑 → 見 `CLAUDE_WORLD.md`
 
 板塊與板塊邊界、大洲分區、火山帶、世界主要山脈、森林與沙漠帶、柯本氣候分區、
-行星風系、洋流、世界櫥窗（作者精選），以及世界底圖的地名繁體化——這些圖層的來源、
+行星風系、洋流、世界櫥窗（編者選集那九層），以及世界底圖的地名繁體化——這些圖層的來源、
 取得邏輯與實測踩過的坑全部搬到 **`CLAUDE_WORLD.md`** 了（上面那張端點總表仍然是
 完整的）。**要動世界主題的圖層就先讀那一份。**
 
@@ -296,8 +296,8 @@ ID 常數定義在 `src/map/layers/*.ts`，**一律 import 常數，不要寫死
 | `world-mountain-peaks-points` | circle（附屬圖層；一條山脈配一座最高峰，沿用 `place` 藍） |
 | `world-superlative-peaks-points` | circle（⚠️ **已下架待重新設計**，見上；兩座山＋三座火山共五筆，沿用 `place` 藍。⚠️ 圖層 id 留著 `-peaks`，label 卻是「高山與火山」，見下） |
 | `world-superlative-ranges-line` / `-label` | line + symbol（⚠️ **已下架待重新設計**，見上；安地斯山脈與中洋脊兩筆，沿用 `mountain` 紫。⚠️ 安地斯的幾何跟 `world-mountains` **完全重合**是刻意的，見下） |
-| `world-picks-points` | circle（世界櫥窗；**編者選集**，跟「世界之最」是兩種東西，同樣沿用 `place` 藍，見下） |
-| `world-picks-areas-line` / `-label` | line + symbol（世界櫥窗；編者選集裡**有範圍**的項目，`reference` 中性灰虛線——那條虛線的語意是「這是示意的線」，⚠️ 但兩筆的理由不同，見下） |
+| `world-picks-volcanoes-points` / `world-picks-landforms-points` / `world-picks-ocean-points` / `world-picks-straits-points` / `world-picks-canals-points` / `world-picks-capes-points` / `world-picks-lakes-points` | circle，**世界櫥窗的編者選集切成七個類別各一層**（火山與災害／地形與地質／海洋／海峽／運河／海角／湖泊）。七層共用 `world-picks.geojson` 一份幾何（**圖層層級的 `featureIds`**）與 `world-picks` 一個內容 collection，全部沿用 `place` 藍並 `exemptFromMaxActive`，見下 |
+| `world-picks-rift-line` / `-label`、`world-picks-legend-line` / `-label` | line + symbol（世界櫥窗裡**有範圍**的兩筆：東非大裂谷、百慕達三角，各自一層）。`reference` 中性灰虛線——那條虛線的語意是「這是示意的線」，⚠️ **但兩層的理由相反**（一個是真實地形的簡化、一個根本沒有界線），見下 |
 | `world-civilizations-points` | circle（六個古文明發源地；人文專題底下第一個 ready 圖層，沿用 `place` 藍，⚠️ 因此跟世界重要城市同色，見下） |
 | `world-places-points` | circle |
 | `world-population-points` | circle（505 個百萬人以上的都會區；半徑＝都會區人口，顏色是單一身分色。⚠️ 顏色**不是**臺灣人口那個紫——紫對火山洋紅是 hard FAIL，見 `CLAUDE_WORLD.md`） |
@@ -367,7 +367,7 @@ maplibre-contour 把 worker 以 Blob URL 內嵌，**不需要額外部署 worker
 | 主題 | 路由 | 內容 |
 |---|---|---|
 | 臺灣地理 | `/theme/taiwan` | 臺灣123（土地與島群、專屬經濟海域、海峽中線、北回歸線）、行政區（縣市、鄉鎮市區）、**地體構造（板塊、板塊邊界、火山與火山島）**、地形（地形景點、五大山脈、**海岸地形**、岩石分布）、天然災害（活動斷層、地震、颱風路徑與災損）、水系（118 個列管水系、水庫即時水情、河川流域分區、**重要濕地**）、人文（原住民族、交通軸線、古蹟、人口與都市體系）、植被生態（特有種、國家公園與保護區、垂直植被帶）、農業物產（主要作物分布） |
-| 世界地理 | `/theme/world` | **全球尺度（骨架，排在前面）**：參考線（緯度參考線、國際換日線）、**世界櫥窗**（作者精選、作者精選・範圍；⚠️「世界之最」兩層已下架待重新設計，見上）、氣候與生物群系（森林與沙漠帶、柯本氣候分區、行星風系）、海洋（洋流：18 條暖流／寒流）、地體構造（板塊、板塊邊界、地震帶、火山帶）。**世界地理原有**：城市（世界重要城市 31 個、世界人口分布 505 個都會區）、大洲（大洲分區；⚠️「國界」那個 planned 圖層 2026-08 拿掉了，兩種建議底圖本身就畫著國界，見 `CLAUDE_WORLD.md`）、地形水系（世界主要河流、世界主要山脈）、人文專題（古文明發源地） |
+| 世界地理 | `/theme/world` | **全球尺度（骨架，排在前面）**：參考線（緯度參考線、國際換日線）、**世界櫥窗**（編者選集，2026-08 從「作者精選」一層拆成九層：火山與災害、地形與地質、海洋、海峽、運河、海角、湖泊、板塊與地形、傳說中的地方；⚠️「世界之最」兩層已下架待重新設計，見上）、氣候與生物群系（森林與沙漠帶、柯本氣候分區、行星風系）、海洋（洋流：18 條暖流／寒流）、地體構造（板塊、板塊邊界、地震帶、火山帶）。**世界地理原有**：城市（世界重要城市 31 個、世界人口分布 505 個都會區）、大洲（大洲分區；⚠️「國界」那個 planned 圖層 2026-08 拿掉了，兩種建議底圖本身就畫著國界，見 `CLAUDE_WORLD.md`）、地形水系（世界主要河流、世界主要山脈）、人文專題（古文明發源地） |
 
 兩個主題頁都是**滿版地圖 + 浮動控制**（仿 Google Map），沒有頁首也沒有側欄——版面機制見下面的「全螢幕地圖外框與浮動控制」。
 
@@ -480,6 +480,49 @@ maplibre 的 `maxzoom` 是**開區間**（`zoom >= maxzoom` 整層不畫），�
 即將消失的邊緣，使用者再往前捲一格滾輪剛選的東西就又不見了。
 
 ⚠️ **母子連動強調的兩個方向都從 `attach.parentProperty` 推，不要寫死屬性名。** 早期版本在 `ThemeMapPage` 寫死 `["peakId", "rangeId"]`，加了縣市政府之後立刻壞掉——`countyId` 不在清單裡，點縣市政府時所屬縣市不會被強調，而卡片與相機都正常，所以這件事在畫面上非常容易被忽略過去。母 → 子的方向也不需要母圖徵身上有任何屬性：反過來找「哪個子項目指向我」就好（`tw-ranges.geojson` 的 `peakId` 現在只用於 resolve.ts 的 join）。
+
+### 一份 geojson 切給多個圖層（圖層層級的 `featureIds`）
+
+`LayerDefinition` 的 ready 變體可以宣告 `featureIds`，只取 `source` 裡的那幾個圖徵。
+世界櫥窗那九層就是這樣來的：兩份手維護的幾何（`world-picks.geojson` 17 筆、
+`world-picks-areas.geojson` 2 筆）切成九個核取方塊，九層共用 `resolveLayerData` 的
+同一個快取項目，**全開也只有兩次請求**。
+
+它跟 `LayerItem.featureIds`（交通軸線那十條）是同一個機制、同一支
+`splitByFeatureIds()`，判準是「這些東西該不該共用一個核取方塊」：**子項目**是一個勾選項
+展開成 N 個平行的子圖層（母圖層那一列仍然是一個開關）；**圖層層級**則是它們根本就該是
+各自獨立的圖層——想只看海峽、不看湖泊。
+
+⚠️ 三件事不要動：
+
+- **在 `resolve.ts` 切資料，不是下 maplibre 的 filter。** 全站唯一寫 `map.setFilter`
+  的地方是 `applySoloFilter()`（「只顯示這一筆」整個功能靠它），這裡再下一道就得用
+  `["all", …]` 合併兩者，從此兩個功能互相糾纏。
+- **順序是母圖層 geojson 的檔案順序**（`filter` 而不是照 `featureIds` 重排），所以
+  可點清單的順序仍然跟著資料走——七條海峽由西往東那條規則因此原封不動有效。
+- ⚠️ **`searchIndex.ts` 是唯一一個直接讀 `layer.source` 而繞過切分結果的地方**
+  （抽屜清單、`flyToFeature`、詳情卡、聚焦模式全都吃 `instances`），所以它自己也必須
+  套同一份 `featureIds`。少了那一行，搜「貝加爾湖」會出現七筆、其中六筆指向根本不含它
+  的圖層——點下去會勾錯圖層、飛不到、聚焦之後畫面空白，而且完全沒有錯誤訊息。
+
+`validate-content.mjs` 對這種切分查**兩個方向**：宣告的 id 真的存在，**而且那份 geojson
+的每個圖徵都被某一層認領**。後者是拆層之後最容易犯的錯——加一筆卻忘了寫進任何一層的
+`featureIds`，那個圖徵會靜默地不出現。⚠️ 這條覆蓋率檢查**刻意只查圖層層級**，不套到
+`items.featureIds`（交通軸線那份母圖層是否被子項目涵蓋完畢，從來沒有人保證過）。
+
+### `exemptFromMaxActive`：用固定角色色的圖層不佔名額
+
+`MAX_ACTIVE_BY_KIND` 封的是「同時顯示幾個**分類色**還讀得動」，所以只有吃色票的圖層該算。
+世界櫥窗那九層全部是 `place` 藍與 `reference` 中性灰——多開一層，畫面上一個新色相都沒有
+增加——而硬套上限就等於「想看海峽就不能看運河」，比拆層之前更難用。它們因此宣告
+`exemptFromMaxActive: true`，`LayerPanel` 的計數與 `ThemeMapPage` 的 `enableLayer()`
+（搜尋自動勾選時自己守上限的地方）兩處都跳過它們。
+
+⚠️ **那是豁免，不是上限失效**：其餘的圓點圖層（世界重要城市、世界人口、古文明發源地、
+火山帶、全球地震帶）照樣四個封頂，第五個仍然是 disabled——實測過。
+⚠️ **不要拿這個旗標去豁免任何吃分類色票的圖層**（items 的 palette、水庫／古蹟／人口
+那幾條色階都算），也不要因為想多開幾層就去調高 `MAX_ACTIVE_BY_KIND`：那個數字等於色票
+長度，是 all-pairs 驗證的前提。
 
 ### 圖層 id 的組合方式
 
@@ -1048,6 +1091,10 @@ maplibre 的四個角落容器是 map container 內的 `position: absolute; z-in
 | `world-mountain-peaks.geojson` | 10 KB |
 | `world-picks-areas.geojson`（geo-manual） | 3 KB |
 | `world-picks.geojson`（geo-manual） | 11 KB |
+
+⚠️ **世界櫥窗那九個圖層在這張表上只佔兩列，那不是漏列。** 它們靠**圖層層級的
+`featureIds`** 從這兩份幾何切出來（見下面「一份 geojson 切給多個圖層」），九層共用
+`resolveLayerData` 的同一個快取項目，所以九層全開也只有兩次請求。
 | `world-civilizations.geojson`（geo-manual） | 4 KB |
 | `tw-county-halls.geojson` | 8 KB |
 | `tw-volcanoes.geojson`（geo-manual） | 5 KB |

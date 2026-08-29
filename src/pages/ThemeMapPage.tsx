@@ -458,11 +458,19 @@ function ThemeMapView({ theme, chrome }: { theme: ThemeDefinition; chrome: Chrom
       setActiveLayerIds((prev) => {
         if (prev.has(layer.id)) return prev;
         const kind = layer.render.kind;
-        const sameKind = [...prev].filter(
-          (id) => theme.layers.find((l) => l.id === id)?.render.kind === kind,
-        );
+        /**
+         * ⚠️ 豁免上限的圖層（世界櫥窗那九層，判準見 types.ts 的
+         * `exemptFromMaxActive`）**兩個方向都要排除**：自己不觸發驅逐，也不會被
+         * 別人擠掉——否則搜一個城市會把使用者剛勾好的海峽踢掉。
+         */
+        const sameKind = [...prev].filter((id) => {
+          const l = theme.layers.find((x) => x.id === id);
+          return l?.render.kind === kind && !l.exemptFromMaxActive;
+        });
         const next = new Set(prev);
-        if (sameKind.length >= MAX_ACTIVE_BY_KIND[kind]) next.delete(sameKind[0]);
+        if (!layer.exemptFromMaxActive && sameKind.length >= MAX_ACTIVE_BY_KIND[kind]) {
+          next.delete(sameKind[0]);
+        }
         next.add(layer.id);
         return next;
       });

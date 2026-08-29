@@ -23,7 +23,7 @@
 > 對應 `CLAUDE.md` 的「資料源」一章。端點總表、NLSC 路徑順序陷阱、氣候資料的
 > build-time 產製、地理要素說明的延遲載入都留在 CLAUDE.md。
 
-### 世界櫥窗：地表之最（四筆、兩個圖層）
+### 世界櫥窗：地表之最與編者選集
 
 > ⚠️ **「世界之最」那兩層（`world-superlative-peaks`、`world-superlative-ranges`）
 > 2026-08 起已從註冊表下架，等待重新設計。** 下面這一整節寫的是它們被下架前的設計與
@@ -34,21 +34,34 @@
 > 被拿掉（在 git 上一版）。**重新設計時先把這一節讀完**，尤其是「為什麼是兩個圖層而
 > 不是一個」「三項火山紀錄各有一個定義問題」與「講不出憑據的『最』不收」那三段：
 > 那是這一層當初存在的理由，也是它值得重做的地方。
-> 「作者精選」（`world-picks`／`world-picks-areas`）**不受影響，仍在線上**。
+> 編者選集**不受影響，仍在線上**——但它 2026-08 從「作者精選」一層拆成了九層，見下。
 
 「世界櫥窗」是 2026-08 新增的分組，排在**參考線之後、氣候與生物群系之前**——先讓學生
 在地圖上找得到具體的地方，後面的氣候帶、洋流、板塊才有東西可以掛上去。底下有**兩種**
-東西，分成三個圖層：
+東西：
 
-- **世界之最**（`world-superlative-peaks` 5 筆＋`world-superlative-ranges` 2 筆）：
-  海拔最高的山峰（聖母峰）、海拔最低的山（日和山）、體積最大的火山（普哈胡努）、
-  海拔最高的火山（奧霍斯－德爾薩拉多山）、海拔最高的活火山（尤耶亞科山）、
-  最長的陸上山脈（安地斯）、最長的海底山脈（中洋脊）。
-- **作者精選**（`world-picks` 點＋`world-picks-areas` 線）：編者挑的地方，目前是
-  維蘇威火山（西元 79 年的龐貝城）、理查特結構（「撒哈拉之眼」）、尼莫點、
-  **七條海峽**（直布羅陀、博斯普魯斯、曼德、荷姆茲、麻六甲、臺灣海峽、土渕）、
-  **兩條運河**（巴拿馬、蘇伊士）、**兩個海角**（合恩角、好望角）、死海、裏海、
-  貝加爾湖、東非大裂谷與百慕達三角。
+- **世界之最**（`world-superlative-peaks` 5 筆＋`world-superlative-ranges` 2 筆，
+  **兩層都已下架**）：海拔最高的山峰（聖母峰）、海拔最低的山（日和山）、體積最大的
+  火山（普哈胡努）、海拔最高的火山（奧霍斯－德爾薩拉多山）、海拔最高的活火山
+  （尤耶亞科山）、最長的陸上山脈（安地斯）、最長的海底山脈（中洋脊）。
+- **編者選集**（19 筆，**九個圖層**）：原本是「作者精選」（`world-picks` 點）＋
+  「作者精選・範圍」（`world-picks-areas` 線）兩個核取方塊，2026-08 依原本的
+  `category` 拆成九層——
+
+  | 圖層 | label | 幾何 | 收錄 |
+  |---|---|---|---|
+  | `world-picks-volcanoes` | 火山與災害 | circle | 維蘇威火山（西元 79 年的龐貝城） |
+  | `world-picks-landforms` | 地形與地質 | circle | 理查特結構（「撒哈拉之眼」） |
+  | `world-picks-ocean` | 海洋 | circle | 尼莫點 |
+  | `world-picks-straits` | 海峽 | circle | 直布羅陀、博斯普魯斯、曼德、荷姆茲、麻六甲、臺灣海峽、土渕 |
+  | `world-picks-canals` | 運河 | circle | 巴拿馬、蘇伊士 |
+  | `world-picks-capes` | 海角 | circle | 合恩角、好望角 |
+  | `world-picks-lakes` | 湖泊 | circle | 死海、裏海、貝加爾湖 |
+  | `world-picks-rift` | 板塊與地形 | line | 東非大裂谷 |
+  | `world-picks-legend` | 傳說中的地方 | line | 百慕達三角 |
+
+  拆的理由與三件綁在一起的事（幾何仍然只有兩份、內容 collection 九層共用、九層全部
+  豁免圓點名額）寫在下面「編者選集為什麼是九個圖層」。
 
 ⚠️ **每一筆的重點都是「這個『最』是怎麼量、怎麼定義出來的」**，不是那個名字。三筆
 火山紀錄尤其如此（見下面「三項火山紀錄各有一個定義問題」），內容檔的 `facts` 與圖層的
@@ -149,7 +162,7 @@ id 在 collection 內唯一就夠，而這幾張卡本來就是一組要一起�
 | 海拔最高的火山 | 奧霍斯－德爾薩拉多山 6,893 m | 它**同時也是**全新世活火山（GVP 記最後噴發約西元 750 年），所以這一筆與下一筆是同一件事的兩種算法 |
 | 海拔最高的活火山 | 尤耶亞科山 6,739 m | ⚠️ 取「**有文獻記載的噴發**」（1877 年）當判準。若採地質學界通用的「一萬年內噴發過」，答案會變成上一列那座——本站「火山帶」那一層（GVP 全新世名單）就是這樣列的 |
 
-⚠️ **「最」講不出憑據就不要收，那種東西放「作者精選」。** 「最有名的火山」「最危險
+⚠️ **「最」講不出憑據就不要收，那種東西放編者選集那九層。** 「最有名的火山」「最危險
 的火山」這類項目沒有人排得出來，硬掛在「世界之最」底下會讓那一層的判準失效——
 維蘇威火山就是為此分出去的（見下）。
 
@@ -157,15 +170,17 @@ id 在 collection 內唯一就夠，而這幾張卡本來就是一組要一起�
 兩筆的教學內容；合併成一筆等於把那件事刪掉。反過來，**也不可以兩筆都放奧霍斯**——
 同一個座標疊兩顆點，點下去只開得了其中一張卡。
 
-#### 「作者精選」是另一種東西，不要跟「世界之最」混在一起
+#### 編者選集是另一種東西，不要跟「世界之最」混在一起
 
-`world-picks` 收的是**編者挑的地方**——沒有紀錄可言，但在地圖上指得出來、而且講得出
+那九層收的是**編者挑的地方**——沒有紀錄可言，但在地圖上指得出來、而且講得出
 一個具體的故事。維蘇威火山就是為此分出來的：它不是最高、最大或最活躍的火山，硬掛在
 「世界之最」底下會把那一層「量得出來、講得出憑據」的判準稀釋掉。
 
 ⚠️ **收錄界線要講得出口**（比照世界主要山脈的 39 條、GVP 火山中文名那 40 幾座）：
 課本、新聞或科普讀物會直接叫出名字，在地圖上找得到明確的位置，而且那個地方本身
-就是一堂課。**不是排名、也不會補完**，這件事寫在 `notes` 裡。
+就是一堂課。**不是排名、也不會補完**——這件事寫在**九層每一層**的 `notes` 第一則裡，
+拆層之後那句話更重要了：層名叫「海峽」而不再叫「作者精選」，讀者第一眼會以為它是一份
+完整名錄，所以每一層的 `description` 也都以「編者挑出來…」開頭。
 
 - 內容 collection 是 `world-picks`（不跟 `world-superlatives` 共用）；**圖徵 id 是那個
   地方本身**（`vesuvius`），不是某個「最」——那正是這一層與隔壁的差別。
@@ -237,32 +252,42 @@ id 在 collection 內唯一就夠，而這幾張卡本來就是一組要一起�
 `properties.zoom` 是 7.5：那個尺度同時看得到阿巴斯港、格什姆島、穆桑代姆半島與東邊
 敞開的阿曼灣，「窄口」才讀得出來。
 
-#### 七條海峽是一組，`category` 從「海洋」拆出來了
+#### 七條海峽是一層，它從「海洋」分出來過兩次
 
-2026-08 加進直布羅陀、博斯普魯斯、曼德（後來再加臺灣海峽）之後，這一層的海峽變成七條，於是把它們的
-`category` 從 `"海洋"` 拆成 `"海峽"`，`尼莫點` 留在 `"海洋"`。⚠️ **`category` 只餵
-`browse.groupBy`，不是 id、也不在搜尋 haystack 裡**（haystack 是 name＋shortName＋en＋
-meta＋內容檔別名），所以改它不會動到任何既有的搜尋或連結。單一項目的分組本來就是這一層
-的常態（`火山與災害` 與 `地形與地質` 各只有一筆）。
+2026-08 加進直布羅陀、博斯普魯斯、曼德（後來再加臺灣海峽）之後，海峽變成七條，於是先把
+它們的 `category` 從 `"海洋"` 拆成 `"海峽"`（`尼莫點` 留在 `"海洋"`）；同月再把整個
+「作者精選」拆成九層時，那個 `category` 就變成了 `world-picks-straits` 這一層的
+`featureIds`。
+
+⚠️ **`properties.category` 現在不驅動任何 UI 了**（`browse.groupBy` 跟著「作者精選」
+一起拿掉），但**刻意留在 geojson 裡**：它記錄著每一筆屬於哪一層、也讓檔案的排列有意義。
+⚠️ 它從來就不是 id、也不在搜尋 haystack 裡（haystack 是 name＋shortName＋en＋meta＋
+內容檔別名），所以改它不會動到任何既有的搜尋或連結；⚠️ 但**真正的權威是註冊表的
+`featureIds`**，兩邊不同步時以註冊表為準——而「geojson 裡有一筆沒被任何一層認領」會被
+`validate-content.mjs` 擋下來（見 CLAUDE.md「一份 geojson 切給多個圖層」）。
 
 ⚠️ **geojson 裡七條海峽是由西往東依經度排的**（直布羅陀 −5.5°、博斯普魯斯 29.1°、
-曼德 43.3°、荷姆茲 56.4°、麻六甲 103.5°、臺灣海峽 119.9°、土渕 134.2°），而 `groupBy`
-**依序切、不排序**，所以同一類必須連續——再加海峽時要插在經度對的位置，不能往檔案尾巴丟。
-前六條剛好串成從大西洋到東亞的那條海運航線，土渕排最後是因為它經度最東，跟「它是異類」
-正好同向。
+曼德 43.3°、荷姆茲 56.4°、麻六甲 103.5°、臺灣海峽 119.9°、土渕 134.2°），而
+`splitByFeatureIds()` 是**過濾、不重排**，所以抽屜可點清單的順序仍然是檔案順序——
+再加海峽時**要插在經度對的位置**，不能往檔案尾巴丟（`featureIds` 那一串也順手排成
+一樣的順序，但那只是可讀性，不影響畫面）。前六條剛好串成從大西洋到東亞的那條海運航線，
+土渕排最後是因為它經度最東，跟「它是異類」正好同向。
 
 ⚠️ **五張卡互相指涉，改一張要順手看其他幾張**（比照三個湖的既有規則）：直布羅陀 →
 曼德（地中海的門 vs 紅海的門，中間夾著蘇伊士運河）；博斯普魯斯 → 直布羅陀（黑海的船
 要先出博斯普魯斯、再從直布羅陀才出得了大西洋）；曼德 → 荷姆茲（波斯灣的油往歐洲走的
 同一條路）；麻六甲 → 荷姆茲（同一條路往東亞的那一半，而且直接引用了荷姆茲卡上的 61.7%）。
 
-#### 兩條運河自成一組，而它們是拿來跟海峽對照的
+#### 兩條運河自成一層，而它們是拿來跟海峽對照的
 
-2026-08 加進巴拿馬與蘇伊士，`category` 是 **`"運河"`**，在 geojson 裡排在「海峽」後面、
-「湖泊」前面（實測抽屜的分組順序是 火山與災害／地形與地質／海洋／海峽／運河／湖泊）。
-⚠️ **不要併進「海峽」**：這兩組是同一個主題（咽喉點）的兩種來源——一個是地形逼出來的、
-一個是人挖出來的，分開才講得出這件事，而兩張卡的「對照重點」都靠它。組內依經度排
-（巴拿馬 −79.75° 在前）。
+2026-08 加進巴拿馬與蘇伊士，`category` 是 **`"運河"`**（拆層之後就是
+`world-picks-canals` 那一層），在 geojson 裡排在「海峽」後面、「湖泊」前面
+（抽屜裡的圖層順序也是 火山與災害／地形與地質／海洋／海峽／運河／海角／湖泊／
+板塊與地形／傳說中的地方）。
+⚠️ **不要併進「海峽」**：這兩層是同一個主題（咽喉點）的兩種來源——一個是地形逼出來的、
+一個是人挖出來的，分開才講得出這件事，而兩張卡的「對照重點」都靠它。⚠️ 這條判準在
+拆層之後**更硬**了：它從「為什麼是兩個 `category`」變成「為什麼是兩個核取方塊」。
+層內依經度排（巴拿馬 −79.75° 在前）。
 
 ⚠️ **這兩張卡的核心是一組對比，改一張要順手看另一張**：蘇伊士 193 公里**一道船閘都
 沒有**（地中海與紅海幾乎等高，中途還借用大苦湖），巴拿馬只有 82 公里卻**非有船閘不可**
@@ -299,12 +324,13 @@ lat 8.639–9.600，82 公里的地峽橫躺在畫面上）；蘇伊士 **8.0**�
 所以那一筆來源連英文條目。同理 `托里霍斯-卡特條約` 也沒有中文條目，那一段併在
 `維基百科 巴拿馬運河` 裡講，不另外登記。
 
-#### 兩個海角自成一組，而它們是拿來跟運河對照的
+#### 兩個海角自成一層，而它們是拿來跟運河對照的
 
-2026-08 加進合恩角與好望角，`category` 是 **`"海角"`**，在 geojson 裡排在「運河」後面、
-「湖泊」前面（實測抽屜的分組順序是 火山與災害／地形與地質／海洋／海峽／運河／海角／湖泊）。
+2026-08 加進合恩角與好望角，`category` 是 **`"海角"`**（拆層之後就是
+`world-picks-capes` 那一層），在 geojson 裡排在「運河」後面、「湖泊」前面。
 ⚠️ **不要併進「海峽」或「運河」**：海峽與運河是主要航線上的**咽喉點**，海角是那些航線
-走不通時**剩下的那條路**——兩張卡的「對照重點」都靠這個分工。組內依經度由西往東排
+走不通時**剩下的那條路**——兩張卡的「對照重點」都靠這個分工，而拆層之後這條判準同樣
+從「為什麼是兩個 `category`」升格成「為什麼是兩個核取方塊」。層內依經度由西往東排
 （合恩角 −67.3° 在前）。
 
 ⚠️ **這兩張卡的核心也是一組對比，改一張要順手看另一張**：紅海危機讓繞好望角的船從每天
@@ -397,7 +423,7 @@ PDF 的公開鏡像擋自動連線，所以來源連的是英文條目 `Borders_
 | 博斯普魯斯 | 10.5 | 41 m/px、lat 40.91–41.25 | 整條 31 公里的海峽剛好進得來（⚠️ **zoom 11 會把北口切掉**，實測北界只到 41.203，而海峽北端在 41.24） |
 | 曼德 | 7.2 | 520 m/px、lat 10.41–14.74 | 要讓「板塊邊界」與「東非大裂谷」兩層同時進畫面（⚠️ **zoom 7.5 時裂谷北端 14.2°N 離上緣只剩 0.14°**，換一個矮一點的視窗就會掉出去） |
 
-⚠️ **曼德那張卡的「對照重點」叫讀者打開「板塊邊界」與「作者精選・範圍」，那兩層的
+⚠️ **曼德那張卡的「對照重點」叫讀者打開「板塊邊界」與「板塊與地形」（東非大裂谷），那兩層的
 `maxzoom` 都是 8**——所以 `properties.zoom` 必須小於 8，這是硬條件不是偏好。實測 7.2
 兩層都畫得出來（`張裂型邊界`＋`錯動型邊界`＋`東非大裂谷` 都查得到圖徵）。**改這個 zoom
 之前先確認那兩層還畫得出來**，比照麻六甲那次「行星風系 maxzoom 4」的教訓。
@@ -535,22 +561,41 @@ PDF 的公開鏡像擋自動連線，所以來源連的是英文條目 `Borders_
 而讀者也剛好需要知道這件事。⚠️ **不要改用 `shortName` 塞別名**——那個欄位的語意是
 「地圖上實際印出來的短名」，這一層根本沒有標註。
 
-#### 「作者精選」是兩層，那純粹是幾何限制
+#### 編者選集為什麼是九個圖層
 
-`world-picks`（點）與 `world-picks-areas`（線）的收錄判準完全相同，**內容 collection
-也共用**（`world-picks`，id 在裡面唯一就夠）——分開只是因為一個圖層只能有一種幾何。
-百慕達三角是一片海域、東非大裂谷是一條橫跨半個非洲的裂谷，畫成點就等於把它們唯一的
-地理內容丟掉。
+2026-08 之前是兩個核取方塊：`world-picks`（17 個點）與 `world-picks-areas`（2 條線），
+類別只是 `browse: { groupBy: "category" }` 從 `properties.category` 切出來的**清單分組**。
+那個擺法有兩個問題——**要看海峽就得連湖泊、火山一起打開**（分組不是開關），而那一大段
+`description` 從維蘇威一路講到貝加爾湖，勾任何一類的人都得讀完整段。現在每個類別自己
+就是一個核取方塊，`description`、`notes` 與 `sources` 也各自歸位（原本 24 則 notes
+逐則搬到對應的那一層，只有第一則「這是編輯選集、不是排名」九層都留）。
 
-⚠️ **範圍那一層是 `reference` 中性灰虛線，不是分類色**，而且那條虛線是必要的。
-⚠️ 但**兩筆的理由不同，`notes` 要分開講**：百慕達三角**沒有官方界線**（美國海軍與
+三件事跟這個拆法綁在一起，改動前請一起看：
+
+1. **幾何仍然只有兩份**（`world-picks.geojson` 17 筆、`world-picks-areas.geojson` 2 筆）。
+   九層靠**圖層層級的 `featureIds`** 從那兩份切出來（機制與完整判準見 CLAUDE.md 的
+   「一份 geojson 切給多個圖層」），共用 `resolveLayerData` 的同一個快取項目——
+   **九層全開實測只有兩次 geojson 請求**。⚠️ 也因此 `searchIndex.ts` 必須自己套同一份
+   `featureIds`：它是全站唯一直接讀 `layer.source` 而繞過切分結果的地方。
+2. **內容 collection 九層共用 `world-picks`**（19 份內容檔與它的分片一個字都沒動，
+   id 在 collection 內唯一就夠）。實測九層每一層點第一筆，卡片、來源連結與面板標題
+   都跟拆之前逐字相同。
+3. **九層全部 `exemptFromMaxActive`**（見下一節）。
+
+⚠️ **有範圍的那兩筆仍然是兩個獨立的線圖層，不是「點圖層的範圍版」。** 百慕達三角是
+一片海域、東非大裂谷是一條橫跨半個非洲的裂谷，畫成點就等於把它們唯一的地理內容丟掉；
+而 `LayerRender` 一個圖層只能一種幾何。
+
+⚠️ **兩層都是 `reference` 中性灰虛線，不是分類色**，而且那條虛線是必要的。
+⚠️ 但**兩層的理由相反，`notes` 要分開講**：百慕達三角**沒有官方界線**（美國海軍與
 海岸防衛隊明講它不在任何官方海圖上），實線會讓它看起來像一條真實的界線，而那正好是
 這張卡要拆穿的東西；東非大裂谷**是真實的地形**，但真正的裂谷是一組數十公里寬的地塹
-與斷層帶，把它畫成一條線本身就已經是示意（比照世界主要山脈的中軸線）。**不要把這一層
-的語意收斂成「這裡畫的東西都不存在」**——那對第二筆是錯的。
+與斷層帶，把它畫成一條線本身就已經是示意（比照世界主要山脈的中軸線）。**不要把這兩層
+的語意收斂成「這裡畫的東西都不存在」**——那對東非大裂谷是錯的。拆成兩層之後這件事反而
+好講了：兩則 `notes` 各自寫自己的理由，而且互相點名對方。
 
-因此它跟同主題的緯度參考線、國際換日線長得一樣——那是刻意的，它們確實是同一類東西，
-區辨靠沿線標註（所以 `label` 在這一層也是必要條件）。
+因此它們跟同主題的緯度參考線、國際換日線長得一樣——那是刻意的，它們確實是同一類東西，
+區辨靠沿線標註（所以 `label` 在這兩層也是必要條件）。
 
 ⚠️ **東非大裂谷的東支在「板塊邊界」那一層上一條線都沒有，那不是漏畫。** 實測 Bird
 (2003) 在 34–38.5°E／−6–4.5°N 這個框裡**三種邊界各 0 個點**：那份模型把努比亞／
@@ -566,22 +611,35 @@ PDF 的公開鏡像擋自動連線，所以來源連的是英文條目 `Borders_
 ⚠️ **不要把量出來的長度寫進卡片**（實測東支 2,432 km、西支 2,621 km）：那是從示意
 幾何量出來的，比照中洋脊的既有規則，卡片上寫的是公開的常用值。
 
-⚠️ **這一層讓世界主題的線圖層變成九個**（原本八個），一樣是搶 `MAX_ACTIVE_BY_KIND.line`
-的三個名額。預期行為，理由見上。
+⚠️ **這兩層不搶 `MAX_ACTIVE_BY_KIND.line` 的三個名額**（`exemptFromMaxActive`，
+見下一節）。拆層之前它們合起來吃一個名額，現在是零。
 
 ⚠️ 百慕達三角那張卡的重點**不是「哪裡有怪事」，而是怎麼查證**：先問「這個地方有界線
 嗎」（沒有，各家畫法面積差三倍），再問「事故率跟別的地方比呢」（NOAA：沒有證據顯示
 比其他繁忙海域更常發生）。**改動這張卡時不要把這兩個問題拿掉**，那是它被收進來的
 理由；把它寫成獵奇故事就違反本站的內容誠信。
 
-⚠️ **這一層讓世界主題的圓點圖層變成五個**（全球地震帶、火山帶、世界重要城市、
-世界之最・高山與火山、作者精選），而 `MAX_ACTIVE_BY_KIND.circle` 是 **4**——勾滿之後
-其餘的核取方塊會是 `disabled`。這是預期行為，**不要為此把上限調到 5**：理由同線圖層
-那一節，三組色票的分析都建立在各幾何的同框上限上。要一次看更多層就先取消不需要的
-那一層。
+#### 九層全部豁免名額上限，那是拆層的**前提**不是附帶效果
 
-⚠️ **「世界之最」下架之後圓點圖層暫時回到四個**，所以現在勾不滿、看不到 disabled 的
-核取方塊——那是下架的連帶結果，不是上限被改過。重新設計那一組時這件事會再回來。
+拆之前這一組吃掉一個圓點名額與一個線名額；照原樣拆下去會變成七個圓點圖層搶
+`MAX_ACTIVE_BY_KIND.circle` 的四個名額——**一次只看得到四類，比拆之前（一個勾選項
+看得到全部 17 筆）更難用**。所以九層一律宣告 `exemptFromMaxActive: true`。
+
+判準只有一條，寫在 `registry/types.ts` 上：**這九層用的是非分類的固定角色色**
+（點 `place` 藍、線 `reference` 中性灰），多開一層畫面上一個新色相都沒有增加，而
+`MAX_ACTIVE_BY_KIND` 封的正是「同時顯示幾個**分類色**還讀得動」——那條論證對它們
+根本不成立。
+
+⚠️ **那是豁免，不是上限失效。** 實測：九層全開的同時，另外四個圓點圖層（世界重要城市、
+世界人口分布、古文明發源地、火山帶）仍然勾滿四個，第五個（全球地震帶）照樣 `disabled`。
+⚠️ **不要因為想多開幾層就去調高 `MAX_ACTIVE_BY_KIND`**（本檔舊版寫的「不要為此把上限
+調到 5」仍然有效，而且理由沒變）：那個數字等於色票長度，是 all-pairs 驗證的前提。
+⚠️ 也**不要把這個旗標掛到吃分類色票的圖層上**（items 的 palette、水庫／古蹟／人口那
+幾條色階都算）。
+
+⚠️ 附帶的代價要知道：兩個線層跟緯度參考線、國際換日線**長得一模一樣**，四條灰虛線
+現在可以同框。那不是新問題（那三層本來就同樣式、同時開得起來），區辨一律靠沿線標註
+——所以那兩層的 `label` 是必要條件，不是裝飾。
 
 #### ⚠️ 「世界最低的山」沒有權威名單，這件事必須寫出來
 
@@ -602,10 +660,14 @@ PDF 的公開鏡像擋自動連線，所以來源連的是英文條目 `Borders_
 
 #### 這一組又把線圖層的名額擠得更緊
 
-世界主題現在有**八個**線圖層在搶 `MAX_ACTIVE_BY_KIND.line` 的三個名額（緯度參考線、
-國際換日線、行星風系、洋流、板塊邊界、世界主要河流、世界主要山脈、世界之最・山脈）。
+世界主題現在有**七個**線圖層在搶 `MAX_ACTIVE_BY_KIND.line` 的三個名額（緯度參考線、
+國際換日線、行星風系、洋流、板塊邊界、世界主要河流、世界主要山脈）。
 **這是預期行為，不要為此把上限調到 4**——理由見上面「合併之後線圖層變成七個」那一節，
 整段色彩分析都建立在「最多三條線同時出現」的前提上。
+
+⚠️ **有兩層在這個數之外：**「世界之最・山脈」已經下架；而世界櫥窗的「板塊與地形」與
+「傳說中的地方」宣告了 `exemptFromMaxActive`（它們是 `reference` 中性灰虛線，判準見
+上面那一節），所以它們既不佔名額、也不會被擠掉。
 
 ### 板塊與板塊邊界：全站第一個「面帶名字」的圖層
 
@@ -653,7 +715,7 @@ PDF 的公開鏡像擋自動連線，所以來源連的是英文條目 `Borders_
 
 每一份的骨架跟世界主題其他內容檔一致：`subtitle` ＋ 四格 `stats`（面積、分類，加上
 兩格逐筆不同的欄位）＋ 三到五條 `facts`，**最後一條一律是「對照重點」**，明講該跟
-哪一個圖層疊著看（火山帶、全球地震帶、板塊邊界、世界主要山脈、大洲分區、作者精選…）。
+哪一個圖層疊著看（火山帶、全球地震帶、板塊邊界、世界主要山脈、大洲分區、編者選集那幾層…）。
 
 ⚠️ **敘述性事實逐塊取自維基百科條目，數值一律不抄**：面積與分類仍然來自 Bird (2003)
 的幾何與 `lib/plates.mjs` 的對照表（比照五大山脈與颱風的既有做法）。歐亞、北美這種
@@ -1536,7 +1598,7 @@ X%」——0.5° 網格把跨海岸線的格子整格算進來，五類總和是
 雷尼爾）。其餘維持 fallback——那兩層的 geojson 本來就帶著類型、海拔、最後噴發年代與
 「某某山脈主峰」，fallback 讀得出東西，跟河流那種只有名字的情況不同。
 
-⚠️ **維蘇威火山刻意不寫 `volcanoes` 的卡片**：它在「作者精選」那一層已經有一張以龐貝
+⚠️ **維蘇威火山刻意不寫 `volcanoes` 的卡片**：它在「火山與災害」那一層已經有一張以龐貝
 事件為主的卡（不同 collection），再寫一張只會變成兩份會漂開的文字。
 
 ⚠️ **主峰的內容檔要寫 `schematic: false`**，理由跟 `attach.schematic: false` 相同：
@@ -1647,9 +1709,10 @@ validate 全過，是實際打開巴黎那張卡才發現它寫著「市轄區�
 （`LayerPanel` 對空的分組是 `return null`，planned 的圖層雖然列得出來，但那一組在這之前
 只有它一個）。
 
-⚠️ **它一度是「作者精選」底下的一個 `category`，同一天就搬出來了。** 搬的理由不是
-技術問題（同一層混不同 `category` 本來就是 `world-picks` 的常態），而是定位：
-`world-picks` 收的是**編者挑的地方，彼此沒有共同主題**；這六筆相反——它們是
+⚠️ **它一度是當時還叫「作者精選」的編者選集底下的一個 `category`，同一天就搬出來了。**
+搬的理由不是技術問題（同一層混不同 `category` 本來就是那一層的常態，而且同月稍後那些
+`category` 全部各自升格成獨立圖層了），而是定位：編者選集收的是**編者挑的地方，彼此
+沒有共同主題**；這六筆相反——它們是
 **同一個問題的六個答案**，要對著看才有意義。搬家連帶動了四個地方，缺一不可：
 幾何從 `world-picks.geojson` 切到 `world-civilizations.geojson`（前者回到 17 筆）、
 內容檔從 `src/content/geo/world-picks/` 移到 `src/content/geo/world-civilizations/`
@@ -1679,7 +1742,7 @@ validate 全過，是實際打開巴黎那張卡才發現它寫著「市轄區�
 `browse.groupBy: "category"`，而 `category` 是 **`"舊大陸"` / `"新大陸"`**——這一層的
 整個論證就靠那條線。⚠️ `groupBy` **依序切、不排序**，所以 geojson 裡舊大陸那四筆必須
 連續排在前面（孟菲斯 → 烏魯克 → 摩亨佐-達羅 → 二里頭），新大陸兩筆接在後面
-（聖羅倫索 → 卡拉爾），**各組內才是由西往東**。這跟 `world-picks` 那七條海峽
+（聖羅倫索 → 卡拉爾），**各組內才是由西往東**。這跟「海峽」那一層的七條海峽
 「整層依經度排」的規則不同，是刻意的。
 
 #### 每一筆的錨點是一個遺址，取景則是逐筆實測的
@@ -1719,17 +1782,19 @@ validate 全過，是實際打開巴黎那張卡才發現它寫著「市轄區�
 #### 顏色沿用 `place` 藍，代價寫在 `notes` 裡
 
 POINT 色票已經是 all-pairs 全過的飽和狀態，而「藍點＝地圖上一個有詳情卡的地點」是本站
-記錄在案的規則（世界重要城市與作者精選共用同一個 hex 就是這條規則）。⚠️ 代價是**它跟
+記錄在案的規則（世界重要城市與編者選集那七個點圖層共用同一個 hex 就是這條規則）。⚠️ 代價是**它跟
 「世界重要城市」同色，而這兩層很可能一起打開**（孟菲斯與開羅只差 23 公里、二里頭與
 洛陽市只差 20 公里，那正是這一層的教學點之一）。要換成專屬色的話，**必須先跑
 dataviz skill 的 `validate_palette.js`**，用 `--pairs all` 對同框的三個點色驗明暗兩模式
 （地形景點藍 `#2a78d6`、火山洋紅 `#c0259c`、世界人口 `#80610d`）——不要憑感覺挑
 （CLAUDE.md 硬性禁止事項第 15 條）。
 
-⚠️ **這一層讓世界主題的圓點圖層變成六個**（全球地震帶、火山帶、世界重要城市、
-世界人口分布、作者精選、古文明發源地），而 `MAX_ACTIVE_BY_KIND.circle` 是 **4**：
-勾滿之後其餘的核取方塊會是 `disabled`。**預期行為，不要為此把上限調到 5 或 6**
-（理由同線圖層那一節，三組色票的分析都建立在各幾何的同框上限上）。
+⚠️ **它跟全球地震帶、火山帶、世界重要城市、世界人口分布一起搶
+`MAX_ACTIVE_BY_KIND.circle` 的四個名額**：五個裡勾滿四個之後，第五個的核取方塊會是
+`disabled`（實測過）。**預期行為，不要為此把上限調到 5 或 6**（理由同線圖層那一節，
+三組色票的分析都建立在各幾何的同框上限上）。⚠️ 世界櫥窗那七個點圖層**不在這個數裡**
+——它們宣告了 `exemptFromMaxActive`（判準見那一節），所以九層全開也不會把這裡的名額
+吃掉。
 
 #### 六張卡各有一段是「它被收進來的理由」
 
@@ -2242,12 +2307,54 @@ dataviz skill 的 `validate_palette.js`**，用 `--pairs all` 對同框的三個
     - 切底圖之後重驗存在、顏色與排序（線 < 點 < 沿線標註，全部在 `contour-lines`
       之上、`contour-labels` 之下）
 
-39. **世界櫥窗：作者精選**（`/theme/world` → 世界櫥窗，見上）：
+39. **世界櫥窗：編者選集那九層**（`/theme/world` → 世界櫥窗，見上）。
+    ⚠️ **先驗「拆成九層」本身，再逐筆驗內容**——下面每一小段的圖層 id 都換過了
+    （`world-picks-points` 那個 id 已經不存在）：
     ```js
     const m = window.__gaiaMaps.at(-1);
-    m.getPaintProperty('world-picks-points', 'circle-color')                    // "#2a78d6"
+    const g = [...document.querySelectorAll('.layer-group')]
+      .find(s => s.querySelector('.layer-group-title')?.textContent.includes('世界櫥窗'));
+    const rows = [...g.querySelectorAll('.layer-row')];
+    rows.length                                                                 // 9
+    rows.map(r => r.querySelector('label').textContent.trim())
+    // 火山與災害／地形與地質／海洋／海峽／運河／海角／湖泊／板塊與地形／傳說中的地方
+
+    // 九個要能同時勾起來（exemptFromMaxActive），而且勾完沒有一個是 disabled
+    rows.forEach(r => { const i = r.querySelector('input'); if (!i.checked) i.click(); });
+    rows.every(r => r.querySelector('input').checked && !r.querySelector('input').disabled)  // true
+
+    // 九層共用兩份幾何：全開之後 geojson 請求**只有兩次**
+    performance.getEntriesByType('resource')
+      .filter(r => /world-picks.*geojson/.test(r.name)).length                  // 2
+    m.getPaintProperty('world-picks-volcanoes-points', 'circle-color')          // "#2a78d6"
+    ```
+    ⚠️ 那個「2」只有 **production build（`npm run preview`）**量得準：dev 模式會載入
+    幾百個 ESM 模組，`performance` 的資源緩衝（250 筆）早就滿了，geojson 一筆都查不到
+    ——症狀是「明明抓了卻查不到」，那是既有的坑，不是這一項壞了。
+
+    - **上限仍然對其他圓點圖層生效**（豁免不是失效）：九層全開的同時，勾
+      世界重要城市／世界人口分布／古文明發源地／火山帶四層之後，**全球地震帶那一個
+      核取方塊必須是 `disabled`**，而且九層一個都不會被取消勾選。
+    - **切分正確**（每一層只拿到自己那幾筆）：
+      ```js
+      const q = id => [...new Set(m.queryRenderedFeatures({ layers: [id] }).map(f => f.properties.id))];
+      m.jumpTo({ center: [30, 20], zoom: 1.6 });
+      q('world-picks-straits-points').length   // 7，而且不含 dead-sea
+      q('world-picks-lakes-points')            // ["lake-baikal","caspian-sea","dead-sea"]
+      q('world-picks-canals-points').length    // 2
+      ```
+      ⚠️ **切底圖之後要再數一次**（`reapply` 會重切一份）：實測 liberty ↔ nlsc-emap
+      來回四次之後仍然是 7 筆，`m._listeners.click.length` 前後相同。
+    - **搜尋不會出現重複**（`searchIndex.ts` 那道 `featureIds` 過濾的回歸判準）：
+      搜「貝加爾湖」只有**一筆**圖徵結果、副標是「湖泊」；搜「海峽」出得來七條海峽
+      各一次外加「海峽」這個圖層本身，**沒有**同一個地方出現七次。
+      ⚠️ 少了那道過濾時，錯的那幾筆點下去會勾錯圖層、飛不到、聚焦之後畫面空白，
+      **而且 console 一個字都沒有**。
+    - **聚焦（只顯示這一筆）的計數是「同層」的**：在「海峽」層上選一條海峽，chip 要
+      寫「已隱藏同層 **6** 筆」（不是拆層前的 16）。
+    ```js
     m.jumpTo({ center: [14.426, 40.821], zoom: 9 });
-    m.queryRenderedFeatures({ layers: ['world-picks-points'] }).length          // 1
+    m.queryRenderedFeatures({ layers: ['world-picks-volcanoes-points'] }).length          // 1
     ```
     - ⚠️ **維蘇威那張卡的內文一定要提到龐貝城**——那是這一筆被收進來的理由：
       ```js
@@ -2256,14 +2363,14 @@ dataviz skill 的 `validate_palette.js`**，用 `--pairs all` 對同框的三個
       ```
       標題是「維蘇威火山」、副標是「西元 79 年埋掉龐貝城的那座火山」
     - **跟「火山帶」一起打開**：藍點必須**正好蓋在洋紅點上**（同一份 GVP 座標），
-      點下去開的要是**作者精選**那張卡
+      點下去開的要是**「火山與災害」**那張卡
     - ⚠️ **它不可以出現在「世界之最・高山與火山」的清單裡**（那一層是 5 列、
       沒有維蘇威）。混回去就是回歸——兩層的判準不同，見上
     - 搜「維蘇威」「Vesuvius」要找得到，而且會**同時命中**本層與「火山帶」那一座
     - **理查特結構（撒哈拉之眼）**：
       ```js
       m.jumpTo({ center: [-11.4036, 21.1249], zoom: 9.5 });
-      m.queryRenderedFeatures({ layers: ['world-picks-points'] })
+      m.queryRenderedFeatures({ layers: ['world-picks-landforms-points'] })
         .map(f => f.properties.id)                                              // ["richat-structure"]
       ```
       - ⚠️ **這一筆的成敗只能用眼睛驗，而且要看那圈同心圓有沒有畫出來**：等高線與
@@ -2285,7 +2392,7 @@ dataviz skill 的 `validate_palette.js`**，用 `--pairs all` 對同框的三個
     - **尼莫點**：
       ```js
       m.jumpTo({ center: [-123.3933, -48.8767], zoom: 2.6 });
-      m.queryRenderedFeatures({ layers: ['world-picks-points'] })
+      m.queryRenderedFeatures({ layers: ['world-picks-ocean-points'] })
         .map(f => f.properties.id)                                              // ["point-nemo"]
       ```
       - ⚠️ **取景要看得到「離什麼都很遠」**：那個視角上紐西蘭在左、智利與阿根廷在右、
@@ -2304,7 +2411,7 @@ dataviz skill 的 `validate_palette.js`**，用 `--pairs all` 對同框的三個
     - **荷姆茲海峽**：
       ```js
       m.jumpTo({ center: [56.44, 26.685], zoom: 7.5 });
-      m.queryRenderedFeatures({ layers: ['world-picks-points'] })
+      m.queryRenderedFeatures({ layers: ['world-picks-straits-points'] })
         .map(f => f.properties.id)                                              // ["strait-of-hormuz"]
       ```
       - ⚠️ **藍點必須落在水上**（主航道中線），而且畫面上要同時看得到阿巴斯港、
@@ -2321,7 +2428,7 @@ dataviz skill 的 `validate_palette.js`**，用 `--pairs all` 對同框的三個
     - **直布羅陀海峽**：
       ```js
       m.jumpTo({ center: [-5.50, 35.95], zoom: 9 });
-      m.queryRenderedFeatures({ layers: ['world-picks-points'] })
+      m.queryRenderedFeatures({ layers: ['world-picks-straits-points'] })
         .map(f => f.properties.id)                                              // ["strait-of-gibraltar"]
       const p = m.project([-5.50, 35.95]);
       m.queryRenderedFeatures([p.x, p.y], { layers: ['water'] }).length          // 1
@@ -2362,10 +2469,10 @@ dataviz skill 的 `validate_palette.js`**，用 `--pairs all` 對同框的三個
       ```js
       m.jumpTo({ center: [43.333, 12.583], zoom: 7.2 });   // ⚠️ 必須 < 8，見下
       const ids = m.getStyle().layers.map(l => l.id);
-      // 先勾「板塊邊界」與「作者精選・範圍」，兩層都要畫得出來
+      // 先勾「板塊邊界」與「板塊與地形」（東非大裂谷），兩層都要畫得出來
       [...new Set(m.queryRenderedFeatures({ layers: ids.filter(i => /^plate-boundaries-/.test(i)) })
         .map(f => f.properties.name))]        // ["張裂型邊界", "錯動型邊界"]
-      [...new Set(m.queryRenderedFeatures({ layers: ids.filter(i => /^world-picks-areas-/.test(i)) })
+      [...new Set(m.queryRenderedFeatures({ layers: ids.filter(i => /^world-picks-rift-/.test(i)) })
         .map(f => f.properties.name))]        // ["東非大裂谷"]
       ```
       - ⚠️ **這是這一筆取景的硬條件**：卡片的「對照重點」叫讀者打開那兩層，而它們的
@@ -2382,7 +2489,7 @@ dataviz skill 的 `validate_palette.js`**，用 `--pairs all` 對同框的三個
     - **麻六甲海峽**：
       ```js
       m.jumpTo({ center: [103.455, 1.157], zoom: 5.9 });
-      m.queryRenderedFeatures({ layers: ['world-picks-points'] })
+      m.queryRenderedFeatures({ layers: ['world-picks-straits-points'] })
         .map(f => f.properties.id)                                              // ["strait-of-malacca"]
       const p = m.project([103.455, 1.157]);
       m.queryRenderedFeatures([p.x, p.y], { layers: ['water'] }).length          // 1（藍點必須落在水上）
@@ -2409,7 +2516,7 @@ dataviz skill 的 `validate_palette.js`**，用 `--pairs all` 對同框的三個
       ```js
       m.jumpTo({ center: [119.92833, 24.81111], zoom: 6.3 });
       m.getBounds().getSouth()                                                   // ≈ 21.23（鵝鑾鼻 21.90 必須在框內）
-      m.queryRenderedFeatures({ layers: ['world-picks-points'] })
+      m.queryRenderedFeatures({ layers: ['world-picks-straits-points'] })
         .map(f => f.properties.id)                                              // ["taiwan-strait"]
       ```
       - ⚠️ **取景條件是「整個臺灣島都在畫面上」**，不是看海峽多窄。實測 1920×929：
@@ -2435,7 +2542,7 @@ dataviz skill 的 `validate_palette.js`**，用 `--pairs all` 對同框的三個
     - **土渕海峽**：
       ```js
       m.jumpTo({ center: [134.1861833, 34.4864722], zoom: 16 });   // 16 = MapView 的 maxZoom
-      m.queryRenderedFeatures({ layers: ['world-picks-points'] })
+      m.queryRenderedFeatures({ layers: ['world-picks-straits-points'] })
         .map(f => f.properties.id)                                              // ["dobuchi-strait"]
       ```
       - ⚠️ **那條 9.93 公尺寬的水道真的畫得出來，一定要量過**（肉眼會以為它斷掉——
@@ -2469,7 +2576,7 @@ dataviz skill 的 `validate_palette.js`**，用 `--pairs all` 對同框的三個
     - **巴拿馬運河**：
       ```js
       m.jumpTo({ center: [-79.75, 9.12], zoom: 9.3 });
-      m.queryRenderedFeatures({ layers: ['world-picks-points'] })
+      m.queryRenderedFeatures({ layers: ['world-picks-canals-points'] })
         .map(f => f.properties.id)                                              // ["panama-canal"]
       ```
       - ⚠️ **取景條件是「科隆與巴拿馬城要同時在畫面上」**——卡片講的反直覺點
@@ -2507,7 +2614,7 @@ dataviz skill 的 `validate_palette.js`**，用 `--pairs all` 對同框的三個
       ```js
       // 逐筆取景寫在 properties.zoom 上，實測值（畫布 1920×772）：5.6 / 7.8
       m.jumpTo({ center: [-67.289167, -55.98], zoom: 5.6 });
-      m.queryRenderedFeatures({ layers: ['world-picks-points'] })
+      m.queryRenderedFeatures({ layers: ['world-picks-capes-points'] })
         .map(f => f.properties.id)                                              // ["cape-horn"]
       m.jumpTo({ center: [18.475556, -34.358056], zoom: 7.8 });
       m.getBounds().getEast()      // ≈ 21.50（厄加勒斯角 20.01 必須在框內）
@@ -2564,17 +2671,20 @@ dataviz skill 的 `validate_palette.js`**，用 `--pairs all` 對同框的三個
       - ⚠️ 貝加爾湖的最深值是 **1,642 公尺**，**刻意跟中文維基的 1,742 不同**（見上）
       - 搜「裏海」「裡海」「霍爾木茲」都要找得到——那是 `meta` 有沒有進 haystack 的
         回歸判準（別譯只寫在 `meta` 上）
-    - ⚠️ 這一層原本讓世界主題的圓點圖層變成五個，而上限是 4：勾滿四個之後其餘的
-      核取方塊要是 `disabled`（那是預期行為，不是 bug）
-      （⚠️ **「世界之最」下架後暫時只剩四個圓點圖層，這一項現在勾不滿，跳過**）
+    - ⚠️ **這九層不佔圓點名額**（`exemptFromMaxActive`），驗法見本項開頭那一段。
+      本檔舊版寫的「這一層讓圓點圖層變成五個、勾滿會 disabled」已經不適用於它們，
+      但**對其餘五個圓點圖層仍然有效**。
 
-40. **世界櫥窗：作者精選・範圍**（`/theme/world` → 世界櫥窗，見上）：
+40. **世界櫥窗：有範圍的那兩層**（`/theme/world` → 世界櫥窗 → 「板塊與地形」與
+    「傳說中的地方」，見上。⚠️ 2026-08 之前是合成一層的「作者精選・範圍」，
+    `world-picks-areas-*` 那組 id 已經不存在）：
     ```js
     const m = window.__gaiaMaps.at(-1);
     m.jumpTo({ center: [-72, 25], zoom: 4.2 });
-    m.queryRenderedFeatures({ layers: ['world-picks-areas-line'] }).length      // > 0
-    m.queryRenderedFeatures({ layers: ['world-picks-areas-label'] }).length     // > 0（沿線寫著「百慕達三角」）
-    m.getPaintProperty('world-picks-areas-line', 'line-dasharray')              // [3, 3]
+    m.queryRenderedFeatures({ layers: ['world-picks-legend-line'] }).length     // > 0
+    m.queryRenderedFeatures({ layers: ['world-picks-legend-label'] }).length    // > 0（沿線寫著「百慕達三角」）
+    m.getPaintProperty('world-picks-legend-line', 'line-dasharray')             // [3, 3]
+    m.getPaintProperty('world-picks-rift-line', 'line-dasharray')               // [3, 3]（兩層都是）
     ```
     - ⚠️ **一定要是虛線**：實線會讓一條根本不存在的界線看起來像真的，那正好是這張卡
       要拆穿的東西。這是回歸判準，不是樣式偏好
@@ -2592,7 +2702,7 @@ dataviz skill 的 `validate_palette.js`**，用 `--pairs all` 對同框的三個
       ```js
       m.jumpTo({ center: [34.5, 0], zoom: 4.1 });
       // 兩支各是一段，line 只有一筆圖徵；1568×774 的截圖尺度下標註 ≥ 2
-      new Set(m.queryRenderedFeatures({layers:['world-picks-areas-line']}).map(f=>f.properties.id))
+      new Set(m.queryRenderedFeatures({layers:['world-picks-rift-line']}).map(f=>f.properties.id))
       // → {"east-african-rift"}
       ```
       - ⚠️ **形狀是這一筆的全部，只能用眼睛驗**：東支要從阿法爾（達納基爾）沿衣索比亞
@@ -2610,9 +2720,11 @@ dataviz skill 的 `validate_palette.js`**，用 `--pairs all` 對同框的三個
         [t.includes('維多利亞湖並不在裂谷裡'), t.includes('教學示意')]   // [true, true]
         ```
       - 搜「東非大裂谷」「裂谷」「Rift」「East African」都要找得到
-    - 抽屜清單依 `category` 分兩組：「板塊與地形」（東非大裂谷）與「傳說中的地方」
-      （百慕達三角）
-    - `maxzoom: 8`：zoom 8.2 整層應該消失
+    - ⚠️ **兩層各自一個核取方塊、各自一份清單**（拆層前是同一層底下 `groupBy` 出來的
+      兩個組名）：「板塊與地形」列東非大裂谷、「傳說中的地方」列百慕達三角，各 1 列。
+    - 兩層的 `maxzoom` 都是 8：zoom 8.2 兩層都應該消失
+    - ⚠️ 兩層**都不佔線圖層名額**（`exemptFromMaxActive`）：跟洋流、板塊邊界、
+      緯度參考線、國際換日線一起打開時，沒有一個核取方塊會因為它們而變 `disabled`
     - 切底圖之後重驗存在、虛線與排序
 
 44. **世界重要城市（31 個）與新的 `/compare` 配對**（見上面「世界重要城市」）：
@@ -2751,4 +2863,4 @@ dataviz skill 的 `validate_palette.js`**，用 `--pairs all` 對同框的三個
       await fetch('/data/geo-manual/world-picks.geojson').then(r => r.json())
         .then(d => d.features.length)                                   // 17
       ```
-      而且「作者精選」的圖層說明、`notes` 與 `sources` 裡**不可以再出現古文明的字句**
+      而且編者選集那九層的圖層說明、`notes` 與 `sources` 裡**不可以再出現古文明的字句**

@@ -706,6 +706,21 @@ interface LayerBase {
    * 使用者可能已經自己在用 3D 看別的東西了，替他關掉比替他打開更冒犯。
    */
   requiresTerrain?: boolean;
+  /**
+   * 這個圖層**不計入** `MAX_ACTIVE_BY_KIND`，勾滿也不會被 disable。
+   *
+   * ⚠️ **判準只有一條：這一層用的是「非分類的固定角色色」，而且跟同組其他層本來
+   * 就同色。** 那個上限是「三組獨立色票」策略的執行面（見 `MAX_ACTIVE_BY_KIND` 的
+   * 說明）——它封的是「同時顯示幾個**分類色**還讀得動」，而世界櫥窗那九層全部是
+   * `place` 藍與 `reference` 中性灰，多開一層一個新色相都沒有增加，那條論證對它們
+   * 根本不成立。反過來，那九層是同一批編者選集拆出來的，硬套上限等於「想看海峽就
+   * 不能看運河」，比拆層之前更難用。
+   *
+   * ⚠️ **不要拿它去豁免任何吃分類色票的圖層**（items 的 palette、水庫／古蹟／人口
+   * 那幾條色階都算）。那種圖層多開一層就是多一個色相要跟其他層 all-pairs 分得開，
+   * 上限是那份驗證的前提，不是 UX 偏好。
+   */
+  exemptFromMaxActive?: boolean;
 }
 
 /**
@@ -730,6 +745,25 @@ export type LayerDefinition =
       colorRole: ColorRole;
       source: LayerSource;
       items?: never;
+      /**
+       * 只取 `source` 裡的這幾個圖徵（世界櫥窗的九層共用兩份 geojson）。
+       *
+       * ⚠️ 這是**圖層層級**的切分，跟 `LayerItem.featureIds` 是同一個機制、同一支
+       * `splitByFeatureIds()`，理由也一模一樣：**在 `resolve.ts` 切資料，不是下
+       * maplibre 的 filter**。全站唯一寫 `map.setFilter` 的地方是 `layers/geo.ts`
+       * 的 `applySoloFilter()`（「只顯示這一筆」整個功能靠它），這裡再下一道 filter
+       * 就得用 `["all", …]` 合併兩者，從此兩個功能互相糾纏。
+       *
+       * ⚠️ 它是宣告式的、Node 讀得懂，所以 `validate-content.mjs` 會在建置期做兩個
+       * 方向的交叉檢查：每個 id 真的存在於那份 geojson，**而且那份 geojson 的每個
+       * 圖徵都被某一層認領**。少了後者，之後在 `world-picks.geojson` 加一筆卻忘了
+       * 寫進 `featureIds`，那個點會完全靜默地不出現。
+       *
+       * ⚠️ 切出來的順序是**母圖層 geojson 的檔案順序**（`filter` 而不是照
+       * `featureIds` 重排），所以抽屜可點清單的順序仍然跟著資料走——七條海峽由西
+       * 往東那條規則因此原封不動有效。
+       */
+      featureIds?: readonly string[];
       /** 跟著這個圖層一起開關的附屬圖徵（五大山脈 → 主峰） */
       attach?: LayerAttachment;
     })
@@ -772,6 +806,10 @@ export interface ThemeDefinition {
  * 6px 圓點是不同的視覺通道），所以只需要**組內** all-pairs 驗證，
  * 不需要跨幾何驗證。封頂則讓每組色票的需求維持在可解的範圍。
  * 超過 4 個同時顯示的分類色本來就讀不動，這個上限順便也是 UX 改善。
+ *
+ * ⚠️ 用固定角色色的圖層可以用 `LayerBase.exemptFromMaxActive` 退出這個上限（世界
+ * 櫥窗那九層），判準寫在那個欄位上——**那是豁免，不是上限失效**，吃分類色票的圖層
+ * 一律照算。
  */
 export const MAX_ACTIVE_BY_KIND: Record<GeometryKind, number> = {
   circle: 4,

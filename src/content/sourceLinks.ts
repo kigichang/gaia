@@ -799,7 +799,7 @@ export const SOURCE_LINKS: Record<string, string> = {
   "國際貨幣基金組織 PortWatch 每日咽喉點通行量":
     "https://portwatch.imf.org/datasets/3da2b9ca97684916b75c4013f95d18ab/about",
   /**
-   * 臺灣海峽（2026-08 加入「作者精選」的第六條海峽）。
+   * 臺灣海峽（2026-08 加入編者選集的第六條海峽，現在在「海峽」那一層）。
    * ⚠️ 「黑水溝」另外登記條目：那是這張卡第二段的主題（移民、季風、《渡臺悲歌》），
    * 主條目講不到那個層次。
    * ⚠️ 「澎湖 1 號」撐的是「冰期時海峽是陸地」那一段唯一的實物證據——2015 年
@@ -812,7 +812,7 @@ export const SOURCE_LINKS: Record<string, string> = {
   "維基百科 黑水溝": "https://zh.wikipedia.org/zh-tw/%E9%BB%91%E6%B0%B4%E6%BA%9D",
   "維基百科 澎湖1號": "https://zh.wikipedia.org/zh-tw/%E6%BE%8E%E6%B9%961%E8%99%9F",
   /**
-   * 兩條運河（2026-08 加入「作者精選」的「運河」那一組）。
+   * 兩條運河（2026-08 加入編者選集，現在自成「運河」一層）。
    * ⚠️ 通行艘次沿用上面那筆 PortWatch，不另外登記。
    * ⚠️ 加通湖另外登記條目：那是巴拿馬運河「為什麼非有船閘不可」與「每次通行要用掉
    * 2 億公升淡水」兩段的主角，主條目只帶過一句。
@@ -830,7 +830,7 @@ export const SOURCE_LINKS: Record<string, string> = {
     "https://zh.wikipedia.org/zh-tw/%E5%90%9B%E5%A3%AB%E5%9D%A6%E4%B8%81%E5%A0%A1%E5%85%AC%E7%B4%84",
   "維基百科（英文） 雷賽布遷徙": "https://en.wikipedia.org/wiki/Lessepsian_migration",
   /**
-   * 兩個海角（2026-08 加入「作者精選」的「海角」那一組，排在「運河」後面）。
+   * 兩個海角（2026-08 加入編者選集，現在自成「海角」一層，排在「運河」後面）。
    * ⚠️ 通行艘次沿用上面那筆 PortWatch，不另外登記——合恩角那張卡引的是麥哲倫海峽、
    * 好望角那張卡引的是好望角本身，兩筆都出自同一個 `Daily_Chokepoints_Data` 資料集。
    * ⚠️ 「海洋的界線」連英文條目，因為兩張卡共同的重點——大西洋／太平洋的界線是
@@ -889,7 +889,7 @@ export const SOURCE_LINKS: Record<string, string> = {
   "維基百科 百慕達三角": "https://zh.wikipedia.org/zh-tw/%E7%99%BE%E6%85%95%E5%A4%A7%E4%B8%89%E8%A7%92",
   /**
    * 六個古文明發源地（2026-08 新增的「古文明發源地」圖層，在「人文專題」那一組；
-   * ⚠️ 它一度掛在「作者精選」底下當一個 `category`，同一天就搬出來自成一層了——
+   * ⚠️ 它一度掛在當時還叫「作者精選」的編者選集底下當一個 `category`，同一天就搬出來自成一層了——
    * 內容 collection 也跟著從 `world-picks` 換成 `world-civilizations`）。
    * 每一筆都拆成「那個遺址」＋「那個文明或那件事」兩到三條，泛稱的「維基百科」
    * 不在這份表裡，會渲染成沒有連結的純文字（比照板塊那 52 張卡的既有規則）。
@@ -925,7 +925,7 @@ export const SOURCE_LINKS: Record<string, string> = {
   "維基百科 小北文明": "https://zh.wikipedia.org/zh-tw/%E5%B0%8F%E5%8C%97%E6%96%87%E6%98%8E",
   "UNESCO 世界遺產 卡拉爾-蘇沛聖城": "https://whc.unesco.org/en/list/1269/",
   /**
-   * 東非大裂谷那一筆（作者精選・範圍）。⚠️ 泛稱的「USGS」在本檔案一律拆開登記，
+   * 東非大裂谷那一筆（世界櫥窗的「板塊與地形」那一層）。⚠️ 泛稱的「USGS」在本檔案一律拆開登記，
    * 這一個連的是 This Dynamic Earth 的〈認識板塊運動〉那一章——「非洲底下可能正在
    * 發育一個新的擴張中心」這句話出自那一頁，它也是這張卡的骨幹。
    */

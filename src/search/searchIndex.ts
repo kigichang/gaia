@@ -259,12 +259,22 @@ async function featureHits(
   const seenNames = new Set<string>();
   /** hit.key → 該圖徵的 meta，給下面「撞名才補副標」那段用 */
   const metaOf = new Map<string, string | undefined>();
+  /**
+   * ⚠️ **圖層層級的 `featureIds` 在這裡也要生效**（世界櫥窗那九層共用兩份 geojson）。
+   *
+   * 這一段是整個站上**唯一**直接讀 `layer.source` 而不是走 `resolve.ts` 切分結果的
+   * 地方（抽屜清單、`flyToFeature`、詳情卡、聚焦模式全都吃 `instances`）。少了這道
+   * 過濾，搜「貝加爾湖」會出現 7 筆——其中 6 筆指向根本不含它的圖層，點下去會勾錯
+   * 圖層、飛不到、聚焦之後畫面空白，而且完全沒有錯誤訊息。寫法照抄上面子項目那段。
+   */
+  const wanted = layer.featureIds ? new Set(layer.featureIds) : null;
   for (const feature of fc.features) {
     const props = feature.properties ?? {};
     const id = props.id;
     const name = props.name;
     // 沒有 id 就選不了、沒有名字就搜不到，兩者缺一都直接跳過
     if (typeof id !== "string" || typeof name !== "string") continue;
+    if (wanted && !wanted.has(id)) continue;
 
     // 同名只留第一段。Natural Earth 把一條河拆成多個 LineString（`niger-0`、
     // `niger-1`…），照單全收的話搜「河」會出現一整排一模一樣的「尼羅河」。
