@@ -1150,6 +1150,63 @@ export const SOURCE_LINKS: Record<string, string> = {
   // 端點是 fdsnws/event/1/query，這裡連它的查詢介面），而希洛那張地點卡引用的是
   // 夏威夷火山觀測站的火山資料——同一個機關、兩份完全不同的東西。
   "USGS 地震目錄": "https://earthquake.usgs.gov/earthquakes/search/",
+  /**
+   * 「規模最強地震」那一層的 18 筆各自的條目（2026-09 新增）。
+   *
+   * ⚠️ **收錄名單的出處是〈地震列表〉那一頁的「震級最強地震」段落，所以那一筆
+   * 連的是帶錨點的網址、不是條目開頭**——那張表在整篇文章的後半段，連到頁首
+   * 讀者要自己捲很久才找得到（比照本檔其他「連到那份資料本身、不是首頁」的規則）。
+   * 它同時是四筆儀器時代以前的地震（1575／1668／1755／1833）的規模出處之一。
+   *
+   * ⚠️ **三筆連英文維基是因為中文沒有對應條目**（1833 蘇門答臘、1906 厄瓜多－
+   * 哥倫比亞、1575 瓦爾迪維亞——維基那張表自己也是用 `link-en` 指過去的），
+   * 比照裏海法律地位公約與密西根－休倫湖的既有處理。
+   *
+   * ⚠️ **1952 年那次連的是〈1952年北庫里爾斯克地震〉，不是〈堪察加地震〉。**
+   * 後者是一篇涵蓋多次地震的總論，卡片上的 2,336 人、15–18 公尺與「第二波才是
+   * 致命的那一波」全部出自前者；那張表的連結指向總論，追不到這些數字。
+   *
+   * ⚠️ **2011 那一筆用的是地震本身的條目名**（東北地方太平洋近海地震），不是
+   * 災害名「東日本大震災」——後者在中文維基是重定向，而且涵蓋範圍不同。
+   */
+  "維基百科 地震列表":
+    "https://zh.wikipedia.org/zh-tw/%E5%9C%B0%E9%9C%87%E5%88%97%E8%A1%A8#%E9%9C%87%E7%BA%A7%E6%9C%80%E5%BC%BA%E5%9C%B0%E9%9C%87",
+  "維基百科 1960年智利大地震":
+    "https://zh.wikipedia.org/zh-tw/1960%E5%B9%B4%E6%99%BA%E5%88%A9%E5%A4%A7%E5%9C%B0%E9%9C%87",
+  "維基百科 耶穌受難日地震":
+    "https://zh.wikipedia.org/zh-tw/%E8%80%B6%E7%A9%8C%E5%8F%97%E9%9B%A3%E6%97%A5%E5%9C%B0%E9%9C%87",
+  "維基百科（英文） 1833年蘇門答臘地震":
+    "https://en.wikipedia.org/wiki/1833_Sumatra_earthquake",
+  "維基百科 2011年東北地方太平洋近海地震":
+    "https://zh.wikipedia.org/zh-tw/2011%E5%B9%B4%E6%9D%B1%E5%8C%97%E5%9C%B0%E6%96%B9%E5%A4%AA%E5%B9%B3%E6%B4%8B%E8%BF%91%E6%B5%B7%E5%9C%B0%E9%9C%87",
+  "維基百科 2004年印度洋大地震":
+    "https://zh.wikipedia.org/zh-tw/2004%E5%B9%B4%E5%8D%B0%E5%BA%A6%E6%B4%8B%E5%A4%A7%E5%9C%B0%E9%9C%87",
+  "維基百科 1952年北庫里爾斯克地震":
+    "https://zh.wikipedia.org/zh-tw/1952%E5%B9%B4%E5%8C%97%E5%BA%AB%E9%87%8C%E7%88%BE%E6%96%AF%E5%85%8B%E5%9C%B0%E9%9C%87",
+  "維基百科 1755年里斯本大地震":
+    "https://zh.wikipedia.org/zh-tw/1755%E5%B9%B4%E9%87%8C%E6%96%AF%E6%9C%AC%E5%A4%A7%E5%9C%B0%E9%9C%87",
+  "維基百科 1700年卡斯凱迪亞地震":
+    "https://zh.wikipedia.org/zh-tw/1700%E5%B9%B4%E5%8D%A1%E6%96%AF%E5%87%AF%E8%BF%AA%E4%BA%9A%E5%9C%B0%E9%9C%87",
+  "維基百科 2025年堪察加半島地震":
+    "https://zh.wikipedia.org/zh-tw/2025%E5%B9%B4%E5%A0%AA%E5%AF%9F%E5%8A%A0%E5%8D%8A%E5%B3%B6%E5%9C%B0%E9%9C%87",
+  "維基百科 2010年智利大地震":
+    "https://zh.wikipedia.org/zh-tw/2010%E5%B9%B4%E6%99%BA%E5%88%A9%E5%A4%A7%E5%9C%B0%E9%9C%87",
+  "維基百科（英文） 1906年厄瓜多－哥倫比亞地震":
+    "https://en.wikipedia.org/wiki/1906_Ecuador%E2%80%93Colombia_earthquake",
+  "維基百科 1965年拉特群島地震":
+    "https://zh.wikipedia.org/zh-tw/1965%E5%B9%B4%E6%8B%89%E7%89%B9%E7%BE%A4%E5%B3%B6%E5%9C%B0%E9%9C%87",
+  "維基百科 2012年蘇門答臘近海地震":
+    "https://zh.wikipedia.org/zh-tw/2012%E5%B9%B4%E8%8B%8F%E9%97%A8%E7%AD%94%E8%85%8A%E5%9C%B0%E9%9C%87",
+  "維基百科 2005年蘇門答臘地震":
+    "https://zh.wikipedia.org/zh-tw/2005%E5%B9%B4%E8%8B%8F%E9%97%A8%E7%AD%94%E8%85%8A%E5%9C%B0%E9%9C%87",
+  "維基百科 1950年墨脫地震":
+    "https://zh.wikipedia.org/zh-tw/1950%E5%B9%B4%E5%A2%A8%E8%84%AB%E5%9C%B0%E9%9C%87",
+  "維基百科 郯城大地震":
+    "https://zh.wikipedia.org/zh-tw/%E9%83%AF%E5%9F%8E%E5%A4%A7%E5%9C%B0%E9%9C%87",
+  "維基百科（英文） 1575年瓦爾迪維亞大地震":
+    "https://en.wikipedia.org/wiki/1575_Valdivia_earthquake",
+  "維基百科 2007年9月蘇門答臘地震":
+    "https://zh.wikipedia.org/zh-tw/2007%E5%B9%B49%E6%9C%88%E8%98%87%E9%96%80%E7%AD%94%E8%87%98%E5%9C%B0%E9%9C%87",
   "USGS 夏威夷火山觀測站": "https://www.usgs.gov/observatories/hvo",
 
   // 43 處保留區／保護區各自的官方介紹頁（林業及自然保育署）。走既有的 sources

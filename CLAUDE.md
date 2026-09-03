@@ -306,6 +306,7 @@ ID 常數定義在 `src/map/layers/*.ts`，**一律 import 常數，不要寫死
 | `world-continent-labels-points` / `-label` | circle + symbol（附屬圖層；`radius: 0`，整層只是七個洲名的錨點） |
 | `latitude-lines-line` / `latitude-lines-label` | line + symbol |
 | `quakes-points` | circle |
+| `quakes-strongest-points` | circle（規模最強的 18 次地震；同一個 `hazard` 中性色但畫得更深、更大、有白框，比照 `tw-quakes-major` 疊在 `tw-quakes` 上的那一組參數。⚠️ 全站第二個「非世界櫥窗」的 `exemptFromMaxActive`，見 `CLAUDE_WORLD.md`） |
 | `volcanoes-points` | circle（1,214 座活火山，`strokeWidth: 0`；半徑固定不隨 zoom 變） |
 | `biomes-<class>-fill` / `-outline` | fill + line，**六類各自一組**（`tropical-forest`／`savanna`／`desert`／`temperate-forest`／`boreal`／`tundra`）。外框是拿來**補相鄰面之間的縫**的，所以是 1.0 寬 × 0.15 不透明度，見下 |
 | `koppen-zones-<group>-fill` / `-outline` | fill + line，**五大類各自一組**（`a`／`b`／`c`／`d`／`e`）。⚠️ 顏色是大類、**圖徵是 30 個亞型**（點下去才知道是 Cfa 還是 Cwa）；外框寬度 0，見下 |
@@ -370,7 +371,7 @@ maplibre-contour 把 worker 以 Blob URL 內嵌，**不需要額外部署 worker
 | 主題 | 路由 | 內容 |
 |---|---|---|
 | 臺灣地理 | `/theme/taiwan` | 臺灣123（土地與島群、專屬經濟海域、海峽中線、北回歸線）、行政區（縣市、鄉鎮市區）、**地體構造（板塊、板塊邊界、火山與火山島）**、地形（地形景點、五大山脈、**海岸地形**、岩石分布）、天然災害（活動斷層、地震、颱風路徑與災損）、水系（118 個列管水系、水庫即時水情、河川流域分區、**重要濕地**）、人文（原住民族、交通軸線、古蹟、人口與都市體系）、植被生態（特有種、國家公園與保護區、垂直植被帶）、農業物產（主要作物分布） |
-| 世界地理 | `/theme/world` | **全球尺度（骨架，排在前面）**：參考線（緯度參考線、國際換日線）、**世界櫥窗**（編者選集，2026-08 從「作者精選」一層拆成九層：火山與災害、地形與地質、海洋、海峽、運河、海角、湖泊、板塊與地形、傳說中的地方；⚠️「世界之最」兩層已下架待重新設計，見上）、氣候與生物群系（森林與沙漠帶、柯本氣候分區、行星風系）、海洋（洋流：18 條暖流／寒流、**世界紀錄熱帶氣旋路徑**：33 個紀錄保持者）、地體構造（板塊、板塊邊界、地震帶、火山帶）。**世界地理原有**：城市（世界重要城市 31 個、世界人口分布 505 個都會區）、大洲（大洲分區；⚠️「國界」那個 planned 圖層 2026-08 拿掉了，兩種建議底圖本身就畫著國界，見 `CLAUDE_WORLD.md`）、地形水系（世界主要河流、世界主要山脈）、人文專題（古文明發源地） |
+| 世界地理 | `/theme/world` | **全球尺度（骨架，排在前面）**：參考線（緯度參考線、國際換日線）、**世界櫥窗**（編者選集，2026-08 從「作者精選」一層拆成九層：火山與災害、地形與地質、海洋、海峽、運河、海角、湖泊、板塊與地形、傳說中的地方；⚠️「世界之最」兩層已下架待重新設計，見上）、氣候與生物群系（森林與沙漠帶、柯本氣候分區、行星風系）、海洋（洋流：18 條暖流／寒流、**世界紀錄熱帶氣旋路徑**：33 個紀錄保持者）、地體構造（板塊、板塊邊界、地震帶、**規模最強地震**：有紀錄以來最強的 18 次、火山帶）。**世界地理原有**：城市（世界重要城市 31 個、世界人口分布 505 個都會區）、大洲（大洲分區；⚠️「國界」那個 planned 圖層 2026-08 拿掉了，兩種建議底圖本身就畫著國界，見 `CLAUDE_WORLD.md`）、地形水系（世界主要河流、世界主要山脈）、人文專題（古文明發源地） |
 
 兩個主題頁都是**滿版地圖 + 浮動控制**（仿 Google Map），沒有頁首也沒有側欄——版面機制見下面的「全螢幕地圖外框與浮動控制」。
 
@@ -1064,7 +1065,7 @@ maplibre 的四個角落容器是 map container 內的 `position: absolute; z-in
 
 **而且撞名時要把 `meta` 補進副標**，否則畫面上是兩列一模一樣的字。這件事**只對真的撞名的標題做**：水庫的 `meta` 是「蓄水 62%・有效容量 …」這種長字串，沒撞名還硬加只會把副標塞爆。實測搜「東區」會得到四列，各自標著新竹市／臺中市／嘉義市／臺南市。
 
-索引是 **lazy 的**：搜尋框第一次獲得焦點才 `buildSearchIndex()`。**實測（2026-08，production build 讀 `performance.getEntriesByType('resource')`）它會多抓 28 份、合計約 3.05 MB**（⚠️ 那次實測含「世界之最」兩層的 33 KB，該組下架後是 26 份、約 3.02 MB；**再加上 2026-08 新增的「重要濕地」197 KB 與「世界紀錄熱帶氣旋路徑」33 KB 是 28 份、約 3.25 MB**）。⚠️ 熱帶氣旋那一層的 **268 KB 中心定位點不在裡面**，那是附屬圖層而它沒有宣告 `browse`（比照颱風的中心定位點，見下）：
+索引是 **lazy 的**：搜尋框第一次獲得焦點才 `buildSearchIndex()`。**實測（2026-08，production build 讀 `performance.getEntriesByType('resource')`）它會多抓 28 份、合計約 3.05 MB**（⚠️ 那次實測含「世界之最」兩層的 33 KB，該組下架後是 26 份、約 3.02 MB；**再加上 2026-08 新增的「重要濕地」197 KB 與「世界紀錄熱帶氣旋路徑」33 KB 是 28 份、約 3.25 MB；**2026-09 再加上「規模最強地震」7 KB 是 29 份、約 3.26 MB**）。⚠️ 熱帶氣旋那一層的 **268 KB 中心定位點不在裡面**，那是附屬圖層而它沒有宣告 `browse`（比照颱風的中心定位點，見下）：
 
 | 檔案 | 大小 |
 |---|---|
@@ -1093,6 +1094,7 @@ maplibre 的四個角落容器是 map container 內的 `position: absolute; z-in
 | `tw-typhoons.geojson` | 14 KB |
 | `world-mountain-peaks.geojson` | 10 KB |
 | `world-cyclones.geojson` | 33 KB |
+| `quakes-strongest.geojson` | 7 KB |
 | `world-picks-areas.geojson`（geo-manual） | 3 KB |
 | `world-picks.geojson`（geo-manual） | 12 KB |
 
@@ -1373,6 +1375,9 @@ npm run build:geodata -- --force --only=tw-geology-slate      # 岩石分布六�
 npm run build:geodata -- --force --only=tw-faults             # 37 條活動斷層
 npm run build:geodata -- --force --only=tw-quakes             # 臺灣周邊 M≥5.5（612 筆）
 npm run build:geodata -- --force --only=tw-quakes-major       # 災害性地震（自己查 USGS，不依賴 tw-quakes）
+npm run build:geodata -- --force --only=quakes-strongest       # 規模最強的 18 次地震（世界主題）
+                                       # ⚠️ 名單是人工抄的、規模與座標查 USGS；14 筆對得到、
+                                       #    4 筆（1575／1668／1755／1833）ComCat 沒有，見 lib/quakes-strongest.mjs
 npm run build:geodata -- --force --only=tw-typhoons           # 14 個侵臺颱風的官方最佳路徑
 npm run build:geodata -- --force --only=tw-typhoon-centers    # 同一份資料的 757 個中心定位點
 npm run build:geodata -- --force --only=date-line            # 國際換日線（Natural Earth）
@@ -1666,8 +1671,8 @@ m.isSourceLoaded('contour-source')
 > 斷層與地震、颱風、岩石分布、板塊、**重要濕地、翠峰湖與大鵬灣、火山與火山島、海岸地形**）；**第 28–40 項是世界主題的，搬到
 > `CLAUDE_WORLD.md` 了**（世界底圖地名、國際換日線、板塊與板塊邊界、火山帶、
 > 森林與沙漠帶、柯本氣候分區、行星風系、洋流、大洲分區、世界主要山脈、世界櫥窗），
-> **第 44–47 項也在那裡**（世界重要城市與新的 `/compare` 配對、柯本／河流／火山／
-> 主峰那幾批說明卡、世界人口分布、古文明發源地）。編號沒有重排，所以下面只有跨主題的第 43 項。
+> **第 44–48 項也在那裡**（世界重要城市與新的 `/compare` 配對、柯本／河流／火山／
+> 主峰那幾批說明卡、世界人口分布、古文明發源地、**規模最強地震**）。編號沒有重排，所以下面只有跨主題的第 43 項。
 
 43. **地理要素說明的延遲載入**（跨主題，見上面「地理要素說明為什麼要延遲載入」）。
     ⚠️ **這一項在 localhost 上「看起來永遠是好的」**：分片幾毫秒就到，載入中的狀態根本
@@ -1821,7 +1826,7 @@ public/data/
 ├─ climate/*.json         # build:climate 產生
 ├─ species/*.geojson      # build:species 產生
 ├─ geo/*.geojson          # build:geodata 產生（禁止手改）
-├─ geo-content/*.json     # 地理要素說明的分片，41 份（build:geo-content 產生，禁止手改）
+├─ geo-content/*.json     # 地理要素說明的分片，42 份（build:geo-content 產生，禁止手改）
 │                         #   ⚠️ 這是 src/content/geo/ 的產物，詳情卡在執行期抓的就是它
 ├─ monuments/*.json       # 古蹟歷史沿革的縣市分片，21 份（build:geodata 產生，禁止手改）
 └─ geo-manual/*.geojson   # 手繪教學示意幾何（可以手改）

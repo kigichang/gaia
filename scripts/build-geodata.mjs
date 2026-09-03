@@ -80,6 +80,11 @@ import {
   fetchDisasterQuakes,
 } from "./lib/quakes-major.mjs";
 import {
+  LICENSE as STRONGEST_LICENSE,
+  SOURCE_PAGE as STRONGEST_SOURCE_PAGE,
+  fetchStrongestQuakes,
+} from "./lib/quakes-strongest.mjs";
+import {
   CLASS_NOTE as FAULT_CLASS_NOTE,
   LICENSE as FAULT_LICENSE,
   SOURCE_LABEL as FAULT_SOURCE_LABEL,
@@ -2487,6 +2492,82 @@ const SOURCES = [
             year: new Date(f.properties.time).getUTCFullYear(),
           },
         })),
+  },
+
+  {
+    id: "quakes-strongest",
+    label: "規模最強地震",
+    /**
+     * 維基百科〈地震列表〉「震級最強地震」那張表的 18 次地震（見
+     * lib/quakes-strongest.mjs 的檔頭）。
+     *
+     * ⚠️ **這一層跟「全球地震帶」不是同一種東西**：那一層是 2,800 個點組成的
+     * 密度場（`detail: none`、沒有清單），這一層是 18 筆各自有名字、有卡片的
+     * 清單。判準比照臺灣主題的 `tw-quakes`（612 筆、沒有 browse）與
+     * `tw-quakes-major`（150 筆、有 browse）。
+     *
+     * ⚠️ **14 筆的座標與規模來自 USGS、4 筆是人工轉錄的**，每一筆都帶 `source`，
+     * 卡片必須顯示。混合來源就要說出來（比照 tw-quakes-major）。
+     */
+    load: async (fetchWithRetry) => fetchStrongestQuakes(fetchWithRetry),
+    sourceUrl: STRONGEST_SOURCE_PAGE,
+    license: STRONGEST_LICENSE,
+    sourceLabel: "USGS／維基百科",
+    // 點位不簡化；3 位小數 ≈ 110 公尺，比這一層任何一個 zoom 的像素都小
+    tolerance: 0,
+    digits: 3,
+    transform: ({ quakes }) =>
+      quakes
+        .map((q) => ({
+          type: "Feature",
+          geometry: { type: "Point", coordinates: [q.lng, q.lat] },
+          properties: {
+            id: q.id,
+            /** ⚠️ 這個欄位必須叫 `name`：searchIndex 的 featureHits() 只認它。 */
+            name: q.name,
+            en: q.en,
+            mag: q.mag,
+            /**
+             * ⚠️ 只有跟維基那張表對不上時才寫，卡片與圖層說明要把兩個都講出來
+             * （2004 印度洋 9.1／9.3、1700 卡斯凱迪亞 9.0／9.2、2005 尼亞斯
+             * 8.6／8.7、2007 明古魯 8.4／8.5）。
+             */
+            ...(Math.abs(q.mag - q.wikiMag) > 0.05 && { magWiki: q.wikiMag }),
+            ...(q.depthKm != null && { depth_km: q.depthKm }),
+            date: q.date,
+            region: q.region,
+            /**
+             * ⚠️ **`deaths` 與 `tsunami` 刻意不寫進 geojson**：那兩件事每一筆都寫在
+             * 內容檔的 `stats` 與 `facts` 裡，而 `FeatureCard` 不會去讀 properties 的
+             * 任意欄位——存進來就是沒有人看得到的重複資料（比照 `tw-quakes` 那次
+             * 把 name／meta／detail 存進 properties 讓檔案從 190 KB 漲到 400 KB 的教訓）。
+             * 留在 `lib/quakes-strongest.mjs` 的表上當寫卡片時的依據就夠了。
+             *
+             * `source` 相反，**要留**：它是這一筆的位置與規模到底來自 USGS 還是
+             * 人工轉錄，屬於資料本身的來源標示，不是給畫面用的字串。
+             */
+            source: q.source,
+            /**
+             * 可點清單的副標，也是搜尋 haystack 的一部分——別稱寫在這裡，
+             * 所以打「311」「東日本大震災」「耶穌受難日」都找得到
+             * （比照裏海／裡海的既有做法）。
+             */
+            meta: `矩震級 ${q.mag.toFixed(1)}・${q.date}・${q.region}${q.alias ? `（又稱${q.alias}）` : ""}`,
+          },
+        }))
+        /**
+         * feature 順序＝可點清單的順序：**規模由大到小**（這一層本來就是一份
+         * 排行），同規模再由新到舊。
+         *
+         * ⚠️ 排的是本站畫出來的 `mag`（USGS），不是維基那張表的排名——那四筆
+         * 對不上的因此會跟原表換位置（2007 明古魯 8.4 掉到最後）。要照原表排
+         * 就得改用維基的數字當主值，那跟「數值以主管機關為準」相牴觸。
+         */
+        .sort(
+          (a, b) =>
+            b.properties.mag - a.properties.mag ||
+            b.properties.date.localeCompare(a.properties.date),
+        ),
   },
 
   /**
