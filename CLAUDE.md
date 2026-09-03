@@ -487,7 +487,7 @@ maplibre 的 `maxzoom` 是**開區間**（`zoom >= maxzoom` 整層不畫），�
 ### 一份 geojson 切給多個圖層（圖層層級的 `featureIds`）
 
 `LayerDefinition` 的 ready 變體可以宣告 `featureIds`，只取 `source` 裡的那幾個圖徵。
-世界櫥窗那九層就是這樣來的：兩份手維護的幾何（`world-picks.geojson` 18 筆、
+世界櫥窗那九層就是這樣來的：兩份手維護的幾何（`world-picks.geojson` 19 筆、
 `world-picks-areas.geojson` 2 筆）切成九個核取方塊，九層共用 `resolveLayerData` 的
 同一個快取項目，**全開也只有兩次請求**。
 
