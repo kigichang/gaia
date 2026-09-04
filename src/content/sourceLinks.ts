@@ -1792,6 +1792,40 @@ export const SOURCE_LINKS: Record<string, string> = {
    * 的既有判斷）。
    */
   "大屯火山觀測站 世界火山": "https://tvo.ncree.niar.org.tw/closely/landscape/global",
+  /**
+   * 「火山大賞」2026-09 補進來的十二座十年火山。
+   * ⚠️ 有四座同時登記了中文與英文條目（雷尼爾山、聖瑪利亞、加勒拉斯、默拉皮）：
+   * 中文條目有位置與沿革，但卡片上的關鍵數字——奧西奧拉泥流的規模與泥流危害區的
+   * 人口、1902 年的噴出量與罹難人數、1993 年那場意外的死亡人數與身分、2010 年的
+   * 353 人與 35 萬人——只有英文條目寫得完整，所以兩篇都要連得到（比照維蘇威那一筆
+   * 把火山、噴發與城市三個條目分開登記的既有做法）。
+   * ⚠️ 加勒拉斯的中文條目名是「加勒拉斯火山」，但本站「火山帶」那一層沿用 GVP 中文名
+   * 「加雷拉斯火山」，兩種寫法都寫進了 geojson 的 meta。
+   */
+  "維基百科 冒納羅亞火山":
+    "https://zh.wikipedia.org/zh-tw/%E5%86%92%E7%B4%8D%E7%BE%85%E4%BA%9E%E7%81%AB%E5%B1%B1",
+  "維基百科 Mount Rainier": "https://en.wikipedia.org/wiki/Mount_Rainier",
+  "維基百科 科利馬火山":
+    "https://zh.wikipedia.org/zh-tw/%E7%A7%91%E5%88%A9%E9%A6%AC%E7%81%AB%E5%B1%B1",
+  "維基百科 聖地亞古多火山":
+    "https://zh.wikipedia.org/zh-tw/%E8%81%96%E5%9C%B0%E4%BA%9E%E5%8F%A4%E5%A4%9A%E7%81%AB%E5%B1%B1",
+  "維基百科 Santa María (volcano)":
+    "https://en.wikipedia.org/wiki/Santa_Mar%C3%ADa_(volcano)",
+  "維基百科 加勒拉斯火山":
+    "https://zh.wikipedia.org/zh-tw/%E5%8A%A0%E5%8B%92%E6%8B%89%E6%96%AF%E7%81%AB%E5%B1%B1",
+  "維基百科 Galeras": "https://en.wikipedia.org/wiki/Galeras",
+  "維基百科 泰德峰": "https://zh.wikipedia.org/zh-tw/%E6%B3%B0%E5%BE%B7%E5%B3%B0",
+  "維基百科 尼拉貢戈火山":
+    "https://zh.wikipedia.org/zh-tw/%E5%B0%BC%E6%8B%89%E8%B2%A2%E6%88%88%E7%81%AB%E5%B1%B1",
+  "維基百科 默拉皮火山":
+    "https://zh.wikipedia.org/zh-tw/%E9%BB%98%E6%8B%89%E7%9A%AE%E7%81%AB%E5%B1%B1",
+  "維基百科 Mount Merapi": "https://en.wikipedia.org/wiki/Mount_Merapi",
+  "維基百科 烏拉旺火山":
+    "https://zh.wikipedia.org/zh-tw/%E7%83%8F%E6%8B%89%E6%97%BA%E7%81%AB%E5%B1%B1",
+  "維基百科 阿瓦恰火山":
+    "https://zh.wikipedia.org/zh-tw/%E9%98%BF%E7%93%A6%E6%81%B0%E7%81%AB%E5%B1%B1",
+  "維基百科 科里亞克火山":
+    "https://zh.wikipedia.org/zh-tw/%E7%A7%91%E9%87%8C%E4%BA%9E%E5%85%8B%E7%81%AB%E5%B1%B1",
   // 「十年火山」是 IAVCEI 在聯合國「國際減災十年」下選出的 16 座重點火山，
   // 雲仙岳、櫻島、塔阿爾三張卡都引用它，所以獨立登記一個標籤。
   "維基百科 十年火山": "https://zh.wikipedia.org/zh-tw/%E5%8D%81%E5%B9%B4%E7%81%AB%E5%B1%B1",

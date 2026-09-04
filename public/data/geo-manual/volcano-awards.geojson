@@ -2,15 +2,57 @@
   "type": "FeatureCollection",
   "metadata": {
     "collection": "volcano-awards",
-    "source": "收錄名單取自臺灣火山觀測所（TVO，國家地震工程研究中心）「與火山近距離－世界火山地景」那一頁列出的火山（https://tvo.ncree.niar.org.tw/closely/landscape/global），維蘇威火山除外——本站已經收在「世界櫥窗・火山與災害」那一層，不重複收錄。座標逐筆人工轉錄，不是描繪的：皮納圖波（120.35/15.13）、塔阿爾（120.998/14.011）、雲仙岳（130.299/32.761）、櫻島（130.659/31.577）、富士山（138.728/35.361）五筆的座標與海拔逐位元取自 data/geo/volcanoes.geojson（史密森尼學會 全球火山計畫 GVP），所以跟「火山帶」那一層的同一座火山完全重合；⚠️ 櫻島在 GVP 名單上的條目名是「姶良破火山口（櫻島）」，那一筆的代表位置就是櫻島本體。黃石火山不在 GVP 的全新世名單裡（上次噴發 64 萬年前，早於全新世），座標取自維基百科條目所載的 44°24′N 110°42′W，那是破火山口的中心而不是某個可辨識的地物。⚠️ 這一層是依 TVO 那一頁選出來的教學名單，不是排名也不是完整名錄，收錄界線見註冊表的 notes。",
+    "source": "兩份名單併起來的。（1）大屯火山觀測站（TVO，國家地震工程研究中心）「與火山近距離－世界火山」那一頁列出的火山（https://tvo.ncree.niar.org.tw/closely/landscape/global）；（2）國際火山學與地球內部化學協會（IAVCEI）在聯合國「國際減少自然災害十年」計畫下選出的 16 座「十年火山」（https://zh.wikipedia.org/zh-tw/%E5%8D%81%E5%B9%B4%E7%81%AB%E5%B1%B1）。兩份名單重疊的三座（櫻島、雲仙岳、塔阿爾）只收一次；維蘇威火山兩份都有，但本站已經收在「世界櫥窗・火山與災害」那一層，這裡不重複收錄，所以 16 座十年火山在這一層有 15 座（阿瓦恰與科里亞克在 IAVCEI 名單上合列為一座，本站畫阿瓦恰那一個點）。座標逐筆人工轉錄，不是描繪的：除了黃石以外的每一筆，座標與海拔都逐位元取自 data/geo/volcanoes.geojson（史密森尼學會 全球火山計畫 GVP），所以跟「火山帶」那一層的同一座火山完全重合；⚠️ 櫻島在 GVP 名單上的條目名是「姶良破火山口（櫻島）」、泰德峰是「特內里費（Tenerife）」、聖瑪利亞火山是「Santa Maria」，那都是同一座火山系統的代表位置，不是標錯。黃石火山不在 GVP 的全新世名單裡（上次噴發 64 萬年前，早於全新世，按定義不算活火山），座標取自維基百科條目所載的 44°24′N 110°42′W，那是破火山口的中心而不是某個可辨識的地物。⚠️ 這一層是依上面兩份名單收的教學名單，不是排名也不會補完，收錄界線見註冊表的 notes。",
     "license": "座標與海拔為公開發布之事實資料；選錄與說明文字為本站編寫",
     "generatedAt": "2026-09-04",
-    "featureCount": 6
+    "featureCount": 18
   },
   "features": [
     {
       "type": "Feature",
-      "geometry": { "type": "Point", "coordinates": [-110.7, 44.4] },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -155.608,
+          19.475
+        ]
+      },
+      "properties": {
+        "id": "mauna-loa",
+        "name": "茂納羅亞火山",
+        "en": "Mauna Loa",
+        "meta": "美國夏威夷島・體積最大的活火山，1843 年以來噴發 30 幾次（也譯冒納羅亞火山、毛納羅亞火山）",
+        "elevation_m": 4170,
+        "zoom": 8.5
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -121.76,
+          46.853
+        ]
+      },
+      "properties": {
+        "id": "rainier",
+        "name": "雷尼爾山",
+        "en": "Mount Rainier",
+        "meta": "美國華盛頓州・危險的不是熔岩而是冰：山上 26 條冰河，下游住著十幾萬人（也譯雷尼爾峰）",
+        "elevation_m": 4392,
+        "zoom": 8
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -110.7,
+          44.4
+        ]
+      },
       "properties": {
         "id": "yellowstone",
         "name": "黃石火山",
@@ -21,7 +63,157 @@
     },
     {
       "type": "Feature",
-      "geometry": { "type": "Point", "coordinates": [120.35, 15.13] },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -103.62,
+          19.514
+        ]
+      },
+      "properties": {
+        "id": "colima",
+        "name": "科利馬火山",
+        "en": "Volcán de Colima",
+        "meta": "墨西哥哈利斯科與科利馬州界・1576 年以來噴發 40 幾次，北美洲最活躍的火山之一（又稱火之火山）",
+        "elevation_m": 3850,
+        "zoom": 9.5
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -91.552,
+          14.757
+        ]
+      },
+      "properties": {
+        "id": "santa-maria",
+        "name": "聖瑪利亞火山",
+        "en": "Santa María",
+        "meta": "瓜地馬拉・1902 年 VEI 6 的大噴發，1922 年起在缺口上長出聖地亞古多熔岩穹丘（Santiaguito）",
+        "elevation_m": 3745,
+        "zoom": 10
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -77.37,
+          1.22
+        ]
+      },
+      "properties": {
+        "id": "galeras",
+        "name": "加勒拉斯火山",
+        "en": "Galeras",
+        "meta": "哥倫比亞納里尼奧省・1993 年那次噴發帶走了六位火山學家，山腳就是 45 萬人的帕斯托市（又譯加雷拉斯火山）",
+        "elevation_m": 4276,
+        "zoom": 10.5
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -16.641,
+          28.271
+        ]
+      },
+      "properties": {
+        "id": "teide",
+        "name": "泰德峰",
+        "en": "Teide",
+        "meta": "西班牙加那利群島 特內里費島・西班牙最高峰，從大西洋海底算起約 7,500 公尺（GVP 名單上記為特內里費）",
+        "elevation_m": 3715,
+        "zoom": 9.5
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          14.999,
+          37.748
+        ]
+      },
+      "properties": {
+        "id": "etna",
+        "name": "埃特納火山",
+        "en": "Mount Etna",
+        "meta": "義大利西西里島・歐洲最活躍的火山，有文字紀錄的噴發從西元前 396 年開始",
+        "elevation_m": 3357,
+        "zoom": 9.5
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          25.396,
+          36.404
+        ]
+      },
+      "properties": {
+        "id": "santorini",
+        "name": "聖托里尼火山",
+        "en": "Santorini",
+        "meta": "希臘愛琴海・約西元前 1600 年的米諾斯噴發塌出這一圈環狀島（又譯聖多里尼）",
+        "elevation_m": 367,
+        "zoom": 10.5
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          29.25,
+          -1.52
+        ]
+      },
+      "properties": {
+        "id": "nyiragongo",
+        "name": "尼拉貢戈火山",
+        "en": "Nyiragongo",
+        "meta": "剛果民主共和國 東非大裂谷・熔岩湖的熔岩流速可達時速 100 公里，山南 19 公里就是戈馬市",
+        "elevation_m": 3470,
+        "zoom": 10
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          110.446,
+          -7.54
+        ]
+      },
+      "properties": {
+        "id": "merapi",
+        "name": "默拉皮火山",
+        "en": "Mount Merapi",
+        "meta": "印尼爪哇島・每兩三年一次小噴發、十幾年一次大噴發，2010 年那次 353 人罹難、35 萬人疏散",
+        "elevation_m": 2910,
+        "zoom": 9.5
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.35,
+          15.13
+        ]
+      },
       "properties": {
         "id": "pinatubo",
         "name": "皮納圖波火山",
@@ -33,7 +225,13 @@
     },
     {
       "type": "Feature",
-      "geometry": { "type": "Point", "coordinates": [120.998, 14.011] },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.998,
+          14.011
+        ]
+      },
       "properties": {
         "id": "taal",
         "name": "塔阿爾火山",
@@ -45,7 +243,13 @@
     },
     {
       "type": "Feature",
-      "geometry": { "type": "Point", "coordinates": [130.299, 32.761] },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          130.299,
+          32.761
+        ]
+      },
       "properties": {
         "id": "unzen",
         "name": "雲仙岳",
@@ -57,7 +261,13 @@
     },
     {
       "type": "Feature",
-      "geometry": { "type": "Point", "coordinates": [130.659, 31.577] },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          130.659,
+          31.577
+        ]
+      },
       "properties": {
         "id": "sakurajima",
         "name": "櫻島",
@@ -69,7 +279,13 @@
     },
     {
       "type": "Feature",
-      "geometry": { "type": "Point", "coordinates": [138.728, 35.361] },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          138.728,
+          35.361
+        ]
+      },
       "properties": {
         "id": "fuji",
         "name": "富士山",
@@ -77,6 +293,42 @@
         "meta": "日本靜岡與山梨縣界・3,776 公尺的日本最高峰，2013 年列入世界文化遺產",
         "elevation_m": 3776,
         "zoom": 7.5
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          151.33,
+          -5.05
+        ]
+      },
+      "properties": {
+        "id": "ulawun",
+        "name": "烏拉旺火山",
+        "en": "Ulawun",
+        "meta": "巴布亞紐幾內亞 新不列顛島・俾斯麥群島最高峰，山體有崩塌之虞",
+        "elevation_m": 2334,
+        "zoom": 8
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          158.836,
+          53.256
+        ]
+      },
+      "properties": {
+        "id": "avachinsky",
+        "name": "阿瓦恰火山",
+        "en": "Avachinsky",
+        "meta": "俄羅斯堪察加半島・與北邊約 11 公里的科里亞克火山合列為一座「十年火山」，山下就是彼得羅巴甫洛夫斯克市",
+        "elevation_m": 2717,
+        "zoom": 9.2
       }
     }
   ]
