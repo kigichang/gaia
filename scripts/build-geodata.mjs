@@ -165,6 +165,14 @@ import {
   subtypeProperties,
 } from "./lib/koppen.mjs";
 import {
+  TYPE_GROUPS as WHITTLESEY_GROUPS,
+  LICENSE as WHITTLESEY_LICENSE,
+  SOURCE_LABEL as WHITTLESEY_SOURCE_LABEL,
+  SOURCE_PAGE as WHITTLESEY_SOURCE_PAGE,
+  buildGrid as buildWhittleseyGrid,
+  typeProperties as whittleseyProperties,
+} from "./lib/whittlesey.mjs";
+import {
   SYSTEM_GROUPS,
   FARMSYS_URL,
   LICENSE as AGRICULTURE_LICENSE,
@@ -3167,6 +3175,48 @@ const SOURCES = [
           type: "Feature",
           geometry: { type: "MultiPolygon", coordinates: dissolveRings(rings, String(code)) },
           properties: systemProperties(code),
+        };
+      }),
+  })),
+
+  /**
+   * 惠特里西農業帶：六個大類各一筆產物，每一筆裡是**該類的類型**。
+   *
+   * ⚠️ **這是全站唯一一個不下載任何東西的資料集。** 分區範圍是編者依 Whittlesey
+   * (1936) 的圖版與內文判讀後手寫在 `lib/whittlesey.mjs` 的 `REGIONS` 裡的方框
+   * ——那份分類沒有任何開放的向量資料（見那支檔案的檔頭）。它仍然放在
+   * `build:geodata` 而不是 `geo-manual/`，理由是本站既有的判準：**有非座標的東西
+   * 要一起維護**（疊畫順序、第十四類空白、陸地遮罩、dissolve），跟行星風系與洋流
+   * 走 `generators.ts` 是同一條理由。
+   *
+   * ⚠️ **建置順序有相依**：陸地遮罩直接讀已經產好的 `world-continents.geojson`
+   * （比照人口與作物讀鄉鎮界）。大洲圖層不在時 `buildGrid` 會講清楚要先跑哪一個。
+   *
+   * ⚠️ `tolerance: 0` 與 `digits: 1` 跟柯本、「主要農業帶」同一個理由：0.5° 網格
+   * dissolve 出來的邊界，容差一旦大於 0 就會被切角，而相鄰兩類是各自簡化的，
+   * 切完就對不齊、裂出白縫。
+   */
+  ...WHITTLESEY_GROUPS.map((group) => ({
+    id: `world-whittlesey-${group.id}`,
+    label: `惠特里西農業帶：${group.label}`,
+    load: async () => {
+      const { byType, onLand } = buildWhittleseyGrid(process.cwd());
+      const cells = group.types.reduce((n, t) => n + (byType.get(t)?.length ?? 0), 0);
+      return { byType, warnings: [`${group.label}：${group.types.length} 個類型／${cells} 個網格（全球陸地共 ${onLand} 格）`] };
+    },
+    sourceUrl: WHITTLESEY_SOURCE_PAGE,
+    license: WHITTLESEY_LICENSE,
+    sourceLabel: WHITTLESEY_SOURCE_LABEL,
+    tolerance: 0,
+    digits: 1,
+    transform: ({ byType }) =>
+      group.types.map((type) => {
+        const rings = byType.get(type);
+        if (!rings?.length) throw new Error(`類型 ${type} 一格都沒有`);
+        return {
+          type: "Feature",
+          geometry: { type: "MultiPolygon", coordinates: dissolveRings(rings, type) },
+          properties: whittleseyProperties(type),
         };
       }),
   })),

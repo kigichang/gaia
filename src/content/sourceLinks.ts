@@ -1085,6 +1085,16 @@ export const SOURCE_LINKS: Record<string, string> = {
    */
   "RESOLVE 生態區 2017（Dinerstein et al.）": "https://ecoregions.appspot.com/",
   /**
+   * 惠特里西《世界主要農業區》。連的是**論文本身**（含兩張摺頁圖版的全文 PDF），
+   * 不是任何一本轉載它的課本——這一層的分區是照那兩張圖版判讀出來的。
+   *
+   * ⚠️ 這一筆跟本站其他來源不一樣：它不是資料集，是一篇 1936 年的論文。所以
+   * `whittlesey` 那 12 張卡全部標 `schematic: true`，卡片上會出現「這是簡化的教學
+   * 示意幾何」那段警語——界線是編者判讀畫的，不是誰發布的向量資料。
+   */
+  "Whittlesey《世界主要農業區》（1936）":
+    "https://cbpbu.ac.in/userfiles/file/2020/STUDY_MAT/GEO/Major%20Agricultural%20Regions%20of%20the%20Earth.pdf",
+  /**
    * 世界主要農業帶。授權是 CC-BY 4.0，**要求標示 FAO**。
    *
    * 連的是 FAO 資料目錄裡**這一份資料自己**的頁面（`data.apps.fao.org/catalog/iso/…`），

@@ -9,6 +9,7 @@ import {
   OCEAN_CURRENT_COLORS,
   PLATE_BOUNDARY_COLORS,
   PLATE_BOUNDARY_DASH,
+  WHITTLESEY_COLORS,
   WIND_COLOR,
 } from "../../thematicColors.ts";
 
@@ -2064,6 +2065,119 @@ export const worldTheme: ThemeDefinition = {
         "⚠️ 這一層跟「森林與沙漠帶」、「柯本氣候分區」蓋的是同一片陸地。三者都是半透明的面，同時打開兩層就會糊成一團——建議一次看一層，用切換的方式對照。",
       ],
       sources: ["聯合國糧農組織 世界主要農業系統（SOLAW 2011）"],
+    },
+    {
+      id: "world-whittlesey",
+      label: "惠特里西農業帶（1936）",
+      group: "人文專題",
+      status: "ready",
+      /**
+       * 課本那張「世界主要農業區」的分類圖。
+       *
+       * ⚠️ **這一層跟「主要農業帶」是一對，不是重複的。** 前者畫的是 FAO 2010 年
+       * 前後**實測**的農業系統，這一層畫的是惠特里西 1936 年那套**概念分類**——
+       * 課本教的游牧、游耕、集約自給、地中海型農業、商業性穀物農業、熱帶栽培業
+       * 全部出自這裡。兩層用同一個 0.5° 網格，所以可以逐格對照
+       * 「課本這樣分 vs 今天實際上是什麼」。
+       *
+       * ⚠️ **分區是編者判讀原圖版畫出來的，不是資料。** 惠特里西那份分類沒有任何
+       * 開放的向量資料集，所以 12 張說明卡**每一張都標 `schematic: true`**，卡片上
+       * 會出現「這是簡化的教學示意幾何」那段警語。畫法見 scripts/lib/whittlesey.mjs。
+       */
+      render: {
+        // 三個值逐字沿用「森林與沙漠帶」與「主要農業帶」，理由相同（見那兩層）
+        kind: "fill",
+        fillOpacity: 0.25,
+        outlineWidth: 1.0,
+        outlineOpacity: 0.15,
+      },
+      /**
+       * 六類各一個檔。顏色**固定綁在類別上**，不是依勾選順序指派——先勾「游牧」
+       * 再勾「集約自給農業」時，集約自給仍然必須是青色（比照古蹟三級）。
+       */
+      items: {
+        from: {
+          type: "inline",
+          list: [
+            {
+              id: "nomadic",
+              label: "A 游牧",
+              source: { type: "remote", path: "data/geo/world-whittlesey-nomadic.geojson" },
+              color: WHITTLESEY_COLORS.nomadic,
+              keywords: ["游牧", "遊牧", "牧民", "逐水草", "馴鹿", "貝都因", "nomadic herding"],
+            },
+            {
+              id: "shifting-rudimental",
+              label: "C 游耕與 D 粗放定耕",
+              source: { type: "remote", path: "data/geo/world-whittlesey-shifting-rudimental.geojson" },
+              color: WHITTLESEY_COLORS["shifting-rudimental"],
+              keywords: ["游耕", "遷移農業", "刀耕火種", "火耕", "粗放定耕", "shifting cultivation"],
+            },
+            {
+              id: "intensive-subsistence",
+              label: "E／F 集約自給農業",
+              source: { type: "remote", path: "data/geo/world-whittlesey-intensive-subsistence.geojson" },
+              color: WHITTLESEY_COLORS["intensive-subsistence"],
+              keywords: ["集約自給", "自給農業", "水稻", "稻作", "旱作", "季風亞洲", "intensive subsistence"],
+            },
+            {
+              id: "crop-livestock",
+              label: "J／K／L 作物與牲畜混合農牧",
+              source: { type: "remote", path: "data/geo/world-whittlesey-crop-livestock.geojson" },
+              color: WHITTLESEY_COLORS["crop-livestock"],
+              keywords: ["混合農業", "酪農業", "乳牛", "自給性農牧", "mixed farming", "dairy"],
+            },
+            {
+              id: "extensive-commercial",
+              label: "B／I 大牧場放牧與商業性穀物",
+              source: { type: "remote", path: "data/geo/world-whittlesey-extensive-commercial.geojson" },
+              color: WHITTLESEY_COLORS["extensive-commercial"],
+              keywords: ["大牧場放牧業", "放牧業", "牧牛", "商業性穀物農業", "小麥帶", "ranching", "grain"],
+            },
+            {
+              id: "warm-commercial",
+              label: "H／G 地中海型農業與熱帶栽培業",
+              source: { type: "remote", path: "data/geo/world-whittlesey-warm-commercial.geojson" },
+              color: WHITTLESEY_COLORS["warm-commercial"],
+              keywords: ["地中海型農業", "橄欖", "葡萄", "熱帶栽培業", "栽培業", "農園", "咖啡", "橡膠", "plantation"],
+            },
+          ],
+        },
+        maxActive: 6,
+        palette: Object.values(WHITTLESEY_COLORS),
+        /**
+         * 勾圖層時六類一起打開——這一層的重點是**全球分區的整體圖樣**
+         * （惠特里西畫的就是一張把全世界分完的圖），只顯示一類就看不出來。
+         * 六份合計約 47 KB，是本站最便宜的面圖層之一。
+         */
+        defaultAll: true,
+        /**
+         * ⚠️ 點抽屜裡「A 游牧」四個字要開的是**這個大類是什麼**，點地圖上的面要開的是
+         * **那一塊是 12 個類型裡的哪一個**——兩個問題不同（比照柯本與「主要農業帶」）。
+         * 內容在 `src/content/geo/whittlesey-groups/`。
+         */
+        detail: { type: "geo", collection: "whittlesey-groups" },
+      },
+      /**
+       * 12 個類型各有一張說明卡（`src/content/geo/whittlesey/<id>.json`，檔名＝
+       * geojson 的 `properties.id`）。⚠️ **每一張都要 `schematic: true`**。
+       */
+      detail: { type: "geo", collection: "whittlesey", hideLayerDescription: true },
+      /** 世界尺度專用，比照生物群系與「主要農業帶」：0.5° 網格，放大就是階梯。 */
+      maxzoom: 5,
+      description:
+        "1936 年惠特里西（Whittlesey）把全世界的農業分成十三類，畫成一張圖——今天課本上講的游牧、游耕、集約自給農業、地中海型農業、商業性穀物農業、熱帶栽培業，全部出自這裡。他用五個判準來分：種什麼配養什麼、用什麼方法、投入多少勞力與資本、產品是自己吃還是拿去賣、以及農場的建築形式。把它跟「主要農業帶」（FAO 2010 年前後的實測分類）交替打開，就看得出九十年來哪些地方變了、哪些沒變。",
+      notes: [
+        "⚠️ **這是一張 1936 年的圖，不是現況。** 巴西內陸在圖上是大牧場與游耕，今天是世界最大的機械化大豆產區之一；蘇聯的集體化在論文發表前就已經摧毀了圖上那片「自給性農牧混合」；美國南部的棉花栽培帶早已改種大豆、養雞與造林。要看今天的實際分布請開「主要農業帶」。",
+        "⚠️ **臺灣在原圖版上被畫成「游耕」**，本站照原圖畫。那幾乎可以確定是「用山地原住民的火耕代表整座島」的世界尺度概括——1936 年的西部平原有嘉南大圳與蓬萊米，是當時亞洲最集約的水稻與蔗糖產區之一。這一筆刻意留著，它很具體地示範了小尺度分類圖會付出什麼代價。",
+        "⚠️ **原圖版上澳洲沒有地中海型農業**，西南澳與南澳被畫成商業性穀物農業與大牧場放牧業。惠特里西自己在內文裡把這件事列為疑點。今天的課本一律教「世界五個地中海型農業區」（含澳洲），這是原圖與現行課本最明顯的一處不同。",
+        "⚠️ 原圖有十三類，這一層畫十二類。沒有畫的是「M 園藝業」——惠特里西把它畫成小塊的實心黑點，內文也明講多數這類地區小到無法在圖上表示；把幾個點放大成色塊會扭曲原圖。",
+        "⚠️ 圖上的空白是惠特里西自己說的第十四類「完全未利用的土地」（最乾的沙漠核心、最冷的高緯與高山），不是「沒有資料」。注意空白是畫在字母區域**裡面**的封閉區塊——撒哈拉整體算游牧，只有極乾的核心是空白。",
+        "⚠️ 界線是本站依原圖版與論文內文判讀、簡化到 0.5° 網格畫出來的，不是原圖的數位化。形心落在海上的格會被濾掉，所以小島（多數加勒比海島嶼、太平洋島嶼）不會出現。",
+        "⚠️ 惠特里西自己對這份分類的說法：「今天所做的任何世界性農業土地利用分類，都不過是一篇論說文——一個供人批評的靶。」分類依據個人判斷，缺少可以讓不同研究者各自建構、彼此比較的客觀元素。",
+        "⚠️ 這一層跟「主要農業帶」、「森林與沙漠帶」、「柯本氣候分區」蓋的是同一片陸地。四者都是半透明的面，同時打開兩層就會糊成一團——建議一次看一層，用切換的方式對照。",
+      ],
+      sources: ["Whittlesey《世界主要農業區》（1936）"],
     },
   ],
 };
