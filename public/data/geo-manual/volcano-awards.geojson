@@ -1,0 +1,83 @@
+{
+  "type": "FeatureCollection",
+  "metadata": {
+    "collection": "volcano-awards",
+    "source": "收錄名單取自臺灣火山觀測所（TVO，國家地震工程研究中心）「與火山近距離－世界火山地景」那一頁列出的火山（https://tvo.ncree.niar.org.tw/closely/landscape/global），維蘇威火山除外——本站已經收在「世界櫥窗・火山與災害」那一層，不重複收錄。座標逐筆人工轉錄，不是描繪的：皮納圖波（120.35/15.13）、塔阿爾（120.998/14.011）、雲仙岳（130.299/32.761）、櫻島（130.659/31.577）、富士山（138.728/35.361）五筆的座標與海拔逐位元取自 data/geo/volcanoes.geojson（史密森尼學會 全球火山計畫 GVP），所以跟「火山帶」那一層的同一座火山完全重合；⚠️ 櫻島在 GVP 名單上的條目名是「姶良破火山口（櫻島）」，那一筆的代表位置就是櫻島本體。黃石火山不在 GVP 的全新世名單裡（上次噴發 64 萬年前，早於全新世），座標取自維基百科條目所載的 44°24′N 110°42′W，那是破火山口的中心而不是某個可辨識的地物。⚠️ 這一層是依 TVO 那一頁選出來的教學名單，不是排名也不是完整名錄，收錄界線見註冊表的 notes。",
+    "license": "座標與海拔為公開發布之事實資料；選錄與說明文字為本站編寫",
+    "generatedAt": "2026-09-04",
+    "featureCount": 6
+  },
+  "features": [
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [-110.7, 44.4] },
+      "properties": {
+        "id": "yellowstone",
+        "name": "黃石火山",
+        "en": "Yellowstone Caldera",
+        "meta": "美國懷俄明州 黃石國家公園・破火山口 70×45 公里，64 萬年前那次噴出 1,000 立方公里（也稱黃石超級火山）",
+        "zoom": 5.5
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [120.35, 15.13] },
+      "properties": {
+        "id": "pinatubo",
+        "name": "皮納圖波火山",
+        "en": "Mount Pinatubo",
+        "meta": "菲律賓呂宋島・1991 年那次噴發被準確預報，至少救下五千條人命（也譯皮納圖博火山、皮納土玻火山）",
+        "elevation_m": 1486,
+        "zoom": 8.5
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [120.998, 14.011] },
+      "properties": {
+        "id": "taal",
+        "name": "塔阿爾火山",
+        "en": "Taal Volcano",
+        "meta": "菲律賓呂宋島 塔阿爾湖・湖中有島、島中有湖，距馬尼拉約 50 公里（又譯塔爾火山）",
+        "elevation_m": 311,
+        "zoom": 10
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [130.299, 32.761] },
+      "properties": {
+        "id": "unzen",
+        "name": "雲仙岳",
+        "en": "Unzendake",
+        "meta": "日本長崎縣島原半島・1792 年山崩與海嘯逾一萬五千人罹難，日本最致命的火山災害",
+        "elevation_m": 1483,
+        "zoom": 9.4
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [130.659, 31.577] },
+      "properties": {
+        "id": "sakurajima",
+        "name": "櫻島",
+        "en": "Sakurajima",
+        "meta": "日本鹿兒島・一年爆發近千次，距鹿兒島市區只有 8 公里（GVP 名單上記為姶良破火山口）",
+        "elevation_m": 1117,
+        "zoom": 10.4
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [138.728, 35.361] },
+      "properties": {
+        "id": "fuji",
+        "name": "富士山",
+        "en": "Mount Fuji",
+        "meta": "日本靜岡與山梨縣界・3,776 公尺的日本最高峰，2013 年列入世界文化遺產",
+        "elevation_m": 3776,
+        "zoom": 7.5
+      }
+    }
+  ]
+}
