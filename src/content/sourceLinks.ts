@@ -759,6 +759,20 @@ export const SOURCE_LINKS: Record<string, string> = {
    * ⚠️ NASA 的網址寫 `science.nasa.gov`，**不要改回 `earthobservatory.nasa.gov`**：
    * 舊網址現在是 301 轉址（實測），連過去會多跳一次。
    */
+  /**
+   * 希克蘇魯伯隕石坑那一筆（跟理查特結構同一層，兩張卡是一組）。四個來源各自撐起
+   * 卡片的一段：條目本身（發現經過、陷穴環、直徑與埋深）、K-Pg 滅絕事件（銥異常與
+   * 75% 物種消失的數字）、ECORD 那一頁（⚠️ 2016 年那次鑽探的官方頁面，「第 364 航次」
+   * 這個編號與日期只有它追得到，維基百科是次級來源），以及 cenote 的中文條目名。
+   * ⚠️ K-Pg 那個條目的中文標題用的是**破折號**（`白垩纪—古近纪灭绝事件`），
+   * 標籤這邊寫成臺灣慣用的全形連接號——網址照條目原樣，改了會 404。
+   */
+  "維基百科 希克蘇魯伯隕石坑":
+    "https://zh.wikipedia.org/zh-tw/%E5%B8%8C%E5%85%8B%E8%98%87%E9%AD%AF%E4%BC%AF%E9%9A%95%E7%9F%B3%E5%9D%91",
+  "維基百科 白堊紀－古近紀滅絕事件":
+    "https://zh.wikipedia.org/zh-tw/%E7%99%BD%E5%9E%A9%E7%BA%AA%E2%80%94%E5%8F%A4%E8%BF%91%E7%BA%AA%E7%81%AD%E7%BB%9D%E4%BA%8B%E4%BB%B6",
+  "ECORD IODP 第 364 航次 希克蘇魯伯 K-Pg 撞擊坑": "https://www.ecord.org/expedition364/",
+  "維基百科 石灰阱": "https://zh.wikipedia.org/zh-tw/%E7%9F%B3%E7%81%B0%E9%98%B1",
   "維基百科 理查特結構":
     "https://zh.wikipedia.org/zh-tw/%E7%90%86%E6%9F%A5%E7%89%B9%E7%B5%90%E6%A7%8B",
   "IUGS 全球地質遺產 理查特結構":

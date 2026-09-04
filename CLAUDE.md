@@ -1099,7 +1099,7 @@ maplibre 的四個角落容器是 map container 內的 `position: absolute; z-in
 | `quakes-strongest.geojson` | 7 KB |
 | `volcano-awards.geojson`（geo-manual） | 4 KB |
 | `world-picks-areas.geojson`（geo-manual） | 3 KB |
-| `world-picks.geojson`（geo-manual） | 12 KB |
+| `world-picks.geojson`（geo-manual） | 13 KB |
 
 ⚠️ **世界櫥窗那九個圖層在這張表上只佔兩列，那不是漏列。** 它們靠**圖層層級的
 `featureIds`** 從這兩份幾何切出來（見下面「一份 geojson 切給多個圖層」），九層共用
