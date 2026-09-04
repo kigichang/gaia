@@ -2,6 +2,7 @@
 import type { ThemeDefinition } from "../types.ts";
 // value-import 只允許 thematicColors（零 import 的常數模組），見 ../types.ts 的說明
 import {
+  AGRICULTURE_COLORS,
   BIOME_COLORS,
   CYCLONE_INTENSITY_RAMP,
   KOPPEN_COLORS,
@@ -1929,15 +1930,140 @@ export const worldTheme: ThemeDefinition = {
       id: "world-agriculture",
       label: "主要農業帶",
       group: "人文專題",
-      status: "planned",
-      render: { kind: "fill" },
-      detail: { type: "none" },
-      description: "小麥帶、稻作區、放牧區等主要農業型態的分布。",
+      status: "ready",
       /**
-       * ⚠️ 這一層原本掛著「Natural Earth」，那是照抄隔壁圖層填的——**NE 沒有任何
-       * 農業資料**。改成真正做得出這一層的公開資料集（FAO 的全球農業生態區）。
+       * ⚠️ **這一層畫的不是課本那張「惠特里西農業分類」圖，而且不可以改寫成它。**
+       * 臺灣課本教的游牧／游耕／集約自給／地中海型農業／混合農業／酪農業／商業性
+       * 穀物農業／熱帶栽培業那一套是 1936 年的**製圖分類**，活在課本圖版與地圖集裡，
+       * **沒有任何開放、可機器讀取的資料集**（查過 FAO 全目錄、ArcGIS Online、
+       * Harvard Dataverse 與 Natural Earth）。所以類別名一律照 FAO 的原意翻譯，
+       * 兩套分類的對應寫在各張說明卡的 `stats.課本對應` 與 facts 裡——那才是誠實
+       * 的做法。詳見 scripts/lib/agriculture.mjs 的檔頭。
+       *
+       * ⚠️ 原本掛的來源「FAO 全球農業生態區（GAEZ）」是錯的：GAEZ 只發 GeoTIFF
+       * （48–57 MB，本站沒有 TIFF 解碼器），而且它是**生物物理的潛力分區**——回答
+       * 「這裡適合種什麼」，不是「這裡實際在做哪一種農業」。改用 FAO 自己那份
+       * SOLAW 2011 的「主要農業系統」ASCII 網格。
        */
-      sources: ["聯合國糧農組織 全球農業生態區（GAEZ）"],
+      render: {
+        /**
+         * ⚠️ 三個值逐字沿用「森林與沙漠帶」，理由完全相同：`fillOpacity` 取上限
+         * 0.25（面疊在底圖地名之上，見 types.ts），外框是拿來**補縫**的所以是
+         * 「寬一點、但跟面一樣半透明」。
+         *
+         * ⚠️ 但這一層的縫**比生物群系少得多**：它是 0.5° 網格 dissolve 出來的，
+         * 相鄰兩類共用的邊逐位元相同（`tolerance: 0`，見 lib/agriculture.mjs）。
+         * 外框留著是因為六類**各自**是一份 geojson，maplibre 在圖磚邊界仍會露出
+         * 髮絲縫。**不要因此把它拿掉，也不要調回預設的 0.9 不透明度**。
+         */
+        kind: "fill",
+        fillOpacity: 0.25,
+        outlineWidth: 1.0,
+        outlineOpacity: 0.15,
+      },
+      /**
+       * 六類各一個檔（比照生物群系與柯本）：只勾「灌溉：水稻」就只抓 5 KB，
+       * 不是整包 310 KB。顏色**固定綁在類別上**，不是依勾選順序指派——先勾放牧地
+       * 再勾水稻時，水稻仍然必須是青色，否則圖例當場失效（比照古蹟三級）。
+       */
+      items: {
+        from: {
+          type: "inline",
+          list: [
+            {
+              id: "paddy",
+              label: "灌溉：水稻",
+              source: { type: "remote", path: "data/geo/agriculture-paddy.geojson" },
+              color: AGRICULTURE_COLORS.paddy,
+              keywords: ["水稻", "稻作", "水田", "季風亞洲", "集約自給", "paddy", "rice"],
+            },
+            {
+              id: "irrigated-other",
+              label: "灌溉：其他作物",
+              source: { type: "remote", path: "data/geo/agriculture-irrigated-other.geojson" },
+              color: AGRICULTURE_COLORS["irrigated-other"],
+              keywords: ["灌溉", "綠洲農業", "尼羅河", "兩河流域", "棉花", "irrigated"],
+            },
+            {
+              id: "rainfed-tropics",
+              label: "雨養：熱帶",
+              source: { type: "remote", path: "data/geo/agriculture-rainfed-tropics.geojson" },
+              color: AGRICULTURE_COLORS["rainfed-tropics"],
+              keywords: ["雨養", "熱帶栽培業", "游耕", "遷移農業", "小米", "高粱", "rainfed"],
+            },
+            {
+              id: "rainfed-temperate",
+              label: "雨養：副熱帶與溫帶",
+              source: { type: "remote", path: "data/geo/agriculture-rainfed-temperate.geojson" },
+              color: AGRICULTURE_COLORS["rainfed-temperate"],
+              keywords: ["小麥帶", "玉米帶", "穀倉", "商業性穀物農業", "混合農業", "酪農業", "地中海型農業", "wheat"],
+            },
+            {
+              id: "rainfed-highlands",
+              label: "雨養：高地",
+              source: { type: "remote", path: "data/geo/agriculture-rainfed-highlands.geojson" },
+              color: AGRICULTURE_COLORS["rainfed-highlands"],
+              keywords: ["高地農業", "垂直分帶", "衣索比亞高地", "安地斯", "咖啡", "highlands"],
+            },
+            {
+              id: "rangelands",
+              label: "放牧地",
+              source: { type: "remote", path: "data/geo/agriculture-rangelands.geojson" },
+              color: AGRICULTURE_COLORS.rangelands,
+              keywords: ["放牧", "游牧", "大牧場放牧業", "草原", "馴鹿", "過牧", "沙漠化", "rangeland"],
+            },
+          ],
+        },
+        maxActive: 6,
+        palette: Object.values(AGRICULTURE_COLORS),
+        /**
+         * 勾圖層時六類一起打開——這一層的重點是**帶狀分布與彼此的接壤關係**
+         * （放牧地包著沙漠、雨養接著放牧），只顯示一類就看不出來。
+         * 六份合計約 310 KB；取消不想看的那幾類之後不會重抓（`resolveLayerData` 有快取）。
+         */
+        defaultAll: true,
+        /**
+         * ⚠️ **點抽屜裡「灌溉：水稻」那五個字要開的是「這個大類是什麼」，不是某一塊
+         * 圖徵**——判準跟柯本五大類、古蹟三級一樣：子項目名稱回答的問題（「這一類是
+         * 什麼」）跟圖徵回答的問題（「我點到的這一格是哪一個 FAO 類別」）不同。
+         *
+         * ⚠️ 不宣告的後果是**一張幾乎空白的卡**，而且完全靜默：item id（`paddy`）
+         * 拿去母圖層那一支查，`agriculture` 裡只有 `108`／`109`／…，永遠查不到；
+         * 這一層又有 `hideLayerDescription`，所以連圖層說明都不會畫。
+         *
+         * ⚠️ `detail` 要掛在 **`items` 這一層**（`palette`／`defaultAll` 的兄弟），
+         * 不是掛在每一個 item 上——踩過：寫進 list 裡的每一筆時 `validate-content.mjs`
+         * 讀不到，六份群組內容檔全部被判成「在對應的 geojson 裡找不到 id」。
+         */
+        detail: { type: "geo", collection: "agriculture-groups" },
+      },
+      /**
+       * 十個上游類別各有一張說明卡（`src/content/geo/agriculture/<代碼>.json`，
+       * 檔名＝geojson 的 `properties.id`）。
+       *
+       * ⚠️ `items.detail` 指向**另一個** collection：點抽屜裡的「灌溉：水稻」四個字
+       * 要開的是**那個大類的定義**，點地圖上的面要開的是**那一格是哪一個 FAO 類別**
+       * ——兩個問題不同，比照柯本氣候分區的 `koppen-groups`。少了它，點大類名稱會
+       * 拿 `paddy` 去 `agriculture` 那一支查、永遠查不到，開出一張完全靜默的空白面板。
+       */
+      detail: { type: "geo", collection: "agriculture", hideLayerDescription: true },
+      /**
+       * ⚠️ 世界尺度專用，比照生物群系。上游是 5 弧分、本站再多數決降到 0.5°
+       * （約 55 公里），放大之後就是一格一格的階梯——那是網格不是界線。
+       */
+      maxzoom: 5,
+      description:
+        "同樣是農業，做法差非常多：季風亞洲的水田一年收兩三次、養活了全世界最密的農村；美洲與東歐的溫帶平原不必灌溉、機器開得進去，是世界的穀倉；乾燥區只能放牧，把人吃不了的草變成肉與奶。這一層畫的是各地實際在做哪一種農業——它幾乎完全被氣候決定，跟「柯本氣候分區」與「森林與沙漠帶」對著看最清楚。",
+      notes: [
+        "⚠️ 這**不是**課本的惠特里西農業分類（游牧、集約自給、地中海型農業、商業性穀物農業、熱帶栽培業…）。那套 1936 年的分類沒有任何開放的向量資料集，本站畫的是 FAO 自己的「主要農業系統」分類，類別名照原意翻譯。兩套的對應關係寫在每一張說明卡裡。",
+        "⚠️ 上游有 14 個類別，這一層只畫其中 10 個農業系統。森林、沙漠、水域與「其他」刻意不畫——它們不是農業系統，而且本站已經有「森林與沙漠帶」在畫同一件事。地圖上的空白因此是有意義的：那就是農業帶的邊界。",
+        "⚠️ 原始網格是 5 弧分（約 9 公里），本站用多數決降到 0.5°（約 55 公里）才畫得成「帶」。代價是窄於半度的帶會被旁邊吃掉——尼羅河谷在原始解析度是灌溉農業，降尺度之後被兩側的沙漠蓋過去。",
+        "⚠️ 「灌溉：水稻」只標**水田佔優勢**的那些格。臺灣西部平原、日本關東、韓國南部與長江下游的稻作都落在「灌溉：其他作物」——不是那裡不種稻，是一格裡水田沒有多到足以代表整格。不要拿這一層告訴學生「這裡才有種稻」。",
+        "⚠️ 資料反映的是 2005–2010 年前後的狀況（上游以 GLOBCOVER 2005 等土地覆蓋圖為底），不是今天的即時分布。",
+        "⚠️ 南極洲在上游被編為水域而遮蔽掉，所以這一層到南緯 60° 附近就結束。",
+        "⚠️ 這一層跟「森林與沙漠帶」、「柯本氣候分區」蓋的是同一片陸地。三者都是半透明的面，同時打開兩層就會糊成一團——建議一次看一層，用切換的方式對照。",
+      ],
+      sources: ["聯合國糧農組織 世界主要農業系統（SOLAW 2011）"],
     },
   ],
 };

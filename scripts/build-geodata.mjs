@@ -165,6 +165,15 @@ import {
   subtypeProperties,
 } from "./lib/koppen.mjs";
 import {
+  SYSTEM_GROUPS,
+  FARMSYS_URL,
+  LICENSE as AGRICULTURE_LICENSE,
+  SOURCE_LABEL as AGRICULTURE_SOURCE_LABEL,
+  SOURCE_PAGE as AGRICULTURE_SOURCE_PAGE,
+  fetchFarmingSystems,
+  systemProperties,
+} from "./lib/agriculture.mjs";
+import {
   ROCK_CLASSES,
   LICENSE as GEOLOGY_LICENSE,
   SOURCE_LABEL as GEOLOGY_SOURCE_LABEL,
@@ -3120,6 +3129,47 @@ const SOURCES = [
       return rows;
     },
   },
+
+  /**
+   * 世界主要農業帶：六個大類各一筆產物，每一筆裡是**該類的上游類別**。
+   *
+   * 顏色是大類（六個核取方塊），圖徵是 FAO 的類別（10 個各一個 MultiPolygon）
+   * ——比照柯本氣候分區「顏色是大類、圖徵是亞型」的既有形狀，理由相同：
+   * 本站的分類色上限是六色，而「點下去告訴你這裡是水稻灌溉還是溫帶雨養」正是
+   * 這一層存在的理由。
+   *
+   * ⚠️ `tolerance: 0` 與 `digits: 1` 跟柯本同一個理由：這一層是 0.5° 網格
+   * dissolve 出來的，容差一旦大於 0，階梯狀邊界會被切角，而相鄰兩類是各自簡化的，
+   * 切完就對不齊、裂出白縫。容差 0 的 Douglas–Peucker 只會刪掉**完全共線**的點
+   * （無損），而座標都是 0.5 的倍數，所以 `digits: 1` 也是無損的。
+   *
+   * 六個資料集共用 lib/agriculture.mjs 的 module-level 快取，上游那 673 KB
+   * 一個 process 只下載一次（比照柯本與岩石分布）。
+   */
+  ...SYSTEM_GROUPS.map((group) => ({
+    id: `agriculture-${group.id}`,
+    label: `世界主要農業帶：${group.label}`,
+    load: async () => {
+      const byCode = await fetchFarmingSystems(fetchBuffer);
+      const cells = group.codes.reduce((n, code) => n + (byCode.get(code)?.length ?? 0), 0);
+      return { byCode, warnings: [`${group.label}：${group.codes.length} 個類別／${cells} 個網格`] };
+    },
+    sourceUrl: AGRICULTURE_SOURCE_PAGE,
+    license: AGRICULTURE_LICENSE,
+    sourceLabel: AGRICULTURE_SOURCE_LABEL,
+    tolerance: 0,
+    digits: 1,
+    transform: ({ byCode }) =>
+      group.codes.map((code) => {
+        const rings = byCode.get(code);
+        if (!rings?.length) throw new Error(`類別 ${code} 在降尺度後的網格裡一格都沒有`);
+        return {
+          type: "Feature",
+          geometry: { type: "MultiPolygon", coordinates: dissolveRings(rings, String(code)) },
+          properties: systemProperties(code),
+        };
+      }),
+  })),
 ];
 
 /** 從 `category`（「第 3 類」／「特殊路徑」）取回官方原始代碼，只給上面的 sort 用。 */

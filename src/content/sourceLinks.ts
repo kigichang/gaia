@@ -1085,6 +1085,19 @@ export const SOURCE_LINKS: Record<string, string> = {
    */
   "RESOLVE 生態區 2017（Dinerstein et al.）": "https://ecoregions.appspot.com/",
   /**
+   * 世界主要農業帶。授權是 CC-BY 4.0，**要求標示 FAO**。
+   *
+   * 連的是 FAO 資料目錄裡**這一份資料自己**的頁面（`data.apps.fao.org/catalog/iso/…`），
+   * 不是 fao.org 首頁也不是 SOLAW 那本報告——本站有另外五個圖層用 Natural Earth、
+   * 拆成五個指名資料集的既有判例，理由相同：讀者要追的是「這張圖哪來的」。
+   *
+   * ⚠️ 標籤刻意寫「世界主要農業系統」而不是「全球農業生態區（GAEZ）」。註冊表原本
+   * 掛的是後者，那是**照抄隔壁圖層填的**——GAEZ 是另一份資料（只發 GeoTIFF，而且是
+   * 生物物理的潛力分區不是實際的農業系統），拿它當來源等於指錯地方。
+   */
+  "聯合國糧農組織 世界主要農業系統（SOLAW 2011）":
+    "https://data.apps.fao.org/catalog/iso/c9be830e-daf5-4926-bbf6-0051ad057c53",
+  /**
    * 柯本氣候分區。維也納獸醫大學公開提供，條件是引用 Kottek et al. (2006)，
    * 所以來源標籤帶著論文出處，不要簡寫成「柯本分類」。
    */
