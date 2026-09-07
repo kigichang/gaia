@@ -72,6 +72,14 @@ export type ColorRole =
    */
   | "mountain"
   /**
+   * ⚠️ `midOceanRidge` 也是**有驗過**的，而且它的同框名單跟 `mountain` **不一樣**：
+   * 中洋脊全程在海上，所以洋流的暖紅／寒藍必須一起驗——而山脈紫當初正是靠
+   * 「山脈全部在陸上」把洋流排除掉的。實測山脈紫對寒流藍的 CVD ΔE 只有 2.9
+   * （protan 下同一個顏色），所以這一層不能沿用它。掃描條件與量測值見
+   * thematicColors.ts 的 `MID_OCEAN_RIDGE_COLOR`。
+   */
+  | "midOceanRidge"
+  /**
    * ⚠️ `worldPopulation` 是**有驗過**的：世界人口分布的橄欖金要跟世界主題同框的
    * 另外兩個圓點角色（`place` 藍、`volcano` 洋紅；`hazard` 中性色不參與）分得開。
    * 它跟臺灣人口與都市體系的 `population` **刻意不是同一個顏色**——那個紫對火山

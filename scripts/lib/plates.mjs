@@ -78,13 +78,49 @@ export const CATEGORY_ORDER = ["主要板塊", "次要板塊", "微板塊"];
  *
  * ⚠️ **中洋脊 ≠ 張裂型邊界。** 張裂型是 OSR ＋ CRB 兩類，而 CRB 是**大陸**裂谷
  * （東非大裂谷、貝加爾裂谷、里約格蘭地裂谷）——那些在陸地上，不是海底山脈。
- * 「世界之最・山脈」那一層要畫的是海底山脈，所以只取 OSR。
+ * 「中洋脊」與「世界之最・山脈」兩層要畫的都是海底山脈，所以只取 OSR。
  */
 export const MID_OCEAN_RIDGE_CLASS = "OSR";
 
 /**
- * 10 MB 的 step 檔只下載一次（`plate-boundaries` 與 `world-superlatives-ranges`
- * 是同一個 process 裡的兩個資料集）。比照 lib/mountains.mjs 與 lib/koppen.mjs。
+ * 從 step 檔算出中洋脊的幾何。
+ *
+ * **兩個資料集共用這一支**：`world-mid-ocean-ridge`（世界地理「地體構造」那個
+ * 獨立圖層）與 `world-superlatives-ranges`（下架中的「世界之最・山脈」，那一份
+ * 刻意原封不動）。⚠️ 兩邊都必須走這裡，不要各寫一份——篩選、串接與那道長度檢查
+ * 一旦分歧，兩份產物就會靜默地畫出不一樣的中洋脊。
+ *
+ * ⚠️ 回傳的 `km` 是**自我檢查用的**，不要寫進產物：它是從一份模型化的邊界幾何
+ * 量出來的，寫進卡片等於假精確（理由見 `geometryLengthKm`）。
+ */
+export function buildMidOceanRidge(steps) {
+  const lines = mergeStepRuns(steps, (step) =>
+    step.properties.STEPCLASS === MID_OCEAN_RIDGE_CLASS ? "ridge" : null,
+  ).get("ridge");
+  if (!lines?.length) {
+    throw new Error("中洋脊（STEPCLASS = OSR）一段都沒有，上游的欄位可能變了");
+  }
+  assertNoAntimeridianCrossing(lines, "中洋脊");
+
+  const geometry = { type: "MultiLineString", coordinates: lines };
+  /**
+   * 算出來的長度要落在 NOAA 公布的 6.5 萬公里附近。差一個數量級就代表篩選或
+   * 串接壞了（比照板塊面積總和等於地球表面積那道檢查）。
+   */
+  const km = geometryLengthKm(geometry);
+  if (km < 40000 || km > 100000) {
+    throw new Error(
+      `中洋脊算出來 ${Math.round(km).toLocaleString("en-US")} km，` +
+        "離常被引用的 6.5 萬公里太遠，請先確認 STEPCLASS 的篩選",
+    );
+  }
+  return { geometry, lineCount: lines.length, km };
+}
+
+/**
+ * 10 MB 的 step 檔只下載一次（`plate-boundaries`、`world-mid-ocean-ridge` 與
+ * `world-superlatives-ranges` 是同一個 process 裡的三個資料集）。
+ * 比照 lib/mountains.mjs 與 lib/koppen.mjs。
  */
 let stepsCache = null;
 export async function fetchSteps(fetchWithRetry) {

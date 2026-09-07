@@ -128,17 +128,16 @@ import {
   SOURCE_LABELS as PLATE_SOURCE_LABELS,
   STEPS_URL as PLATE_STEPS_URL,
   STEP_CLASS_TO_TYPE,
-  MID_OCEAN_RIDGE_CLASS,
   TAIWAN_BOUNDARIES,
   TAIWAN_PLATES,
   assertNoAntimeridianCrossing,
   boxRing,
+  buildMidOceanRidge,
   clipLineToBox,
   fetchPlatePolygons,
   fetchSteps as fetchPlateSteps,
   formatArea as formatPlateArea,
   geometryAreaKm2,
-  geometryLengthKm,
   groupPlatePolygons,
   mergeStepRuns,
 } from "./lib/plates.mjs";
@@ -1439,29 +1438,16 @@ const SOURCES = [
       assertNoAntimeridianCrossing(axis, "安地斯山脈");
 
       // ── 最長的海底山脈：中洋脊（只取 OSR，不含大陸裂谷）─────────────
-      const ridgeLines = mergeStepRuns(steps, (step) =>
-        step.properties.STEPCLASS === MID_OCEAN_RIDGE_CLASS ? "ridge" : null,
-      ).get("ridge");
-      if (!ridgeLines?.length) {
-        throw new Error("中洋脊（STEPCLASS = OSR）一段都沒有，上游的欄位可能變了");
-      }
-      assertNoAntimeridianCrossing(ridgeLines, "中洋脊");
-
-      const ridgeGeometry = { type: "MultiLineString", coordinates: ridgeLines };
-      /**
-       * 自我檢查：算出來的長度要落在 NOAA 公布的 6.5 萬公里附近。差一個數量級
-       * 就代表篩選或串接壞了（比照板塊面積總和等於地球表面積那道檢查）。
-       * ⚠️ 這個數字**不寫進產物**，理由見 lib/plates.mjs 的 `geometryLengthKm`。
-       */
-      const ridgeKm = geometryLengthKm(ridgeGeometry);
-      if (ridgeKm < 40000 || ridgeKm > 100000) {
-        throw new Error(
-          `中洋脊算出來 ${Math.round(ridgeKm).toLocaleString("en-US")} km，` +
-            "離常被引用的 6.5 萬公里太遠，請先確認 STEPCLASS 的篩選",
-        );
-      }
+      // ⚠️ 篩選、串接與長度檢查全部走 lib/plates.mjs 的 `buildMidOceanRidge()`，
+      //    跟獨立的 `world-mid-ocean-ridge` 資料集**共用同一支**——兩邊各寫一份的話
+      //    產物會靜默地畫出不一樣的中洋脊。
+      const {
+        geometry: ridgeGeometry,
+        lineCount: ridgeLineCount,
+        km: ridgeKm,
+      } = buildMidOceanRidge(steps);
       console.log(
-        `\n  · 中洋脊：${ridgeLines.length} 段、球面長度約 ` +
+        `\n  · 中洋脊：${ridgeLineCount} 段、球面長度約 ` +
           `${Math.round(ridgeKm / 1000)} 千公里（NOAA 公布值約 65 千公里）`,
       );
 
@@ -1489,6 +1475,57 @@ const SOURCES = [
             en: "Mid-Ocean Ridge",
             category: "海底",
             meta: "最長的海底山脈・約 65,000 公里",
+          },
+        },
+      ];
+    },
+  },
+  /**
+   * 世界地理「地體構造」的**中洋脊**（一筆圖徵）。
+   *
+   * ## 為什麼跟上面那個資料集分開，而不是共用一份產物
+   *
+   * 上面的 `world-superlatives-ranges` 是「世界之最・山脈」那一層的，2026-08 起
+   * **下架待重新設計**，而 CLAUDE_WORLD.md 承諾那份資料集原封不動（那是復原的
+   * 起點）。中洋脊要以獨立圖層回到「地體構造」，就得有自己的一份產物：
+   *
+   * - 兩份的幾何逐位元相同（同一支 `buildMidOceanRidge()`、同一個 `tolerance`），
+   *   這是站上既有的模式——安地斯同樣同時存在於 `world-mountains.geojson` 與
+   *   `world-superlatives-ranges.geojson`，也是同一支函式算出來的。
+   * - 下架那份**沒有任何圖層會抓**，所以執行期成本是零。
+   *
+   * ⚠️ **`id` 刻意不叫 `longest-undersea-range`。** `highlightIds` 是一份跨圖層的
+   * 扁平清單，撞 id 的話「世界之最」將來復原時，點這一層會連帶把那一層的也加粗
+   * （安地斯的 id 不叫 `andes` 是同一條規則）。
+   */
+  {
+    id: "world-mid-ocean-ridge",
+    label: "中洋脊",
+    // ⚠️ 走 `load:` 而不是 `url:`，才吃得到 lib/plates.mjs 那個 10 MB 的下載快取
+    //    （同一個 process 裡 `plate-boundaries` 與上面那個資料集吃的是同一份）。
+    load: async (fetch) => fetchPlateSteps(fetch),
+    sourceUrl: PLATE_STEPS_URL,
+    license: PLATE_LICENSE,
+    sourceLabel: PLATE_SOURCE_LABELS[0],
+    /** ⚠️ 必須跟 `plate-boundaries` 與 `world-superlatives-ranges` 一致（都是 0.02）。 */
+    tolerance: 0.02,
+    digits: 3,
+    transform: (steps) => {
+      const { geometry, lineCount, km } = buildMidOceanRidge(steps);
+      console.log(
+        `\n  · 中洋脊：${lineCount} 段、球面長度約 ` +
+          `${Math.round(km / 1000)} 千公里（NOAA 公布值約 65 千公里）`,
+      );
+      return [
+        {
+          type: "Feature",
+          geometry,
+          properties: {
+            id: "mid-ocean-ridge",
+            name: "中洋脊",
+            en: "Mid-Ocean Ridge",
+            /** ⚠️ 長度寫的是 NOAA 的公布值，不是上面量出來的那個數字，理由見 lib/plates.mjs。 */
+            meta: "約 65,000 公里・九成以上在海面下",
           },
         },
       ];
@@ -1577,8 +1614,9 @@ const SOURCES = [
     id: "plate-boundaries",
     label: "板塊邊界",
     /**
-     * ⚠️ 用 `load` 而不是 `url`，是為了跟 `world-superlatives-ranges`（中洋脊）
-     * **共用同一次下載**——兩個資料集吃的是同一份 10 MB 的 step 檔。
+     * ⚠️ 用 `load` 而不是 `url`，是為了跟 `world-mid-ocean-ridge` 與
+     * `world-superlatives-ranges` **共用同一次下載**——三個資料集吃的是同一份
+     * 10 MB 的 step 檔。
      */
     load: (fetch) => fetchPlateSteps(fetch),
     sourceUrl: PLATE_STEPS_URL,

@@ -1,8 +1,8 @@
 {
-  "id": "longest-undersea-range",
-  "collection": "world-superlatives",
+  "id": "mid-ocean-ridge",
+  "collection": "world-mid-ocean-ridge",
   "name": { "zh": "中洋脊", "en": "Mid-Ocean Ridge" },
-  "subtitle": "最長的海底山脈，約 65,000 公里",
+  "subtitle": "地球上最長的山脈，九成以上在海面下",
   "stats": [
     { "label": "長度", "value": "約 65,000 km" },
     { "label": "位置", "value": "各大洋洋底，繞地球一圈" },
@@ -28,7 +28,7 @@
     },
     {
       "label": "對照重點",
-      "value": "把「板塊邊界」一起打開：這條紫線會與橘色的張裂型邊界重疊，兩者講的是同一件事。再打開「全球地震帶」，淺源地震正沿著它排列"
+      "value": "把「板塊邊界」一起打開：這條淺紫線會與橘色的張裂型邊界重疊，兩者講的是同一件事。再打開「全球地震帶」，淺源地震正沿著它排列"
     }
   ],
   "curriculum": { "unit": "板塊運動與全球地形" },
